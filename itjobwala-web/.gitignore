@@ -1,0 +1,99 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Dependencies & Build Output
+# ═══════════════════════════════════════════════════════════════════════════════
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Build & Output
+/.next/
+/out/
+/build
+/dist
+
+# Testing
+/coverage
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Environment & Configuration
+# ═══════════════════════════════════════════════════════════════════════════════
+.env
+.env.local
+.env.*.local
+.env.production.local
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# IDE & Editor Settings
+# ═══════════════════════════════════════════════════════════════════════════════
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+*.pem
+
+# Claude Code
+.claude/
+.claude-local.json
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Logging
+# ═══════════════════════════════════════════════════════════════════════════════
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+lerna-debug.log*
+logs
+*.log
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Runtime & Temporary
+# ═══════════════════════════════════════════════════════════════════════════════
+.vercel
+.turbo
+*.tsbuildinfo
+next-env.d.ts
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Documentation & Mock Data
+# ═══════════════════════════════════════════════════════════════════════════════
+# All markdown documentation files except core project files
+*.md
+!README.md
+!CLAUDE.md
+!AGENTS.md
+
+# Documentation & Development artifacts
+/docs/
+CAREER_PROFILE_*.md
+CERTIFICATE_*.md
+CERTIFICATION_*.md
+EDUCATION_*.md
+PHOTO_*.md
+RESUME_*.md
+API_CONTRACT.md
+RECRUITER_*.md
+*_API_SPEC.md
+*_SPEC.md
+*.html
+design.html
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Miscellaneous
+# ═══════════════════════════════════════════════════════════════════════════════
+.DS_Store
+.AppleDouble
+.LSOverride
+*.bak
+*.backup
+.cache
+.tmp

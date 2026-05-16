@@ -1,0 +1,235 @@
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { useReveal } from '@/src/hooks/useReveal';
+import { useFeaturedJobsQuery } from '@/src/hooks/useJobs';
+import { normalizeJob } from '@/src/components/jobs/types';
+import { PRIMARY } from '@/src/lib/constants';
+
+export default function 
+() {
+  const ref = useReveal();
+  const [hovered, setHovered] = useState<number | null>(null);
+
+  // Fetch featured jobs — no default so undefined means "not yet arrived"
+  const { data: apiJobs, isLoading, isFetching, isError } = useFeaturedJobsQuery();
+
+  // Normalize only when we actually have data
+  let jobs: any[] = [];
+  let normalizationError: Error | null = null;
+
+  if (apiJobs && apiJobs.length > 0) {
+    try {
+      jobs = apiJobs
+        .map((job: any) => {
+          try { return normalizeJob(job); }
+          catch { return null; }
+        })
+        .filter((j: any): j is any => j !== null);
+    } catch (err) {
+      normalizationError = err as Error;
+    }
+  }
+
+  // Stay in skeleton until data has arrived (undefined = not yet fetched)
+  const isWaitingForData = apiJobs === undefined || isLoading || isFetching;
+
+  return (
+    <section
+      ref={ref}
+      className="bg-[#f9fafb] py-[88px] px-5 sm:px-8 lg:px-10"
+    >
+      <div className="max-w-[1440px] mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-10 lg:gap-16 items-start">
+
+          {/* Left Content */}
+          <div className="reveal-left lg:pt-2">
+            <div
+              className="text-[12px] font-bold uppercase mb-3"
+              style={{ color: PRIMARY, letterSpacing: 2 }}
+            >
+              Opportunities
+            </div>
+
+            <h2
+              className="text-[36px] md:text-[42px] font-extrabold text-[#0f172a] leading-[1.1] mb-5"
+              style={{ letterSpacing: '-1.5px' }}
+            >
+              Featured
+              <br />
+              jobs
+            </h2>
+
+            <p className="text-[15px] text-gray-500 leading-[1.7] mb-8">
+              Hand-picked roles from the best companies in India&apos;s tech ecosystem.
+            </p>
+
+            <Link
+              href="/jobs"
+              className="inline-flex items-center gap-2 text-sm font-bold text-white rounded-[10px] py-[13px] px-6 transition-[filter] hover:brightness-110"
+              style={{ background: PRIMARY }}
+            >
+              Browse all jobs
+
+              <svg
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                viewBox="0 0 24 24"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
+
+          {/* Jobs List */}
+          <div className="flex flex-col gap-3">
+
+            {/* Show skeleton while waiting for data - THIS IS THE ONLY THING SHOWN WHILE LOADING */}
+            {isWaitingForData ? (
+              [...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className="h-[88px] bg-white rounded-2xl border border-gray-100 animate-pulse"
+                />
+              ))
+            ) : normalizationError ? (
+              <div className="py-12 text-center text-[14px] text-red-500">
+                <div className="font-semibold mb-2">
+                  Error processing featured jobs
+                </div>
+                <div className="text-xs text-gray-500 mb-4">
+                  {String(normalizationError)}
+                </div>
+                <Link
+                  href="/jobs"
+                  className="text-primary font-semibold hover:underline"
+                >
+                  Browse all jobs instead →
+                </Link>
+              </div>
+            ) : isError ? (
+              <div className="py-12 text-center text-[14px] text-red-400">
+                Unable to load featured jobs.&nbsp;
+                <Link
+                  href="/jobs"
+                  className="text-primary font-semibold hover:underline"
+                >
+                  Browse all jobs instead →
+                </Link>
+              </div>
+            ) : jobs.length === 0 ? (
+              <div className="py-12 text-center text-[14px] text-gray-400">
+                No featured jobs available right now.&nbsp;
+                <Link
+                  href="/jobs"
+                  className="text-primary font-semibold hover:underline"
+                >
+                  Browse all jobs →
+                </Link>
+              </div>
+            ) : (
+              jobs.map((job: any, i: number) => {
+                const logo =
+                  job?.companyLogo ||
+                  (job?.company && job.company[0]) ||
+                  '?';
+
+                const badge = job?.isNew
+                  ? {
+                      label: '🔥 New',
+                      color: '#ef4444',
+                      bg: '#fff1f2',
+                    }
+                  : job?.isHot
+                    ? {
+                        label: '⚡ Hot',
+                        color: '#f97316',
+                        bg: '#fff7ed',
+                      }
+                    : null;
+
+                return (
+                  <Link
+                    href={`/jobs/${job?.id}`}
+                    key={job?.id}
+                    className={`reveal stagger-${i + 1} bg-white rounded-2xl py-5 px-5 sm:px-6 flex flex-col sm:flex-row sm:items-center gap-4 cursor-pointer transition-all duration-[250ms]`}
+                    style={{
+                      border: `1.5px solid ${
+                        hovered === i ? PRIMARY : '#f0f0f0'
+                      }`,
+                      transform:
+                        hovered === i ? 'translateX(6px)' : 'none',
+                      boxShadow:
+                        hovered === i
+                          ? '0 8px 32px rgba(0,0,0,0.07)'
+                          : 'none',
+                    }}
+                    onMouseEnter={() => setHovered(i)}
+                    onMouseLeave={() => setHovered(null)}
+                  >
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+
+                      <div
+                        className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shrink-0 bg-gradient-to-br ${job?.companyColorClass}`}
+                      >
+                        {logo.slice(0, 1).toUpperCase()}
+                      </div>
+
+                      <div className="min-w-0">
+
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="font-bold text-[15px] text-[#0f172a]">
+                            {job?.title}
+                          </span>
+
+                          {badge && (
+                            <span
+                              className="text-[11px] font-bold rounded-full py-[2px] px-2"
+                              style={{
+                                color: badge.color,
+                                background: badge.bg,
+                              }}
+                            >
+                              {badge.label}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="text-[13px] text-gray-400 flex gap-2 flex-wrap">
+                          <span>{job?.company}</span>
+                          <span>·</span>
+                          <span>{job?.location}</span>
+                          <span>·</span>
+                          <span>
+                            {job?.experienceMin}–{job?.experienceMax} yrs
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <span
+                      className="py-[9px] px-5 rounded-lg text-[13px] font-bold border-[1.5px] transition-all duration-200 whitespace-nowrap self-start sm:self-auto"
+                      style={{
+                        background:
+                          hovered === i ? PRIMARY : 'transparent',
+                        color:
+                          hovered === i ? '#fff' : PRIMARY,
+                        borderColor: PRIMARY,
+                      }}
+                    >
+                      View job
+                    </span>
+                  </Link>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

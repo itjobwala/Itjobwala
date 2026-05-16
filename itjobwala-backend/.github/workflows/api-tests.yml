@@ -1,0 +1,62 @@
+name: API QA Automation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: itjobwala
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: itjobwala_test
+        ports:
+          - 5432:5432
+          
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          
+      - name: Install Dependencies
+        run: npm ci
+        
+      - name: Setup Database
+        run: |
+          node setup-jobs-db.js
+          node setup-recruiter-db.js
+        env:
+          DATABASE_URL: postgresql://itjobwala:password@localhost:5432/itjobwala_test
+          
+      - name: Start Server
+        run: npm run dev &
+        env:
+          DATABASE_URL: postgresql://itjobwala:password@localhost:5432/itjobwala_test
+          JWT_SECRET: supersecretjwtkey
+          PORT: 4001
+          
+      - name: Wait for server
+        run: sleep 5
+        
+      - name: Install Newman & HTML Reporter
+        run: npm install -g newman newman-reporter-htmlextra
+        
+      - name: Run API Tests
+        run: npm run test:api
+          
+      - name: Upload HTML QA Report
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: api-qa-report
+          path: ./reports/api-report.html
