@@ -277,6 +277,7 @@ export default function RecruiterPostJobPage() {
     setApiError('');
     try {
       await signupRecruiter({
+        full_name: form.name.trim(),
         company_name: form.company.trim(),
         email: form.email.trim(),
         password: form.password,

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Field from '@/src/components/Field';
 import PasswordField from '@/src/components/PasswordField';
 import { PRIMARY } from '@/src/lib/constants';
-import { signupRecruiter } from '@/src/lib/api';
+import { signupRecruiter, signinRecruiter } from '@/src/lib/api';
 
 const PERKS = [
   { icon: '⚡', title: 'Post in 2 minutes',       sub: 'Simple job posting, no bloated forms' },
@@ -15,7 +15,7 @@ const PERKS = [
   { icon: '🔒', title: 'Verified profiles only',   sub: 'All candidates are identity-verified' },
 ];
 
-type FormState = { name: string; email: string; password: string; terms: boolean };
+type FormState = { fullName: string; companyName: string; email: string; password: string; terms: boolean };
 type Errors = Partial<Record<keyof FormState, string>>;
 
 function LeftPanel() {
@@ -67,7 +67,7 @@ function LeftPanel() {
 }
 
 export default function RecruiterSignupPage() {
-  const [form, setForm] = useState<FormState>({ name: '', email: '', password: '', terms: false });
+  const [form, setForm] = useState<FormState>({ fullName: '', companyName: '', email: '', password: '', terms: false });
   const [errors, setErrors] = useState<Errors>({});
   const [apiError, setApiError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -82,7 +82,8 @@ export default function RecruiterSignupPage() {
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const errs: Errors = {};
-    if (!form.name.trim()) errs.name = 'Full name is required';
+    if (!form.fullName.trim()) errs.fullName = 'Full name is required';
+    if (!form.companyName.trim()) errs.companyName = 'Company name is required';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Enter a valid work email';
     if (!form.password || form.password.length < 8) errs.password = 'Password must be at least 8 characters';
     if (!form.terms) errs.terms = 'You must accept the Terms & Conditions';
@@ -91,12 +92,19 @@ export default function RecruiterSignupPage() {
     setApiError('');
     try {
       await signupRecruiter({
-        company_name: form.name.trim(),
+        full_name: form.fullName.trim(),
+        company_name: form.companyName.trim(),
         email: form.email.trim(),
         password: form.password,
         terms_accepted: form.terms,
       });
-      setSuccess(true);
+      // Auto sign in after successful signup
+      try {
+        await signinRecruiter({ email: form.email.trim(), password: form.password });
+        window.location.href = '/recruiter/dashboard';
+      } catch {
+        setSuccess(true);
+      }
     } catch (err) {
       setApiError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
     } finally {
@@ -144,7 +152,7 @@ export default function RecruiterSignupPage() {
               onMouseEnter={e => { e.currentTarget.style.background = PRIMARY; e.currentTarget.style.color = '#fff'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = PRIMARY; }}
             >
-              Log in
+              Sign in
             </Link>
           </div>
         </div>
@@ -160,61 +168,27 @@ export default function RecruiterSignupPage() {
 
             <div className="fade-up mb-7">
               <h1 className="font-extrabold text-[#0f172a] mb-1.5 text-2xl sm:text-[28px]" style={{ letterSpacing: -0.8 }}>
-                Post a free job
+                Create recruiter account
               </h1>
-              <p className="text-sm text-gray-500">Create your recruiter account in seconds.</p>
-            </div>
-
-            {/* Guided flow nudge */}
-            <div className="fade-up mb-5 rounded-[14px] px-4 py-3.5 flex items-center justify-between gap-4" style={{ background: '#f0f4ff', border: `1px solid ${PRIMARY}22` }}>
-              <div>
-                <div className="text-[13px] font-semibold text-[#0f172a]">Want a guided setup?</div>
-                <div className="text-[12px] text-gray-500 mt-0.5">Add company profile, hiring needs &amp; more</div>
-              </div>
-              <Link
-                href="/recruiter/post-job"
-                className="shrink-0 rounded-lg px-4 py-2 text-[13px] font-bold whitespace-nowrap"
-                style={{ background: PRIMARY, color: '#fff', textDecoration: 'none' }}
-              >
-                Post a Free Job →
-              </Link>
-            </div>
-
-            {/* Google SSO */}
-            <div className="fade-up d1 mb-5">
-              <button
-                type="button"
-                className="w-full flex items-center justify-center gap-2.5 bg-white rounded-xl font-semibold text-sm text-gray-700 cursor-pointer transition-all duration-200"
-                style={{ border: '1.5px solid #e5e7eb', padding: 13 }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = PRIMARY; e.currentTarget.style.background = '#f8faff'; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.background = '#fff'; }}
-              >
-                <svg width="18" height="18" viewBox="0 0 48 48">
-                  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
-                  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
-                  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
-                  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
-                </svg>
-                Continue with Google
-              </button>
-            </div>
-
-            {/* Divider */}
-            <div className="fade-up d2 flex items-center gap-3 mb-5">
-              <div className="flex-1 h-px bg-gray-200" />
-              <span className="text-xs font-semibold text-gray-400">or</span>
-              <div className="flex-1 h-px bg-gray-200" />
+              <p className="text-sm text-gray-500">Post a free job and reach thousands of IT professionals.</p>
             </div>
 
             <form onSubmit={handleSubmit} noValidate>
               <div className="fade-up d2">
                 <Field
-                  label="Full Name" id="name" placeholder="e.g. Amit Sharma"
-                  value={form.name} onChange={v => set('name', v)} error={errors.name}
+                  label="Full Name" id="fullname" placeholder="e.g. Amit Sharma"
+                  value={form.fullName} onChange={v => set('fullName', v)} error={errors.fullName}
                   icon={<svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>}
                 />
               </div>
               <div className="fade-up d3">
+                <Field
+                  label="Company Name" id="companyname" placeholder="e.g. Razorpay"
+                  value={form.companyName} onChange={v => set('companyName', v)} error={errors.companyName}
+                  icon={<svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>}
+                />
+              </div>
+              <div className="fade-up d4">
                 <Field
                   label="Work Email" id="email" type="email" placeholder="you@company.com"
                   value={form.email} onChange={v => set('email', v)} error={errors.email}
@@ -222,7 +196,7 @@ export default function RecruiterSignupPage() {
                   icon={<svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>}
                 />
               </div>
-              <div className="fade-up d4">
+              <div className="fade-up d5">
                 <PasswordField
                   label="Password" id="password" placeholder="Min. 8 characters"
                   value={form.password} onChange={v => set('password', v)} error={errors.password}
@@ -230,7 +204,7 @@ export default function RecruiterSignupPage() {
               </div>
 
               {/* T&C */}
-              <div className="fade-up d5 mb-6">
+              <div className="fade-up d6 mb-6">
                 <label className="flex items-start gap-3 cursor-pointer">
                   <div className="relative shrink-0 mt-0.5">
                     <input type="checkbox" checked={form.terms} onChange={e => set('terms', e.target.checked)} className="sr-only" />
@@ -256,7 +230,7 @@ export default function RecruiterSignupPage() {
               )}
 
               {/* Submit */}
-              <div className="fade-up d6">
+              <div className="fade-up d7">
                 <button
                   type="submit" disabled={loading}
                   className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-[15px] transition-all duration-200"
@@ -271,11 +245,35 @@ export default function RecruiterSignupPage() {
                 >
                   {loading
                     ? <><div className="w-[18px] h-[18px] border-[2.5px] border-white/40 border-t-white rounded-full animate-spin" /> Creating account…</>
-                    : 'Post a Free Job →'
+                    : 'Create recruiter account →'
                   }
                 </button>
               </div>
             </form>
+
+            {/* Divider */}
+            <div className="flex items-center gap-3 mt-5 mb-4">
+              <div className="flex-1 h-px bg-gray-200" />
+              <span className="text-xs font-semibold text-gray-400">or</span>
+              <div className="flex-1 h-px bg-gray-200" />
+            </div>
+
+            {/* Google SSO */}
+            <button
+              type="button"
+              className="w-full flex items-center justify-center gap-2.5 bg-white rounded-xl font-semibold text-sm text-gray-700 cursor-pointer transition-all duration-200"
+              style={{ border: '1.5px solid #e5e7eb', padding: 13 }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = PRIMARY; e.currentTarget.style.background = '#f8faff'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.background = '#fff'; }}
+            >
+              <svg width="18" height="18" viewBox="0 0 48 48">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+              </svg>
+              Continue with Google
+            </button>
 
             <p className="text-center text-[13px] text-gray-400 mt-5">
               Looking for a job?{' '}

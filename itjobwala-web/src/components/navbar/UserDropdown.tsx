@@ -105,7 +105,7 @@ export default function UserDropdown({ user }: Props) {
         )}
         <div className="hidden lg:block text-left min-w-0">
           <p className="text-[13px] font-bold text-[#0f172a] leading-none truncate max-w-[100px]">{user.name}</p>
-          <p className="text-[11px] text-gray-400 mt-0.5 truncate max-w-[100px]">{user.designation || user.role}</p>
+          <p className="text-[11px] text-gray-400 mt-0.5 truncate max-w-[100px]">{user.designation || 'Update profile'}</p>
         </div>
         <svg
           width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5"
@@ -134,7 +134,7 @@ export default function UserDropdown({ user }: Props) {
           )}
           <div className="min-w-0">
             <p className="text-[14px] font-bold text-[#0f172a] truncate">{user.name}</p>
-            <p className="text-[12px] text-gray-400 truncate">{user.designation || user.role}</p>
+            <p className="text-[12px] text-gray-400 truncate">{user.designation || 'Update profile'}</p>
           </div>
         </div>
 

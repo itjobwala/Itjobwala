@@ -52,6 +52,7 @@ export function useProfileManager(profile: CandidateProfile | null | undefined) 
       profile: {
         firstName: profile.first_name || '',
         lastName: profile.last_name || '',
+        name: profile.name || '',
         title: profile.title || '',
         experienceYears: profile.experience_years?.toString() || '',
         expectedSalary: profile.expected_salary?.toString() || '',

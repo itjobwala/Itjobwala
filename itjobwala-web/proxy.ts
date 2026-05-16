@@ -12,8 +12,6 @@ const CANDIDATE_PROTECTED_PREFIXES = ['/jobs/apply'];
 /** Pages that authenticated candidates should not see */
 const CANDIDATE_AUTH_ROUTES = ['/login', '/signup'];
 
-/** Pages that unauthenticated recruiters cannot access */
-const RECRUITER_AUTH_ROUTES = ['/recruiter/login', '/recruiter/signup'];
 
 // ── JWT helpers (Edge-safe, payload decode only) ─────────────────────────────
 
@@ -74,20 +72,16 @@ export function proxy(request: NextRequest) {
   const recruiterPayload  = recruiterRawToken ? decodeToken(recruiterRawToken) : null;
   const isRecruiterAuth   = !!recruiterRawToken && !isTokenExpired(recruiterPayload ?? {});
 
+  const RECRUITER_PUBLIC_ROUTES = ['/recruiter/login', '/recruiter/signup', '/recruiter/post-job'];
+
   const isRecruiterProtected =
     pathname.startsWith('/recruiter') &&
-    !RECRUITER_AUTH_ROUTES.some(r => pathname === r);
-
-  const isRecruiterAuthRoute = RECRUITER_AUTH_ROUTES.some(r => pathname === r);
+    !RECRUITER_PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'));
 
   if (isRecruiterProtected && !isRecruiterAuth) {
     const url = new URL('/recruiter/login', request.url);
     url.searchParams.set('next', pathname);
     return NextResponse.redirect(url);
-  }
-
-  if (isRecruiterAuthRoute && isRecruiterAuth) {
-    return NextResponse.redirect(new URL('/recruiter/dashboard', request.url));
   }
 
   return NextResponse.next();

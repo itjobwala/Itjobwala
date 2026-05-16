@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useRecruiterAuth } from '@/src/hooks/useRecruiterAuth';
+import { useRecruiterCompanyProfileQuery } from '@/src/hooks/useRecruiter';
 
 const PRIMARY = '#1557FF';
 
@@ -25,15 +27,15 @@ const NAV_SECTIONS: NavSection[] = [
         label: 'Dashboard',
         icon: (
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-            <rect x="3"  y="3"  width="7" height="7" rx="1.5" />
-            <rect x="14" y="3"  width="7" height="7" rx="1.5" />
-            <rect x="3"  y="14" width="7" height="7" rx="1.5" />
+            <rect x="3" y="3" width="7" height="7" rx="1.5" />
+            <rect x="14" y="3" width="7" height="7" rx="1.5" />
+            <rect x="3" y="14" width="7" height="7" rx="1.5" />
             <rect x="14" y="14" width="7" height="7" rx="1.5" />
           </svg>
         ),
       },
       {
-        href: '/recruiter/jobs',
+        href: '/recruiter/posted-jobs',
         label: 'Posted Jobs',
         icon: (
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -81,7 +83,7 @@ const NAV_SECTIONS: NavSection[] = [
     sectionLabel: 'MANAGE',
     items: [
       {
-        href: '/recruiter/company',
+        href: '/recruiter/company-profile',
         label: 'Company Profile',
         icon: (
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -121,6 +123,11 @@ interface RecruiterSidebarProps {
 
 export default function RecruiterSidebar({ isOpen, onClose }: RecruiterSidebarProps) {
   const pathname = usePathname();
+  const { logout } = useRecruiterAuth();
+  const { data: company } = useRecruiterCompanyProfileQuery();
+
+  const companyName = company?.companyName || 'TechNova Solutions';
+  const logoUrl = company?.logo;
 
   function handleLinkClick() {
     if (typeof window !== 'undefined' && window.innerWidth < 1024) onClose();
@@ -136,24 +143,45 @@ export default function RecruiterSidebar({ isOpen, onClose }: RecruiterSidebarPr
         />
       )}
 
-      {/* Sidebar */}
       <aside
-        className={`fixed top-[68px] left-0 bottom-0 w-[240px] bg-white border-r border-gray-100 z-[160] overflow-y-auto flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] lg:translate-x-0 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed top-0 left-0 bottom-0 w-[240px] bg-white border-r border-gray-100 z-[160] flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
+        {/* Logo */}
+        <div className="px-6 h-[68px] flex items-center shrink-0">
+          <Link
+            href="/recruiter/dashboard"
+            className="font-extrabold text-[20px] text-[#0f172a] hover:opacity-80 transition-opacity"
+            style={{ letterSpacing: '-0.5px' }}
+          >
+            <span>it</span>
+            <span className="text-primary">Jobwala</span>
+          </Link>
+        </div>
         {/* Company info */}
         <div className="px-4 py-4 border-b border-gray-100">
           <div className="flex items-center gap-3">
-            <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-extrabold text-[12px] shrink-0"
-              style={{ background: `linear-gradient(135deg, ${PRIMARY} 0%, #4338ca 100%)` }}
-            >
-              TN
-            </div>
+            {logoUrl ? (
+              <img src={logoUrl} alt={companyName} className="w-9 h-9 rounded-xl object-cover shrink-0 border border-gray-200" />
+            ) : (
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-white shrink-0"
+                style={{ background: `linear-gradient(135deg, ${PRIMARY} 0%, #4338ca 100%)` }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18" />
+                  <path d="M6 12H4a2 2 0 0 0-2 2v8" />
+                  <path d="M18 19h4" />
+                  <path d="M10 6h4" />
+                  <path d="M10 10h4" />
+                  <path d="M10 14h4" />
+                  <path d="M10 18h4" />
+                </svg>
+              </div>
+            )}
             <div className="min-w-0">
-              <p className="text-[13px] font-bold text-[#0f172a] truncate leading-tight">TechNova Solutions</p>
-              <p className="text-[11px] text-gray-400 mt-0.5 truncate">Priya Sharma</p>
+              <p className="text-[13px] font-bold text-[#0f172a] truncate leading-tight">{companyName}</p>
+              <p className="text-[11px] text-gray-400 mt-0.5 truncate">{company?.fullName || 'User'}</p>
             </div>
           </div>
         </div>
@@ -177,25 +205,22 @@ export default function RecruiterSidebar({ isOpen, onClose }: RecruiterSidebarPr
                       <Link
                         href={item.href}
                         onClick={handleLinkClick}
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-150 group ${
-                          active
-                            ? 'bg-primary/10 text-primary'
-                            : 'text-[#374151] hover:bg-gray-50 hover:text-[#0f172a]'
-                        }`}
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-150 group ${active
+                          ? 'bg-primary/10 text-primary'
+                          : 'text-[#374151] hover:bg-gray-50 hover:text-[#0f172a]'
+                          }`}
                       >
                         <span
-                          className={`transition-colors shrink-0 ${
-                            active ? 'text-primary' : 'text-gray-400 group-hover:text-gray-500'
-                          }`}
+                          className={`transition-colors shrink-0 ${active ? 'text-primary' : 'text-gray-400 group-hover:text-gray-500'
+                            }`}
                         >
                           {item.icon}
                         </span>
                         <span className="flex-1">{item.label}</span>
                         {item.badge != null && (
                           <span
-                            className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${
-                              active ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500'
-                            }`}
+                            className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${active ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500'
+                              }`}
                           >
                             {item.badge}
                           </span>
@@ -227,6 +252,12 @@ export default function RecruiterSidebar({ isOpen, onClose }: RecruiterSidebarPr
             </Link>
           </div>
 
+          <button
+            onClick={logout}
+            className="w-full text-left px-3 py-2.5 rounded-xl text-[13px] font-semibold text-red-600 hover:bg-red-50 transition-colors"
+          >
+            Logout
+          </button>
         </div>
       </aside>
     </>

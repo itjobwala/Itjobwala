@@ -69,16 +69,18 @@ export default function CategorySection() {
               Explore jobs<br />by category
             </h2>
           </div>
-          <Link
-            href="/jobs"
-            className="reveal-right flex items-center gap-1.5 text-sm font-semibold"
-            style={{ color: PRIMARY }}
-          >
-            View all categories
-            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </Link>
+          {!isWaitingForData && !isError && categoriesData.length > 0 && (
+            <Link
+              href="/jobs"
+              className="reveal-right flex items-center gap-1.5 text-sm font-semibold"
+              style={{ color: PRIMARY }}
+            >
+              View all categories
+              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
+          )}
         </div>
 
         {/* Category grid */}
@@ -95,8 +97,8 @@ export default function CategorySection() {
               Unable to load categories right now.
             </div>
           ) : categoriesData.length === 0 ? (
-            <div className="col-span-full py-10 text-center text-sm text-gray-400">
-              No categories available right now.
+            <div className="col-span-full py-16 flex flex-col items-center justify-center bg-gray-50 border border-gray-100 rounded-[20px]">
+              <span className="text-[14px] text-gray-400 font-medium">No categories available right now.</span>
             </div>
           ) : (
             categoriesData.map((cat, i) => {
@@ -191,27 +193,6 @@ export default function CategorySection() {
           )}
         </div>
 
-        {/* Bottom CTA */}
-        <div className="reveal text-center mt-9">
-          <Link
-            href="/jobs"
-            className="inline-flex items-center gap-2 text-sm font-semibold border-[1.5px] rounded-full py-[10px] px-6 transition-colors"
-            style={{ color: '#6b7280', borderColor: '#e5e7eb' }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = PRIMARY;
-              e.currentTarget.style.borderColor = PRIMARY;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = '#6b7280';
-              e.currentTarget.style.borderColor = '#e5e7eb';
-            }}
-          >
-            Explore all categories
-            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </Link>
-        </div>
       </div>
     </section>
   );

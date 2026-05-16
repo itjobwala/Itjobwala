@@ -9,7 +9,7 @@ import { PRIMARY } from '@/src/lib/constants';
 import { signinRecruiter, signupRecruiter } from '@/src/lib/api';
 
 type Tab = 'signin' | 'signup';
-type SignupForm = { name: string; email: string; password: string; terms: boolean };
+type SignupForm = { fullName: string; companyName: string; email: string; password: string; terms: boolean };
 type SignupErrors = Partial<Record<keyof SignupForm, string>>;
 
 const EyeOpen = () => (
@@ -172,7 +172,7 @@ export default function RecruiterLoginPage() {
   const [loginApiError, setLoginApiError] = useState('');
 
   /* ── Sign-up state ── */
-  const [signupForm, setSignupFormState] = useState<SignupForm>({ name: '', email: '', password: '', terms: false });
+  const [signupForm, setSignupFormState] = useState<SignupForm>({ fullName: '', companyName: '', email: '', password: '', terms: false });
   const [signupErrors, setSignupErrors] = useState<SignupErrors>({});
   const [signupApiError, setSignupApiError] = useState('');
   const [signupLoading, setSignupLoading] = useState(false);
@@ -199,10 +199,9 @@ export default function RecruiterLoginPage() {
     setLoginApiError('');
     try {
       await signinRecruiter({ email: loginForm.email.trim(), password: loginForm.password });
-      router.replace('/recruiter/dashboard');
+      window.location.href = '/recruiter/dashboard';
     } catch (err) {
       setLoginApiError(err instanceof Error ? err.message : 'Sign in failed. Please try again.');
-    } finally {
       setSigninLoading(false);
     }
   }
@@ -217,7 +216,8 @@ export default function RecruiterLoginPage() {
   async function handleSignup(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const errs: SignupErrors = {};
-    if (!signupForm.name.trim()) errs.name = 'Company name is required';
+    if (!signupForm.fullName.trim()) errs.fullName = 'Full name is required';
+    if (!signupForm.companyName.trim()) errs.companyName = 'Company name is required';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signupForm.email)) errs.email = 'Enter a valid work email';
     if (!signupForm.password || signupForm.password.length < 8) errs.password = 'Password must be at least 8 characters';
     if (!signupForm.terms) errs.terms = 'You must accept the Terms & Conditions';
@@ -227,12 +227,22 @@ export default function RecruiterLoginPage() {
     setSignupApiError('');
     try {
       await signupRecruiter({
-        company_name: signupForm.name.trim(),
+        full_name: signupForm.fullName.trim(),
+        company_name: signupForm.companyName.trim(),
         email: signupForm.email.trim(),
         password: signupForm.password,
         terms_accepted: signupForm.terms
       });
-      setSignupSuccess(true);
+      // Auto sign in after successful signup
+      try {
+        await signinRecruiter({ email: signupForm.email.trim(), password: signupForm.password });
+        window.location.href = '/recruiter/dashboard';
+      } catch {
+        // Sign in failed — switch to sign in tab with email prefilled
+        setTab('signin');
+        setLoginForm(f => ({ ...f, email: signupForm.email.trim() }));
+        setSignupSuccess(true);
+      }
     } catch (err) {
       setSignupApiError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
     } finally {
@@ -397,8 +407,13 @@ export default function RecruiterLoginPage() {
 
                     <form onSubmit={handleSignup} noValidate className="fade-up d1">
                       <Field
-                        label="Company Name" id="su-name" placeholder="e.g. Razorpay"
-                        value={signupForm.name} onChange={v => setSignup('name', v)} error={signupErrors.name}
+                        label="Full Name" id="su-fullname" placeholder="e.g. Rahul Sharma"
+                        value={signupForm.fullName} onChange={v => setSignup('fullName', v)} error={signupErrors.fullName}
+                        icon={<svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>}
+                      />
+                      <Field
+                        label="Company Name" id="su-companyname" placeholder="e.g. Razorpay"
+                        value={signupForm.companyName} onChange={v => setSignup('companyName', v)} error={signupErrors.companyName}
                         icon={<svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>}
                       />
                       <Field

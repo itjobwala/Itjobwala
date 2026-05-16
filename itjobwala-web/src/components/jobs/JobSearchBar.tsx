@@ -113,9 +113,9 @@ export default function JobSearchBar({ search, onChange, onSearch }: Props) {
       </div>
 
       {/* Desktop layout: Integrated button inside container */}
-      <div className="hidden sm:flex bg-white rounded-2xl border border-gray-200 shadow-sm p-2 gap-2 items-center">
+      <div className="hidden sm:flex bg-white rounded-[20px] border border-gray-200 shadow-sm p-1.5 items-center">
         {/* Job Title input */}
-        <div className="flex items-center gap-2 flex-1 px-3 py-2.5 text-gray-400 border border-gray-100 rounded-lg">
+        <div className="flex items-center gap-2 flex-1 px-3 py-2 text-gray-400 min-w-0">
           <SearchIcon />
           <input
             type="text"
@@ -134,8 +134,10 @@ export default function JobSearchBar({ search, onChange, onSearch }: Props) {
           )}
         </div>
 
+        <div className="w-[1px] h-8 bg-gray-200 shrink-0" />
+
         {/* Company input */}
-        <div className="flex items-center gap-2 flex-1 px-3 py-2.5 text-gray-400 border border-gray-100 rounded-lg">
+        <div className="flex items-center gap-2 flex-1 px-3 py-2 text-gray-400 min-w-0">
           <BuildingIcon />
           <input
             type="text"
@@ -154,8 +156,10 @@ export default function JobSearchBar({ search, onChange, onSearch }: Props) {
           )}
         </div>
 
+        <div className="w-[1px] h-8 bg-gray-200 shrink-0" />
+
         {/* City input */}
-        <div className="flex items-center gap-2 flex-1 px-3 py-2.5 text-gray-400 border border-gray-100 rounded-lg">
+        <div className="flex items-center gap-2 flex-1 px-3 py-2 text-gray-400 min-w-0">
           <MapPinIcon />
           <input
             type="text"
@@ -174,10 +178,10 @@ export default function JobSearchBar({ search, onChange, onSearch }: Props) {
           )}
         </div>
 
-        {/* Search button - inside container */}
+        {/* Search button - pill style inside container */}
         <button
           onClick={onSearch}
-          className="bg-primary text-white text-[14px] font-bold rounded-xl px-6 py-2.5 hover:brightness-110 transition-[filter] shrink-0"
+          className="bg-primary text-white text-[14px] font-bold px-8 py-2.5 rounded-xl hover:brightness-110 transition-[filter] shrink-0 flex items-center ml-1"
         >
           Search
         </button>

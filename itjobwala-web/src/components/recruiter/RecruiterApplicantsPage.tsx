@@ -66,9 +66,9 @@
 'use client';
 
 import { useState } from 'react';
-import RecruiterNavbar from './RecruiterNavbar';
 import { useRecruiterApplicantsQuery } from '@/src/hooks/useRecruiter';
 import type { RecruiterApplicant } from '@/src/types/recruiter';
+import RecruiterShell from './RecruiterShell';
 
 export default function RecruiterApplicantsPage() {
   const [filterStatus, setFilterStatus] = useState('all');
@@ -98,10 +98,7 @@ export default function RecruiterApplicantsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f9fafb]">
-      <RecruiterNavbar />
-
-      <div className="pt-[68px]">
+    <RecruiterShell>
         {/* Page header */}
         <div className="bg-white border-b border-gray-100">
           <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
@@ -183,7 +180,6 @@ export default function RecruiterApplicantsPage() {
             </div>
           )}
         </div>
-      </div>
 
       {/* Success toast */}
       <div
@@ -216,6 +212,6 @@ export default function RecruiterApplicantsPage() {
           {errorToast}
         </div>
       </div>
-    </div>
+    </RecruiterShell>
   );
 }

@@ -38,9 +38,12 @@ export default function SavedJobsCard({ jobs: initialJobs, onUnsave }: Props) {
 
       {visible.length === 0 ? (
         <div className="py-6 text-center">
-          <p className="text-[13px] text-gray-400">No saved jobs.</p>
-          <Link href="/jobs" className="text-[13px] font-semibold text-primary hover:underline block mt-1">
-            Browse jobs →
+          <p className="text-[13px] text-gray-400 mb-3">You haven't saved any jobs yet.</p>
+          <Link
+            href="/jobs"
+            className="inline-block text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:brightness-110 transition-all"
+          >
+            Browse Jobs
           </Link>
         </div>
       ) : (

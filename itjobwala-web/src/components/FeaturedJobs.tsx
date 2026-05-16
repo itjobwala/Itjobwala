@@ -98,38 +98,16 @@ export default function
               ))
             ) : normalizationError ? (
               <div className="py-12 text-center text-[14px] text-red-500">
-                <div className="font-semibold mb-2">
-                  Error processing featured jobs
-                </div>
-                <div className="text-xs text-gray-500 mb-4">
-                  {String(normalizationError)}
-                </div>
-                <Link
-                  href="/jobs"
-                  className="text-primary font-semibold hover:underline"
-                >
-                  Browse all jobs instead →
-                </Link>
+                <div className="font-semibold mb-2">Error processing featured jobs</div>
+                <div className="text-xs text-gray-500">{String(normalizationError)}</div>
               </div>
             ) : isError ? (
               <div className="py-12 text-center text-[14px] text-red-400">
-                Unable to load featured jobs.&nbsp;
-                <Link
-                  href="/jobs"
-                  className="text-primary font-semibold hover:underline"
-                >
-                  Browse all jobs instead →
-                </Link>
+                Unable to load featured jobs.
               </div>
             ) : jobs.length === 0 ? (
-              <div className="py-12 text-center text-[14px] text-gray-400">
-                No featured jobs available right now.&nbsp;
-                <Link
-                  href="/jobs"
-                  className="text-primary font-semibold hover:underline"
-                >
-                  Browse all jobs →
-                </Link>
+              <div className="w-full py-16 flex flex-col items-center justify-center bg-white border border-gray-100 rounded-2xl">
+                <span className="text-[14px] text-gray-400 font-medium">No featured jobs available right now.</span>
               </div>
             ) : (
               jobs.map((job: any, i: number) => {

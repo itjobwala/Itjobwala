@@ -112,6 +112,7 @@ export const getCompanyProfile = async (request, reply) => {
       data: {
         id: `company_${recruiter.id}`,
         companyName: recruiter.company_name,
+        fullName: recruiter.full_name,
         industry: recruiter.industry || 'Technology',
         website: recruiter.website,
         description: recruiter.about,

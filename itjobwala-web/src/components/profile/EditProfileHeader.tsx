@@ -18,6 +18,7 @@ export interface EditableProfile {
   linkedIn: string;
   about?: string;
   openToWork: boolean;
+  name?: string;
 }
 
 interface Props {
@@ -62,7 +63,24 @@ function Field({
 
 export default function EditProfileHeader({ profile, onChange, profilePhotoUrl }: Props) {
   const avatarRef = useRef<HTMLInputElement>(null);
-  const initials = `${profile.firstName[0] ?? ''}${profile.lastName[0] ?? ''}`.toUpperCase() || 'PS';
+  
+  const firstLetter = profile.firstName?.[0] || '';
+  const lastLetter = profile.lastName?.[0] || '';
+  let initials = `${firstLetter}${lastLetter}`.toUpperCase();
+  
+  if (!initials && profile.name) {
+    initials = profile.name
+      .split(' ')
+      .filter(Boolean)
+      .map(w => w[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase();
+  }
+  
+  if (!initials) {
+    initials = profile.email?.substring(0, 2).toUpperCase() || 'US';
+  }
 
   function update<K extends keyof EditableProfile>(key: K, value: EditableProfile[K]) {
     onChange({ ...profile, [key]: value });
@@ -99,16 +117,18 @@ export default function EditProfileHeader({ profile, onChange, profilePhotoUrl }
               </span>
             </button>
             <input ref={avatarRef} type="file" accept="image/*" className="hidden" />
-            <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-green-500 text-white text-[10px] font-bold rounded-full px-2 py-0.5 whitespace-nowrap border-2 border-white">
-              Open to work
-            </span>
+            {profile.openToWork && (
+              <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-green-500 text-white text-[10px] font-bold rounded-full px-2 py-0.5 whitespace-nowrap border-2 border-white">
+                Open to work
+              </span>
+            )}
           </div>
 
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          <Field label="First name" value={profile.firstName} onChange={value => update('firstName', value)} error={!profile.firstName.trim() ? 'Required' : ''} />
-          <Field label="Last name" value={profile.lastName} onChange={value => update('lastName', value)} error={!profile.lastName.trim() ? 'Required' : ''} />
+          <Field label="First name" value={profile.firstName} onChange={value => update('firstName', value)} />
+          <Field label="Last name" value={profile.lastName} onChange={value => update('lastName', value)} />
           <div className="sm:col-span-2">
             <Field label="Current role / title" value={profile.title} onChange={value => update('title', value)} />
           </div>

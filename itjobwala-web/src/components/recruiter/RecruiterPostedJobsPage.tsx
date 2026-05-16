@@ -43,9 +43,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import RecruiterNavbar from './RecruiterNavbar';
 import { useRecruiterPostedJobsQuery } from '@/src/hooks/useRecruiter';
 import type { RecruiterPostedJob } from '@/src/types/recruiter';
+import RecruiterShell from './RecruiterShell';
 
 export default function RecruiterPostedJobsPage() {
   const [successToast, setSuccessToast] = useState('');
@@ -54,10 +54,7 @@ export default function RecruiterPostedJobsPage() {
   const { data, isLoading, error } = useRecruiterPostedJobsQuery({}, true);
 
   return (
-    <div className="min-h-screen bg-[#f9fafb]">
-      <RecruiterNavbar />
-
-      <div className="pt-[68px]">
+    <RecruiterShell>
         {/* Page header */}
         <div className="bg-white border-b border-gray-100">
           <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
@@ -70,12 +67,14 @@ export default function RecruiterPostedJobsPage() {
                   Manage your active job listings
                 </p>
               </div>
-              <Link
-                href="/recruiter/post-job"
-                className="px-4 py-2.5 bg-primary text-white font-semibold rounded-xl hover:opacity-90 transition-opacity"
-              >
-                + Post a Job
-              </Link>
+              {data && data.jobs.length > 0 && (
+                <Link
+                  href="/recruiter/post-job"
+                  className="px-4 py-2.5 bg-primary text-white font-semibold rounded-xl hover:opacity-90 transition-opacity"
+                >
+                  + Post a Job
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -100,9 +99,9 @@ export default function RecruiterPostedJobsPage() {
               <p className="text-gray-500 mb-6">Start by posting your first job listing</p>
               <Link
                 href="/recruiter/post-job"
-                className="inline-block px-6 py-3 bg-primary text-white font-semibold rounded-xl hover:opacity-90 transition-opacity"
+                className="inline-block px-4 py-2.5 bg-primary text-white font-semibold rounded-xl hover:opacity-90 transition-opacity"
               >
-                Post a Job
+                + Post a Job
               </Link>
             </div>
           ) : (
@@ -144,7 +143,6 @@ export default function RecruiterPostedJobsPage() {
             </div>
           )}
         </div>
-      </div>
 
       {/* Success toast */}
       <div
@@ -177,6 +175,6 @@ export default function RecruiterPostedJobsPage() {
           {errorToast}
         </div>
       </div>
-    </div>
+    </RecruiterShell>
   );
 }

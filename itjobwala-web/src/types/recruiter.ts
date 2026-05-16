@@ -2,6 +2,7 @@
 export interface RecruiterCompanyProfile {
   id: string;
   companyName: string;
+  fullName?: string;
   industry: string;
   website?: string;
   description?: string;

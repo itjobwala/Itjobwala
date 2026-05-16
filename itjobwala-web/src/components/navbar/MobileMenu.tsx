@@ -66,7 +66,7 @@ export default function MobileMenu({ isOpen, onClose, user }: Props) {
           )}
           <div className="flex-1 min-w-0">
             <p className="text-[14px] font-bold text-[#0f172a] truncate">{user.name}</p>
-            <p className="text-[12px] text-gray-400 truncate">{user.designation || user.role}</p>
+            <p className="text-[12px] text-gray-400 truncate">{user.designation || 'Update profile'}</p>
           </div>
           {user.unreadNotifications > 0 && (
             <span className="text-[11px] font-bold bg-red-500 text-white rounded-full px-2 py-0.5 shrink-0">

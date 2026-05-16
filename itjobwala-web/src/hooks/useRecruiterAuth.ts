@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { safeLocalStorageGetItem, safeLocalStorageRemoveItem, safeDispatchEvent } from '@/src/lib/hydration-safe';
 
 const RECRUITER_TOKEN_KEY = 'recruiter_token';
@@ -15,6 +16,7 @@ export interface UseRecruiterAuthReturn {
 export function useRecruiterAuth(): UseRecruiterAuthReturn {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   const refresh = useCallback(() => {
     const token = safeLocalStorageGetItem(RECRUITER_TOKEN_KEY);
@@ -29,8 +31,9 @@ export function useRecruiterAuth(): UseRecruiterAuthReturn {
   const logout = () => {
     safeLocalStorageRemoveItem(RECRUITER_TOKEN_KEY);
     safeLocalStorageRemoveItem('itjobwala_auth');
+    setIsAuthenticated(false);
     safeDispatchEvent('auth-changed');
-    window.location.href = '/recruiter/login';
+    router.push('/recruiter/login');
   };
 
   return {

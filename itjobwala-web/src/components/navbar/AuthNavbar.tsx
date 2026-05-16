@@ -43,6 +43,18 @@ export default function AuthNavbar({ user }: Props) {
     if (profile.title) {
       updates.designation = profile.title;
     }
+    
+    const fullName = profile.name || [profile.first_name, profile.last_name].filter(Boolean).join(' ');
+    if (fullName) {
+      updates.name = fullName;
+      updates.initials = fullName
+        .split(' ')
+        .filter(Boolean)
+        .map(w => w[0])
+        .join('')
+        .substring(0, 2)
+        .toUpperCase();
+    }
 
     if (Object.keys(updates).length > 0) {
       updateAuthProfile(updates);
