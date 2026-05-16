@@ -23,6 +23,17 @@ export interface RecruiterSignupRequest {
   password: string;
   phone?: string;
   terms_accepted: boolean;
+  otp_code?: string;
+}
+
+export async function sendRecruiterSignupOTP(email: string): Promise<{ success: boolean; message: string }> {
+  const res = await apiClient.post<any>('/auth/recruiter/send-otp', { email });
+  return res.data.data ?? res.data;
+}
+
+export async function verifyRecruiterSignupOTP(email: string, otp: string): Promise<{ valid: boolean }> {
+  const res = await apiClient.post<any>('/auth/recruiter/verify-otp', { email, otp_code: otp });
+  return res.data.data ?? { valid: res.data.success };
 }
 
 export async function signupRecruiter(data: RecruiterSignupRequest): Promise<{ token?: string }> {
