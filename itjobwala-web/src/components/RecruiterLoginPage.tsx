@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Field from '@/src/components/Field';
@@ -152,7 +152,17 @@ function LeftPanel({ tab }: { tab: Tab }) {
 export default function RecruiterLoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [tab, setTab] = useState<Tab>(searchParams.get('tab') === 'signup' ? 'signup' : 'signin');
+  const [tab, setTab] = useState<Tab>('signin');
+
+  // Sync tab with URL search params
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam === 'signup') {
+      setTab('signup');
+    } else {
+      setTab('signin');
+    }
+  }, [searchParams]);
 
   /* ── Sign-in state ── */
   const [signinLoading, setSigninLoading] = useState(false);
