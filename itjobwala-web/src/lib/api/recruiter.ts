@@ -26,7 +26,7 @@ export interface RecruiterSignupRequest {
 }
 
 export async function signupRecruiter(data: RecruiterSignupRequest): Promise<{ token?: string }> {
-  const res = await apiClient.post<any>('/recruiter/signup', data);
+  const res = await apiClient.post<any>('/auth/recruiter/signup', data);
   const token = res.data.token;
   if (token) {
     localStorage.setItem('recruiter_token', token);
