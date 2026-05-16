@@ -415,7 +415,7 @@ export default function RecruiterLoginPage() {
                     </div>
 
                     {signupStep === 'form' ? (
-                    <form onSubmit={handleSignupFormSubmit} noValidate className="fade-up d1">
+                      <form onSubmit={handleSignupFormSubmit} noValidate className="fade-up d1">
                       <Field
                         label="Company Name" id="su-name" placeholder="e.g. Razorpay"
                         value={signupForm.name} onChange={v => setSignup('name', v)} error={signupErrors.name}
@@ -496,9 +496,9 @@ export default function RecruiterLoginPage() {
                         Looking for a job?{' '}
                         <Link href="/signup" className="font-bold" style={{ color: PRIMARY, textDecoration: 'none' }}>Sign up as candidate</Link>
                       </p>
-                    </form>
+                      </form>
                     ) : (
-                    <form onSubmit={handleOTPVerification} noValidate className="fade-up d1">
+                      <form onSubmit={handleOTPVerification} noValidate className="fade-up d1">
                       <Field
                         label="Verification Code"
                         id="otp-code"
@@ -534,7 +534,7 @@ export default function RecruiterLoginPage() {
                       >
                         ← Back to form
                       </button>
-                    </form>
+                      </form>
                     )}
                   </>
                 )}
