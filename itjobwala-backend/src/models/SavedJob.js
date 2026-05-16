@@ -15,8 +15,7 @@ class SavedJob extends Model {
         id: { type: 'integer' },
         user_id: { type: 'integer' },
         job_id: { type: 'integer' },
-        created_at: { type: 'string' },
-        updated_at: { type: 'string' }
+        saved_at: { type: 'string' }
       }
     };
   }

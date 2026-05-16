@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Field from '@/src/components/Field';
 import PasswordField from '@/src/components/PasswordField';
 import { PRIMARY } from '@/src/lib/constants';
-import { signinRecruiter, signupRecruiter, sendRecruiterSignupOTP, verifyRecruiterSignupOTP } from '@/src/lib/api';
+import { signinRecruiter, signupRecruiter } from '@/src/lib/api';
 
 type Tab = 'signin' | 'signup';
 type SignupForm = { name: string; email: string; password: string; terms: boolean };
@@ -177,10 +177,6 @@ export default function RecruiterLoginPage() {
   const [signupApiError, setSignupApiError] = useState('');
   const [signupLoading, setSignupLoading] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
-  const [signupStep, setSignupStep] = useState<'form' | 'otp'>('form');
-  const [otpCode, setOtpCode] = useState('');
-  const [otpError, setOtpError] = useState('');
-  const [otpLoading, setOtpLoading] = useState(false);
 
   function switchTab(t: Tab) {
     setTab(t);
@@ -218,7 +214,7 @@ export default function RecruiterLoginPage() {
     setSignupApiError('');
   }
 
-  async function handleSignupFormSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSignup(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const errs: SignupErrors = {};
     if (!signupForm.name.trim()) errs.name = 'Company name is required';
@@ -230,37 +226,17 @@ export default function RecruiterLoginPage() {
     setSignupLoading(true);
     setSignupApiError('');
     try {
-      await sendRecruiterSignupOTP(signupForm.email.trim());
-      setSignupStep('otp');
-    } catch (err) {
-      setSignupApiError(err instanceof Error ? err.message : 'Failed to send OTP. Please try again.');
-    } finally {
-      setSignupLoading(false);
-    }
-  }
-
-  async function handleOTPVerification(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    if (!otpCode.trim()) { setOtpError('Enter the OTP code'); return; }
-
-    setOtpLoading(true);
-    setOtpError('');
-    try {
-      const result = await verifyRecruiterSignupOTP(signupForm.email.trim(), otpCode.trim());
-      if (!result.valid) throw new Error('Invalid OTP code. Please try again.');
-
       await signupRecruiter({
         company_name: signupForm.name.trim(),
         email: signupForm.email.trim(),
         password: signupForm.password,
-        terms_accepted: signupForm.terms,
-        otp_code: otpCode.trim()
+        terms_accepted: signupForm.terms
       });
       setSignupSuccess(true);
     } catch (err) {
-      setOtpError(err instanceof Error ? err.message : 'Verification failed. Please try again.');
+      setSignupApiError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
     } finally {
-      setOtpLoading(false);
+      setSignupLoading(false);
     }
   }
 
@@ -414,18 +390,12 @@ export default function RecruiterLoginPage() {
                   <>
                     <div className="fade-up">
                       <h1 className="font-extrabold text-[#0f172a] mb-1.5 text-2xl sm:text-[28px]" style={{ letterSpacing: -0.8 }}>
-                        {signupStep === 'form' ? 'Create recruiter account' : 'Verify your email'}
+                        Create recruiter account
                       </h1>
-                      <p className="text-sm text-gray-500 mb-6">
-                        {signupStep === 'form'
-                          ? 'Post a free job and reach thousands of IT professionals.'
-                          : `We've sent a verification code to ${signupForm.email}`
-                        }
-                      </p>
+                      <p className="text-sm text-gray-500 mb-6">Post a free job and reach thousands of IT professionals.</p>
                     </div>
 
-                    {signupStep === 'form' ? (
-                      <form onSubmit={handleSignupFormSubmit} noValidate className="fade-up d1">
+                    <form onSubmit={handleSignup} noValidate className="fade-up d1">
                       <Field
                         label="Company Name" id="su-name" placeholder="e.g. Razorpay"
                         value={signupForm.name} onChange={v => setSignup('name', v)} error={signupErrors.name}
@@ -480,8 +450,8 @@ export default function RecruiterLoginPage() {
                         onMouseLeave={e => { if (!signupLoading) e.currentTarget.style.background = PRIMARY; }}
                       >
                         {signupLoading
-                          ? <><div className="w-[18px] h-[18px] border-[2.5px] border-white/40 border-t-white rounded-full animate-spin" /> Sending OTP…</>
-                          : 'Continue →'
+                          ? <><div className="w-[18px] h-[18px] border-[2.5px] border-white/40 border-t-white rounded-full animate-spin" /> Creating account…</>
+                          : 'Create recruiter account →'
                         }
                       </button>
 
@@ -506,46 +476,7 @@ export default function RecruiterLoginPage() {
                         Looking for a job?{' '}
                         <Link href="/signup" className="font-bold" style={{ color: PRIMARY, textDecoration: 'none' }}>Sign up as candidate</Link>
                       </p>
-                      </form>
-                    ) : (
-                      <form onSubmit={handleOTPVerification} noValidate className="fade-up d1">
-                      <Field
-                        label="Verification Code"
-                        id="otp-code"
-                        placeholder="Enter 6-digit code from your email"
-                        value={otpCode}
-                        onChange={v => { setOtpCode(v); setOtpError(''); }}
-                        error={otpError}
-                        icon={<svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 9l6 4 6-4"/></svg>}
-                      />
-
-                      <button
-                        type="submit" disabled={otpLoading}
-                        className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-[15px] transition-all duration-200 mb-4"
-                        style={{
-                          padding: 15,
-                          cursor: otpLoading ? 'not-allowed' : 'pointer',
-                          background: otpLoading ? '#93aef5' : PRIMARY,
-                          boxShadow: otpLoading ? 'none' : `0 4px 20px ${PRIMARY}44`,
-                        }}
-                        onMouseEnter={e => { if (!otpLoading) e.currentTarget.style.background = '#0d3fd4'; }}
-                        onMouseLeave={e => { if (!otpLoading) e.currentTarget.style.background = PRIMARY; }}
-                      >
-                        {otpLoading
-                          ? <><div className="w-[18px] h-[18px] border-[2.5px] border-white/40 border-t-white rounded-full animate-spin" /> Verifying…</>
-                          : 'Verify & Create Account →'
-                        }
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => { setSignupStep('form'); setOtpCode(''); setOtpError(''); }}
-                        className="w-full text-center text-[13px] font-semibold py-2 text-gray-600 hover:text-gray-900 transition-colors"
-                      >
-                        ← Back to form
-                      </button>
-                      </form>
-                    )}
+                    </form>
                   </>
                 )}
               </>

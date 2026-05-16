@@ -7,8 +7,8 @@ export const getSavedJobs = async (request, reply) => {
 
     const query = SavedJob.query().where('user_id', userId).withGraphFetched('job.recruiter');
 
-    if (sort === 'newest') query.orderBy('created_at', 'desc');
-    else query.orderBy('created_at', 'asc');
+    if (sort === 'newest') query.orderBy('saved_at', 'desc');
+    else query.orderBy('saved_at', 'asc');
 
     const pageIndex = Math.max(0, parseInt(page, 10) - 1);
     const pageSize = Math.max(1, parseInt(limit, 10) || 10);
@@ -32,7 +32,7 @@ export const getSavedJobs = async (request, reply) => {
           work_mode: save.job?.work_mode || 'onsite',
           job_type: save.job?.job_type || 'full-time',
           is_active: save.job?.status === 'active',
-          saved_at: save.created_at
+          saved_at: save.saved_at
         })),
         pagination: {
           page: pageIndex + 1,
