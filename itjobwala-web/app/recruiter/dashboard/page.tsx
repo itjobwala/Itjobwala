@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import RecruiterDashboardPage from '@/src/components/recruiter/RecruiterDashboardPage';
+import ProtectedRecruiterRoute from '@/src/components/auth/ProtectedRecruiterRoute';
 
 export const metadata: Metadata = {
   title: 'Recruiter Dashboard – itJobwala',
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function Page() {
-  return <RecruiterDashboardPage />;
+  return (
+    <ProtectedRecruiterRoute>
+      <RecruiterDashboardPage />
+    </ProtectedRecruiterRoute>
+  );
 }
