@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${sora.variable} ${plusJakarta.variable}`}>
+    <html lang="en" data-scroll-behavior="smooth" className={`${sora.variable} ${plusJakarta.variable}`}>
       <body className="bg-white text-[#0f172a] min-h-screen" suppressHydrationWarning>
         <RootProvider>{children}</RootProvider>
       </body>

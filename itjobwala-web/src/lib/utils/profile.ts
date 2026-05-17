@@ -95,8 +95,8 @@ export function buildProfileUpdatePayload(
   switch (activeModal) {
     case 'personal-info':
       return {
-        first_name: draft.profile?.firstName ?? profile.first_name,
-        last_name: draft.profile?.lastName ?? profile.last_name,
+        first_name: (() => { const parts = (draft.profile?.fullName ?? '').trim().split(' '); return parts[0] || profile.first_name; })(),
+        last_name: (() => { const parts = (draft.profile?.fullName ?? '').trim().split(' '); return parts.slice(1).join(' ') || profile.last_name; })(),
         email: draft.profile?.email ?? profile.email,
         title: draft.profile?.title ?? profile.title,
         phone: draft.profile?.phone ?? profile.phone,
@@ -191,7 +191,9 @@ export function buildProfileUpdatePayload(
         location: profile.location,
         experience_years: profile.experience_years,
         current_salary: profile.current_salary,
-        expected_salary: draft.careerProfile?.expected_salary || profile.expected_salary,
+        expected_salary: draft.careerProfile?.expected_salary !== '' && draft.careerProfile?.expected_salary != null
+          ? Number(draft.careerProfile.expected_salary)
+          : (profile.expected_salary ?? null),
         work_status: profile.work_status,
         availability_to_join: profile.availability_to_join,
         open_to_work: profile.open_to_work,
@@ -224,7 +226,8 @@ export function buildProfileUpdatePayload(
           marital_status: draft.personalDetails?.marital_status ?? profile.personal_details?.marital_status ?? '',
           date_of_birth: draft.personalDetails?.date_of_birth ?? profile.personal_details?.date_of_birth ?? '',
           category: draft.personalDetails?.category ?? profile.personal_details?.category ?? '',
-          work_permit: draft.personalDetails?.work_permit ?? profile.personal_details?.work_permit ?? '',
+          authorized_to_work_in_us: draft.personalDetails?.authorized_to_work_in_us ?? profile.personal_details?.authorized_to_work_in_us ?? false,
+          work_permit_other_countries: draft.personalDetails?.work_permit_other_countries ?? profile.personal_details?.work_permit_other_countries ?? false,
           address: draft.personalDetails?.address ?? profile.personal_details?.address ?? '',
           languages: (draft.personalDetails?.languages || []).filter((lang: any) => lang.name?.trim?.()),
         },

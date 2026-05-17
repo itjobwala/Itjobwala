@@ -14,12 +14,25 @@ function hashColor(str: string): string {
   return COLOR_CLASSES[h % COLOR_CLASSES.length];
 }
 
+function formatLpa(val: number): string {
+  return val % 1 === 0 ? String(Math.round(val)) : val.toFixed(1);
+}
+
+function salaryLabel(min?: number, max?: number): string {
+  const minLpa = (min ?? 0) / 100000;
+  const maxLpa = (max ?? 0) / 100000;
+  if (minLpa === 0 && maxLpa === 0) return '0 LPA';
+  return `${formatLpa(minLpa)}–${formatLpa(maxLpa)} LPA`;
+}
+
 interface Props {
   jobs: SavedJob[];
+  total?: number;
+  hasMore?: boolean;
   onUnsave?: (jobId: string) => void;
 }
 
-export default function SavedJobsCard({ jobs: initialJobs, onUnsave }: Props) {
+export default function SavedJobsCard({ jobs: initialJobs, total, hasMore, onUnsave }: Props) {
   const [localIds, setLocalIds] = useState<Set<string>>(new Set());
 
   const visible = initialJobs.filter(j => !localIds.has(j.id));
@@ -33,7 +46,7 @@ export default function SavedJobsCard({ jobs: initialJobs, onUnsave }: Props) {
     <div className="bg-white rounded-2xl border border-gray-100 p-5">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-[14px] font-extrabold text-[#0f172a]">Saved jobs</h3>
-        <span className="text-[12px] text-gray-400">{visible.length} saved</span>
+        <span className="text-[12px] text-gray-400">{total ?? visible.length} saved</span>
       </div>
 
       {visible.length === 0 ? (
@@ -49,20 +62,29 @@ export default function SavedJobsCard({ jobs: initialJobs, onUnsave }: Props) {
       ) : (
         <div className="flex flex-col gap-1">
           {visible.map(job => {
-            const logo  = (job.company_logo || job.company[0] || '?').slice(0, 1).toUpperCase();
+            const logoUrl = job.company_logo || null;
+            const logoFallback = (job.company?.[0] || '?').toUpperCase();
             const color = job.company_color_class ?? hashColor(job.company);
             return (
               <div key={job.id} className="group flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 transition-colors">
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-extrabold text-sm shrink-0 ${color}`}>
-                  {logo}
-                </div>
+                {logoUrl ? (
+                  <img
+                    src={logoUrl}
+                    alt={job.company}
+                    className="w-8 h-8 rounded-lg object-contain bg-white border border-gray-100 shrink-0"
+                  />
+                ) : (
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-extrabold text-sm shrink-0 ${color}`}>
+                    {logoFallback}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <Link href={`/jobs/${job.job_id}`} className="text-[12px] font-bold text-[#0f172a] truncate block hover:text-primary transition-colors">
                     {job.title}
                   </Link>
                   <p className="text-[11px] text-gray-400">
                     {job.company}
-                    {(job.salary_min || job.salary_max) && ` · ₹${job.salary_min ?? 0}–${job.salary_max ?? 0} LPA`}
+                    {` · ₹${salaryLabel(job.salary_min, job.salary_max)}`}
                   </p>
                 </div>
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -85,6 +107,18 @@ export default function SavedJobsCard({ jobs: initialJobs, onUnsave }: Props) {
             );
           })}
         </div>
+      )}
+
+      {hasMore && (
+        <Link
+          href="/saved-jobs"
+          className="mt-3 flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl border border-gray-100 text-[12px] font-bold text-primary hover:bg-primary/5 transition-colors"
+        >
+          View all {total} saved jobs
+          <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <path d="M5 12h14M12 5l7 7-7 7" />
+          </svg>
+        </Link>
       )}
     </div>
   );

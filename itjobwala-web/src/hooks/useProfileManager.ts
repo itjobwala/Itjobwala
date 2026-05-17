@@ -50,8 +50,7 @@ export function useProfileManager(profile: CandidateProfile | null | undefined) 
 
     setDraft({
       profile: {
-        firstName: profile.first_name || '',
-        lastName: profile.last_name || '',
+        fullName: [profile.first_name, profile.last_name].filter(Boolean).join(' ') || profile.name || '',
         name: profile.name || '',
         title: profile.title || '',
         experienceYears: profile.experience_years?.toString() || '',
@@ -84,7 +83,8 @@ export function useProfileManager(profile: CandidateProfile | null | undefined) 
         marital_status: profile.personal_details?.marital_status || '',
         date_of_birth: profile.personal_details?.date_of_birth || '',
         category: profile.personal_details?.category || '',
-        work_permit: profile.personal_details?.work_permit || '',
+        authorized_to_work_in_us: profile.personal_details?.authorized_to_work_in_us ?? false,
+        work_permit_other_countries: profile.personal_details?.work_permit_other_countries ?? false,
         address: profile.personal_details?.address || '',
         languages: profile.personal_details?.languages || [],
       },

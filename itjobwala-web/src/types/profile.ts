@@ -83,7 +83,8 @@ export interface PersonalDetails {
   marital_status?: string;
   date_of_birth?:  string;
   category?:       string;
-  work_permit?:    string;
+  authorized_to_work_in_us?:    boolean;
+  work_permit_other_countries?: boolean;
   address?:        string;
   languages?:      Language[];
 }

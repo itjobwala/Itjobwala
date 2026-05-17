@@ -31,10 +31,11 @@ export function useMyApplicationsQuery(params: {
   page?:   number;
   limit?:  number;
   status?: string;
-} = {}) {
+} = {}, enabled = true) {
   return useQuery({
     queryKey: applicationKeys.list(params),
     queryFn:  () => getMyApplications(params),
+    enabled,
   });
 }
 
@@ -42,10 +43,11 @@ export function useMyApplicationsInfiniteQuery(params: {
   limit?:  number;
   status?: string;
   sort?:   string;
-} = {}) {
+} = {}, enabled = true) {
   return useInfiniteQuery({
     queryKey: ['applications', 'infinite', params],
     queryFn:  ({ pageParam = 1 }) => getMyApplications({ ...params, page: pageParam, limit: params.limit ?? 20 }),
+    enabled,
     getNextPageParam: (lastPage) => {
       if (lastPage.pagination.has_next) {
         return lastPage.pagination.page + 1;
@@ -83,20 +85,25 @@ export function useWithdrawApplicationMutation() {
 
 // ── Saved Jobs ────────────────────────────────────────────────────────────────
 
-export function useSavedJobsQuery(params: { page?: number; limit?: number } = {}) {
+export function useSavedJobsQuery(
+  params: { page?: number; limit?: number } = {},
+  enabled = true,
+) {
   return useQuery({
     queryKey: savedJobKeys.list(params),
     queryFn:  () => getSavedJobs(params),
+    enabled,
   });
 }
 
 export function useSavedJobsInfiniteQuery(params: {
   limit?:  number;
   sort?:   string;
-} = {}) {
+} = {}, enabled = true) {
   return useInfiniteQuery({
     queryKey: ['savedJobs', 'infinite', params],
     queryFn:  ({ pageParam = 1 }) => getSavedJobs({ ...params, page: pageParam, limit: params.limit ?? 20 }),
+    enabled,
     getNextPageParam: (lastPage) => {
       if (lastPage.pagination.has_next) {
         return lastPage.pagination.page + 1;

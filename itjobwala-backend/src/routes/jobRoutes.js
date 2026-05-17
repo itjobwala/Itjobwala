@@ -15,7 +15,7 @@ export default async function jobRoutes(fastify, options) {
   // Module 2 APIs
   fastify.get('/jobs', getJobs);
   fastify.get('/jobs/categories', getJobCategories);
-  fastify.get('/jobs/recommended', { preValidation: [fastify.requireCandidate] }, getRecommendedJobs);
+  fastify.get('/jobs/recommended', getRecommendedJobs);
   fastify.get('/jobs/featured', getFeaturedJobs);
   fastify.get('/jobs/:job_id/similar', { schema: paramSchema }, getSimilarJobs);
   fastify.get('/jobs/:job_id/similar-companies', { schema: paramSchema }, getSimilarCompanies);

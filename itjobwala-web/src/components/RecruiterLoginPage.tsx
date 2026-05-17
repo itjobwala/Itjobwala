@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, type FormEvent } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, type FormEvent } from 'react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Field from '@/src/components/Field';
 import PasswordField from '@/src/components/PasswordField';
@@ -150,19 +150,8 @@ function LeftPanel({ tab }: { tab: Tab }) {
 }
 
 export default function RecruiterLoginPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const [tab, setTab] = useState<Tab>('signin');
-
-  // Sync tab with URL search params
-  useEffect(() => {
-    const tabParam = searchParams.get('tab');
-    if (tabParam === 'signup') {
-      setTab('signup');
-    } else {
-      setTab('signin');
-    }
-  }, [searchParams]);
+  const [tab, setTab] = useState<Tab>(() => searchParams.get('tab') === 'signup' ? 'signup' : 'signin');
 
   /* ── Sign-in state ── */
   const [signinLoading, setSigninLoading] = useState(false);
@@ -199,7 +188,11 @@ export default function RecruiterLoginPage() {
     setLoginApiError('');
     try {
       await signinRecruiter({ email: loginForm.email.trim(), password: loginForm.password });
-      window.location.href = '/recruiter/dashboard';
+      const next = searchParams.get('next');
+      const safeDest = next && next.startsWith('/recruiter') && !next.startsWith('//') && !next.startsWith('/recruiter/login')
+        ? next
+        : '/recruiter/dashboard';
+      window.location.href = safeDest;
     } catch (err) {
       setLoginApiError(err instanceof Error ? err.message : 'Sign in failed. Please try again.');
       setSigninLoading(false);
@@ -236,7 +229,11 @@ export default function RecruiterLoginPage() {
       // Auto sign in after successful signup
       try {
         await signinRecruiter({ email: signupForm.email.trim(), password: signupForm.password });
-        window.location.href = '/recruiter/dashboard';
+        const next = searchParams.get('next');
+        const safeDest = next && next.startsWith('/recruiter') && !next.startsWith('//') && !next.startsWith('/recruiter/login')
+          ? next
+          : '/recruiter/dashboard';
+        window.location.href = safeDest;
       } catch {
         // Sign in failed — switch to sign in tab with email prefilled
         setTab('signin');

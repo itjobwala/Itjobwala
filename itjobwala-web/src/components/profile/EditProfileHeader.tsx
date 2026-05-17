@@ -3,8 +3,7 @@
 import { useRef } from 'react';
 
 export interface EditableProfile {
-  firstName: string;
-  lastName: string;
+  fullName: string;
   title: string;
   experienceYears: string;
   expectedSalary: string;
@@ -64,23 +63,14 @@ function Field({
 export default function EditProfileHeader({ profile, onChange, profilePhotoUrl }: Props) {
   const avatarRef = useRef<HTMLInputElement>(null);
   
-  const firstLetter = profile.firstName?.[0] || '';
-  const lastLetter = profile.lastName?.[0] || '';
-  let initials = `${firstLetter}${lastLetter}`.toUpperCase();
-  
-  if (!initials && profile.name) {
-    initials = profile.name
-      .split(' ')
-      .filter(Boolean)
-      .map(w => w[0])
-      .join('')
-      .substring(0, 2)
-      .toUpperCase();
-  }
-  
-  if (!initials) {
-    initials = profile.email?.substring(0, 2).toUpperCase() || 'US';
-  }
+  const initials = (profile.fullName || profile.name || profile.email || 'US')
+    .trim()
+    .split(' ')
+    .filter(Boolean)
+    .map((w: string) => w[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
 
   function update<K extends keyof EditableProfile>(key: K, value: EditableProfile[K]) {
     onChange({ ...profile, [key]: value });
@@ -127,11 +117,8 @@ export default function EditProfileHeader({ profile, onChange, profilePhotoUrl }
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          <Field label="First name" value={profile.firstName} onChange={value => update('firstName', value)} />
-          <Field label="Last name" value={profile.lastName} onChange={value => update('lastName', value)} />
-          <div className="sm:col-span-2">
-            <Field label="Current role / title" value={profile.title} onChange={value => update('title', value)} />
-          </div>
+          <Field label="Full name" value={profile.fullName} onChange={value => update('fullName', value)} />
+          <Field label="Current role / title" value={profile.title} onChange={value => update('title', value)} />
           <Field label="Experience (Years)" value={profile.experienceYears} onChange={value => update('experienceYears', value)} type="number" />
           <Field label="Location" value={profile.location} onChange={value => update('location', value)} />
           <Field label="Current Salary" value={profile.currentSalary || ''} onChange={value => update('currentSalary', value)} type="number" placeholder="e.g. 80000" />

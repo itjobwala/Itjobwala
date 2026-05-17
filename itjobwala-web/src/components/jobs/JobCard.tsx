@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import CompanyLogo from './CompanyLogo';
 import type { Job } from './types';
 
 interface Props {
@@ -66,6 +67,19 @@ const JOB_TYPE_LABEL: Record<Job['jobType'], string> = {
   internship: 'Internship',
 };
 
+function formatLpa(val: string | number): string {
+  const n = parseFloat(String(val));
+  if (isNaN(n)) return '0';
+  return n % 1 === 0 ? String(Math.round(n)) : n.toFixed(1);
+}
+
+function salaryLabel(lpaMin: string, lpaMax: string): string {
+  const min = parseFloat(lpaMin);
+  const max = parseFloat(lpaMax);
+  if (min === 0 && max === 0) return '0 LPA';
+  return `${formatLpa(min)}–${formatLpa(max)} LPA`;
+}
+
 function postedLabel(days: number) {
   if (days === 0) return 'Today';
   if (days === 1) return '1d ago';
@@ -73,8 +87,13 @@ function postedLabel(days: number) {
 }
 
 export default function JobCard({ job, onSave, onUnsave, initialSaved = false }: Props) {
+  const router = useRouter();
   const [saved, setSaved] = useState(initialSaved);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setSaved(initialSaved);
+  }, [initialSaved]);
 
   const handleSaveClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
@@ -94,12 +113,10 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false }:
   };
 
   return (
-    <Link href={`/jobs/${job.id}`} className="group bg-white rounded-2xl border border-gray-100 hover:border-primary/40 hover:shadow-lg transition-all duration-200 cursor-pointer p-5 sm:p-6 block">
+    <div onClick={() => router.push(`/jobs/${job.id}`)} className="group bg-white rounded-2xl border border-gray-100 hover:border-primary/40 hover:shadow-lg transition-all duration-200 cursor-pointer p-5 sm:p-6">
       <div className="flex items-start gap-4">
         {/* Company logo */}
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shrink-0 ${job.companyColorClass}`}>
-          {job.companyLogo}
-        </div>
+        <CompanyLogo name={job.company} logo={job.companyLogo} colorClass={job.companyColorClass} />
 
         {/* Main content */}
         <div className="flex-1 min-w-0">
@@ -147,10 +164,13 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false }:
               <MapPinIcon /> {job.location}
             </span>
             <span className="flex items-center gap-1.5">
-              <BriefcaseIcon /> {job.experienceMin}–{job.experienceMax} yrs
+              <BriefcaseIcon />
+              {job.experienceMin === 0 && job.experienceMax === 0
+                ? '0 yrs'
+                : `${job.experienceMin}–${job.experienceMax} yrs`}
             </span>
             <span className="flex items-center gap-1.5">
-              <IndianRupeeIcon /> {job.salaryMin}–{job.salaryMax} LPA
+              <IndianRupeeIcon /> {salaryLabel(job.salaryLpaMin, job.salaryLpaMax)}
             </span>
             <span className="flex items-center gap-1.5">
               <ClockIcon /> {postedLabel(job.postedDaysAgo)}
@@ -184,6 +204,6 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false }:
           View job →
         </span>
       </div>
-    </Link>
+    </div>
   );
 }

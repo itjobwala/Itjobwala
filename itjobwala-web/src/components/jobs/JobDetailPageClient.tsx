@@ -10,20 +10,10 @@ import SimilarCompanies from './SimilarCompanies';
 import ProfileCompletionCard from './ProfileCompletionCard';
 import JobDetailSkeleton from './JobDetailSkeleton';
 import { useSaveJobMutation, useUnsaveJobMutation } from '@/src/hooks/useApplications';
-import { useRecommendedJobsQuery } from '@/src/hooks/useJobs';
-import { getSimilarCompanies } from '@/src/lib/api/jobs';
+import { useRecommendedJobsQuery, useSimilarCompaniesQuery } from '@/src/hooks/useJobs';
 import { applyToJob } from '@/src/lib/api/applications';
 import { normalizeJob } from './types';
 import type { JobDetail } from './types';
-
-interface Company {
-  id: string;
-  name: string;
-  industry: string;
-  logo: string;
-  open_roles: number;
-  hiring_status: boolean;
-}
 
 interface Props {
   job: JobDetail;
@@ -33,27 +23,18 @@ export default function JobDetailPageClient({ job }: Props) {
   const saveJobMutation = useSaveJobMutation();
   const unsaveJobMutation = useUnsaveJobMutation();
   const [loading, setLoading] = useState(true);
-  const [companies, setCompanies] = useState<Company[]>([]);
   const [applied, setApplied] = useState(job.hasApplied ?? false);
   const [saved, setSaved] = useState(job.isSaved ?? false);
   const [showAppliedToast, setShowAppliedToast] = useState(false);
 
   const { data: recommendedJobs = [] } = useRecommendedJobsQuery();
+  const { data: companies = [] } = useSimilarCompaniesQuery(job.id, 5);
   const recommended = recommendedJobs.map(normalizeJob);
 
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 700);
     return () => clearTimeout(t);
   }, []);
-
-  useEffect(() => {
-    getSimilarCompanies(job.id, 5)
-      .then(setCompanies)
-      .catch(error => {
-        console.error('[JobDetailPageClient] Failed to fetch similar companies:', error);
-        setCompanies([]);
-      });
-  }, [job.id]);
 
   async function handleApply() {
     if (applied) return;
@@ -83,18 +64,7 @@ export default function JobDetailPageClient({ job }: Props) {
       <SmartNavbar />
 
       <div className="pt-[68px]">
-        {/* Page header bar */}
-        <div className="bg-white border-b border-gray-100">
-          <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-5">
-            <p className="text-[13px] text-gray-400">
-              <span className="font-semibold text-[#0f172a]">itJobwala</span>
-              {' '}/ Jobs /{' '}
-              <span className="text-primary font-semibold">{loading ? '...' : job.title}</span>
-            </p>
-          </div>
-        </div>
-
-        <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
+<div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
           {loading ? (
             <JobDetailSkeleton />
           ) : (

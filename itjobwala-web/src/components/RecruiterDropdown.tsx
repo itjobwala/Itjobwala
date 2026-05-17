@@ -4,7 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { PRIMARY } from '@/src/lib/constants';
-import { safeLocalStorageGetItem, safeLocalStorageRemoveItem } from '@/src/lib/hydration-safe';
+import { safeLocalStorageGetItem } from '@/src/lib/hydration-safe';
+import { clearRecruiterAuth, decodeJwtPayload } from '@/src/lib/auth';
 
 export default function RecruiterDropdown() {
   const [open, setOpen] = useState(false);
@@ -13,7 +14,12 @@ export default function RecruiterDropdown() {
   const router = useRouter();
 
   useEffect(() => {
-    const check = () => setIsRecruiterLoggedIn(!!safeLocalStorageGetItem('recruiter_token'));
+    const check = () => {
+      const token = safeLocalStorageGetItem('recruiter_token');
+      const payload = token ? decodeJwtPayload(token) : null;
+      const isExpired = payload?.exp ? Date.now() / 1000 >= payload.exp : false;
+      setIsRecruiterLoggedIn(Boolean(token && payload && payload.role?.toLowerCase() === 'recruiter' && !isExpired));
+    };
     check();
     window.addEventListener('auth-changed', check);
     return () => window.removeEventListener('auth-changed', check);
@@ -28,9 +34,7 @@ export default function RecruiterDropdown() {
   }, []);
 
   function handleLogout() {
-    safeLocalStorageRemoveItem('recruiter_token');
-    safeLocalStorageRemoveItem('itjobwala_auth');
-    document.cookie = 'recruiter_token=; path=/; max-age=0; SameSite=Lax';
+    clearRecruiterAuth();
     setIsRecruiterLoggedIn(false);
     setOpen(false);
     router.push('/recruiter/login');

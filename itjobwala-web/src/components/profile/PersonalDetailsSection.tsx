@@ -17,6 +17,11 @@ function ReadOnlyField({ label, value }: { label: string; value: string }) {
   );
 }
 
+const PERMIT_QUESTIONS = [
+  { key: 'authorized_to_work_in_us' as const,   label: 'Authorized to work in US' },
+  { key: 'work_permit_other_countries' as const, label: 'Work permit for other countries' },
+];
+
 function CheckIcon({ checked }: { checked: boolean }) {
   return checked ? (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="3">
@@ -30,7 +35,7 @@ function CheckIcon({ checked }: { checked: boolean }) {
 }
 
 export default function PersonalDetailsSection({ personalDetails, onEdit, onAdd }: Props) {
-  const hasContent = personalDetails && (Object.values(personalDetails).some(val => val && (!Array.isArray(val) || val.length > 0)));
+  const hasContent = personalDetails && Object.values(personalDetails).some(val => val !== null && val !== undefined && val !== '' && (!Array.isArray(val) || val.length > 0));
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8 relative group">
@@ -50,7 +55,7 @@ export default function PersonalDetailsSection({ personalDetails, onEdit, onAdd 
       </div>
 
       {!hasContent ? (
-        <button 
+        <button
           onClick={onAdd}
           className="w-full flex flex-col items-center justify-center py-8 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 hover:border-primary/40 hover:text-primary transition-colors"
         >
@@ -58,27 +63,48 @@ export default function PersonalDetailsSection({ personalDetails, onEdit, onAdd 
         </button>
       ) : (
         <div className="flex flex-col gap-6">
+          {/* Basic fields */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <ReadOnlyField label="Gender" value={personalDetails?.gender || ''} />
             <ReadOnlyField label="Marital status" value={personalDetails?.marital_status || ''} />
             <ReadOnlyField label="Date of birth" value={personalDetails?.date_of_birth || ''} />
             <ReadOnlyField label="Category" value={personalDetails?.category || ''} />
             <div className="sm:col-span-2">
-              <ReadOnlyField label="Work permit" value={personalDetails?.work_permit || 'Not specified'} />
-            </div>
-            <div className="sm:col-span-2">
               <ReadOnlyField label="Address" value={personalDetails?.address || ''} />
             </div>
           </div>
 
+          {/* Work permit */}
+          <div>
+            <span className="block text-[12px] font-bold text-gray-500 mb-2">Work permit</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {PERMIT_QUESTIONS.map(({ key, label }) => {
+                const val = personalDetails?.[key];
+                return (
+                  <div key={key} className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 flex items-center justify-between">
+                    <span className="text-[13px] font-medium text-[#0f172a]">{label}</span>
+                    {val === undefined || val === null ? (
+                      <span className="text-[12px] text-gray-400">Not specified</span>
+                    ) : (
+                      <span className={`text-[11px] font-bold rounded-full px-2.5 py-0.5 ${val ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-500'}`}>
+                        {val ? 'Yes' : 'No'}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Languages */}
           {personalDetails?.languages && personalDetails.languages.filter(l => l.name?.trim?.() !== '').length > 0 && (
-            <div className="mt-2">
+            <div>
               <h3 className="text-[13px] font-bold text-[#0f172a] mb-3">Languages</h3>
               <div className="rounded-xl border border-gray-100 overflow-hidden">
                 <table className="w-full text-left text-[12px]">
                   <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 font-semibold">
                     <tr>
-                      <th className="px-4 py-2.5">Languages</th>
+                      <th className="px-4 py-2.5">Language</th>
                       <th className="px-4 py-2.5">Proficiency</th>
                       <th className="px-4 py-2.5 text-center">Read</th>
                       <th className="px-4 py-2.5 text-center">Write</th>
@@ -88,8 +114,8 @@ export default function PersonalDetailsSection({ personalDetails, onEdit, onAdd 
                   <tbody className="divide-y divide-gray-100">
                     {personalDetails.languages.filter(l => l.name?.trim?.() !== '').map(lang => (
                       <tr key={lang.id} className="bg-white">
-                        <td className="px-4 py-3 font-medium text-[#0f172a]">{lang.name}</td>
-                        <td className="px-4 py-3 text-gray-600">{lang.proficiency || ''}</td>
+                        <td className="px-4 py-3 font-medium text-[#0f172a] capitalize">{lang.name}</td>
+                        <td className="px-4 py-3 text-gray-600 capitalize">{lang.proficiency || ''}</td>
                         <td className="px-4 py-3 text-center"><div className="flex justify-center"><CheckIcon checked={lang.read || false} /></div></td>
                         <td className="px-4 py-3 text-center"><div className="flex justify-center"><CheckIcon checked={lang.write || false} /></div></td>
                         <td className="px-4 py-3 text-center"><div className="flex justify-center"><CheckIcon checked={lang.speak || false} /></div></td>

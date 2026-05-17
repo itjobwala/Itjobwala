@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import CompanyLogo from './CompanyLogo';
 import type { Job } from './types';
 
 export default function RecommendedJobCard({ job }: { job: Job }) {
@@ -7,9 +8,13 @@ export default function RecommendedJobCard({ job }: { job: Job }) {
       href={`/jobs/${job.id}`}
       className="group flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100"
     >
-      <div className={`w-9 h-9 rounded-lg flex items-center justify-center text-white font-extrabold text-sm shrink-0 ${job.companyColorClass}`}>
-        {job.companyLogo}
-      </div>
+      <CompanyLogo
+        name={job.company}
+        logo={job.companyLogo}
+        colorClass={job.companyColorClass}
+        className="w-9 h-9 rounded-lg"
+        textClassName="text-sm"
+      />
       <div className="flex-1 min-w-0">
         <p className="text-[13px] font-bold text-[#0f172a] truncate group-hover:text-primary transition-colors">
           {job.title}

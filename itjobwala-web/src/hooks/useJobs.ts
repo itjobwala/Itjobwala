@@ -12,6 +12,7 @@ import {
   getRecommendedJobs,
   getJobById,
   getSimilarJobs,
+  getSimilarCompanies,
   getJobCategories
 } from '@/src/lib/api/jobs';
 import { getHomeStats } from '@/src/lib/api/search';
@@ -25,6 +26,7 @@ export const jobKeys = {
   recommended: () => ['jobs', 'recommended'] as const,
   detail:      (id: string) => ['jobs', 'detail', id] as const,
   similar:     (id: string) => ['jobs', 'similar', id] as const,
+  similarCompanies: (id: string, limit: number) => ['jobs', 'similarCompanies', id, limit] as const,
 };
 
 export function useJobsQuery(filters: JobFilters = {}, enabled = true) {
@@ -79,6 +81,16 @@ export function useSimilarJobsQuery(jobId: string) {
     queryKey: jobKeys.similar(jobId),
     queryFn:  () => getSimilarJobs(jobId),
     enabled:  !!jobId,
+  });
+}
+
+export function useSimilarCompaniesQuery(jobId: string, limit = 5) {
+  return useQuery({
+    queryKey: jobKeys.similarCompanies(jobId, limit),
+    queryFn:  () => getSimilarCompanies(jobId, limit),
+    enabled:  !!jobId,
+    retry: false,
+    staleTime: 5 * 60 * 1000,
   });
 }
 

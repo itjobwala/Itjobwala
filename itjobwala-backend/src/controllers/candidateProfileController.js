@@ -17,8 +17,8 @@ function formatProfile(user) {
     phone: user.mobile,
     location: user.location,
     title: user.title,
-    expected_salary: user.expected_salary,
-    current_salary: user.current_salary,
+    expected_salary: user.expected_salary != null ? parseFloat(user.expected_salary) : null,
+    current_salary: user.current_salary != null ? parseFloat(user.current_salary) : null,
     career_profile: career_profile,
     personal_details: personal_details,
     linked_in: user.linked_in,
@@ -133,15 +133,29 @@ export const updateProfile = async (request, reply) => {
     if (resume_name) updateData.resume_file_name = resume_name;
     
     if (title !== undefined) updateData.title = title;
-    if (expected_salary !== undefined) updateData.expected_salary = String(expected_salary);
-    if (current_salary !== undefined) updateData.current_salary = String(current_salary);
-    if (experience_years !== undefined) updateData.experience_years = parseInt(experience_years, 10);
+    if (expected_salary !== undefined) {
+      updateData.expected_salary = (expected_salary === null || expected_salary === '') ? null : String(expected_salary);
+    }
+    if (current_salary !== undefined) {
+      updateData.current_salary = (current_salary === null || current_salary === '') ? null : String(current_salary);
+    }
+    if (experience_years !== undefined) {
+      if (experience_years === null || experience_years === '') {
+        updateData.experience_years = null;
+      } else {
+        const parsed = parseInt(experience_years, 10);
+        if (!isNaN(parsed)) updateData.experience_years = parsed;
+      }
+    }
     if (work_status) updateData.work_status = work_status;
     if (availability_to_join !== undefined) {
-      // Truncate ISO timestamp to YYYY-MM-DD for database DATE type
-      updateData.availability_to_join = (availability_to_join && availability_to_join.includes('T')) 
-        ? availability_to_join.split('T')[0] 
-        : availability_to_join;
+      if (!availability_to_join) {
+        updateData.availability_to_join = null;
+      } else if (availability_to_join.includes('T')) {
+        updateData.availability_to_join = availability_to_join.split('T')[0];
+      } else {
+        updateData.availability_to_join = availability_to_join;
+      }
     }
     
     // Handle partial updates for JSONB fields
@@ -149,12 +163,18 @@ export const updateProfile = async (request, reply) => {
     
     if (career_profile) {
       const careerObj = typeof career_profile === 'string' ? JSON.parse(career_profile) : career_profile;
-      updateData.career_profile = { ...(existingUser.career_profile || {}), ...careerObj };
+      const existingCareer = typeof existingUser.career_profile === 'string'
+        ? JSON.parse(existingUser.career_profile)
+        : (existingUser.career_profile || {});
+      updateData.career_profile = { ...existingCareer, ...careerObj };
     }
-    
+
     if (personal_details) {
       const personalObj = typeof personal_details === 'string' ? JSON.parse(personal_details) : personal_details;
-      updateData.personal_details = { ...(existingUser.personal_details || {}), ...personalObj };
+      const existingPersonal = typeof existingUser.personal_details === 'string'
+        ? JSON.parse(existingUser.personal_details)
+        : (existingUser.personal_details || {});
+      updateData.personal_details = { ...existingPersonal, ...personalObj };
     }
 
     await User.query().findById(userId).patch(updateData);
@@ -174,31 +194,30 @@ export const uploadResume = async (request, reply) => {
   try {
     const userId = request.user.id;
     const data = await request.file();
-    
+
     if (!data) {
       return reply.status(400).send({ success: false, message: 'No file uploaded' });
     }
 
-    const uploadStream = () => {
-      return new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          {
-            folder: `itjobwala/resumes/cand_${userId}`,
-            resource_type: 'auto',
-            public_id: 'current_resume',
-            overwrite: true,
-            invalidate: true
-          },
-          (error, result) => {
-            if (result) resolve(result);
-            else reject(error);
-          }
-        );
-        data.file.pipe(stream);
-      });
-    };
+    const result = await new Promise((resolve, reject) => {
+      const cloudStream = cloudinary.uploader.upload_stream(
+        {
+          folder: `itjobwala/resumes/cand_${userId}`,
+          resource_type: 'auto',
+          public_id: 'current_resume',
+          overwrite: true,
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          if (!result) return reject(new Error('Cloudinary returned no result'));
+          resolve(result);
+        }
+      );
 
-    const result = await uploadStream();
+      cloudStream.on('error', reject);
+      data.file.on('error', (err) => { cloudStream.destroy(); reject(err); });
+      data.file.pipe(cloudStream);
+    });
     const file_name = data.filename;
     const url = result.secure_url;
     const uploaded_at = new Date().toISOString();
@@ -566,44 +585,39 @@ export const uploadProfilePhoto = async (request, reply) => {
   try {
     const userId = request.user.id;
     const data = await request.file();
-    
+
     if (!data) {
       return reply.status(400).send({ success: false, message: 'No file uploaded' });
     }
 
-    const uploadStream = () => {
-      return new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          {
-            folder: `itjobwala/profile_photos/cand_${userId}`,
-            resource_type: 'image',
-            public_id: 'profile_photo',
-            overwrite: true,
-            invalidate: true,
-            transformation: [
-              { width: 500, height: 500, crop: 'limit' }
-            ]
-          },
-          (error, result) => {
-            if (result) resolve(result);
-            else reject(error);
-          }
-        );
-        data.file.pipe(stream);
-      });
-    };
+    const result = await new Promise((resolve, reject) => {
+      const cloudStream = cloudinary.uploader.upload_stream(
+        {
+          folder: `itjobwala/profile_photos/cand_${userId}`,
+          resource_type: 'image',
+          public_id: 'profile_photo',
+          overwrite: true,
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          if (!result) return reject(new Error('Cloudinary returned no result'));
+          resolve(result);
+        }
+      );
 
-    const result = await uploadStream();
-    const url = result.secure_url;
+      cloudStream.on('error', reject);
+      data.file.on('error', (err) => { cloudStream.destroy(); reject(err); });
+      data.file.pipe(cloudStream);
+    });
 
     await User.query().findById(userId).patch({
-      profile_photo_url: url
+      profile_photo_url: result.secure_url
     });
 
     return reply.status(200).send({
       success: true,
       message: 'Profile photo uploaded successfully.',
-      data: { url }
+      data: { url: result.secure_url }
     });
   } catch (error) {
     request.server.log.error(error);
@@ -625,26 +639,25 @@ export const uploadCertificate = async (request, reply) => {
     const cert = await Certification.query().findOne({ id: certId, user_id: userId });
     if (!cert) return reply.status(404).send({ success: false, message: 'Certification not found.' });
 
-    const uploadStream = () => {
-      return new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          {
-            folder: `itjobwala/certificates/cand_${userId}`,
-            resource_type: 'auto',
-            public_id: `certificate_${certId}`,
-            overwrite: true,
-            invalidate: true
-          },
-          (error, result) => {
-            if (result) resolve(result);
-            else reject(error);
-          }
-        );
-        data.file.pipe(stream);
-      });
-    };
+    const result = await new Promise((resolve, reject) => {
+      const cloudStream = cloudinary.uploader.upload_stream(
+        {
+          folder: `itjobwala/certificates/cand_${userId}`,
+          resource_type: 'auto',
+          public_id: `certificate_${certId}`,
+          overwrite: true,
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          if (!result) return reject(new Error('Cloudinary returned no result'));
+          resolve(result);
+        }
+      );
 
-    const result = await uploadStream();
+      cloudStream.on('error', reject);
+      data.file.on('error', (err) => { cloudStream.destroy(); reject(err); });
+      data.file.pipe(cloudStream);
+    });
     const file_name = data.filename;
     const url = result.secure_url;
     const uploaded_at = new Date().toISOString();
@@ -670,34 +683,31 @@ export const uploadProfileCover = async (request, reply) => {
   try {
     const userId = request.user.id;
     const data = await request.file();
-    
+
     if (!data) {
       return reply.status(400).send({ success: false, message: 'No file uploaded' });
     }
 
-    const uploadStream = () => {
-      return new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          {
-            folder: `itjobwala/profile_covers/cand_${userId}`,
-            resource_type: 'image',
-            public_id: 'profile_cover',
-            overwrite: true,
-            invalidate: true,
-            transformation: [
-              { width: 1200, height: 400, crop: 'fill', gravity: 'center' }
-            ]
-          },
-          (error, result) => {
-            if (result) resolve(result);
-            else reject(error);
-          }
-        );
-        data.file.pipe(stream);
-      });
-    };
+    const result = await new Promise((resolve, reject) => {
+      const cloudStream = cloudinary.uploader.upload_stream(
+        {
+          folder: `itjobwala/profile_covers/cand_${userId}`,
+          resource_type: 'image',
+          public_id: 'profile_cover',
+          overwrite: true,
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          if (!result) return reject(new Error('Cloudinary returned no result'));
+          resolve(result);
+        }
+      );
 
-    const result = await uploadStream();
+      cloudStream.on('error', reject);
+      data.file.on('error', (err) => { cloudStream.destroy(); reject(err); });
+      data.file.pipe(cloudStream);
+    });
+
     const url = result.secure_url;
 
     await User.query().findById(userId).patch({

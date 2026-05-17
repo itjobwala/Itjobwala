@@ -1,4 +1,5 @@
 import type { JobDetail } from './types';
+import CompanyLogo from './CompanyLogo';
 
 const COLOR_CLASSES = [
   'bg-blue-500',
@@ -59,9 +60,13 @@ export default function JobDescription({ job }: Props) {
       <section>
         <SectionHeading>About {job.company}</SectionHeading>
         <div className="flex items-center gap-3 mb-4">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-extrabold text-base shrink-0 ${colorClass}`}>
-            {job.companyLogo}
-          </div>
+          <CompanyLogo
+            name={job.company}
+            logo={job.companyLogo}
+            colorClass={colorClass}
+            className="w-10 h-10 rounded-xl"
+            textClassName="text-base"
+          />
           <div>
             <p className="text-[13px] font-bold text-[#0f172a]">{job.company}</p>
             <p className="text-[12px] text-gray-400">{job.companyIndustry} &middot; {job.companySize} &middot; Est. {job.companyFounded}</p>

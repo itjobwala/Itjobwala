@@ -38,10 +38,10 @@ export default async function candidateProfileRoutes(fastify, options) {
     schema: {
       body: {
         type: 'object',
-        required: ['first_name', 'last_name', 'email'],
+        required: ['email'],
         properties: {
-          first_name: { type: 'string', minLength: 1, maxLength: 255 },
-          last_name: { type: 'string', minLength: 1, maxLength: 255 },
+          first_name: { type: ['string', 'null'], maxLength: 255 },
+          last_name: { type: ['string', 'null'], maxLength: 255 },
           title: { type: ['string', 'null'], maxLength: 255 },
           email: { type: 'string', format: 'email', maxLength: 255 },
           phone: { type: ['string', 'null'], maxLength: 20 },
@@ -91,7 +91,8 @@ export default async function candidateProfileRoutes(fastify, options) {
               marital_status: { type: 'string', maxLength: 50 },
               date_of_birth: { type: ['string', 'null'], format: 'date' },
               category: { type: 'string', maxLength: 100 },
-              work_permit: { type: 'string', maxLength: 100 },
+              authorized_to_work_in_us: { type: ['boolean', 'null'] },
+              work_permit_other_countries: { type: ['boolean', 'null'] },
               address: { type: 'string', maxLength: 500 },
               languages: {
                 type: 'array',

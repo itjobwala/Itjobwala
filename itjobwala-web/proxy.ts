@@ -48,7 +48,7 @@ export function proxy(request: NextRequest) {
 
   const role             = payload?.role?.toLowerCase() ?? '';
   const isCandidateToken = !!rawToken && !isTokenExpired(payload ?? {});
-  const isCandidateRole  = role === 'candidate' || role === '';
+  const isCandidateRole  = role === 'candidate';
   const isCandidateAuth  = isCandidateToken && isCandidateRole;
 
   const isCandidateProtected =
@@ -70,7 +70,8 @@ export function proxy(request: NextRequest) {
   // ── Recruiter auth ───────────────────────────────────────────────────────
   const recruiterRawToken = request.cookies.get('recruiter_token')?.value;
   const recruiterPayload  = recruiterRawToken ? decodeToken(recruiterRawToken) : null;
-  const isRecruiterAuth   = !!recruiterRawToken && !isTokenExpired(recruiterPayload ?? {});
+  const isRecruiterRole   = recruiterPayload?.role?.toLowerCase() === 'recruiter';
+  const isRecruiterAuth   = !!recruiterRawToken && isRecruiterRole && !isTokenExpired(recruiterPayload ?? {});
 
   const RECRUITER_PUBLIC_ROUTES = ['/recruiter/login', '/recruiter/signup', '/recruiter/post-job'];
 

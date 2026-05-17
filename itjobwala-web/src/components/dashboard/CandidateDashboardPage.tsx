@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import SmartNavbar from '@/src/components/SmartNavbar';
+import ProtectedRoute from '@/src/components/auth/ProtectedRoute';
 import JobSearchBar from '@/src/components/jobs/JobSearchBar';
 import JobFilterSidebar from '@/src/components/jobs/JobFilterSidebar';
 import JobList from '@/src/components/jobs/JobList';
@@ -89,7 +90,8 @@ export default function CandidateDashboardPage() {
   const activeFilterCount = countActiveFilters(filters);
 
   return (
-    <div className="min-h-screen bg-[#f9fafb]">
+    <ProtectedRoute>
+      <div className="min-h-screen bg-[#f9fafb]">
       <SmartNavbar />
 
       <div className="pt-[68px]">
@@ -185,6 +187,7 @@ export default function CandidateDashboardPage() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </ProtectedRoute>
   );
 }

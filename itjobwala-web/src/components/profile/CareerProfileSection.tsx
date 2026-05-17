@@ -1,5 +1,10 @@
 import type { CareerProfile } from '@/src/types/profile';
 
+function formatLpa(val: number): string {
+  const lpa = val / 100000;
+  return lpa % 1 === 0 ? String(Math.round(lpa)) : lpa.toFixed(1);
+}
+
 interface Props {
   careerProfile?: CareerProfile;
   expectedSalary?: number;
@@ -54,7 +59,7 @@ export default function CareerProfileSection({ careerProfile, expectedSalary, on
           <ReadOnlyField label="Desired job type" value={careerProfile?.desired_job_type || ''} />
           <ReadOnlyField label="Desired employment type" value={careerProfile?.desired_employment_type || ''} />
           <ReadOnlyField label="Preferred shift" value={careerProfile?.preferred_shift || ''} />
-          <ReadOnlyField label="Expected salary" value={expectedSalary != null ? `₹${expectedSalary.toLocaleString()}` : ''} />
+          <ReadOnlyField label="Expected salary" value={expectedSalary != null ? `${formatLpa(expectedSalary)} LPA` : ''} />
           <div className="sm:col-span-2">
             <ReadOnlyField label="Preferred work location" value={Array.isArray(careerProfile?.preferred_work_location) ? careerProfile.preferred_work_location.join(', ') : (careerProfile?.preferred_work_location || '')} />
           </div>

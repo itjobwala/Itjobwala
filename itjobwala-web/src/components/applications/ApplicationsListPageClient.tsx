@@ -6,7 +6,7 @@ import SmartNavbar from '@/src/components/SmartNavbar';
 import ProtectedRoute from '@/src/components/auth/ProtectedRoute';
 import ConfirmationDialog from '@/src/components/common/ConfirmationDialog';
 import { useMyApplicationsInfiniteQuery, useWithdrawApplicationMutation } from '@/src/hooks/useApplications';
-import type { Application } from '@/src/types/applications';
+import { useAuthHydration } from '@/src/hooks/useAuthHydration';
 
 const STATUS_CONFIG: Record<string, { label: string; className: string; color: string }> = {
   applied:     { label: 'Applied',     className: 'bg-blue-50 text-blue-700',       color: 'bg-blue-100' },
@@ -39,6 +39,8 @@ function relativeDate(iso: string): string {
 }
 
 export default function ApplicationsListPageClient() {
+  const { isHydrated, session, isLoading: authLoading } = useAuthHydration();
+  const canLoadCandidateData = isHydrated && !authLoading && session?.userRole === 'candidate';
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [withdrawingId, setWithdrawingId] = useState<string | null>(null);
@@ -57,7 +59,7 @@ export default function ApplicationsListPageClient() {
     limit: 20,
     status: statusFilter || undefined,
     sort: sortOrder,
-  });
+  }, canLoadCandidateData);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -218,7 +220,8 @@ export default function ApplicationsListPageClient() {
               <div className="flex flex-col gap-3">
                 {applications.map((app) => {
                   const cfg = STATUS_CONFIG[app.status] ?? STATUS_CONFIG.applied;
-                  const logo = (app.company_logo || app.company[0] || '?').slice(0, 1).toUpperCase();
+                  const logoUrl = app.company_logo || null;
+                  const logoFallback = (app.company?.[0] || '?').toUpperCase();
                   const color = app.company_color_class ?? hashColor(app.company);
 
                   return (
@@ -228,9 +231,17 @@ export default function ApplicationsListPageClient() {
                     >
                       <div className="flex items-start gap-4">
                         {/* Company Logo */}
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shrink-0 ${color}`}>
-                          {logo}
-                        </div>
+                        {logoUrl ? (
+                          <img
+                            src={logoUrl}
+                            alt={app.company}
+                            className="w-12 h-12 rounded-xl object-contain bg-white border border-gray-100 shrink-0"
+                          />
+                        ) : (
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shrink-0 ${color}`}>
+                            {logoFallback}
+                          </div>
+                        )}
 
                         {/* Content */}
                         <div className="flex-1 min-w-0">

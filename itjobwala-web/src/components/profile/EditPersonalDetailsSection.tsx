@@ -14,7 +14,8 @@ export interface EditablePersonalDetails {
   marital_status: string;
   date_of_birth: string;
   category: string;
-  work_permit: string;
+  authorized_to_work_in_us: boolean;
+  work_permit_other_countries: boolean;
   address: string;
   languages: EditableLanguage[];
 }
@@ -59,7 +60,7 @@ export default function EditPersonalDetailsSection({ profile, onChange }: Props)
   }
 
   function addLanguage() {
-    update('languages', [...profile.languages, { id: `lang-${Date.now()}`, name: '', proficiency: '', read: false, write: false, speak: false }]);
+    update('languages', [...profile.languages, { id: `lang-${Date.now()}`, name: '', proficiency: 'beginner', read: false, write: false, speak: false }]);
   }
 
   function updateLanguage(id: string, patch: Partial<EditableLanguage>) {
@@ -120,67 +121,26 @@ export default function EditPersonalDetailsSection({ profile, onChange }: Props)
           </select>
         </label>
 
-        <div className="sm:col-span-2 space-y-4">
+        <div className="sm:col-span-2 space-y-3">
           <span className="block text-[12px] font-bold text-gray-500">Work permit</span>
-          <div className="grid grid-cols-1 gap-3">
-            <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-              <span className="text-[13px] font-medium text-[#0f172a]">Authorized to work in US</span>
+          {([
+            { label: 'Authorized to work in US', key: 'authorized_to_work_in_us' as const },
+            { label: 'Work permit for other countries', key: 'work_permit_other_countries' as const },
+          ]).map(({ label, key }) => (
+            <div key={key} className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+              <span className="text-[13px] font-medium text-[#0f172a]">{label}</span>
               <div className="flex bg-white rounded-lg p-1 border border-gray-200">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!(profile.work_permit && profile.work_permit.includes('Authorized to work in US'))) {
-                      const newPermit = `${profile.work_permit || ''} Authorized to work in US`.trim();
-                      update('work_permit', newPermit);
-                    }
-                  }}
-                  className={`px-4 py-1.5 rounded-md text-[11px] font-bold transition-all ${profile.work_permit?.includes('Authorized to work in US') ? 'bg-primary text-white shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                >
+                <button type="button" onClick={() => update(key, true)}
+                  className={`px-4 py-1.5 rounded-md text-[11px] font-bold transition-all ${profile[key] ? 'bg-primary text-white shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>
                   Yes
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (profile.work_permit && profile.work_permit.includes('Authorized to work in US')) {
-                      update('work_permit', profile.work_permit.replace('Authorized to work in US', '').trim());
-                    }
-                  }}
-                  className={`px-4 py-1.5 rounded-md text-[11px] font-bold transition-all ${!profile.work_permit?.includes('Authorized to work in US') ? 'bg-red-500 text-white shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                >
+                <button type="button" onClick={() => update(key, false)}
+                  className={`px-4 py-1.5 rounded-md text-[11px] font-bold transition-all ${!profile[key] ? 'bg-red-500 text-white shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}>
                   No
                 </button>
               </div>
             </div>
-
-            <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
-              <span className="text-[13px] font-medium text-[#0f172a]">Work permit for other countries</span>
-              <div className="flex bg-white rounded-lg p-1 border border-gray-200">
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!(profile.work_permit && profile.work_permit.includes('Authorized to work in other countries'))) {
-                      const newPermit = `${profile.work_permit || ''} Authorized to work in other countries`.trim();
-                      update('work_permit', newPermit);
-                    }
-                  }}
-                  className={`px-4 py-1.5 rounded-md text-[11px] font-bold transition-all ${profile.work_permit?.includes('Authorized to work in other countries') ? 'bg-primary text-white shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                >
-                  Yes
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (profile.work_permit && profile.work_permit.includes('Authorized to work in other countries')) {
-                      update('work_permit', profile.work_permit.replace('Authorized to work in other countries', '').trim());
-                    }
-                  }}
-                  className={`px-4 py-1.5 rounded-md text-[11px] font-bold transition-all ${!profile.work_permit?.includes('Authorized to work in other countries') ? 'bg-red-500 text-white shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                >
-                  No
-                </button>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
 
         <div className="sm:col-span-2">
@@ -219,7 +179,19 @@ export default function EditPersonalDetailsSection({ profile, onChange }: Props)
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pr-8">
                 <TextField label="Language" value={lang.name} onChange={v => updateLanguage(lang.id, { name: v })} placeholder="e.g. English" />
-                <TextField label="Proficiency" value={lang.proficiency} onChange={v => updateLanguage(lang.id, { proficiency: v })} placeholder="e.g. Proficient" />
+                <label className="block">
+                  <span className="block text-[12px] font-bold text-gray-500 mb-1.5">Proficiency</span>
+                  <select
+                    value={lang.proficiency}
+                    onChange={e => updateLanguage(lang.id, { proficiency: e.target.value })}
+                    className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none transition-colors focus:border-primary/50"
+                  >
+                    <option value="">Select proficiency</option>
+                    <option value="beginner">Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="fluent">Fluent</option>
+                  </select>
+                </label>
               </div>
               <div className="mt-4 flex items-center gap-5">
                 <span className="text-[12px] font-bold text-gray-500">Skills:</span>

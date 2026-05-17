@@ -6,6 +6,7 @@ import SmartNavbar from '@/src/components/SmartNavbar';
 import ProtectedRoute from '@/src/components/auth/ProtectedRoute';
 import ConfirmationDialog from '@/src/components/common/ConfirmationDialog';
 import { useSavedJobsInfiniteQuery, useUnsaveJobMutation } from '@/src/hooks/useApplications';
+import { useAuthHydration } from '@/src/hooks/useAuthHydration';
 
 const COLOR_CLASSES = [
   'bg-blue-600', 'bg-green-600', 'bg-indigo-600', 'bg-violet-600',
@@ -28,6 +29,8 @@ function relativeDate(iso: string): string {
 }
 
 export default function SavedJobsListPageClient() {
+  const { isHydrated, session, isLoading: authLoading } = useAuthHydration();
+  const canLoadCandidateData = isHydrated && !authLoading && session?.userRole === 'candidate';
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [unsavingId, setUnsavingId] = useState<string | null>(null);
   const [errorToast, setErrorToast] = useState('');
@@ -45,7 +48,7 @@ export default function SavedJobsListPageClient() {
   } = useSavedJobsInfiniteQuery({
     limit: 20,
     sort: sortOrder,
-  });
+  }, canLoadCandidateData);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -183,7 +186,8 @@ export default function SavedJobsListPageClient() {
             ) : (
               <div className="flex flex-col gap-3">
                 {savedJobs.map((job) => {
-                  const logo = (job.company_logo || job.company[0] || '?').slice(0, 1).toUpperCase();
+                  const logoUrl = job.company_logo || null;
+                  const logoFallback = (job.company?.[0] || '?').toUpperCase();
                   const color = job.company_color_class ?? hashColor(job.company);
 
                   return (
@@ -193,9 +197,17 @@ export default function SavedJobsListPageClient() {
                     >
                       <div className="flex items-start gap-4">
                         {/* Company Logo */}
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shrink-0 ${color}`}>
-                          {logo}
-                        </div>
+                        {logoUrl ? (
+                          <img
+                            src={logoUrl}
+                            alt={job.company}
+                            className="w-12 h-12 rounded-xl object-contain bg-white border border-gray-100 shrink-0"
+                          />
+                        ) : (
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shrink-0 ${color}`}>
+                            {logoFallback}
+                          </div>
+                        )}
 
                         {/* Content */}
                         <div className="flex-1 min-w-0">

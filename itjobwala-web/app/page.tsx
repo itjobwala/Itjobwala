@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuthHydration } from '@/src/hooks/useAuthHydration';
 import SmartNavbar from "@/src/components/SmartNavbar";
 import HeroSection from "@/src/components/HeroSection";
 import StatsStrip from "@/src/components/StatsStrip";
@@ -17,18 +18,17 @@ import Footer from "@/src/components/Footer";
 
 export default function Home() {
   const router = useRouter();
-  const [isChecking, setIsChecking] = useState(true);
+  const { isHydrated, session, isLoading } = useAuthHydration();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      router.replace('/jobs');
-    } else {
-      setIsChecking(false);
-    }
-  }, [router]);
+    if (!isHydrated || isLoading) return;
 
-  if (isChecking) {
+    if (session?.userRole === 'candidate') {
+      router.replace('/jobs');
+    }
+  }, [isHydrated, isLoading, router, session]);
+
+  if (!isHydrated || isLoading || session?.userRole === 'candidate') {
     return null;
   }
 

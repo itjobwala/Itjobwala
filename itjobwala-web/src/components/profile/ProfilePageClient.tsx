@@ -49,6 +49,7 @@ import {
 } from '@/src/hooks/useProfile';
 import { useQueryClient } from '@tanstack/react-query';
 import { useMyApplicationsQuery, useSavedJobsQuery, useUnsaveJobMutation } from '@/src/hooks/useApplications';
+import { useAuthHydration } from '@/src/hooks/useAuthHydration';
 import { useProfileManager } from '@/src/hooks/useProfileManager';
 import { ProfileValidator, type ValidationError } from '@/src/lib/validation/profile';
 import { getResumeUploadDate, buildProfileUpdatePayload } from '@/src/lib/utils/profile';
@@ -56,9 +57,11 @@ import { getResumeUploadDate, buildProfileUpdatePayload } from '@/src/lib/utils/
 type ModalType = 'personal-info' | 'about' | 'skills' | 'career-profile' | 'personal-details' | 'experience' | 'add-experience' | 'education' | 'add-education' | 'certifications' | 'add-certifications' | 'resume-upload' | 'profile-photo-upload' | 'profile-cover-upload' | null;
 
 export default function ProfilePageClient() {
-  const { data: profile, isLoading: profileLoading } = useCandidateProfileQuery();
-  const { data: appsData, isLoading: appsLoading } = useMyApplicationsQuery({ limit: 5 });
-  const { data: savedData, isLoading: savedLoading } = useSavedJobsQuery({ limit: 5 });
+  const { isHydrated, session, isLoading: authLoading } = useAuthHydration();
+  const canLoadCandidateData = isHydrated && !authLoading && session?.userRole === 'candidate';
+  const { data: profile, isLoading: profileLoading } = useCandidateProfileQuery(canLoadCandidateData);
+  const { data: appsData, isLoading: appsLoading } = useMyApplicationsQuery({ limit: 5 }, canLoadCandidateData);
+  const { data: savedData, isLoading: savedLoading } = useSavedJobsQuery({ limit: 5 }, canLoadCandidateData);
   const unsaveMutation = useUnsaveJobMutation();
   const updateProfileMutation = useUpdateProfileMutation();
   const updateSkillsMutation = useUpdateSkillsMutation();
@@ -363,7 +366,7 @@ export default function ProfilePageClient() {
                     </div>
                   )}
                   <AboutSection about={profile.about ?? profile.bio ?? ''} onEdit={() => openEditModal('about')} />
-                  <CareerProfileSection careerProfile={profile.career_profile} expectedSalary={typeof profile.expected_salary === 'number' ? profile.expected_salary : undefined} onEdit={() => openEditModal('career-profile')} onAdd={() => openEditModal('career-profile')} />
+                  <CareerProfileSection careerProfile={profile.career_profile} expectedSalary={profile.expected_salary != null ? Number(profile.expected_salary) : undefined} onEdit={() => openEditModal('career-profile')} onAdd={() => openEditModal('career-profile')} />
                   <PersonalDetailsSection personalDetails={profile.personal_details} onEdit={() => openEditModal('personal-details')} onAdd={() => openEditModal('personal-details')} />
                   <SkillsSection skills={profile.skills} onEdit={() => openEditModal('skills')} />
                   <ExperienceSection
@@ -390,6 +393,8 @@ export default function ProfilePageClient() {
                   <AppliedJobsCard jobs={applications} />
                   <SavedJobsCard
                     jobs={savedJobs}
+                    total={savedData?.pagination?.total}
+                    hasMore={savedData?.pagination?.has_next}
                     onUnsave={jobId => unsaveMutation.mutate(jobId)}
                   />
                 </div>

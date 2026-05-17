@@ -111,10 +111,8 @@ export default function
               </div>
             ) : (
               jobs.map((job: any, i: number) => {
-                const logo =
-                  job?.companyLogo ||
-                  (job?.company && job.company[0]) ||
-                  '?';
+                const logoUrl = job?.companyLogo || null;
+                const logoFallback = job?.company?.[0]?.toUpperCase() || '?';
 
                 const badge = job?.isNew
                   ? {
@@ -151,11 +149,19 @@ export default function
                   >
                     <div className="flex items-center gap-4 flex-1 min-w-0">
 
-                      <div
-                        className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shrink-0 bg-gradient-to-br ${job?.companyColorClass}`}
-                      >
-                        {logo.slice(0, 1).toUpperCase()}
-                      </div>
+                      {logoUrl ? (
+                        <img
+                          src={logoUrl}
+                          alt={job?.company}
+                          className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-contain bg-white border border-gray-100 shrink-0"
+                        />
+                      ) : (
+                        <div
+                          className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shrink-0 bg-gradient-to-br ${job?.companyColorClass}`}
+                        >
+                          {logoFallback}
+                        </div>
+                      )}
 
                       <div className="min-w-0">
 
@@ -183,7 +189,9 @@ export default function
                           <span>{job?.location}</span>
                           <span>·</span>
                           <span>
-                            {job?.experienceMin}–{job?.experienceMax} yrs
+                            {job?.experienceMin === 0 && job?.experienceMax === 0
+                              ? '0 yrs'
+                              : `${job?.experienceMin}–${job?.experienceMax} yrs`}
                           </span>
                         </div>
                       </div>

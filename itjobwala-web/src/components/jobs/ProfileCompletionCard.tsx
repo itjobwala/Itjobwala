@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useAuthHydration } from '@/src/hooks/useAuthHydration';
 import { getProfileCompletion } from '@/src/lib/api/profile';
-import type { ProfileCompletionData } from '@/src/types/profile';
 
 interface ChecklistItem {
   label: string;
@@ -20,18 +20,23 @@ const FIELD_LABELS: Record<string, string> = {
 };
 
 export default function ProfileCompletionCard() {
+  const { isHydrated, session, isLoading } = useAuthHydration();
   const [completion, setCompletion] = useState(0);
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
+    if (!isHydrated || isLoading) return;
+    if (!session || session.userRole !== 'candidate') return;
+
     const fetchCompletion = async () => {
       try {
         const data = await getProfileCompletion();
         setCompletion(data.percentage);
 
         const incompleteItems = Object.entries(data.breakdown)
-          .filter(([_, isDone]) => !isDone)
+          .filter(([, isDone]) => !isDone)
           .map(([field]) => ({
             label: FIELD_LABELS[field] || field,
             done: false,
@@ -39,6 +44,11 @@ export default function ProfileCompletionCard() {
 
         setChecklist(incompleteItems);
       } catch (err) {
+        if (typeof err === 'object' && err !== null && 'status' in err && err.status === 401) {
+          setHidden(true);
+          return;
+        }
+
         console.error('Failed to load profile completion:', err);
       } finally {
         setLoading(false);
@@ -46,7 +56,18 @@ export default function ProfileCompletionCard() {
     };
 
     fetchCompletion();
-  }, []);
+  }, [isHydrated, isLoading, session]);
+
+  if (!isHydrated || isLoading) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-100 p-5">
+        <div className="h-20 bg-gray-100 rounded-lg animate-pulse" />
+      </div>
+    );
+  }
+
+  if (!session || session.userRole !== 'candidate') return null;
+  if (hidden) return null;
 
   if (loading) {
     return (

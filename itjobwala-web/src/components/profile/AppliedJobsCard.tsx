@@ -60,7 +60,8 @@ export default function AppliedJobsCard({ jobs }: Props) {
         <div className="flex flex-col gap-1">
           {jobs.map(job => {
             const cfg = STATUS_CONFIG[job.status] ?? STATUS_CONFIG.applied;
-            const logo = (job.company_logo || job.company[0] || '?').slice(0, 1).toUpperCase();
+            const logoUrl = job.company_logo || null;
+            const logoFallback = (job.company?.[0] || '?').toUpperCase();
             const color = job.company_color_class ?? hashColor(job.company);
             return (
               <Link
@@ -68,9 +69,17 @@ export default function AppliedJobsCard({ jobs }: Props) {
                 href={`/jobs/${job.job_id}`}
                 className="group flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 transition-colors"
               >
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-extrabold text-sm shrink-0 ${color}`}>
-                  {logo}
-                </div>
+                {logoUrl ? (
+                  <img
+                    src={logoUrl}
+                    alt={job.company}
+                    className="w-8 h-8 rounded-lg object-contain bg-white border border-gray-100 shrink-0"
+                  />
+                ) : (
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-extrabold text-sm shrink-0 ${color}`}>
+                    {logoFallback}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <p className="text-[12px] font-bold text-[#0f172a] truncate group-hover:text-primary transition-colors">
                     {job.title}

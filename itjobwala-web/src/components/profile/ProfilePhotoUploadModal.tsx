@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 
 interface Props {
   isOpen: boolean;
@@ -24,6 +24,15 @@ export default function ProfilePhotoUploadModal({
   const [preview, setPreview] = useState<string>('');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string>('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedFile(null);
+      setPreview('');
+      setUploadProgress(0);
+      setError('');
+    }
+  }, [isOpen]);
 
   const validateFile = (file: File): string | null => {
     const fileExt = '.' + file.name.split('.').pop()?.toLowerCase();

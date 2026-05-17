@@ -86,6 +86,8 @@ export async function deleteCertification(certId: string): Promise<void> {
   await apiClient.delete<ApiResponse>(`/candidate/profile/certifications/${certId}`);
 }
 
+const UPLOAD_TIMEOUT = 120_000; // 2 min — Cloudinary uploads can be slow
+
 // POST /candidate/profile/resume  (multipart, field: file)
 export async function uploadResume(
   file: File,
@@ -98,6 +100,7 @@ export async function uploadResume(
     form,
     {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: UPLOAD_TIMEOUT,
       onUploadProgress: (e) => {
         if (onProgress && e.total) onProgress(Math.round((e.loaded * 100) / e.total));
       },
@@ -118,6 +121,7 @@ export async function uploadProfilePhoto(
     form,
     {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: UPLOAD_TIMEOUT,
       onUploadProgress: (e) => {
         if (onProgress && e.total) onProgress(Math.round((e.loaded * 100) / e.total));
       },
@@ -139,6 +143,7 @@ export async function uploadCertificateFile(
     form,
     {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: UPLOAD_TIMEOUT,
       onUploadProgress: (e) => {
         if (onProgress && e.total) onProgress(Math.round((e.loaded * 100) / e.total));
       },
@@ -159,6 +164,7 @@ export async function uploadProfileCover(
     form,
     {
       headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: UPLOAD_TIMEOUT,
       onUploadProgress: (e) => {
         if (onProgress && e.total) onProgress(Math.round((e.loaded * 100) / e.total));
       },

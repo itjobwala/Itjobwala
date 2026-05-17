@@ -1,8 +1,15 @@
 import { publicClient } from './client';
-import apiClient from './client';
 import type { ApiResponse } from '@/src/types/api';
-import type { Job, JobDetail, JobsListResponse, JobFilters,JobCategory,JobCategoriesResponse } from '@/src/types/jobs';
+import type { Job, JobDetail, JobsListResponse, JobFilters, JobCategory, JobCategoriesResponse } from '@/src/types/jobs';
 
+export interface SimilarCompany {
+  id: string;
+  name: string;
+  industry: string;
+  logo: string;
+  open_roles: number;
+  hiring_status: boolean;
+}
 
 // GET /jobs — paginated, filtered list
 export async function getJobs(filters: JobFilters = {}): Promise<JobsListResponse> {
@@ -25,19 +32,15 @@ export async function getJobCategories(): Promise<JobCategory[]> {
 export async function getFeaturedJobs(): Promise<Job[]> {
   try {
     const res = await publicClient.get<ApiResponse<{ jobs: Job[] }>>('/jobs/featured');
-    const jobs = res.data.data?.jobs ?? [];
-    console.log('[API] getFeaturedJobs: API response received', { jobsCount: jobs.length, jobs });
-    return jobs;
-  } catch (error) {
-    console.error('[API] getFeaturedJobs: API call failed', error);
-    // Return empty array on error - don't hide the issue with mock data
+    return res.data.data?.jobs ?? [];
+  } catch {
     return [];
   }
 }
 
-// GET /jobs/recommended — candidate personalised
+// GET /jobs/recommended — public newest-job recommendations
 export async function getRecommendedJobs(limit = 5): Promise<Job[]> {
-  const res = await apiClient.get<ApiResponse<{ jobs: Job[] }>>('/jobs/recommended', {
+  const res = await publicClient.get<ApiResponse<{ jobs: Job[] }>>('/jobs/recommended', {
     params: { limit },
   });
   return res.data.data?.jobs ?? [];
@@ -59,8 +62,8 @@ export async function getSimilarJobs(jobId: string, limit = 5): Promise<Job[]> {
 }
 
 // GET /jobs/:job_id/similar-companies
-export async function getSimilarCompanies(jobId: string, limit = 5): Promise<any[]> {
-  const res = await publicClient.get<any>(`/jobs/${jobId}/similar-companies`, {
+export async function getSimilarCompanies(jobId: string, limit = 5): Promise<SimilarCompany[]> {
+  const res = await publicClient.get<ApiResponse<{ companies: SimilarCompany[] }>>(`/jobs/${jobId}/similar-companies`, {
     params: { limit },
   });
   return res.data.data?.companies ?? [];

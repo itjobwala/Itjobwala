@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import SmartNavbar from '@/src/components/SmartNavbar';
 import JobSearchBar from './JobSearchBar';
@@ -10,6 +10,7 @@ import type { FilterState, SearchState } from './types';
 import { normalizeJob } from './types';
 import { useJobsQuery } from '@/src/hooks/useJobs';
 import { useSavedJobsQuery, useSaveJobMutation, useUnsaveJobMutation } from '@/src/hooks/useApplications';
+import { useAuthHydration } from '@/src/hooks/useAuthHydration';
 import type { JobFilters } from '@/src/types/jobs';
 
 const SORT_OPTIONS = [
@@ -58,6 +59,7 @@ function countActiveFilters(filters: FilterState): number {
 
 export default function JobsPageClient() {
   const searchParams  = useSearchParams();
+  const { isHydrated, session, isLoading: authLoading } = useAuthHydration();
 
   const [filters, setFilters]           = useState<FilterState>({
     ...DEFAULT_FILTERS,
@@ -85,7 +87,8 @@ export default function JobsPageClient() {
   const [errorToast, setErrorToast] = useState('');
   const [successToast, setSuccessToast] = useState('');
 
-  const { data: savedData } = useSavedJobsQuery({ limit: 100 });
+  const canLoadSavedJobs = isHydrated && !authLoading && session?.userRole === 'candidate';
+  const { data: savedData } = useSavedJobsQuery({ limit: 100 }, canLoadSavedJobs);
   const saveJobMutation = useSaveJobMutation();
   const unsaveJobMutation = useUnsaveJobMutation();
 
@@ -122,6 +125,13 @@ export default function JobsPageClient() {
   }
 
   const handleSaveJob = async (jobId: string) => {
+    if (!canLoadSavedJobs) {
+      const message = 'Please log in as a candidate to save jobs';
+      setErrorToast(message);
+      setTimeout(() => setErrorToast(''), 4000);
+      throw new Error(message);
+    }
+
     try {
       await saveJobMutation.mutateAsync(jobId);
       setSuccessToast('Job saved successfully');
@@ -135,6 +145,13 @@ export default function JobsPageClient() {
   };
 
   const handleUnsaveJob = async (jobId: string) => {
+    if (!canLoadSavedJobs) {
+      const message = 'Please log in as a candidate to manage saved jobs';
+      setErrorToast(message);
+      setTimeout(() => setErrorToast(''), 4000);
+      throw new Error(message);
+    }
+
     try {
       await unsaveJobMutation.mutateAsync(jobId);
       setSuccessToast('Job removed from saved list');

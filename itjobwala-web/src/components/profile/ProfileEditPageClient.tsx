@@ -13,8 +13,7 @@ import EditCertificationSection, { type EditableCertification } from './EditCert
 import ProfileEditSidebar from './ProfileEditSidebar';
 
 const INITIAL_PROFILE: EditableProfile = {
-  firstName: 'Priya',
-  lastName: 'Sharma',
+  fullName: 'Priya Sharma',
   title: 'Senior QA Automation Engineer',
   experienceYears: '6',
   expectedSalary: '',

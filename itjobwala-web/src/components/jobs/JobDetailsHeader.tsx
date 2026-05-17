@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import CompanyLogo from './CompanyLogo';
 import type { JobDetail } from './types';
 
 const WORK_MODE_CLASS: Record<JobDetail['workMode'], string> = {
@@ -39,6 +40,19 @@ function getColorClass(key: string): string {
   return COLOR_CLASSES[hash % COLOR_CLASSES.length];
 }
 
+function formatLpa(val: string | number): string {
+  const n = parseFloat(String(val));
+  if (isNaN(n)) return '0';
+  return n % 1 === 0 ? String(Math.round(n)) : n.toFixed(1);
+}
+
+function salaryLabel(lpaMin: string, lpaMax: string): string {
+  const min = parseFloat(lpaMin);
+  const max = parseFloat(lpaMax);
+  if (min === 0 && max === 0) return '0 LPA';
+  return `${formatLpa(min)}–${formatLpa(max)} LPA`;
+}
+
 function postedLabel(days: number) {
   if (days === 0) return 'Today';
   if (days === 1) return '1 day ago';
@@ -66,15 +80,10 @@ interface Props {
 }
 
 export default function JobDetailsHeader({ job, onApply, applied, saved, onSave, onUnsave }: Props) {
-  const [copied, setCopied] = useState(false);
   const [savingState, setSavingState] = useState(false);
   const [applyingState, setApplyingState] = useState(false);
 
-  function handleShare() {
-    navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
+
 
   async function handleApplyClick() {
     setApplyingState(true);
@@ -115,9 +124,13 @@ export default function JobDetailsHeader({ job, onApply, applied, saved, onSave,
 
       <div className="flex flex-col sm:flex-row sm:items-start gap-5">
         {/* Logo */}
-        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-white font-extrabold text-2xl shrink-0 ${colorClass}`}>
-          {job.companyLogo}
-        </div>
+        <CompanyLogo
+          name={job.company}
+          logo={job.companyLogo}
+          colorClass={colorClass}
+          className="w-16 h-16 rounded-2xl"
+          textClassName="text-2xl"
+        />
 
         {/* Info */}
         <div className="flex-1 min-w-0">
@@ -144,10 +157,12 @@ export default function JobDetailsHeader({ job, onApply, applied, saved, onSave,
               {JOB_TYPE_LABEL[job.jobType]}
             </span>
             <span className="text-[12px] font-semibold rounded-full py-1 px-3 bg-primary/10 text-primary">
-              {job.experienceMin}–{job.experienceMax} yrs
+              {job.experienceMin === 0 && job.experienceMax === 0
+                ? '0 yrs'
+                : `${job.experienceMin}–${job.experienceMax} yrs`}
             </span>
             <span className="text-[12px] font-semibold rounded-full py-1 px-3 bg-emerald-50 text-emerald-700">
-              ₹{job.salaryLpaMin}–{job.salaryLpaMax} LPA
+              ₹{salaryLabel(job.salaryLpaMin, job.salaryLpaMax)}
             </span>
             {job.jobLevel && (
               <span className="text-[12px] font-semibold rounded-full py-1 px-3 bg-purple-50 text-purple-600">
@@ -181,17 +196,14 @@ export default function JobDetailsHeader({ job, onApply, applied, saved, onSave,
             {job.vacancies && (
               <span className="flex items-center gap-1.5">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+                  <rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
                 </svg>
                 {job.vacancies} vacancies
               </span>
             )}
-            <span className="flex items-center gap-1.5">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                <rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
-              </svg>
-              {job.companyIndustry}
-            </span>
+            {job.companyIndustry && (
+              <span>{job.companyIndustry}</span>
+            )}
           </div>
 
           {/* CTA row */}
@@ -248,16 +260,6 @@ export default function JobDetailsHeader({ job, onApply, applied, saved, onSave,
               {saved ? 'Saved' : 'Save'}
             </button>
 
-            <button
-              onClick={handleShare}
-              className="flex items-center gap-2 text-[14px] font-semibold rounded-xl px-4 py-3 border border-gray-200 text-gray-600 hover:border-primary/40 hover:text-primary transition-colors"
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
-                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-              </svg>
-              {copied ? 'Copied!' : 'Share'}
-            </button>
           </div>
         </div>
       </div>

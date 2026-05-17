@@ -77,11 +77,8 @@ export class ProfileValidator {
   }
 
   static validatePersonalInfo(data: any): ValidationError | null {
-    const firstNameError = this.validateRequired(data.firstName, 'First name');
+    const firstNameError = this.validateRequired(data.fullName, 'Full name');
     if (firstNameError) return firstNameError;
-
-    const lastNameError = this.validateRequired(data.lastName, 'Last name');
-    if (lastNameError) return lastNameError;
 
     return this.validateEmail(data.email);
   }

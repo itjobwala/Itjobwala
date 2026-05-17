@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const job = await getJobById(id);
     return {
-      title:       `${job.title} at ${job.company} – itJobwala`,
+      title: `${job.title} at ${job.company} – itJobwala`,
       description: `${job.title} at ${job.company} in ${job.location}.`,
     };
   } catch {
@@ -29,6 +29,7 @@ export default async function JobDetailPage({ params }: Props) {
   let apiJob;
   try {
     apiJob = await getJobById(id);
+    console.log("JobDetailPage--->", apiJob)
   } catch {
     notFound();
   }

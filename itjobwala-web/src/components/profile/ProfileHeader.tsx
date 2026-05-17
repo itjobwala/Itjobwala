@@ -10,6 +10,12 @@ interface Props {
   onUploadCover?: () => void;
 }
 
+function formatSalaryLpa(val: string | number): string {
+  const n = parseFloat(String(val)) / 100000;
+  if (isNaN(n)) return '0';
+  return n % 1 === 0 ? String(Math.round(n)) : n.toFixed(1);
+}
+
 function getInitials(profile: CandidateProfile): string {
   const full = [profile.first_name, profile.last_name].filter(Boolean).join(' ') || profile.name || profile.email;
   return full.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
@@ -106,7 +112,7 @@ export default function ProfileHeader({ profile, onEdit, onUploadPhoto, onUpload
           {([
             profile.location    ? { icon: <MapPinIcon />,    text: profile.location } : null,
             profile.experience_years != null ? { icon: <BriefcaseIcon />, text: `${profile.experience_years} years experience` } : null,
-            profile.current_salary != null ? { icon: <DollarIcon />, text: `₹${typeof profile.current_salary === 'number' ? profile.current_salary.toLocaleString() : profile.current_salary}` } : null,
+            profile.current_salary != null ? { icon: <DollarIcon />, text: `${formatSalaryLpa(profile.current_salary)} LPA` } : null,
             profile.availability_to_join ? { icon: <CalendarIcon />, text: `Available to join: ${profile.availability_to_join.split('T')[0]}` } : null,
             { icon: <MailIcon />,  text: profile.email },
             profile.phone       ? { icon: <PhoneIcon />,     text: profile.phone } : null,
@@ -198,8 +204,8 @@ function GitHubIcon() {
 function DollarIcon() {
   return (
     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-      <line x1="12" y1="1" x2="12" y2="23" />
-      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+      <path d="M4 3h16a2 2 0 0 1 2 2v6a10 10 0 0 1-10 10A10 10 0 0 1 2 11V5a2 2 0 0 1 2-2z" />
+      <polyline points="8 10 12 14 16 10" />
     </svg>
   );
 }

@@ -38,6 +38,15 @@ export function decodeJwtPayload(token: string): JwtPayload | null {
   }
 }
 
+function isJwtExpired(payload: JwtPayload): boolean {
+  if (!payload.exp) return false;
+  return Date.now() / 1000 >= payload.exp;
+}
+
+function isCandidatePayload(payload: JwtPayload): boolean {
+  return String(payload.role ?? '').toLowerCase() === 'candidate';
+}
+
 // ── Cookie helpers (readable by proxy.ts for server-side route checks) ───────
 
 export function setTokenCookie(token: string): void {
@@ -129,14 +138,31 @@ export function setAuth(email: string): void {
 export function getAuth(): AuthSession | null {
   if (typeof window === 'undefined') return null;
   try {
-    if (!safeLocalStorageGetItem(TOKEN_KEY)) return null;
+    const token = safeLocalStorageGetItem(TOKEN_KEY);
+    if (!token) return null;
+
+    const payload = decodeJwtPayload(token);
+    if (!payload || !isCandidatePayload(payload) || isJwtExpired(payload)) {
+      clearCandidateAuth();
+      return null;
+    }
+
     const raw = safeLocalStorageGetItem(AUTH_KEY);
-    if (!raw) return null;
+    if (!raw) {
+      clearCandidateAuth();
+      return null;
+    }
+
     const session = JSON.parse(raw) as AuthSession;
     // Backward compatibility — sessions persisted before userRole was added
     if (!session.userRole) session.userRole = 'candidate';
+    if (session.userRole.toLowerCase() !== 'candidate') {
+      clearCandidateAuth();
+      return null;
+    }
     return session;
   } catch {
+    clearCandidateAuth();
     return null;
   }
 }
@@ -167,6 +193,21 @@ export function clearAuth(): void {
   safeLocalStorageRemoveItem(TOKEN_KEY);
   safeLocalStorageRemoveItem('recruiter_token');
   clearTokenCookie();
+  clearRecruiterTokenCookie();
+  safeDispatchEvent('auth-changed');
+}
+
+export function clearCandidateAuth(): void {
+  if (typeof window === 'undefined') return;
+  safeLocalStorageRemoveItem(AUTH_KEY);
+  safeLocalStorageRemoveItem(TOKEN_KEY);
+  clearTokenCookie();
+  safeDispatchEvent('auth-changed');
+}
+
+export function clearRecruiterAuth(): void {
+  if (typeof window === 'undefined') return;
+  safeLocalStorageRemoveItem('recruiter_token');
   clearRecruiterTokenCookie();
   safeDispatchEvent('auth-changed');
 }

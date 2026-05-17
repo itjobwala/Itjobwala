@@ -426,13 +426,12 @@ export const getSimilarCompanies = async (request, reply) => {
     const currentRecruiterId = currentJob.recruiter_id;
 
     // 2. Find other companies in the same industry with open roles
-    const companies = await Recruiter.query()
+    const companiesQuery = Recruiter.query()
       .select(
         'recruiters.id', 
         'recruiters.company_name as name', 
         'recruiters.industry', 
-        'recruiters.logo', 
-        'recruiters.color_class'
+        'recruiters.logo'
       )
       .select(
         Job.query()
@@ -441,8 +440,6 @@ export const getSimilarCompanies = async (request, reply) => {
           .count()
           .as('open_roles_count')
       )
-      .where('recruiters.industry', 'ILIKE', industry || '%')
-      .whereNot('recruiters.id', currentRecruiterId)
       .whereExists(
         Job.query()
           .where('recruiter_id', ref('recruiters.id'))
@@ -451,14 +448,24 @@ export const getSimilarCompanies = async (request, reply) => {
       .orderBy('open_roles_count', 'desc')
       .limit(limit);
 
+    if (industry) {
+      companiesQuery.where('recruiters.industry', 'ILIKE', industry);
+    }
+
+    if (currentRecruiterId) {
+      companiesQuery.whereNot('recruiters.id', currentRecruiterId);
+    }
+
+    const companies = await companiesQuery;
+
     return reply.status(200).send({
       success: true,
       data: {
         companies: companies.map(c => ({
           id: `company_${c.id}`,
-          name: c.name,
+          name: c.name || 'Unknown Company',
           industry: c.industry || 'IT Services',
-          logo: c.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}&background=random`,
+          logo: c.logo || `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name || 'Company')}&background=random`,
           open_roles: parseInt(c.open_roles_count, 10),
           hiring_status: true
         }))

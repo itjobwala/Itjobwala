@@ -177,7 +177,7 @@ function Divider() {
 function RegisterLink() {
   return (
     <p className="text-center text-[13px] text-gray-400 mt-5">
-      Don't have an account?{' '}
+      Don&apos;t have an account?{' '}
       <Link href="/signup" className="font-bold" style={{ color: PRIMARY, textDecoration: 'none' }}>
         Register free
       </Link>
@@ -211,7 +211,9 @@ export default function LoginPage() {
     try {
       await signinCandidate({ email: email.trim(), password: pass });
       const next = searchParams.get('next');
-      const safeDest = next && next.startsWith('/') && !next.startsWith('/login') ? next : '/dashboard';
+      const safeDest = next && next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/login')
+        ? next
+        : '/dashboard';
       window.location.href = safeDest;
     } catch (err) {
       setApiError(err instanceof Error ? err.message : 'Sign in failed. Please try again.');
@@ -245,7 +247,7 @@ export default function LoginPage() {
                 <LockIcon />
               </div>
               <h1 className="font-extrabold text-[#0f172a] mb-2" style={{ fontSize: 28, letterSpacing: -0.8 }}>Forgot password?</h1>
-              <p className="text-sm text-gray-500" style={{ lineHeight: 1.6 }}>No worries! Enter your email and we'll send you a reset link.</p>
+              <p className="text-sm text-gray-500" style={{ lineHeight: 1.6 }}>No worries! Enter your email and we&apos;ll send you a reset link.</p>
             </div>
             <form onSubmit={handleForgot} noValidate>
               <div className="fade-up d1">
@@ -283,9 +285,9 @@ export default function LoginPage() {
         </div>
         <h2 className="font-extrabold text-[#0f172a] mb-2.5" style={{ fontSize: 26 }}>Check your inbox</h2>
         <p className="text-[15px] text-gray-500 mb-2" style={{ lineHeight: 1.6 }}>
-          We've sent a reset link to <strong className="text-gray-900">{forgotEmail}</strong>
+          We&apos;ve sent a reset link to <strong className="text-gray-900">{forgotEmail}</strong>
         </p>
-        <p className="text-[13px] text-gray-400 mb-8">Didn't receive it? Check your spam folder.</p>
+        <p className="text-[13px] text-gray-400 mb-8">Didn&apos;t receive it? Check your spam folder.</p>
         <button
           onClick={() => setScreen('login')}
           className="w-full text-white border-none rounded-xl font-bold text-[15px] cursor-pointer"
@@ -405,4 +407,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

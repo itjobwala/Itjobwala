@@ -15,7 +15,7 @@ const fastify = Fastify({ logger: true });
 
 // Register plugins
 fastify.register(cors, {
-  origin: ['https://qa-web.itjobwala.com'],
+  origin: ['http://localhost:3000', 'https://qa-web.itjobwala.com'],
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   credentials: true

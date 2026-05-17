@@ -7,36 +7,55 @@ import { useJobCategoriesQuery } from '@/src/hooks/useJobs';
 import { PRIMARY } from '@/src/lib/constants';
 import type { JobCategory } from '@/src/types/jobs';
 
-const CATEGORY_CONFIG: Record<string, { icon: string; color: string; border: string; accent: string; desc: string }> = {
-  startup:   { icon: '🚀', color: '#fff7ed', border: '#fed7aa', accent: '#f97316', desc: 'Fast-paced, high-growth' },
-  mnc:       { icon: '🏢', color: '#eff6ff', border: '#bfdbfe', accent: '#3b82f6', desc: 'Global tech giants' },
-  product:   { icon: '📦', color: '#f0fdf4', border: '#bbf7d0', accent: '#22c55e', desc: 'Build real products' },
-  remote:    { icon: '🌐', color: '#faf5ff', border: '#ddd6fe', accent: '#8b5cf6', desc: 'Work from anywhere' },
-  fintech:   { icon: '💳', color: '#fff1f2', border: '#fecdd3', accent: '#e11d48', desc: 'Finance meets tech' },
-  saas:      { icon: '☁️', color: '#f0f9ff', border: '#bae6fd', accent: '#0ea5e9', desc: 'Cloud-first companies' },
-  ecommerce: { icon: '🛍️', color: '#fefce8', border: '#fde68a', accent: '#eab308', desc: 'Scale digital retail' },
-  ai_ml:     { icon: '🤖', color: '#f5f3ff', border: '#c4b5fd', accent: '#a855f7', desc: 'The future of tech' },
-  hybrid:    { icon: '🔄', color: '#f3f4f6', border: '#d1d5db', accent: '#6b7280', desc: 'Mixed work modes' },
-  onsite:    { icon: '🏢', color: '#eff6ff', border: '#bfdbfe', accent: '#3b82f6', desc: 'Office-based roles' },
-  service:   { icon: '⚙️', color: '#fef3c7', border: '#fcd34d', accent: '#d97706', desc: 'Service-driven' },
-  fulltime:  { icon: '💼', color: '#e0e7ff', border: '#c7d2fe', accent: '#6366f1', desc: 'Full-time positions' },
-  parttime:  { icon: '🕐', color: '#dbeafe', border: '#93c5fd', accent: '#0284c7', desc: 'Part-time work' },
-  contract:  { icon: '📋', color: '#f3e8ff', border: '#e9d5ff', accent: '#d946ef', desc: 'Contract roles' },
-  internship: { icon: '🎓', color: '#fef2f2', border: '#fecaca', accent: '#dc2626', desc: 'Internship programs' },
+const TYPE_THEME: Record<string, {
+  bg: string; bgHover: string; border: string; borderHover: string;
+  accent: string; textAccent: string; badge: string; badgeText: string;
+  label: string;
+}> = {
+  work_mode: {
+    bg: '#f5f3ff', bgHover: '#ede9fe',
+    border: '#e9d5ff', borderHover: '#c4b5fd',
+    accent: '#8b5cf6', textAccent: '#7c3aed',
+    badge: '#ede9fe', badgeText: '#6d28d9',
+    label: 'Work Mode',
+  },
+  company_type: {
+    bg: '#fff7ed', bgHover: '#ffedd5',
+    border: '#fed7aa', borderHover: '#fb923c',
+    accent: '#f97316', textAccent: '#ea580c',
+    badge: '#ffedd5', badgeText: '#c2410c',
+    label: 'Company Type',
+  },
+  company_industry: {
+    bg: '#eff6ff', bgHover: '#dbeafe',
+    border: '#bfdbfe', borderHover: '#93c5fd',
+    accent: '#3b82f6', textAccent: '#2563eb',
+    badge: '#dbeafe', badgeText: '#1d4ed8',
+    label: 'Industry',
+  },
+  job_category: {
+    bg: '#f0fdf4', bgHover: '#dcfce7',
+    border: '#bbf7d0', borderHover: '#86efac',
+    accent: '#22c55e', textAccent: '#16a34a',
+    badge: '#dcfce7', badgeText: '#15803d',
+    label: 'Job Type',
+  },
 };
 
-const ArrowIcon = ({ color = '#9ca3af' }: { color?: string }) => (
-  <svg width="12" height="12" fill="none" stroke={color} strokeWidth="2.5" viewBox="0 0 24 24">
-    <path d="M5 12h14M12 5l7 7-7 7" />
-  </svg>
-);
+const DEFAULT_THEME = {
+  bg: '#f8fafc', bgHover: '#f1f5f9',
+  border: '#e2e8f0', borderHover: '#cbd5e1',
+  accent: '#64748b', textAccent: '#475569',
+  badge: '#f1f5f9', badgeText: '#475569',
+  label: 'Category',
+};
+
+function getTheme(categoryType: string) {
+  return TYPE_THEME[categoryType] ?? DEFAULT_THEME;
+}
 
 function getCategoryHref(category: JobCategory) {
   return `/jobs?${category.filter_key}=${category.key}`;
-}
-
-function getConfig(key: string) {
-  return CATEGORY_CONFIG[key] || CATEGORY_CONFIG.startup;
 }
 
 export default function CategorySection() {
@@ -84,12 +103,12 @@ export default function CategorySection() {
         </div>
 
         {/* Category grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {isWaitingForData ? (
             Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
-                className={`reveal stagger-${(i % 4) + 1} h-[240px] rounded-[20px] bg-gray-100 animate-pulse`}
+                className={`reveal stagger-${(i % 4) + 1} h-[180px] rounded-2xl bg-gray-100 animate-pulse`}
               />
             ))
           ) : isError ? (
@@ -97,94 +116,105 @@ export default function CategorySection() {
               Unable to load categories right now.
             </div>
           ) : categoriesData.length === 0 ? (
-            <div className="col-span-full py-16 flex flex-col items-center justify-center bg-gray-50 border border-gray-100 rounded-[20px]">
+            <div className="col-span-full py-16 flex flex-col items-center justify-center bg-gray-50 border border-gray-100 rounded-2xl">
               <span className="text-[14px] text-gray-400 font-medium">No categories available right now.</span>
             </div>
           ) : (
             categoriesData.map((cat, i) => {
-              const config = getConfig(cat.key);
+              const theme = getTheme(cat.category_type);
               const highlighted = hovered === i;
-              const isFeatured = i < 2;
 
               return (
                 <Link
                   href={getCategoryHref(cat)}
                   key={cat.key}
-                  className={`reveal stagger-${(i % 4) + 1} block rounded-[20px] relative overflow-hidden transition-all duration-[280ms] no-underline`}
+                  className={`reveal stagger-${(i % 4) + 1} block rounded-2xl relative overflow-hidden transition-all duration-300 no-underline`}
                   style={{
-                    padding: isFeatured ? '32px 28px' : '24px 22px',
-                    background: highlighted ? config.color : '#fafafa',
-                    border: `1.5px solid ${highlighted ? config.border : '#efefef'}`,
-                    transform: highlighted ? 'translateY(-5px)' : 'none',
+                    padding: '22px 22px 20px',
+                    background: highlighted ? theme.bgHover : theme.bg,
+                    border: `1.5px solid ${highlighted ? theme.borderHover : theme.border}`,
+                    transform: highlighted ? 'translateY(-6px)' : 'none',
                     boxShadow: highlighted
-                      ? '0 20px 48px rgba(0,0,0,0.09)'
-                      : '0 1px 4px rgba(0,0,0,0.04)',
+                      ? `0 20px 48px -8px ${theme.accent}30`
+                      : '0 1px 3px rgba(0,0,0,0.05)',
                   }}
                   onMouseEnter={() => setHovered(i)}
                   onMouseLeave={() => setHovered(null)}
                 >
-                  {/* Accent circle */}
+                  {/* Decorative circles */}
                   <div
-                    className="absolute rounded-full pointer-events-none transition-all duration-300"
+                    className="absolute rounded-full pointer-events-none transition-all duration-500"
                     style={{
-                      top: -20, right: -20, width: 80, height: 80,
-                      background: highlighted ? config.border : 'transparent',
-                      opacity: 0.4,
+                      width: 90, height: 90,
+                      top: -28, right: -28,
+                      background: theme.accent,
+                      opacity: highlighted ? 0.14 : 0.08,
+                    }}
+                  />
+                  <div
+                    className="absolute rounded-full pointer-events-none"
+                    style={{
+                      width: 48, height: 48,
+                      top: 10, right: 10,
+                      background: theme.accent,
+                      opacity: highlighted ? 0.1 : 0.05,
                     }}
                   />
 
-                  {/* Icon */}
+                  {/* Type badge */}
                   <div
-                    className="flex items-center justify-center rounded-[14px] transition-all duration-[250ms]"
+                    className="inline-flex items-center rounded-full text-[10px] font-bold uppercase tracking-wide mb-4"
                     style={{
-                      width: isFeatured ? 52 : 44,
-                      height: isFeatured ? 52 : 44,
-                      marginBottom: isFeatured ? 20 : 14,
-                      background: highlighted ? '#fff' : config.color,
-                      border: `1.5px solid ${config.border}`,
-                      fontSize: isFeatured ? 24 : 20,
-                      boxShadow: highlighted ? `0 4px 12px ${config.accent}22` : 'none',
+                      padding: '3px 10px',
+                      background: theme.badge,
+                      color: theme.badgeText,
+                      letterSpacing: '0.06em',
                     }}
                   >
-                    {config.icon}
+                    {theme.label}
                   </div>
 
-                  {/* Label */}
+                  {/* Count — hero number */}
                   <div
-                    className="font-extrabold text-[#0f172a] mb-1 leading-[1.2] capitalize"
-                    style={{ fontSize: isFeatured ? 18 : 15 }}
+                    className="font-black leading-none mb-1 transition-colors duration-300"
+                    style={{
+                      fontSize: 40,
+                      color: highlighted ? theme.textAccent : '#0f172a',
+                      letterSpacing: '-2px',
+                    }}
                   >
-                    {cat.label}
+                    {cat.count}
                   </div>
-
-                  {/* Desc */}
                   <div
-                    className="text-[12px] font-medium mb-3.5 leading-[1.4]"
-                    style={{ color: highlighted ? '#6b7280' : '#9ca3af' }}
+                    className="text-[12px] font-semibold mb-4"
+                    style={{ color: highlighted ? theme.accent : '#9ca3af' }}
                   >
-                    {config.desc}
+                    open positions
                   </div>
 
-                  {/* Count + arrow */}
+                  {/* Label + arrow */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-baseline gap-1">
-                      <span
-                        className="font-extrabold leading-none"
-                        style={{
-                          fontSize: isFeatured ? 28 : 22,
-                          color: highlighted ? config.accent : PRIMARY,
-                          letterSpacing: -1,
-                        }}
-                      >
-                        {cat.count}
-                      </span>
-                      <span className="text-[12px] text-gray-400 font-medium">jobs</span>
-                    </div>
-                    <div
-                      className="w-[30px] h-[30px] rounded-full flex items-center justify-center transition-all duration-[250ms]"
-                      style={{ background: highlighted ? config.accent : '#f0f0f0' }}
+                    <span
+                      className="font-bold capitalize leading-tight"
+                      style={{
+                        fontSize: 14,
+                        color: highlighted ? theme.textAccent : '#374151',
+                        maxWidth: '70%',
+                      }}
                     >
-                      <ArrowIcon color={highlighted ? '#fff' : '#9ca3af'} />
+                      {cat.label}
+                    </span>
+                    <div
+                      className="w-[32px] h-[32px] rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-300"
+                      style={{ background: highlighted ? theme.accent : '#fff', border: `1.5px solid ${theme.border}` }}
+                    >
+                      <svg
+                        width="13" height="13" fill="none"
+                        stroke={highlighted ? '#fff' : theme.accent}
+                        strokeWidth="2.5" viewBox="0 0 24 24"
+                      >
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                      </svg>
                     </div>
                   </div>
                 </Link>

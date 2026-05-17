@@ -1,5 +1,5 @@
 import apiClient, { recruiterClient } from './client';
-import { setRecruiterTokenCookie, setAuth } from '@/src/lib/auth';
+import { setRecruiterTokenCookie } from '@/src/lib/auth';
 import type { ApiResponse } from '@/src/types/api';
 import type {
   RecruiterCompanyProfile,
@@ -17,6 +17,12 @@ import type {
 
 // ── Recruiter Authentication ──────────────────────────────────────────────────
 
+interface RecruiterAuthResponse {
+  success: boolean;
+  message: string;
+  token?: string;
+}
+
 export interface RecruiterSignupRequest {
   full_name: string;
   company_name: string;
@@ -27,12 +33,11 @@ export interface RecruiterSignupRequest {
 }
 
 export async function signupRecruiter(data: RecruiterSignupRequest): Promise<{ token?: string }> {
-  const res = await apiClient.post<any>('/auth/recruiter/signup', data);
+  const res = await apiClient.post<RecruiterAuthResponse>('/auth/recruiter/signup', data);
   const token = res.data.token;
   if (token) {
     localStorage.setItem('recruiter_token', token);
     setRecruiterTokenCookie(token);
-    setAuth(data.email);
   }
   return { token };
 }
@@ -43,12 +48,11 @@ export interface RecruiterSigninRequest {
 }
 
 export async function signinRecruiter(data: RecruiterSigninRequest): Promise<void> {
-  const response = await apiClient.post<any>('/auth/recruiter/signin', data);
+  const response = await apiClient.post<RecruiterAuthResponse>('/auth/recruiter/signin', data);
   const token = response.data.token;
   if (token) {
     localStorage.setItem('recruiter_token', token);
     setRecruiterTokenCookie(token);
-    setAuth(data.email);
   } else {
     throw new Error('No token in response');
   }
@@ -76,7 +80,7 @@ export async function updateRecruiterCompanyProfile(
 export async function getRecruiterPostedJobs(
   page = 1,
   limit = 20
-): Promise<{ jobs: RecruiterPostedJob[]; pagination?: any }> {
+): Promise<RecruiterJobsResponse['data']> {
   const res = await recruiterClient.get<RecruiterJobsResponse>(
     '/recruiter/jobs',
     { params: { page, limit } }
@@ -124,7 +128,7 @@ export async function getRecruiterApplicants(
     page?: number;
     limit?: number;
   }
-): Promise<{ applicants: RecruiterApplicant[]; pagination?: any }> {
+): Promise<RecruiterApplicantsResponse['data']> {
   const res = await recruiterClient.get<RecruiterApplicantsResponse>(
     '/recruiter/applicants',
     { params: filters }

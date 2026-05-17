@@ -59,7 +59,7 @@ export default function PostedJobs() {
       )}
 
       <div className="px-5 py-3.5 border-t border-gray-100 bg-gray-50/40">
-        <Link href="/recruiter/jobs" className="text-[12px] font-bold text-primary hover:text-primary/80 transition-colors">
+        <Link href="/recruiter/posted-jobs" className="text-[12px] font-bold text-primary hover:text-primary/80 transition-colors">
           View all jobs →
         </Link>
       </div>
