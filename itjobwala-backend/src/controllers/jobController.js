@@ -21,7 +21,7 @@ const formatJob = (job) => {
     salary_lpa_max: job.salary_max ? (job.salary_max / 100000).toFixed(1) : null,
     salary_currency: job.salary_currency || 'INR',
     salary_period: job.salary_period || 'annual',
-    description: job.description,
+    description: job.about_role || job.description || '',
     skills: job.skills || [],
     company_type: job.recruiter?.company_type || null,
     is_new: job.is_new || false,

@@ -3,23 +3,29 @@
 import Link from 'next/link';
 
 const STATUS_STYLES: Record<string, string> = {
-  shortlisted: 'bg-blue-50 text-blue-700',
+  applied:     'bg-blue-50 text-blue-700',
+  shortlisted: 'bg-green-50 text-green-700',
   interview:   'bg-amber-50 text-amber-700',
-  pending:     'bg-gray-100 text-gray-600',
+  hired:       'bg-purple-50 text-purple-700',
   rejected:    'bg-red-50 text-red-500',
   selected:    'bg-green-50 text-green-700',
+  withdrawn:   'bg-gray-100 text-gray-500',
+  offer:       'bg-indigo-50 text-indigo-700',
 };
 
 const STATUS_LABELS: Record<string, string> = {
+  applied:     'Applied',
   shortlisted: 'Shortlisted',
   interview:   'Interview',
-  pending:     'Under Review',
+  hired:       'Hired',
   rejected:    'Rejected',
   selected:    'Selected',
+  withdrawn:   'Withdrawn',
+  offer:       'Offer',
 };
 
 export interface Applicant {
-  id: number;
+  id: string;
   name: string;
   role: string;
   experience: string;

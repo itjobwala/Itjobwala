@@ -64,12 +64,6 @@ export default function RecruiterDashboardPage() {
           <ActivityFeed />
         </div>
 
-        {/* Footer note */}
-        <div className="text-center py-4">
-          <p className="text-[12px] text-gray-400">
-            itJobwala Recruiter Dashboard &middot; Pro Plan
-          </p>
-        </div>
       </div>
     </RecruiterShell>
   );

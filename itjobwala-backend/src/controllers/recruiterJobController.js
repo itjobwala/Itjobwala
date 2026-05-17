@@ -1,6 +1,7 @@
 import Job from '../models/Job.js';
 import Activity from '../models/Activity.js';
 import Application from '../models/Application.js';
+import Recruiter from '../models/Recruiter.js';
 
 export const getJobs = async (request, reply) => {
   try {
@@ -52,7 +53,7 @@ export const getJobs = async (request, reply) => {
         workMode: job.work_mode,
         salaryMin: job.salary_min,
         salaryMax: job.salary_max,
-        requiredSkills: typeof job.skills === 'string' ? JSON.parse(job.skills) : (job.skills || []),
+        requiredSkills: Array.isArray(job.skills) ? job.skills : [],
         experienceLevel: `${job.experience_min || 0}-${job.experience_max || '5+'} years`,
         applicationCount: appCount,
         postedDate: job.status === 'active' ? job.created_at : null,
@@ -96,6 +97,12 @@ export const getJobById = async (request, reply) => {
 
     const appCount = await Application.query().where('job_id', job.id).resultSize();
 
+    function parseJsonArray(val) {
+      if (!val) return [];
+      if (Array.isArray(val)) return val;
+      try { return JSON.parse(val); } catch { return []; }
+    }
+
     return reply.status(200).send({
       success: true,
       message: 'Job retrieved successfully',
@@ -108,10 +115,17 @@ export const getJobById = async (request, reply) => {
         workMode: job.work_mode,
         salaryMin: job.salary_min,
         salaryMax: job.salary_max,
-        requiredSkills: typeof job.skills === 'string' ? JSON.parse(job.skills) : (job.skills || []),
+        requiredSkills: parseJsonArray(job.skills),
         experienceLevel: `${job.experience_min || 0}-${job.experience_max || '5+'} years`,
+        responsibilities: parseJsonArray(job.responsibilities),
+        requirements: parseJsonArray(job.requirements),
+        niceToHave: parseJsonArray(job.nice_to_have),
+        benefits: parseJsonArray(job.benefits),
+        vacancies: job.vacancies || 1,
+        closesAt: job.closes_at || null,
+        jobLevel: job.job_level || null,
         applicationCount: appCount,
-        postedDate: job.created_at,
+        postedDate: job.status === 'active' ? job.created_at : null,
         status: job.status,
         companyId: `company_${job.recruiter_id}`,
         createdAt: job.created_at,
@@ -136,7 +150,14 @@ export const postJob = async (request, reply) => {
       salaryMin,
       salaryMax,
       requiredSkills,
-      experienceLevel
+      experienceLevel,
+      responsibilities,
+      requirements,
+      niceToHave,
+      benefits,
+      vacancies,
+      closesAt,
+      jobLevel,
     } = request.body;
 
     // Validation
@@ -168,19 +189,31 @@ export const postJob = async (request, reply) => {
     else if (experienceLevel === '3-5 years') { expMin = 3; expMax = 5; }
     else if (experienceLevel === '5+ years') { expMin = 5; expMax = 15; }
 
+    const recruiter = await Recruiter.query().findById(recruiterId).select('company_name');
+    const companyName = recruiter?.company_name ?? 'Unknown Company';
+
     const newJob = await Job.query().insert({
       title,
-      about_role: description,
+      company_name: companyName,
+      description: description || '',
+      about_role: description || '',
       location,
       job_type: jobType,
       work_mode: workMode,
       salary_min: salaryMin,
       salary_max: salaryMax,
-      skills: JSON.stringify(requiredSkills || []),
+      skills: requiredSkills || [],
       experience_min: expMin,
       experience_max: expMax,
+      responsibilities: responsibilities || [],
+      requirements: requirements || [],
+      nice_to_have: niceToHave || [],
+      benefits: benefits || [],
+      vacancies: vacancies || 1,
+      closes_at: closesAt || null,
+      job_level: jobLevel || null,
       recruiter_id: recruiterId,
-      status: 'draft'
+      status: 'draft',
     }).returning('*');
 
     await Activity.query().insert({
@@ -230,44 +263,100 @@ export const updateJob = async (request, reply) => {
       return reply.status(404).send({ success: false, message: 'Job not found', error: 'NOT_FOUND' });
     }
 
-    // Business Logic: Cannot update if job has applications and status is "active"
-    let appCount = await Application.query().where('job_id', job.id).resultSize();
-    if (job.status === 'active' && appCount > 0 && updateData.title) {
-       return reply.status(403).send({
-         success: false,
-         message: 'Cannot update active job with existing applications',
-         error: 'FORBIDDEN',
-         details: {
-           applicationCount: appCount,
-           suggestion: 'Close the job first or wait until all applications are processed'
-         }
-       });
+    // Field-level validation
+    const details = {};
+    if (updateData.title != null) {
+      if (updateData.title.trim().length < 5 || updateData.title.trim().length > 150) {
+        details.title = 'Title must be between 5 and 150 characters';
+      }
+    }
+    if (updateData.description != null) {
+      if (updateData.description.trim().length < 50 || updateData.description.trim().length > 10000) {
+        details.description = `Description must be between 50 and 10000 characters (currently ${updateData.description.trim().length})`;
+      }
+    }
+    if (updateData.location != null && updateData.location.trim().length === 0) {
+      details.location = 'Location cannot be empty';
+    }
+    if (updateData.salaryMin != null && updateData.salaryMax != null) {
+      if (Number(updateData.salaryMin) > Number(updateData.salaryMax)) {
+        details.salaryMin = 'Minimum salary cannot exceed maximum salary';
+      }
+    }
+    if (updateData.vacancies != null && (isNaN(updateData.vacancies) || updateData.vacancies < 1)) {
+      details.vacancies = 'Vacancies must be at least 1';
+    }
+    if (updateData.closesAt != null && updateData.closesAt !== '') {
+      const closes = new Date(updateData.closesAt);
+      if (isNaN(closes.getTime()) || closes <= new Date()) {
+        details.closesAt = 'Application deadline must be a future date';
+      }
+    }
+    if (updateData.status != null && !['active', 'closed', 'draft'].includes(updateData.status)) {
+      details.status = 'Invalid status value';
+    }
+
+    if (Object.keys(details).length > 0) {
+      return reply.status(400).send({
+        success: false,
+        message: 'Validation failed',
+        error: 'VALIDATION_ERROR',
+        details,
+      });
+    }
+
+    // Block core content changes on active jobs that already have applications
+    const coreChanging = updateData.title != null || updateData.description != null ||
+      updateData.location != null || updateData.jobType != null || updateData.workMode != null;
+    if (coreChanging && job.status === 'active') {
+      const appCount = await Application.query().where('job_id', job.id).resultSize();
+      if (appCount > 0) {
+        return reply.status(409).send({
+          success: false,
+          message: 'Cannot edit core job details while the job is active and has applications. Close the job first.',
+          error: 'CONFLICT',
+          details: { applicationCount: appCount },
+        });
+      }
     }
 
     const mappedUpdate = {};
-    if (updateData.title) mappedUpdate.title = updateData.title;
-    if (updateData.description) mappedUpdate.about_role = updateData.description;
-    if (updateData.location) mappedUpdate.location = updateData.location;
-    if (updateData.jobType) mappedUpdate.job_type = updateData.jobType;
-    if (updateData.workMode) mappedUpdate.work_mode = updateData.workMode;
-    if (updateData.salaryMin) mappedUpdate.salary_min = updateData.salaryMin;
-    if (updateData.salaryMax) mappedUpdate.salary_max = updateData.salaryMax;
-    if (updateData.requiredSkills) mappedUpdate.skills = JSON.stringify(updateData.requiredSkills);
-    if (updateData.status) mappedUpdate.status = updateData.status;
+    if (updateData.title != null)       mappedUpdate.title = updateData.title.trim();
+    if (updateData.description != null) { mappedUpdate.description = updateData.description.trim(); mappedUpdate.about_role = updateData.description.trim(); }
+    if (updateData.location != null)    mappedUpdate.location = updateData.location.trim();
+    if (updateData.jobType != null)     mappedUpdate.job_type = updateData.jobType;
+    if (updateData.workMode != null)    mappedUpdate.work_mode = updateData.workMode;
+    if (updateData.salaryMin != null)   mappedUpdate.salary_min = Number(updateData.salaryMin) || null;
+    if (updateData.salaryMax != null)   mappedUpdate.salary_max = Number(updateData.salaryMax) || null;
+    if (updateData.requiredSkills != null) mappedUpdate.skills = updateData.requiredSkills;
+    if (updateData.status != null)      mappedUpdate.status = updateData.status;
+    if (updateData.responsibilities != null) mappedUpdate.responsibilities = updateData.responsibilities;
+    if (updateData.requirements != null)    mappedUpdate.requirements = updateData.requirements;
+    if (updateData.niceToHave != null)      mappedUpdate.nice_to_have = updateData.niceToHave;
+    if (updateData.benefits != null)        mappedUpdate.benefits = updateData.benefits;
+    if (updateData.vacancies != null)       mappedUpdate.vacancies = Number(updateData.vacancies);
+    if (updateData.closesAt !== undefined)  mappedUpdate.closes_at = updateData.closesAt || null;
+    if (updateData.jobLevel !== undefined)  mappedUpdate.job_level = updateData.jobLevel || null;
 
-    if (updateData.experienceLevel) {
+    if (updateData.experienceLevel != null) {
       let expMin = 0, expMax = 10;
-      if (updateData.experienceLevel === 'Fresher') { expMin = 0; expMax = 1; }
+      if (updateData.experienceLevel === 'Fresher')   { expMin = 0; expMax = 1; }
       else if (updateData.experienceLevel === '1-2 years') { expMin = 1; expMax = 2; }
       else if (updateData.experienceLevel === '2-3 years') { expMin = 2; expMax = 3; }
       else if (updateData.experienceLevel === '3-5 years') { expMin = 3; expMax = 5; }
-      else if (updateData.experienceLevel === '5+ years') { expMin = 5; expMax = 15; }
+      else if (updateData.experienceLevel === '5+ years')  { expMin = 5; expMax = 15; }
       mappedUpdate.experience_min = expMin;
       mappedUpdate.experience_max = expMax;
     }
 
     const updatedJob = await job.$query().patchAndFetch(mappedUpdate);
-    appCount = await Application.query().where('job_id', updatedJob.id).resultSize();
+    const appCount = await Application.query().where('job_id', updatedJob.id).resultSize();
+
+    function parseJsonArray(val) {
+      if (!val) return [];
+      if (Array.isArray(val)) return val;
+      try { return JSON.parse(val); } catch { return []; }
+    }
 
     return reply.status(200).send({
       success: true,
@@ -275,21 +364,28 @@ export const updateJob = async (request, reply) => {
       data: {
         id: `job_${updatedJob.id}`,
         title: updatedJob.title,
-        description: updatedJob.about_role,
+        description: updatedJob.about_role || updatedJob.description,
         location: updatedJob.location,
         jobType: updatedJob.job_type,
         workMode: updatedJob.work_mode,
         salaryMin: updatedJob.salary_min,
         salaryMax: updatedJob.salary_max,
-        requiredSkills: typeof updatedJob.skills === 'string' ? JSON.parse(updatedJob.skills) : (updatedJob.skills || []),
+        requiredSkills: parseJsonArray(updatedJob.skills),
         experienceLevel: `${updatedJob.experience_min || 0}-${updatedJob.experience_max || '5+'} years`,
+        responsibilities: parseJsonArray(updatedJob.responsibilities),
+        requirements: parseJsonArray(updatedJob.requirements),
+        niceToHave: parseJsonArray(updatedJob.nice_to_have),
+        benefits: parseJsonArray(updatedJob.benefits),
+        vacancies: updatedJob.vacancies || 1,
+        closesAt: updatedJob.closes_at || null,
+        jobLevel: updatedJob.job_level || null,
         applicationCount: appCount,
         postedDate: updatedJob.status === 'active' ? updatedJob.created_at : null,
         status: updatedJob.status,
         companyId: `company_${recruiterId}`,
         createdAt: updatedJob.created_at,
-        updatedAt: updatedJob.updated_at
-      }
+        updatedAt: updatedJob.updated_at,
+      },
     });
   } catch (error) {
     request.server.log.error(error);
@@ -329,6 +425,42 @@ export const deleteJob = async (request, reply) => {
     return reply.status(200).send({
       success: true,
       message: 'Job deleted successfully'
+    });
+  } catch (error) {
+    request.server.log.error(error);
+    return reply.status(500).send({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const getRecruiterStats = async (request, reply) => {
+  try {
+    const recruiterId = request.user.id;
+
+    const [activeJobs, applicantRows] = await Promise.all([
+      Job.query().where('recruiter_id', recruiterId).where('status', 'active').resultSize(),
+      Application.query()
+        .join('jobs', 'applications.job_id', 'jobs.id')
+        .where('jobs.recruiter_id', recruiterId)
+        .groupBy('applications.status')
+        .select('applications.status')
+        .count('applications.id as count'),
+    ]);
+
+    const byStatus = Object.fromEntries(
+      applicantRows.map(r => [r.status, parseInt(r.count, 10)])
+    );
+
+    const total = Object.values(byStatus).reduce((s, n) => s + n, 0);
+
+    return reply.status(200).send({
+      success: true,
+      data: {
+        activeJobs,
+        totalApplicants: total,
+        interviewsScheduled: byStatus['interview'] ?? 0,
+        hired: byStatus['hired'] ?? 0,
+        byStatus,
+      },
     });
   } catch (error) {
     request.server.log.error(error);

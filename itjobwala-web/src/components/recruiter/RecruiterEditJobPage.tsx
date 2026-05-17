@@ -1,0 +1,489 @@
+'use client';
+
+import { useState, useEffect, type FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  useRecruiterPostedJobDetailQuery,
+  useUpdateRecruiterJobMutation,
+} from '@/src/hooks/useRecruiter';
+
+const PRIMARY = '#1557FF';
+
+const JOB_TYPES = ['Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance'];
+const WORK_MODES = ['Remote', 'On-site', 'Hybrid'];
+const EXPERIENCE_LEVELS = ['Fresher', '1-2 years', '2-3 years', '3-5 years', '5+ years'];
+const JOB_LEVELS = ['Junior', 'Mid', 'Senior', 'Lead', 'Manager'];
+
+function parseBullets(text: string): string[] {
+  return text.split('\n').map(l => l.trim()).filter(Boolean);
+}
+
+function reverseMapExperience(exp: string): string {
+  if (exp.startsWith('0-1') || exp.startsWith('0-')) return 'Fresher';
+  if (exp.startsWith('1-2')) return '1-2 years';
+  if (exp.startsWith('2-3')) return '2-3 years';
+  if (exp.startsWith('3-5')) return '3-5 years';
+  if (exp.startsWith('5-')) return '5+ years';
+  return 'Fresher';
+}
+
+interface Props {
+  jobId: string;
+}
+
+export default function RecruiterEditJobPage({ jobId }: Props) {
+  const router = useRouter();
+  const { data: job, isLoading: loadingJob } = useRecruiterPostedJobDetailQuery(jobId, true);
+  const updateMutation = useUpdateRecruiterJobMutation();
+
+  const [ready, setReady] = useState(false);
+  const [skillInput, setSkillInput] = useState('');
+  const [apiError, setApiError] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const [form, setFormState] = useState({
+    title: '',
+    description: '',
+    location: '',
+    jobType: 'Full-time',
+    workMode: 'On-site',
+    salaryMin: '',
+    salaryMax: '',
+    requiredSkills: [] as string[],
+    experienceLevel: 'Fresher',
+    jobLevel: '',
+    vacancies: '',
+    closesAt: '',
+    responsibilities: '',
+    requirements: '',
+    niceToHave: '',
+    benefits: '',
+  });
+
+  // Prefill once job loads
+  useEffect(() => {
+    if (!job || ready) return;
+    setFormState({
+      title: job.title ?? '',
+      description: job.description ?? '',
+      location: job.location ?? '',
+      jobType: job.jobType ?? 'Full-time',
+      workMode: job.workMode ?? 'On-site',
+      salaryMin: job.salaryMin != null ? String(job.salaryMin) : '',
+      salaryMax: job.salaryMax != null ? String(job.salaryMax) : '',
+      requiredSkills: job.requiredSkills ?? [],
+      experienceLevel: reverseMapExperience(job.experienceLevel ?? ''),
+      jobLevel: job.jobLevel ?? '',
+      vacancies: job.vacancies != null ? String(job.vacancies) : '',
+      closesAt: job.closesAt ? job.closesAt.substring(0, 10) : '',
+      responsibilities: (job.responsibilities ?? []).join('\n'),
+      requirements: (job.requirements ?? []).join('\n'),
+      niceToHave: (job.niceToHave ?? []).join('\n'),
+      benefits: (job.benefits ?? []).join('\n'),
+    });
+    setReady(true);
+  }, [job, ready]);
+
+  function set(k: string, v: any) {
+    setFormState(f => ({ ...f, [k]: v }));
+    setErrors(e => ({ ...e, [k]: '' }));
+    setApiError('');
+  }
+
+  function addSkill() {
+    const s = skillInput.trim();
+    if (s && !form.requiredSkills.includes(s)) set('requiredSkills', [...form.requiredSkills, s]);
+    setSkillInput('');
+  }
+
+  function removeSkill(skill: string) {
+    set('requiredSkills', form.requiredSkills.filter(s => s !== skill));
+  }
+
+  function validate(isActiveLocked: boolean): Record<string, string> {
+    const e: Record<string, string> = {};
+    // Skip locked-field validation when the job is active with applications
+    if (!isActiveLocked) {
+      if (!form.title.trim() || form.title.trim().length < 5) e.title = 'Title must be at least 5 characters';
+      if (form.title.trim().length > 150) e.title = 'Title must be at most 150 characters';
+      if (!form.description.trim() || form.description.trim().length < 50) e.description = 'Description must be at least 50 characters';
+      if (!form.location.trim()) e.location = 'Location is required';
+      if (!form.responsibilities.trim()) e.responsibilities = 'At least one responsibility is required';
+      if (!form.requirements.trim()) e.requirements = 'At least one requirement is required';
+    }
+    const min = form.salaryMin ? Number(form.salaryMin) : undefined;
+    const max = form.salaryMax ? Number(form.salaryMax) : undefined;
+    if (min !== undefined && max !== undefined && min > max) e.salaryMin = 'Min salary cannot exceed max';
+    if (form.vacancies && Number(form.vacancies) < 1) e.vacancies = 'Vacancies must be at least 1';
+    if (form.closesAt) {
+      const closes = new Date(form.closesAt);
+      if (closes <= new Date()) e.closesAt = 'Deadline must be a future date';
+    }
+    return e;
+  }
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    const isActiveLocked = job?.status === 'active' && (job?.applicationCount ?? 0) > 0;
+    const errs = validate(isActiveLocked);
+    if (Object.keys(errs).length) { setErrors(errs); return; }
+
+    setApiError('');
+    try {
+      const payload: Parameters<typeof updateMutation.mutateAsync>[0]['data'] = {
+        salaryMin: form.salaryMin ? Number(form.salaryMin) : undefined,
+        salaryMax: form.salaryMax ? Number(form.salaryMax) : undefined,
+        requiredSkills: form.requiredSkills,
+        experienceLevel: form.experienceLevel,
+        jobLevel: form.jobLevel || null,
+        vacancies: form.vacancies ? Number(form.vacancies) : undefined,
+        // Always send closesAt so null clears an existing deadline
+        closesAt: form.closesAt || null,
+        niceToHave: parseBullets(form.niceToHave),
+        benefits: parseBullets(form.benefits),
+      };
+
+      // Only include locked fields when the job is NOT active+with-applications
+      if (!isActiveLocked) {
+        payload.title = form.title.trim();
+        payload.description = form.description.trim();
+        payload.location = form.location.trim();
+        payload.jobType = form.jobType;
+        payload.workMode = form.workMode;
+        payload.responsibilities = parseBullets(form.responsibilities);
+        payload.requirements = parseBullets(form.requirements);
+      }
+
+      await updateMutation.mutateAsync({ jobId, data: payload });
+      router.push(`/recruiter/posted-jobs/${jobId}`);
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || (err instanceof Error ? err.message : 'Failed to update job');
+      // Surface field-level validation errors from backend
+      const fieldErrors = err?.response?.data?.details;
+      if (fieldErrors && typeof fieldErrors === 'object') {
+        setErrors(fieldErrors);
+      } else {
+        setApiError(msg);
+      }
+    }
+  }
+
+  const isActive = job?.status === 'active' && (job?.applicationCount ?? 0) > 0;
+
+  if (loadingJob || !ready) {
+    return (
+      <div className="max-w-[680px] mx-auto px-5 py-20 text-center">
+        <div className="w-8 h-8 border-4 border-gray-200 border-t-primary rounded-full animate-spin mx-auto" />
+        <p className="mt-4 text-gray-500">Loading job details…</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-[680px] mx-auto px-5 py-10">
+      {/* Header */}
+      <div className="mb-8">
+        <button type="button" onClick={() => router.back()}
+          className="flex items-center gap-1.5 text-[13px] font-semibold text-gray-500 hover:text-gray-800 transition-colors mb-4">
+          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          Back
+        </button>
+        <h1 className="font-extrabold text-[#0f172a] text-2xl sm:text-[28px] mb-1" style={{ letterSpacing: -0.8 }}>
+          Edit Job
+        </h1>
+        <p className="text-sm text-gray-500">
+          {isActive
+            ? 'This job is active with applications — only salary, skills, deadline, and optional fields can be changed.'
+            : 'Update the job details below.'}
+        </p>
+      </div>
+
+      {isActive && (
+        <div className="mb-6 flex gap-3 items-start rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.2" className="shrink-0 mt-0.5">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+            <line x1="12" y1="9" x2="12" y2="13" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+          <p className="text-[13px] text-amber-800 font-medium">
+            Title, description, location, job type, and work mode are locked while the job is active and has applications.
+            Close the job first to edit them.
+          </p>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8 flex flex-col gap-5" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
+
+        {/* Title */}
+        <div>
+          <label className="block text-[13px] font-bold text-gray-600 mb-1.5">
+            Job title <span style={{ color: PRIMARY }}>*</span>
+          </label>
+          <input
+            value={form.title}
+            onChange={e => set('title', e.target.value)}
+            disabled={isActive}
+            placeholder="e.g. Senior React Developer"
+            className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none transition-colors placeholder:text-gray-400 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
+            style={{ borderColor: errors.title ? '#ef4444' : '#e5e7eb' }}
+          />
+          {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
+        </div>
+
+        {/* Description */}
+        <div>
+          <label className="block text-[13px] font-bold text-gray-600 mb-1.5">
+            Job description <span style={{ color: PRIMARY }}>*</span>
+          </label>
+          <textarea
+            value={form.description}
+            onChange={e => set('description', e.target.value)}
+            disabled={isActive}
+            rows={6}
+            placeholder="Describe the role (min. 50 characters)..."
+            className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none transition-colors placeholder:text-gray-400 resize-none disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
+            style={{ borderColor: errors.description ? '#ef4444' : '#e5e7eb' }}
+          />
+          <div className="flex items-center justify-between mt-1">
+            {errors.description ? <p className="text-xs text-red-500">{errors.description}</p> : <span />}
+            <span className="text-[11px] text-gray-400">{form.description.length} chars</span>
+          </div>
+        </div>
+
+        {/* Location + Experience */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">
+              Location <span style={{ color: PRIMARY }}>*</span>
+            </label>
+            <input
+              value={form.location}
+              onChange={e => set('location', e.target.value)}
+              disabled={isActive}
+              placeholder="e.g. Bengaluru / Remote"
+              className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
+              style={{ borderColor: errors.location ? '#ef4444' : '#e5e7eb' }}
+            />
+            {errors.location && <p className="text-xs text-red-500 mt-1">{errors.location}</p>}
+          </div>
+          <div>
+            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Experience level</label>
+            <select
+              value={form.experienceLevel}
+              onChange={e => set('experienceLevel', e.target.value)}
+              className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none bg-white"
+            >
+              {EXPERIENCE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
+          </div>
+        </div>
+
+        {/* Job type + Work mode */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Job type</label>
+            <select
+              value={form.jobType}
+              onChange={e => set('jobType', e.target.value)}
+              disabled={isActive}
+              className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none bg-white disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
+            >
+              {JOB_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Work mode</label>
+            <select
+              value={form.workMode}
+              onChange={e => set('workMode', e.target.value)}
+              disabled={isActive}
+              className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none bg-white disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
+            >
+              {WORK_MODES.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </div>
+        </div>
+
+        {/* Salary */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Min salary (₹/yr)</label>
+            <input
+              type="number"
+              value={form.salaryMin}
+              onChange={e => set('salaryMin', e.target.value)}
+              placeholder="e.g. 500000"
+              className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none"
+              style={{ borderColor: errors.salaryMin ? '#ef4444' : '#e5e7eb' }}
+            />
+            {errors.salaryMin && <p className="text-xs text-red-500 mt-1">{errors.salaryMin}</p>}
+          </div>
+          <div>
+            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Max salary (₹/yr)</label>
+            <input
+              type="number"
+              value={form.salaryMax}
+              onChange={e => set('salaryMax', e.target.value)}
+              placeholder="e.g. 1000000"
+              className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none"
+            />
+          </div>
+        </div>
+
+        {/* Level + Vacancies + Deadline */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Job level</label>
+            <select
+              value={form.jobLevel}
+              onChange={e => set('jobLevel', e.target.value)}
+              className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none bg-white"
+            >
+              <option value="">Select level</option>
+              {JOB_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Vacancies</label>
+            <input
+              type="number"
+              min="1"
+              value={form.vacancies}
+              onChange={e => set('vacancies', e.target.value)}
+              placeholder="e.g. 2"
+              className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none"
+              style={{ borderColor: errors.vacancies ? '#ef4444' : '#e5e7eb' }}
+            />
+            {errors.vacancies && <p className="text-xs text-red-500 mt-1">{errors.vacancies}</p>}
+          </div>
+          <div>
+            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Application deadline</label>
+            <input
+              type="date"
+              value={form.closesAt}
+              onChange={e => set('closesAt', e.target.value)}
+              className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none"
+              style={{ borderColor: errors.closesAt ? '#ef4444' : '#e5e7eb' }}
+            />
+            {errors.closesAt && <p className="text-xs text-red-500 mt-1">{errors.closesAt}</p>}
+          </div>
+        </div>
+
+        {/* Skills */}
+        <div>
+          <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Required skills</label>
+          <div className="flex gap-2 mb-2">
+            <input
+              value={skillInput}
+              onChange={e => setSkillInput(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }}
+              placeholder="e.g. React, Node.js"
+              className="flex-1 rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none"
+            />
+            <button type="button" onClick={addSkill}
+              className="px-4 py-2.5 rounded-xl text-[13px] font-bold text-white"
+              style={{ background: PRIMARY }}>
+              Add
+            </button>
+          </div>
+          {form.requiredSkills.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {form.requiredSkills.map(s => (
+                <span key={s}
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-semibold"
+                  style={{ background: `${PRIMARY}12`, color: PRIMARY, border: `1.5px solid ${PRIMARY}30` }}>
+                  {s}
+                  <button type="button" onClick={() => removeSkill(s)} className="hover:text-red-500 transition-colors">×</button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Responsibilities */}
+        <div>
+          <label className="block text-[13px] font-bold text-gray-600 mb-1.5">
+            Responsibilities <span style={{ color: PRIMARY }}>*</span>
+          </label>
+          <textarea
+            value={form.responsibilities}
+            onChange={e => set('responsibilities', e.target.value)}
+            rows={5}
+            placeholder={"Build and maintain scalable APIs\nCollaborate with cross-functional teams"}
+            className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none placeholder:text-gray-400 resize-none"
+            style={{ borderColor: errors.responsibilities ? '#ef4444' : '#e5e7eb' }}
+          />
+          <p className="text-[11px] text-gray-400 mt-1">One item per line.</p>
+          {errors.responsibilities && <p className="text-xs text-red-500 mt-1">{errors.responsibilities}</p>}
+        </div>
+
+        {/* Requirements */}
+        <div>
+          <label className="block text-[13px] font-bold text-gray-600 mb-1.5">
+            Requirements <span style={{ color: PRIMARY }}>*</span>
+          </label>
+          <textarea
+            value={form.requirements}
+            onChange={e => set('requirements', e.target.value)}
+            rows={5}
+            placeholder={"3+ years of experience with React\nStrong understanding of REST APIs"}
+            className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none placeholder:text-gray-400 resize-none"
+            style={{ borderColor: errors.requirements ? '#ef4444' : '#e5e7eb' }}
+          />
+          <p className="text-[11px] text-gray-400 mt-1">One item per line.</p>
+          {errors.requirements && <p className="text-xs text-red-500 mt-1">{errors.requirements}</p>}
+        </div>
+
+        {/* Nice to have */}
+        <div>
+          <label className="block text-[13px] font-bold text-gray-600 mb-1.5">
+            Nice to have <span className="text-gray-400 font-normal text-[11px]">(optional)</span>
+          </label>
+          <textarea
+            value={form.niceToHave}
+            onChange={e => set('niceToHave', e.target.value)}
+            rows={3}
+            placeholder={"Experience with Docker/Kubernetes\nFamiliarity with GraphQL"}
+            className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none placeholder:text-gray-400 resize-none"
+          />
+          <p className="text-[11px] text-gray-400 mt-1">One item per line.</p>
+        </div>
+
+        {/* Benefits */}
+        <div>
+          <label className="block text-[13px] font-bold text-gray-600 mb-1.5">
+            Perks &amp; benefits <span className="text-gray-400 font-normal text-[11px]">(optional)</span>
+          </label>
+          <textarea
+            value={form.benefits}
+            onChange={e => set('benefits', e.target.value)}
+            rows={3}
+            placeholder={"Health insurance\nFlexible working hours"}
+            className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none placeholder:text-gray-400 resize-none"
+          />
+          <p className="text-[11px] text-gray-400 mt-1">One item per line.</p>
+        </div>
+
+        {apiError && (
+          <div className="rounded-xl px-4 py-3 text-sm font-medium text-red-600 bg-red-50 border border-red-200">{apiError}</div>
+        )}
+
+        <div className="flex gap-3 pt-2">
+          <button type="button" onClick={() => router.back()}
+            className="flex-1 rounded-xl border border-gray-200 text-[13px] font-bold text-gray-600 py-3 hover:bg-gray-50 transition-colors">
+            Cancel
+          </button>
+          <button type="submit" disabled={updateMutation.isPending}
+            className="flex-[2] flex items-center justify-center gap-2 text-white font-bold text-[14px] rounded-xl py-3 transition-all"
+            style={{ background: updateMutation.isPending ? '#93aef5' : PRIMARY, cursor: updateMutation.isPending ? 'not-allowed' : 'pointer' }}>
+            {updateMutation.isPending
+              ? <><div className="w-4 h-4 border-[2.5px] border-white/40 border-t-white rounded-full animate-spin" /> Saving…</>
+              : 'Save changes'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}

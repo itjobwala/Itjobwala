@@ -33,13 +33,13 @@ export default function RecentApplicants() {
   const { data, isLoading } = useRecruiterApplicantsQuery({ limit: 8 }, true);
   const apiApplicants = data?.applicants ?? [];
 
-  const applicants: Applicant[] = apiApplicants.map((a, i) => ({
-    id:          i + 1,
+  const applicants: Applicant[] = apiApplicants.map((a) => ({
+    id:          a.id,
     name:        a.candidateName,
     role:        a.jobTitle ?? '',
-    experience:  '—',
+    experience:  a.experience != null && a.experience > 0 ? `${a.experience} yr${a.experience !== 1 ? 's' : ''}` : '—',
     status:      a.status,
-    initials:    a.candidateName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
+    initials:    a.candidateName.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase(),
     avatarColor: hashGradient(a.candidateName),
     appliedDate: relativeDate(a.appliedDate),
   }));

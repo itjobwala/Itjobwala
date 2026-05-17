@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import dns from 'dns';
 import Recruiter from '../models/Recruiter.js';
+import cloudinary from '../utils/cloudinary.js';
 
 const resolveMx = dns.promises.resolveMx;
 
@@ -144,23 +145,25 @@ export const updateCompanyProfile = async (request, reply) => {
     } = request.body;
 
     const details = {};
-    if (companyName !== undefined) {
+    if (companyName != null && companyName !== '') {
       if (companyName.length < 2 || companyName.length > 100) {
         details.companyName = 'Company name must be between 2 and 100 characters';
       }
     }
 
-    if (industry !== undefined) {
+    if (industry != null && industry !== '') {
       if (industry.length < 2 || industry.length > 50) {
-        details.industry = 'Industry is required and must be 2-50 characters';
+        details.industry = 'Industry must be 2-50 characters';
       }
     }
 
-    if (website && !/^https?:\/\/.+/.test(website)) {
-      details.website = 'Invalid URL format. URL must start with http:// or https://';
+    if (website != null && website !== '') {
+      if (!/^https?:\/\/.+/.test(website)) {
+        details.website = 'Invalid URL format. URL must start with http:// or https://';
+      }
     }
 
-    if (foundedYear !== undefined) {
+    if (foundedYear != null) {
       const year = parseInt(foundedYear, 10);
       const currentYear = new Date().getFullYear();
       if (isNaN(year) || year < 1900 || year > currentYear + 2) {
@@ -199,7 +202,7 @@ export const updateCompanyProfile = async (request, reply) => {
     if (description !== undefined) updateData.about = description;
     if (companySize !== undefined) updateData.size = companySize;
     if (location !== undefined) updateData.location = location;
-    if (foundedYear !== undefined) updateData.founded = String(foundedYear);
+    if (foundedYear != null) updateData.founded = String(foundedYear);
 
     const updated = await Recruiter.query().patchAndFetchById(recruiterId, updateData);
 
@@ -219,6 +222,48 @@ export const updateCompanyProfile = async (request, reply) => {
         createdAt: updated.created_at,
         updatedAt: updated.updated_at
       }
+    });
+  } catch (error) {
+    request.server.log.error(error);
+    return reply.status(500).send({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const uploadCompanyLogo = async (request, reply) => {
+  try {
+    const recruiterId = request.user.id;
+    const data = await request.file();
+
+    if (!data) {
+      return reply.status(400).send({ success: false, message: 'No file uploaded' });
+    }
+
+    const result = await new Promise((resolve, reject) => {
+      const cloudStream = cloudinary.uploader.upload_stream(
+        {
+          folder: `itjobwala/company_logos/rec_${recruiterId}`,
+          resource_type: 'image',
+          public_id: 'logo',
+          overwrite: true,
+        },
+        (error, result) => {
+          if (error) return reject(error);
+          if (!result) return reject(new Error('Cloudinary returned no result'));
+          resolve(result);
+        }
+      );
+
+      cloudStream.on('error', reject);
+      data.file.on('error', (err) => { cloudStream.destroy(); reject(err); });
+      data.file.pipe(cloudStream);
+    });
+
+    await Recruiter.query().findById(recruiterId).patch({ logo: result.secure_url });
+
+    return reply.status(200).send({
+      success: true,
+      message: 'Company logo uploaded successfully.',
+      data: { logo: result.secure_url }
     });
   } catch (error) {
     request.server.log.error(error);

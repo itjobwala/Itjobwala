@@ -13,6 +13,9 @@ import type {
   RecruiterApplicantsResponse,
   RecruiterCompanyProfileResponse,
   RecruiterJobDetailResponse,
+  RecruiterInterview,
+  ScheduleInterviewRequest,
+  RecruiterInterviewsResponse,
 } from '@/src/types/recruiter';
 
 // ── Recruiter Authentication ──────────────────────────────────────────────────
@@ -76,14 +79,43 @@ export async function updateRecruiterCompanyProfile(
   return res.data.data;
 }
 
+const UPLOAD_TIMEOUT = 120_000;
+
+export async function uploadRecruiterCompanyLogo(file: File): Promise<string> {
+  const fd = new FormData();
+  fd.append('file', file);
+  const res = await recruiterClient.post<{ success: boolean; data: { logo: string } }>(
+    '/recruiter/company/logo',
+    fd,
+    { headers: { 'Content-Type': 'multipart/form-data' }, timeout: UPLOAD_TIMEOUT }
+  );
+  return res.data.data.logo;
+}
+
+// Dashboard Stats
+export interface RecruiterStats {
+  activeJobs: number;
+  totalApplicants: number;
+  interviewsScheduled: number;
+  hired: number;
+  byStatus: Record<string, number>;
+}
+
+export async function getRecruiterStats(): Promise<RecruiterStats> {
+  const res = await recruiterClient.get<{ success: boolean; data: RecruiterStats }>('/recruiter/stats');
+  return res.data.data;
+}
+
 // Posted Jobs endpoints
-export async function getRecruiterPostedJobs(
-  page = 1,
-  limit = 20
-): Promise<RecruiterJobsResponse['data']> {
+export async function getRecruiterPostedJobs(filters?: {
+  page?: number;
+  limit?: number;
+  status?: string;
+  search?: string;
+}): Promise<RecruiterJobsResponse['data']> {
   const res = await recruiterClient.get<RecruiterJobsResponse>(
     '/recruiter/jobs',
-    { params: { page, limit } }
+    { params: { page: 1, limit: 20, ...filters } }
   );
   return res.data.data;
 }
@@ -175,4 +207,39 @@ export async function hireApplicant(applicantId: string): Promise<void> {
     `/recruiter/applicants/${applicantId}/hire`,
     {}
   );
+}
+
+// Notifications
+export interface RecruiterNotification {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  is_read: boolean;
+  action_url: string | null;
+  created_at: string;
+}
+
+export async function getRecruiterNotifications(limit = 10): Promise<RecruiterNotification[]> {
+  const res = await recruiterClient.get<{
+    success: boolean;
+    data: { notifications: RecruiterNotification[]; unread_count: number };
+  }>('/notifications', { params: { limit } });
+  return res.data.data.notifications;
+}
+
+// Interviews endpoints
+export async function getRecruiterInterviews(): Promise<RecruiterInterview[]> {
+  const res = await recruiterClient.get<RecruiterInterviewsResponse>('/recruiter/interviews');
+  return res.data.data.interviews;
+}
+
+export async function scheduleRecruiterInterview(
+  data: ScheduleInterviewRequest
+): Promise<RecruiterInterview> {
+  const res = await recruiterClient.post<{ success: boolean; data: RecruiterInterview }>(
+    '/recruiter/interviews',
+    data
+  );
+  return res.data.data;
 }

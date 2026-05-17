@@ -1,8 +1,9 @@
-import { 
-  recruiterSignup, 
+import {
+  recruiterSignup,
   recruiterSignin,
   getCompanyProfile,
-  updateCompanyProfile
+  updateCompanyProfile,
+  uploadCompanyLogo
 } from '../controllers/recruiterController.js';
 
 const recruiterSignupSchema = {
@@ -47,4 +48,5 @@ export default async function recruiterRoutes(fastify, options) {
   // Company Profile routes
   fastify.get('/recruiter/company', { preValidation: [fastify.requireRecruiter] }, getCompanyProfile);
   fastify.put('/recruiter/company', { preValidation: [fastify.requireRecruiter] }, updateCompanyProfile);
+  fastify.post('/recruiter/company/logo', { preValidation: [fastify.requireRecruiter] }, uploadCompanyLogo);
 }

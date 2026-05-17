@@ -15,21 +15,37 @@ import {
   rejectApplicant,
   shortlistApplicant,
   hireApplicant,
+  getRecruiterStats,
+  getRecruiterInterviews,
+  scheduleRecruiterInterview,
+  getRecruiterNotifications,
 } from '@/src/lib/api/recruiter';
 import type {
   UpdateCompanyProfileRequest,
   CreateJobPostRequest,
   UpdateJobPostRequest,
   UpdateApplicantStatusRequest,
+  ScheduleInterviewRequest,
 } from '@/src/types/recruiter';
 
 export const recruiterKeys = {
   company: () => ['recruiter', 'company'] as const,
+  stats: () => ['recruiter', 'stats'] as const,
   jobs: () => ['recruiter', 'jobs'] as const,
   jobDetail: (id: string) => ['recruiter', 'jobs', id] as const,
   applicants: (filters?: any) => ['recruiter', 'applicants', filters] as const,
   applicantDetail: (id: string) => ['recruiter', 'applicants', id] as const,
+  interviews: () => ['recruiter', 'interviews'] as const,
+  notifications: () => ['recruiter', 'notifications'] as const,
 };
+
+export function useRecruiterStatsQuery(enabled = true) {
+  return useQuery({
+    queryKey: recruiterKeys.stats(),
+    queryFn: getRecruiterStats,
+    enabled,
+  });
+}
 
 // Company Profile Queries
 export function useRecruiterCompanyProfileQuery(enabled = true) {
@@ -53,12 +69,12 @@ export function useUpdateCompanyProfileMutation() {
 
 // Posted Jobs Queries
 export function useRecruiterPostedJobsQuery(
-  filters?: { page?: number; limit?: number },
+  filters?: { page?: number; limit?: number; status?: string; search?: string },
   enabled = true
 ) {
   return useQuery({
-    queryKey: recruiterKeys.jobs(),
-    queryFn: () => getRecruiterPostedJobs(filters?.page, filters?.limit),
+    queryKey: [...recruiterKeys.jobs(), filters] as const,
+    queryFn: () => getRecruiterPostedJobs(filters),
     enabled,
   });
 }
@@ -178,6 +194,32 @@ export function useShortlistApplicantMutation() {
         queryKey: recruiterKeys.applicantDetail(applicantId),
       });
     },
+  });
+}
+
+export function useRecruiterInterviewsQuery(enabled = true) {
+  return useQuery({
+    queryKey: recruiterKeys.interviews(),
+    queryFn: getRecruiterInterviews,
+    enabled,
+  });
+}
+
+export function useScheduleInterviewMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: ScheduleInterviewRequest) => scheduleRecruiterInterview(data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: recruiterKeys.interviews() });
+    },
+  });
+}
+
+export function useRecruiterNotificationsQuery(limit = 10, enabled = true) {
+  return useQuery({
+    queryKey: recruiterKeys.notifications(),
+    queryFn: () => getRecruiterNotifications(limit),
+    enabled,
   });
 }
 

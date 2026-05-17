@@ -2,11 +2,11 @@
 
 import React from 'react';
 import StatCard from './StatCard';
+import { useRecruiterStatsQuery } from '@/src/hooks/useRecruiter';
 
 const STAT_CONFIGS = [
   {
-    key: 'active_jobs' as const,
-    changeKey: 'active_jobs_change' as const,
+    key: 'activeJobs' as const,
     label: 'Active Jobs',
     iconBg: 'bg-blue-50', iconColor: 'text-primary',
     icon: (
@@ -17,8 +17,7 @@ const STAT_CONFIGS = [
     ),
   },
   {
-    key: 'total_applicants' as const,
-    changeKey: 'applicants_change' as const,
+    key: 'totalApplicants' as const,
     label: 'Total Applicants',
     iconBg: 'bg-purple-50', iconColor: 'text-purple-600',
     icon: (
@@ -30,8 +29,7 @@ const STAT_CONFIGS = [
     ),
   },
   {
-    key: 'interviews_scheduled' as const,
-    changeKey: 'interviews_change' as const,
+    key: 'interviewsScheduled' as const,
     label: 'Interviews Scheduled',
     iconBg: 'bg-amber-50', iconColor: 'text-amber-600',
     icon: (
@@ -42,9 +40,8 @@ const STAT_CONFIGS = [
     ),
   },
   {
-    key: 'offers_made' as const,
-    changeKey: 'offers_change' as const,
-    label: 'Offers Made',
+    key: 'hired' as const,
+    label: 'Hired',
     iconBg: 'bg-green-50', iconColor: 'text-green-600',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -55,29 +52,19 @@ const STAT_CONFIGS = [
 ];
 
 export default function DashboardStats() {
-  const mockStats = {
-    active_jobs: 12,
-    active_jobs_change: 2,
-    total_applicants: 48,
-    applicants_change: 5,
-    interviews_scheduled: 8,
-    interviews_change: -1,
-    offers_made: 3,
-    offers_change: 1,
-  };
+  const { data, isLoading } = useRecruiterStatsQuery();
 
   return (
     <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
       {STAT_CONFIGS.map(cfg => {
-        const value  = mockStats[cfg.key] ?? 0;
-        const change = mockStats[cfg.changeKey] ?? 0;
+        const value = isLoading ? '—' : (data?.[cfg.key] ?? 0);
         return (
           <StatCard
             key={cfg.label}
             label={cfg.label}
             value={value}
-            trend={`${Math.abs(change)} ${change === 1 ? 'this week' : 'this week'}`}
-            trendUp={change >= 0}
+            trend=""
+            trendUp={true}
             icon={cfg.icon}
             iconBg={cfg.iconBg}
             iconColor={cfg.iconColor}

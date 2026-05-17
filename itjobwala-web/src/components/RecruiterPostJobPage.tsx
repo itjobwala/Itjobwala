@@ -2,12 +2,17 @@
 
 import { useState, useEffect, type FormEvent } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Field from '@/src/components/Field';
 import PasswordField from '@/src/components/PasswordField';
 import SelectField from '@/src/components/SelectField';
 import OTPInput from '@/src/components/OTPInput';
 import { PRIMARY } from '@/src/lib/constants';
 import { signupRecruiter } from '@/src/lib/api';
+import { createRecruiterJob } from '@/src/lib/api/recruiter';
+import { safeLocalStorageGetItem } from '@/src/lib/hydration-safe';
+import { decodeJwtPayload } from '@/src/lib/auth';
+import RecruiterShell from '@/src/components/recruiter/RecruiterShell';
 
 const STEPS = ['Account', 'Company', 'Hiring Needs', 'Verify'];
 
@@ -195,7 +200,314 @@ function LeftPanel() {
   );
 }
 
+const JOB_TYPES = ['Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance'];
+const WORK_MODES = ['Remote', 'On-site', 'Hybrid'];
+const EXPERIENCE_LEVELS = ['Fresher', '1-2 years', '2-3 years', '3-5 years', '5+ years'];
+const JOB_LEVELS = ['Junior', 'Mid', 'Senior', 'Lead', 'Manager'];
+
+function parseBullets(text: string): string[] {
+  return text.split('\n').map(l => l.trim()).filter(Boolean);
+}
+
+function RecruiterJobForm() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [skillInput, setSkillInput] = useState('');
+  const [form, setForm] = useState({
+    title: '', description: '', location: '',
+    jobType: 'Full-time', workMode: 'On-site',
+    salaryMin: '', salaryMax: '',
+    requiredSkills: [] as string[],
+    experienceLevel: 'Fresher',
+    jobLevel: '',
+    vacancies: '',
+    closesAt: '',
+    responsibilities: '',
+    requirements: '',
+    niceToHave: '',
+    benefits: '',
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  function set(k: string, v: any) {
+    setForm(f => ({ ...f, [k]: v }));
+    setErrors(e => ({ ...e, [k]: '' }));
+    setError('');
+  }
+
+  function addSkill() {
+    const s = skillInput.trim();
+    if (s && !form.requiredSkills.includes(s)) set('requiredSkills', [...form.requiredSkills, s]);
+    setSkillInput('');
+  }
+
+  function removeSkill(skill: string) {
+    set('requiredSkills', form.requiredSkills.filter(s => s !== skill));
+  }
+
+  function validate() {
+    const e: Record<string, string> = {};
+    if (!form.title.trim() || form.title.length < 5) e.title = 'Title must be at least 5 characters';
+    if (form.title.trim().length > 150) e.title = 'Title must be under 150 characters';
+    if (!form.description.trim() || form.description.length < 50) e.description = 'Description must be at least 50 characters';
+    if (!form.location.trim()) e.location = 'Location is required';
+    if (form.requiredSkills.length === 0) e.requiredSkills = 'Add at least one required skill';
+    const min = form.salaryMin ? Number(form.salaryMin) : undefined;
+    const max = form.salaryMax ? Number(form.salaryMax) : undefined;
+    if (min !== undefined && max !== undefined && min > max) e.salaryMin = 'Min salary cannot exceed max';
+    if (form.closesAt && new Date(form.closesAt) <= new Date()) e.closesAt = 'Deadline must be a future date';
+    if (!form.responsibilities.trim()) e.responsibilities = 'At least one responsibility is required';
+    if (!form.requirements.trim()) e.requirements = 'At least one requirement is required';
+    return e;
+  }
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    const errs = validate();
+    if (Object.keys(errs).length) { setErrors(errs); return; }
+    setLoading(true);
+    setError('');
+    try {
+      const job = await createRecruiterJob({
+        title: form.title.trim(),
+        description: form.description.trim(),
+        location: form.location.trim(),
+        jobType: form.jobType,
+        workMode: form.workMode,
+        salaryMin: form.salaryMin ? Number(form.salaryMin) : undefined,
+        salaryMax: form.salaryMax ? Number(form.salaryMax) : undefined,
+        requiredSkills: form.requiredSkills,
+        experienceLevel: form.experienceLevel,
+        jobLevel: form.jobLevel || undefined,
+        vacancies: form.vacancies ? Number(form.vacancies) : undefined,
+        closesAt: form.closesAt || undefined,
+        responsibilities: parseBullets(form.responsibilities),
+        requirements: parseBullets(form.requirements),
+        niceToHave: parseBullets(form.niceToHave),
+        benefits: parseBullets(form.benefits),
+      });
+      router.push(`/recruiter/posted-jobs/${job.id}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to post job. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <RecruiterShell>
+      <div className="max-w-[680px] mx-auto px-5 py-10 sm:py-14">
+        <div className="mb-8">
+          <button type="button" onClick={() => router.back()}
+            className="flex items-center gap-1.5 text-[13px] font-semibold text-gray-500 hover:text-gray-800 transition-colors mb-4">
+            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" /></svg>
+            Back
+          </button>
+          <h1 className="font-extrabold text-[#0f172a] text-2xl sm:text-[28px] mb-1" style={{ letterSpacing: -0.8 }}>Post a new job</h1>
+          <p className="text-sm text-gray-500">Fill in the details below. You can edit the job after posting.</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8 flex flex-col gap-5" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
+
+          {/* Title */}
+          <div>
+            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Job title <span style={{ color: PRIMARY }}>*</span></label>
+            <input value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Senior React Developer"
+              className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none transition-colors placeholder:text-gray-400"
+              style={{ borderColor: errors.title ? '#ef4444' : '#e5e7eb' }} />
+            {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Job description <span style={{ color: PRIMARY }}>*</span></label>
+            <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={6}
+              placeholder="Describe the role, responsibilities, and requirements (min. 50 characters)..."
+              className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none transition-colors placeholder:text-gray-400 resize-none"
+              style={{ borderColor: errors.description ? '#ef4444' : '#e5e7eb' }} />
+            <div className="flex items-center justify-between mt-1">
+              {errors.description ? <p className="text-xs text-red-500">{errors.description}</p> : <span />}
+              <span className="text-[11px] text-gray-400">{form.description.length} chars</span>
+            </div>
+          </div>
+
+          {/* Location + Experience */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Location <span style={{ color: PRIMARY }}>*</span></label>
+              <input value={form.location} onChange={e => set('location', e.target.value)} placeholder="e.g. Bengaluru / Remote"
+                className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none"
+                style={{ borderColor: errors.location ? '#ef4444' : '#e5e7eb' }} />
+              {errors.location && <p className="text-xs text-red-500 mt-1">{errors.location}</p>}
+            </div>
+            <div>
+              <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Experience level</label>
+              <select value={form.experienceLevel} onChange={e => set('experienceLevel', e.target.value)}
+                className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none bg-white">
+                {EXPERIENCE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* Job type + Work mode */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Job type</label>
+              <select value={form.jobType} onChange={e => set('jobType', e.target.value)}
+                className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none bg-white">
+                {JOB_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Work mode</label>
+              <select value={form.workMode} onChange={e => set('workMode', e.target.value)}
+                className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none bg-white">
+                {WORK_MODES.map(m => <option key={m} value={m}>{m}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* Salary */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Min salary (₹/yr)</label>
+              <input type="number" value={form.salaryMin} onChange={e => set('salaryMin', e.target.value)} placeholder="e.g. 500000"
+                className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none"
+                style={{ borderColor: errors.salaryMin ? '#ef4444' : '#e5e7eb' }} />
+              {errors.salaryMin && <p className="text-xs text-red-500 mt-1">{errors.salaryMin}</p>}
+            </div>
+            <div>
+              <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Max salary (₹/yr)</label>
+              <input type="number" value={form.salaryMax} onChange={e => set('salaryMax', e.target.value)} placeholder="e.g. 1000000"
+                className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none" />
+            </div>
+          </div>
+
+          {/* Job level + Vacancies + Closes at */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Job level</label>
+              <select value={form.jobLevel} onChange={e => set('jobLevel', e.target.value)}
+                className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none bg-white">
+                <option value="">Select level</option>
+                {JOB_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Vacancies</label>
+              <input type="number" min="1" value={form.vacancies} onChange={e => set('vacancies', e.target.value)} placeholder="e.g. 2"
+                className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none" />
+            </div>
+            <div>
+              <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Application deadline</label>
+              <input type="date" value={form.closesAt} onChange={e => set('closesAt', e.target.value)}
+                min={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
+                className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none"
+                style={{ borderColor: errors.closesAt ? '#ef4444' : '#e5e7eb' }} />
+              {errors.closesAt && <p className="text-xs text-red-500 mt-1">{errors.closesAt}</p>}
+            </div>
+          </div>
+
+          {/* Skills */}
+          <div>
+            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">
+              Required skills <span style={{ color: PRIMARY }}>*</span>
+            </label>
+            <div className="flex gap-2 mb-2">
+              <input value={skillInput} onChange={e => setSkillInput(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }}
+                placeholder="e.g. React, Node.js"
+                className={`flex-1 rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none`}
+                style={{ borderColor: errors.requiredSkills ? '#ef4444' : '#e5e7eb' }} />
+              <button type="button" onClick={addSkill}
+                className="px-4 py-2.5 rounded-xl text-[13px] font-bold text-white"
+                style={{ background: PRIMARY }}>
+                Add
+              </button>
+            </div>
+            {form.requiredSkills.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-1">
+                {form.requiredSkills.map(s => (
+                  <span key={s} className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-semibold"
+                    style={{ background: `${PRIMARY}12`, color: PRIMARY, border: `1.5px solid ${PRIMARY}30` }}>
+                    {s}
+                    <button type="button" onClick={() => removeSkill(s)} className="hover:text-red-500 transition-colors">×</button>
+                  </span>
+                ))}
+              </div>
+            )}
+            {errors.requiredSkills && <p className="text-xs text-red-500 mt-1">{errors.requiredSkills}</p>}
+          </div>
+
+          {/* Responsibilities */}
+          <div>
+            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">
+              Responsibilities <span style={{ color: PRIMARY }}>*</span>
+            </label>
+            <textarea value={form.responsibilities} onChange={e => set('responsibilities', e.target.value)} rows={5}
+              placeholder={"Build and maintain scalable APIs\nCollaborate with cross-functional teams\nWrite unit and integration tests"}
+              className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none placeholder:text-gray-400 resize-none"
+              style={{ borderColor: errors.responsibilities ? '#ef4444' : '#e5e7eb' }} />
+            <p className="text-[11px] text-gray-400 mt-1">One item per line. Each line becomes a bullet point.</p>
+            {errors.responsibilities && <p className="text-xs text-red-500 mt-1">{errors.responsibilities}</p>}
+          </div>
+
+          {/* Requirements */}
+          <div>
+            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">
+              Requirements <span style={{ color: PRIMARY }}>*</span>
+            </label>
+            <textarea value={form.requirements} onChange={e => set('requirements', e.target.value)} rows={5}
+              placeholder={"3+ years of experience with React\nStrong understanding of REST APIs\nExperience with PostgreSQL or similar"}
+              className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none placeholder:text-gray-400 resize-none"
+              style={{ borderColor: errors.requirements ? '#ef4444' : '#e5e7eb' }} />
+            <p className="text-[11px] text-gray-400 mt-1">One item per line.</p>
+            {errors.requirements && <p className="text-xs text-red-500 mt-1">{errors.requirements}</p>}
+          </div>
+
+          {/* Nice to have */}
+          <div>
+            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Nice to have <span className="text-gray-400 font-normal text-[11px]">(optional)</span></label>
+            <textarea value={form.niceToHave} onChange={e => set('niceToHave', e.target.value)} rows={3}
+              placeholder={"Experience with Docker/Kubernetes\nFamiliarity with GraphQL"}
+              className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none placeholder:text-gray-400 resize-none" />
+            <p className="text-[11px] text-gray-400 mt-1">One item per line.</p>
+          </div>
+
+          {/* Benefits */}
+          <div>
+            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Perks &amp; benefits <span className="text-gray-400 font-normal text-[11px]">(optional)</span></label>
+            <textarea value={form.benefits} onChange={e => set('benefits', e.target.value)} rows={3}
+              placeholder={"Health insurance\nFlexible working hours\nAnnual learning budget"}
+              className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none placeholder:text-gray-400 resize-none" />
+            <p className="text-[11px] text-gray-400 mt-1">One item per line.</p>
+          </div>
+
+          {error && (
+            <div className="rounded-xl px-4 py-3 text-sm font-medium text-red-600 bg-red-50 border border-red-200">{error}</div>
+          )}
+
+          <div>
+            <button type="submit" disabled={loading}
+              className="w-full flex items-center justify-center gap-2 text-white font-bold text-[15px] rounded-xl py-3.5 transition-all"
+              style={{ background: loading ? '#93aef5' : PRIMARY, cursor: loading ? 'not-allowed' : 'pointer' }}>
+              {loading
+                ? <><div className="w-4 h-4 border-[2.5px] border-white/40 border-t-white rounded-full animate-spin" /> Saving…</>
+                : 'Save as Draft →'}
+            </button>
+            <p className="text-center text-[12px] text-gray-400 mt-2">
+              Saved as draft — you can review and publish from the next screen.
+            </p>
+          </div>
+        </form>
+      </div>
+    </RecruiterShell>
+  );
+}
+
 export default function RecruiterPostJobPage() {
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -214,10 +526,20 @@ export default function RecruiterPostJobPage() {
   const [errors, setErrors] = useState<Errors>({});
 
   useEffect(() => {
+    const token = safeLocalStorageGetItem('recruiter_token');
+    const payload = token ? decodeJwtPayload(token) : null;
+    const valid = Boolean(token && payload && payload.role?.toLowerCase() === 'recruiter' && !(payload.exp && Date.now() / 1000 >= payload.exp));
+    setIsLoggedIn(valid);
+  }, []);
+
+  useEffect(() => {
     if (timer <= 0) return;
     const t = setInterval(() => setTimer(v => v > 0 ? v - 1 : 0), 1000);
     return () => clearInterval(t);
   }, [timer]);
+
+  if (isLoggedIn === null) return null;
+  if (isLoggedIn) return <RecruiterJobForm />;
 
   function set<K extends keyof FormState>(k: K, v: FormState[K]) {
     setForm(f => ({ ...f, [k]: v }));

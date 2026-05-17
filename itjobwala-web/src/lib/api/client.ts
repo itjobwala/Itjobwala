@@ -3,20 +3,23 @@ import { clearCandidateAuth, clearRecruiterAuth } from '@/src/lib/auth';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4001/api';
 
-interface ApiError extends Error {
+export interface ApiError extends Error {
   status?: number;
+  details?: Record<string, string>;
 }
 
 function toApiError(error: unknown): ApiError {
-  const message = axios.isAxiosError<{ message?: string }>(error)
+  const isAxios = axios.isAxiosError<{ message?: string; details?: Record<string, string> }>(error);
+  const message = isAxios
     ? error.response?.data?.message ?? error.message
     : error instanceof Error
       ? error.message
       : 'Something went wrong';
 
   const apiError: ApiError = new Error(message);
-  if (axios.isAxiosError(error)) {
+  if (isAxios) {
     apiError.status = error.response?.status;
+    apiError.details = error.response?.data?.details;
   }
   return apiError;
 }

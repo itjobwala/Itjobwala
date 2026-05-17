@@ -9,7 +9,7 @@ const JOB_STATUS_STYLES: Record<string, { badge: string; dot: string }> = {
 };
 
 export interface Job {
-  id: number;
+  id: string;
   title: string;
   location: string;
   applications: number;
@@ -58,13 +58,13 @@ export default function JobStatusCard({ job }: Props) {
 
         <div className="flex items-center gap-2 shrink-0">
           <Link
-            href={`/recruiter/applicants?job=${job.id}`}
+            href={`/recruiter/applicants?jobId=${job.id}`}
             className="text-[12px] font-semibold text-primary border border-primary/25 bg-primary/5 px-3 py-1.5 rounded-lg hover:bg-primary/10 transition-colors hidden sm:block"
           >
             Applicants
           </Link>
           <Link
-            href={`/recruiter/jobs/${job.id}/edit`}
+            href={`/recruiter/posted-jobs/${job.id}/edit`}
             className="text-[12px] font-semibold text-gray-500 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors hidden sm:block"
           >
             Edit

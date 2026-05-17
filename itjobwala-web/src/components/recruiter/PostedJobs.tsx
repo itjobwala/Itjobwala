@@ -15,12 +15,12 @@ function relativeDate(iso: string): string {
 
 export default function PostedJobs() {
   const { data, isLoading } = useRecruiterPostedJobsQuery({ limit: 5 }, true);
-  const jobs: Job[] = (data?.jobs ?? []).map((j, i) => ({
-    id:           i + 1,
+  const jobs: Job[] = (data?.jobs ?? []).map((j) => ({
+    id:           j.id,
     title:        j.title,
     location:     [j.location, j.workMode].filter(Boolean).join(' · '),
     applications: j.applicationCount,
-    posted:       relativeDate(j.postedDate),
+    posted:       relativeDate(j.postedDate ?? j.createdAt),
     status:       j.status === 'draft' ? 'paused' : j.status as Job['status'],
     type:         j.jobType,
   }));

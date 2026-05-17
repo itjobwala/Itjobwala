@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useRecruiterAuth } from '@/src/hooks/useRecruiterAuth';
-import { useRecruiterCompanyProfileQuery } from '@/src/hooks/useRecruiter';
+import { useRecruiterCompanyProfileQuery, useRecruiterStatsQuery } from '@/src/hooks/useRecruiter';
 
 const PRIMARY = '#1557FF';
 
@@ -11,7 +11,6 @@ interface NavItem {
   href: string;
   label: string;
   icon: React.ReactNode;
-  badge?: number;
 }
 
 interface NavSection {
@@ -47,7 +46,6 @@ const NAV_SECTIONS: NavSection[] = [
       {
         href: '/recruiter/applicants',
         label: 'Applicants',
-        badge: 12,
         icon: (
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -67,16 +65,6 @@ const NAV_SECTIONS: NavSection[] = [
           </svg>
         ),
       },
-      {
-        href: '/recruiter/messages',
-        label: 'Messages',
-        badge: 3,
-        icon: (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
-        ),
-      },
     ],
   },
   {
@@ -89,26 +77,6 @@ const NAV_SECTIONS: NavSection[] = [
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
             <polyline points="9 22 9 12 15 12 15 22" />
-          </svg>
-        ),
-      },
-      {
-        href: '/recruiter/billing',
-        label: 'Subscription',
-        icon: (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-            <rect x="1" y="4" width="22" height="16" rx="2" />
-            <path d="M1 10h22" />
-          </svg>
-        ),
-      },
-      {
-        href: '/recruiter/settings',
-        label: 'Settings',
-        icon: (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
           </svg>
         ),
       },
@@ -125,6 +93,7 @@ export default function RecruiterSidebar({ isOpen, onClose }: RecruiterSidebarPr
   const pathname = usePathname();
   const { logout } = useRecruiterAuth();
   const { data: company } = useRecruiterCompanyProfileQuery();
+  const { data: stats } = useRecruiterStatsQuery();
 
   const companyName = company?.companyName || 'TechNova Solutions';
   const logoUrl = company?.logo;
@@ -217,12 +186,12 @@ export default function RecruiterSidebar({ isOpen, onClose }: RecruiterSidebarPr
                           {item.icon}
                         </span>
                         <span className="flex-1">{item.label}</span>
-                        {item.badge != null && (
+                        {item.href === '/recruiter/applicants' && (stats?.totalApplicants ?? 0) > 0 && (
                           <span
                             className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${active ? 'bg-primary text-white' : 'bg-gray-100 text-gray-500'
                               }`}
                           >
-                            {item.badge}
+                            {stats!.totalApplicants}
                           </span>
                         )}
                       </Link>
@@ -234,24 +203,8 @@ export default function RecruiterSidebar({ isOpen, onClose }: RecruiterSidebarPr
           ))}
         </nav>
 
-        {/* Bottom: plan */}
-        <div className="px-3 pb-4 pt-3 border-t border-gray-100 space-y-2">
-          <div className="bg-primary/5 border border-primary/10 rounded-2xl px-3.5 py-3">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[11px] font-extrabold text-primary">Pro Plan</span>
-              <span className="text-[10px] text-gray-400">3 / 10 jobs</span>
-            </div>
-            <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-              <div className="h-full bg-primary rounded-full" style={{ width: '30%' }} />
-            </div>
-            <Link
-              href="/recruiter/billing"
-              className="block mt-2.5 text-center text-[11px] font-bold text-primary hover:text-primary/80 transition-colors"
-            >
-              Upgrade Plan →
-            </Link>
-          </div>
-
+        {/* Bottom */}
+        <div className="px-3 pb-4 pt-3 border-t border-gray-100">
           <button
             onClick={logout}
             className="w-full text-left px-3 py-2.5 rounded-xl text-[13px] font-semibold text-red-600 hover:bg-red-50 transition-colors"

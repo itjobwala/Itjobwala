@@ -33,16 +33,53 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRecruiterCompanyProfileQuery, useUpdateCompanyProfileMutation } from '@/src/hooks/useRecruiter';
 import type { RecruiterCompanyProfile } from '@/src/types/recruiter';
+import { uploadRecruiterCompanyLogo } from '@/src/lib/api/recruiter';
+import type { ApiError } from '@/src/lib/api/client';
 import RecruiterShell from './RecruiterShell';
+
+type FormErrors = Partial<Record<'companyName' | 'industry' | 'website' | 'location' | 'description' | 'companySize' | 'foundedYear', string>>;
+
+const COMPANY_SIZES = ['1-10', '11-50', '51-200', '201-500', '501-1000', '1000+'];
+
+function validate(data: Partial<RecruiterCompanyProfile>): FormErrors {
+  const e: FormErrors = {};
+  if (!data.companyName?.trim()) {
+    e.companyName = 'Company name is required';
+  } else if (data.companyName.trim().length < 2 || data.companyName.trim().length > 100) {
+    e.companyName = 'Company name must be 2–100 characters';
+  }
+  if (!data.industry?.trim()) {
+    e.industry = 'Industry is required';
+  } else if (data.industry.trim().length < 2 || data.industry.trim().length > 50) {
+    e.industry = 'Industry must be 2–50 characters';
+  }
+  if (data.website && data.website.trim() && !/^https?:\/\/.+/.test(data.website.trim())) {
+    e.website = 'Must start with http:// or https://';
+  }
+  if (data.description && data.description.trim() && data.description.trim().length < 10) {
+    e.description = 'Description must be at least 10 characters';
+  }
+  if (data.foundedYear != null) {
+    const yr = Number(data.foundedYear);
+    if (isNaN(yr) || yr < 1900 || yr > new Date().getFullYear()) {
+      e.foundedYear = `Must be between 1900 and ${new Date().getFullYear()}`;
+    }
+  }
+  return e;
+}
 
 export default function RecruiterCompanyProfilePage() {
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<RecruiterCompanyProfile>>({});
+  const [errors, setErrors] = useState<FormErrors>({});
   const [successToast, setSuccessToast] = useState('');
   const [errorToast, setErrorToast] = useState('');
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoPreview, setLogoPreview] = useState('');
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   const { data: profile, isLoading, error } = useRecruiterCompanyProfileQuery(true);
   const updateMutation = useUpdateCompanyProfileMutation();
@@ -50,21 +87,69 @@ export default function RecruiterCompanyProfilePage() {
   useEffect(() => {
     if (profile) {
       setFormData(profile);
+      setLogoPreview(profile.logo || '');
     }
   }, [profile]);
 
-  const handleSave = async () => {
+  function setField<K extends keyof RecruiterCompanyProfile>(key: K, value: RecruiterCompanyProfile[K]) {
+    setFormData(f => ({ ...f, [key]: value }));
+    setErrors(e => ({ ...e, [key]: undefined }));
+  }
+
+  async function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLogoUploading(true);
     try {
-      await updateMutation.mutateAsync(formData);
+      const url = await uploadRecruiterCompanyLogo(file);
+      setLogoPreview(url);
+      setFormData(f => ({ ...f, logo: url }));
+      setSuccessToast('Company logo updated');
+      setTimeout(() => setSuccessToast(''), 3000);
+    } catch {
+      setErrorToast('Failed to upload logo. Please try again.');
+      setTimeout(() => setErrorToast(''), 4000);
+    } finally {
+      setLogoUploading(false);
+      if (logoInputRef.current) logoInputRef.current.value = '';
+    }
+  }
+
+  const handleSave = async () => {
+    const errs = validate(formData);
+    if (Object.keys(errs).length) {
+      setErrors(errs);
+      return;
+    }
+    try {
+      await updateMutation.mutateAsync({
+        companyName: formData.companyName,
+        industry: formData.industry,
+        website: formData.website,
+        description: formData.description,
+        companySize: formData.companySize,
+        location: formData.location,
+        foundedYear: formData.foundedYear,
+      });
       setSuccessToast('Company profile updated successfully');
       setTimeout(() => setSuccessToast(''), 4000);
       setEditing(false);
+      setErrors({});
     } catch (err) {
-      const message = (err as Error).message || 'Failed to save company profile';
-      setErrorToast(message);
+      const apiErr = err as ApiError;
+      if (apiErr.details && Object.keys(apiErr.details).length > 0) {
+        setErrors(apiErr.details as FormErrors);
+      }
+      setErrorToast(apiErr.message || 'Failed to save company profile');
       setTimeout(() => setErrorToast(''), 4000);
     }
   };
+
+  function handleCancel() {
+    if (profile) { setFormData(profile); setLogoPreview(profile.logo || ''); }
+    setErrors({});
+    setEditing(false);
+  }
 
   return (
     <RecruiterShell>
@@ -80,19 +165,20 @@ export default function RecruiterCompanyProfilePage() {
                   Manage your company information
                 </p>
               </div>
-              <button
-                onClick={() => {
-                  if (editing) {
-                    handleSave();
-                  } else {
-                    setEditing(true);
-                  }
-                }}
-                disabled={updateMutation.isPending}
-                className="px-6 py-2.5 bg-primary text-white font-semibold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
-              >
-                {updateMutation.isPending ? 'Saving...' : editing ? 'Save Changes' : 'Edit Profile'}
-              </button>
+              <div className="flex items-center gap-3">
+                {editing && (
+                  <button onClick={handleCancel} className="px-5 py-2.5 border border-gray-200 text-gray-600 font-semibold rounded-xl hover:bg-gray-50 transition-colors">
+                    Cancel
+                  </button>
+                )}
+                <button
+                  onClick={() => editing ? handleSave() : setEditing(true)}
+                  disabled={updateMutation.isPending}
+                  className="px-6 py-2.5 bg-primary text-white font-semibold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
+                >
+                  {updateMutation.isPending ? 'Saving...' : editing ? 'Save Changes' : 'Edit Profile'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -112,73 +198,148 @@ export default function RecruiterCompanyProfilePage() {
             </div>
           ) : profile ? (
             <div className="bg-white rounded-2xl border border-gray-100 p-8">
+              {/* Logo upload — always visible */}
+              <div className="flex items-center gap-5 mb-8 pb-6 border-b border-gray-100">
+                <div className="relative group">
+                  {logoPreview ? (
+                    <img src={logoPreview} alt="Company logo" className="w-20 h-20 rounded-2xl object-cover border border-gray-200" />
+                  ) : (
+                    <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400">
+                      <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
+                      </svg>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => logoInputRef.current?.click()}
+                    disabled={logoUploading}
+                    className="absolute inset-0 rounded-2xl flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-100"
+                  >
+                    {logoUploading
+                      ? <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                      : <svg width="18" height="18" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                    }
+                  </button>
+                </div>
+                <div>
+                  <p className="text-[14px] font-bold text-[#0f172a]">Company Logo</p>
+                  <p className="text-[12px] text-gray-400 mt-0.5">Shown on job listings. PNG or JPG, max 2MB.</p>
+                  <button type="button" onClick={() => logoInputRef.current?.click()} disabled={logoUploading}
+                    className="mt-2 text-[12px] font-semibold text-primary hover:underline disabled:opacity-50">
+                    {logoUploading ? 'Uploading…' : logoPreview ? 'Change logo' : 'Upload logo'}
+                  </button>
+                </div>
+                <input ref={logoInputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={handleLogoChange} />
+              </div>
+
               {editing ? (
-                <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
-                  <div className="grid grid-cols-2 gap-6">
+                <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
+                    {/* Company Name */}
                     <div>
-                      <label className="block text-[13px] font-semibold text-gray-700 mb-2">
-                        Company Name
+                      <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">
+                        Company Name <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         value={formData.companyName || ''}
-                        onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg text-[13px] focus:outline-none focus:border-primary"
+                        onChange={(e) => setField('companyName', e.target.value)}
+                        className={`w-full px-4 py-2.5 border rounded-xl text-[13px] focus:outline-none focus:border-primary transition-colors ${errors.companyName ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
+                        placeholder="e.g. Razorpay"
                       />
+                      {errors.companyName && <p className="text-[12px] text-red-500 mt-1">{errors.companyName}</p>}
                     </div>
+
+                    {/* Industry */}
                     <div>
-                      <label className="block text-[13px] font-semibold text-gray-700 mb-2">
-                        Industry
+                      <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">
+                        Industry <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="text"
                         value={formData.industry || ''}
-                        onChange={(e) => setFormData({ ...formData, industry: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg text-[13px] focus:outline-none focus:border-primary"
+                        onChange={(e) => setField('industry', e.target.value)}
+                        className={`w-full px-4 py-2.5 border rounded-xl text-[13px] focus:outline-none focus:border-primary transition-colors ${errors.industry ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
+                        placeholder="e.g. IT / Software"
                       />
+                      {errors.industry && <p className="text-[12px] text-red-500 mt-1">{errors.industry}</p>}
                     </div>
+
+                    {/* Website */}
                     <div>
-                      <label className="block text-[13px] font-semibold text-gray-700 mb-2">
-                        Website
-                      </label>
+                      <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Website</label>
                       <input
-                        type="url"
+                        type="text"
                         value={formData.website || ''}
-                        onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg text-[13px] focus:outline-none focus:border-primary"
+                        onChange={(e) => setField('website', e.target.value)}
+                        className={`w-full px-4 py-2.5 border rounded-xl text-[13px] focus:outline-none focus:border-primary transition-colors ${errors.website ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
+                        placeholder="https://yourcompany.com"
                       />
+                      {errors.website && <p className="text-[12px] text-red-500 mt-1">{errors.website}</p>}
                     </div>
+
+                    {/* Location */}
                     <div>
-                      <label className="block text-[13px] font-semibold text-gray-700 mb-2">
-                        Location
-                      </label>
+                      <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Location</label>
                       <input
                         type="text"
                         value={formData.location || ''}
-                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg text-[13px] focus:outline-none focus:border-primary"
+                        onChange={(e) => setField('location', e.target.value)}
+                        className={`w-full px-4 py-2.5 border rounded-xl text-[13px] focus:outline-none focus:border-primary transition-colors ${errors.location ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
+                        placeholder="e.g. Bengaluru"
                       />
+                      {errors.location && <p className="text-[12px] text-red-500 mt-1">{errors.location}</p>}
+                    </div>
+
+                    {/* Company Size */}
+                    <div>
+                      <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Company Size</label>
+                      <select
+                        value={formData.companySize || ''}
+                        onChange={(e) => setField('companySize', e.target.value)}
+                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-[13px] bg-white focus:outline-none focus:border-primary"
+                      >
+                        <option value="">Select size</option>
+                        {COMPANY_SIZES.map(s => <option key={s} value={s}>{s} employees</option>)}
+                      </select>
+                    </div>
+
+                    {/* Founded Year */}
+                    <div>
+                      <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Founded Year</label>
+                      <input
+                        type="number"
+                        value={formData.foundedYear || ''}
+                        onChange={(e) => setField('foundedYear', e.target.value ? Number(e.target.value) : undefined)}
+                        className={`w-full px-4 py-2.5 border rounded-xl text-[13px] focus:outline-none focus:border-primary transition-colors ${errors.foundedYear ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
+                        placeholder="e.g. 2015"
+                        min={1900}
+                        max={new Date().getFullYear()}
+                      />
+                      {errors.foundedYear && <p className="text-[12px] text-red-500 mt-1">{errors.foundedYear}</p>}
                     </div>
                   </div>
+
+                  {/* Description */}
                   <div>
-                    <label className="block text-[13px] font-semibold text-gray-700 mb-2">
-                      Description
-                    </label>
+                    <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">About Company</label>
                     <textarea
                       value={formData.description || ''}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      onChange={(e) => setField('description', e.target.value)}
                       rows={5}
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg text-[13px] focus:outline-none focus:border-primary"
+                      className={`w-full px-4 py-2.5 border rounded-xl text-[13px] focus:outline-none focus:border-primary transition-colors resize-none ${errors.description ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
+                      placeholder="Describe your company, culture, and what makes it a great place to work…"
                     />
+                    <div className="flex items-center justify-between mt-1">
+                      {errors.description ? <p className="text-[12px] text-red-500">{errors.description}</p> : <span />}
+                      <span className="text-[11px] text-gray-400">{(formData.description || '').length} / 2000</span>
+                    </div>
                   </div>
                 </form>
               ) : (
                 <div className="space-y-6">
-                  {profile?.logo && (
-                    <div className="mb-6">
-                      <img src={profile.logo} alt={profile.companyName} className="h-16 w-16 rounded-lg" />
-                    </div>
-                  )}
                   <div>
                     <p className="text-[12px] text-gray-500 mb-1">Company Name</p>
                     <p className="text-[16px] font-semibold text-[#0f172a]">{profile?.companyName}</p>
@@ -208,10 +369,14 @@ export default function RecruiterCompanyProfilePage() {
                       <p className="text-[12px] text-gray-500 mb-1">Company Size</p>
                       <p className="text-[14px] text-[#0f172a]">{profile?.companySize || 'Not specified'}</p>
                     </div>
+                    <div>
+                      <p className="text-[12px] text-gray-500 mb-1">Founded Year</p>
+                      <p className="text-[14px] text-[#0f172a]">{profile?.foundedYear || 'Not specified'}</p>
+                    </div>
                   </div>
                   {profile?.description && (
                     <div>
-                      <p className="text-[12px] text-gray-500 mb-1">Description</p>
+                      <p className="text-[12px] text-gray-500 mb-1">About Company</p>
                       <p className="text-[14px] text-gray-600 leading-relaxed">{profile.description}</p>
                     </div>
                   )}

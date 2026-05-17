@@ -1,5 +1,8 @@
 'use client';
 
+import Link from 'next/link';
+import { useRecruiterNotificationsQuery } from '@/src/hooks/useRecruiter';
+
 const TYPE_CONFIG: Record<string, { dotColor: string; icon: React.ReactNode }> = {
   application: {
     dotColor: 'bg-blue-500',
@@ -69,13 +72,7 @@ function relativeTime(iso: string): string {
 }
 
 export default function ActivityFeed() {
-  const feed = [
-    { id: '1', type: 'application', message: 'New application from Sarah Johnson', created_at: new Date(Date.now() - 5 * 60000).toISOString() },
-    { id: '2', type: 'shortlist', message: 'Shortlisted Sarah Johnson', created_at: new Date(Date.now() - 15 * 60000).toISOString() },
-    { id: '3', type: 'interview', message: 'Scheduled interview with Sarah', created_at: new Date(Date.now() - 2 * 3600000).toISOString() },
-    { id: '4', type: 'application', message: 'New application from Mike Chen', created_at: new Date(Date.now() - 5 * 3600000).toISOString() },
-    { id: '5', type: 'job_update', message: 'Posted Senior Developer job', created_at: new Date(Date.now() - 24 * 3600000).toISOString() },
-  ];
+  const { data: notifications, isLoading } = useRecruiterNotificationsQuery(10);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
@@ -86,30 +83,53 @@ export default function ActivityFeed() {
         <p className="text-[12px] text-gray-400 mt-0.5">Your recent recruiting activity</p>
       </div>
 
-      <div className="relative">
-        <div className="absolute left-[15px] top-2 bottom-2 w-px bg-gray-100" />
-
-        <div className="space-y-4">
-            {feed.map(item => {
+      {isLoading ? (
+        <div className="space-y-4 animate-pulse">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="flex gap-4">
+              <div className="w-[30px] h-[30px] rounded-xl bg-gray-100 shrink-0" />
+              <div className="flex-1 space-y-1.5 pb-4 border-b border-gray-50">
+                <div className="h-3 bg-gray-100 rounded w-3/4" />
+                <div className="h-2.5 bg-gray-50 rounded w-1/4" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : !notifications || notifications.length === 0 ? (
+        <p className="text-[13px] text-gray-400 text-center py-4">No recent activity.</p>
+      ) : (
+        <div className="relative">
+          <div className="absolute left-[15px] top-2 bottom-2 w-px bg-gray-100" />
+          <div className="space-y-4">
+            {notifications.map(item => {
               const cfg = TYPE_CONFIG[item.type] ?? TYPE_CONFIG.default;
-              return (
-                <div key={item.id} className="flex gap-4 group">
+              const inner = (
+                <>
                   <div className="relative z-10 shrink-0 mt-0.5">
                     <div className={`w-[30px] h-[30px] rounded-xl ${cfg.dotColor} flex items-center justify-center text-white`}>
                       {cfg.icon}
                     </div>
                   </div>
                   <div className="flex-1 min-w-0 pb-4 border-b border-gray-50 last:border-0 last:pb-0">
-                    <p className="text-[13px] font-semibold text-[#0f172a] leading-snug group-hover:text-primary transition-colors">
+                    <p className={`text-[13px] font-semibold leading-snug transition-colors ${!item.is_read ? 'text-[#0f172a]' : 'text-gray-500'} group-hover:text-primary`}>
                       {item.message}
                     </p>
                     <p className="text-[11px] text-gray-400 mt-1 font-medium">{relativeTime(item.created_at)}</p>
                   </div>
-                </div>
+                </>
+              );
+
+              return item.action_url ? (
+                <Link key={item.id} href={item.action_url} className="flex gap-4 group">
+                  {inner}
+                </Link>
+              ) : (
+                <div key={item.id} className="flex gap-4 group">{inner}</div>
               );
             })}
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="mt-4 pt-4 border-t border-gray-100">
         <button className="w-full text-[12px] font-bold text-primary hover:text-primary/80 transition-colors text-center">

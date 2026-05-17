@@ -36,8 +36,15 @@ export interface RecruiterPostedJob {
   salaryMax?: number;
   requiredSkills: string[];
   experienceLevel: string;
+  responsibilities?: string[];
+  requirements?: string[];
+  niceToHave?: string[];
+  benefits?: string[];
+  vacancies?: number;
+  closesAt?: string | null;
+  jobLevel?: string | null;
   applicationCount: number;
-  postedDate: string;
+  postedDate: string | null;
   status: 'active' | 'closed' | 'draft';
   companyId: string;
   createdAt: string;
@@ -54,6 +61,13 @@ export interface CreateJobPostRequest {
   salaryMax?: number;
   requiredSkills: string[];
   experienceLevel: string;
+  responsibilities?: string[];
+  requirements?: string[];
+  niceToHave?: string[];
+  benefits?: string[];
+  vacancies?: number;
+  closesAt?: string;
+  jobLevel?: string;
 }
 
 export interface UpdateJobPostRequest {
@@ -67,6 +81,13 @@ export interface UpdateJobPostRequest {
   requiredSkills?: string[];
   experienceLevel?: string;
   status?: 'active' | 'closed' | 'draft';
+  responsibilities?: string[];
+  requirements?: string[];
+  niceToHave?: string[];
+  benefits?: string[];
+  vacancies?: number;
+  closesAt?: string | null;
+  jobLevel?: string | null;
 }
 
 // Recruiter Applicant
@@ -78,7 +99,7 @@ export interface RecruiterApplicant {
   jobTitle: string;
   jobId: string;
   appliedDate: string;
-  status: 'new' | 'reviewing' | 'shortlisted' | 'rejected' | 'hired';
+  status: 'applied' | 'shortlisted' | 'interview' | 'rejected' | 'hired' | 'selected' | 'withdrawn' | 'offer';
   profilePhoto?: string;
   resume?: string;
   skills?: string[];
@@ -87,11 +108,49 @@ export interface RecruiterApplicant {
     title?: string;
     location?: string;
     about?: string;
+    phone?: string | null;
+    linkedin?: string | null;
+    github?: string | null;
   };
+  coverLetter?: string;
 }
 
 export interface UpdateApplicantStatusRequest {
-  status: 'new' | 'reviewing' | 'shortlisted' | 'rejected' | 'hired';
+  status: 'applied' | 'shortlisted' | 'interview' | 'rejected' | 'hired' | 'selected' | 'withdrawn' | 'offer';
+}
+
+// Recruiter Interview
+export interface RecruiterInterview {
+  id: string;
+  applicationId: string;
+  candidateName: string;
+  candidateEmail: string;
+  candidatePhoto?: string | null;
+  jobTitle: string;
+  jobId: string;
+  scheduledAt: string | null;
+  durationMinutes: number | null;
+  interviewType: 'video' | 'phone' | 'in_person' | null;
+  meetingLink: string | null;
+  location: string | null;
+  notes: string | null;
+  status: 'scheduled' | 'past' | 'not_scheduled';
+}
+
+export interface ScheduleInterviewRequest {
+  applicationId: string;
+  interviewType: 'video' | 'phone' | 'in_person';
+  scheduledAt: string;
+  durationMinutes?: number;
+  meetingLink?: string;
+  location?: string;
+  note?: string;
+}
+
+export interface RecruiterInterviewsResponse {
+  success: boolean;
+  message: string;
+  data: { interviews: RecruiterInterview[] };
 }
 
 // API Response Types
