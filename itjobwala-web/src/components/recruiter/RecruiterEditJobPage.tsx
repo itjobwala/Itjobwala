@@ -16,21 +16,45 @@ const PRIMARY = '#1557FF';
 
 const JOB_TYPES = ['Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance'];
 const WORK_MODES = ['Remote', 'On-site', 'Hybrid'];
-const EXPERIENCE_LEVELS = ['Fresher', '1-2 years', '2-3 years', '3-5 years', '5+ years'];
 const JOB_LEVELS = ['Junior', 'Mid', 'Senior', 'Lead', 'Manager'];
+
+function ExperienceSlider({ minVal, maxVal, onChange }: {
+  minVal: number; maxVal: number;
+  onChange: (min: number, max: number) => void;
+}) {
+  const minPct = (minVal / 20) * 100;
+  const maxPct = (maxVal / 20) * 100;
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <label className="text-[13px] font-bold text-gray-600">Experience required</label>
+        <span className="text-[13px] font-bold" style={{ color: PRIMARY }}>
+          {minVal === 0 ? 'Any' : `${minVal} yrs`} – {maxVal === 20 ? '20+ yrs' : `${maxVal} yrs`}
+        </span>
+      </div>
+      <div className="relative h-5 flex items-center">
+        <div className="absolute inset-x-0 h-1.5 rounded-full bg-gray-200 pointer-events-none" />
+        <div className="absolute h-1.5 rounded-full pointer-events-none"
+          style={{ left: `${minPct}%`, right: `${100 - maxPct}%`, background: PRIMARY }} />
+        <input type="range" min={0} max={20} step={1} value={minVal}
+          onChange={e => onChange(Math.min(+e.target.value, maxVal - 1), maxVal)}
+          className="salary-thumb absolute w-full"
+          style={{ zIndex: minVal >= maxVal - 1 ? 5 : 3 }} />
+        <input type="range" min={0} max={20} step={1} value={maxVal}
+          onChange={e => onChange(minVal, Math.max(+e.target.value, minVal + 1))}
+          className="salary-thumb absolute w-full" style={{ zIndex: 4 }} />
+      </div>
+      <div className="flex justify-between mt-2 text-[11px] text-gray-400 select-none">
+        <span>0</span><span>5 yrs</span><span>10 yrs</span><span>15 yrs</span><span>20 yrs</span>
+      </div>
+    </div>
+  );
+}
 
 function parseBullets(text: string): string[] {
   return text.split('\n').map(l => l.trim()).filter(Boolean);
 }
 
-function reverseMapExperience(exp: string): string {
-  if (exp.startsWith('0-1') || exp.startsWith('0-')) return 'Fresher';
-  if (exp.startsWith('1-2')) return '1-2 years';
-  if (exp.startsWith('2-3')) return '2-3 years';
-  if (exp.startsWith('3-5')) return '3-5 years';
-  if (exp.startsWith('5-')) return '5+ years';
-  return 'Fresher';
-}
 
 interface Props {
   jobId: string;
@@ -56,7 +80,8 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
     salaryMinLpa: 5,
     salaryMaxLpa: 20,
     requiredSkills: [] as string[],
-    experienceLevel: 'Fresher',
+    experienceMin: 0,
+    experienceMax: 5,
     jobLevel: '',
     vacancies: '',
     closesAt: '',
@@ -79,7 +104,8 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
       salaryMinLpa: job.salaryMin != null ? Math.round(job.salaryMin / 100000) : 5,
       salaryMaxLpa: job.salaryMax != null ? Math.round(job.salaryMax / 100000) : 20,
       requiredSkills: job.requiredSkills ?? [],
-      experienceLevel: reverseMapExperience(job.experienceLevel ?? ''),
+      experienceMin: Math.min(20, parseInt(job.experienceLevel ?? '0') || 0),
+      experienceMax: Math.min(20, parseInt((job.experienceLevel ?? '').split('-')[1] ?? '5') || 5),
       jobLevel: job.jobLevel ?? '',
       vacancies: job.vacancies != null ? String(job.vacancies) : '',
       closesAt: job.closesAt ? job.closesAt.substring(0, 10) : '',
@@ -152,7 +178,8 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
         salaryMin: form.salaryMinLpa * 100000,
         salaryMax: form.salaryMaxLpa * 100000,
         requiredSkills: form.requiredSkills,
-        experienceLevel: form.experienceLevel,
+        experienceMin: form.experienceMin,
+        experienceMax: form.experienceMax,
         jobLevel: form.jobLevel || null,
         vacancies: form.vacancies ? Number(form.vacancies) : undefined,
         // Always send closesAt so null clears an existing deadline
@@ -270,33 +297,27 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
           </div>
         </div>
 
-        {/* Location + Experience */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">
-              Location <span style={{ color: PRIMARY }}>*</span>
-            </label>
-            <input
-              value={form.location}
-              onChange={e => set('location', e.target.value)}
-              disabled={isActive}
-              placeholder="e.g. Bengaluru / Remote"
-              className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
-              style={{ borderColor: errors.location ? '#ef4444' : '#e5e7eb' }}
-            />
-            {errors.location && <p className="text-xs text-red-500 mt-1">{errors.location}</p>}
-          </div>
-          <div>
-            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Experience level</label>
-            <select
-              value={form.experienceLevel}
-              onChange={e => set('experienceLevel', e.target.value)}
-              className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none bg-white"
-            >
-              {EXPERIENCE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-            </select>
-          </div>
+        {/* Location */}
+        <div>
+          <label className="block text-[13px] font-bold text-gray-600 mb-1.5">
+            Location <span style={{ color: PRIMARY }}>*</span>
+          </label>
+          <input
+            value={form.location}
+            onChange={e => set('location', e.target.value)}
+            disabled={isActive}
+            placeholder="e.g. Bengaluru / Remote"
+            className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed"
+            style={{ borderColor: errors.location ? '#ef4444' : '#e5e7eb' }}
+          />
+          {errors.location && <p className="text-xs text-red-500 mt-1">{errors.location}</p>}
         </div>
+
+        {/* Experience slider */}
+        <ExperienceSlider
+          minVal={form.experienceMin} maxVal={form.experienceMax}
+          onChange={(min, max) => { set('experienceMin', min); set('experienceMax', max); }}
+        />
 
         {/* Job type + Work mode */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

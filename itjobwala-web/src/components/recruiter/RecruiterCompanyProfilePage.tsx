@@ -203,45 +203,46 @@ export default function RecruiterCompanyProfilePage() {
             </div>
           ) : profile ? (
             <Card padding="xl" overflow>
-              {/* Logo upload — always visible */}
-              <div className="flex items-center gap-5 mb-8 pb-6 border-b border-gray-100">
-                <div className="relative group">
-                  {logoPreview ? (
-                    <img src={logoPreview} alt="Company logo" className="w-20 h-20 rounded-2xl object-cover border border-gray-200" />
-                  ) : (
-                    <div className="w-20 h-20 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-400">
-                      <svg width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
-                      </svg>
+              <input ref={logoInputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={handleLogoChange} />
+
+              {/* Logo + name header — shared by both modes */}
+              <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100">
+                {/* Logo */}
+                {editing ? (
+                  <div className="relative group shrink-0 cursor-pointer" onClick={() => !logoUploading && logoInputRef.current?.click()}>
+                    {logoPreview ? (
+                      <img src={logoPreview} alt="Company logo" className="w-16 h-16 rounded-2xl object-cover border border-gray-200" />
+                    ) : (
+                      <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-300">
+                        <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                        </svg>
+                      </div>
+                    )}
+                    <div className="absolute inset-0 rounded-2xl flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {logoUploading
+                        ? <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                        : <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      }
                     </div>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => logoInputRef.current?.click()}
-                    disabled={logoUploading}
-                    className="absolute inset-0 rounded-2xl flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-100"
-                  >
-                    {logoUploading
-                      ? <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-                      : <svg width="18" height="18" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
-                    }
-                  </button>
-                </div>
-                <div>
-                  <p className="text-[14px] font-bold text-[#0f172a]">Company Logo</p>
-                  <p className="text-[12px] text-gray-400 mt-0.5">Shown on job listings. PNG or JPG, max 2MB.</p>
-                  <button type="button" onClick={() => logoInputRef.current?.click()} disabled={logoUploading}
-                    className="mt-2 text-[12px] font-semibold text-primary hover:underline disabled:opacity-50">
-                    {logoUploading ? 'Uploading…' : logoPreview ? 'Change logo' : 'Upload logo'}
-                  </button>
-                </div>
-                <input ref={logoInputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={handleLogoChange} />
-              </div>
+                  </div>
+                ) : (
+                  <div className="shrink-0">
+                    {logoPreview ? (
+                      <img src={logoPreview} alt="Company logo" className="w-16 h-16 rounded-2xl object-cover border border-gray-200" />
+                    ) : (
+                      <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-300">
+                        <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                )}
 
-              {editing ? (
-                <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-
+                {/* Name / industry */}
+                {editing ? (
+                  <div className="flex-1 min-w-0">
                     <FormField label="Company Name" htmlFor="cp-companyName" required error={errors.companyName}>
                       <Input
                         id="cp-companyName"
@@ -252,6 +253,28 @@ export default function RecruiterCompanyProfilePage() {
                         error={errors.companyName}
                       />
                     </FormField>
+                    {logoUploading && (
+                      <p className="text-[11px] text-gray-400 mt-1">Uploading logo…</p>
+                    )}
+                    {!logoUploading && (
+                      <p className="text-[11px] text-gray-400 mt-1">Click logo to change · PNG or JPG, max 2MB</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="min-w-0">
+                    <p className="text-[20px] font-extrabold text-[#0f172a] leading-tight truncate" style={{ letterSpacing: '-0.3px' }}>
+                      {profile?.companyName}
+                    </p>
+                    {profile?.industry && (
+                      <p className="text-[13px] text-gray-500 mt-0.5">{profile.industry}</p>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {editing ? (
+                <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
                     <FormField label="Industry" htmlFor="cp-industry" required error={errors.industry}>
                       <Input
@@ -311,7 +334,6 @@ export default function RecruiterCompanyProfilePage() {
                     </FormField>
                   </div>
 
-                  {/* Description — custom count+error row preserved */}
                   <FormField label="About Company" htmlFor="cp-description">
                     <Textarea
                       id="cp-description"
@@ -331,14 +353,10 @@ export default function RecruiterCompanyProfilePage() {
                 </form>
               ) : (
                 <div className="space-y-6">
-                  <div>
-                    <p className="text-[12px] text-gray-500 mb-1">Company Name</p>
-                    <p className="text-[16px] font-semibold text-[#0f172a]">{profile?.companyName}</p>
-                  </div>
                   <div className="grid grid-cols-2 gap-6">
                     <div>
                       <p className="text-[12px] text-gray-500 mb-1">Industry</p>
-                      <p className="text-[14px] text-[#0f172a]">{profile?.industry}</p>
+                      <p className="text-[14px] text-[#0f172a]">{profile?.industry || 'Not specified'}</p>
                     </div>
                     <div>
                       <p className="text-[12px] text-gray-500 mb-1">Location</p>

@@ -60,7 +60,8 @@ export interface CreateJobPostRequest {
   salaryMin?: number;
   salaryMax?: number;
   requiredSkills: string[];
-  experienceLevel: string;
+  experienceMin: number;
+  experienceMax: number;
   responsibilities?: string[];
   requirements?: string[];
   niceToHave?: string[];
@@ -79,7 +80,8 @@ export interface UpdateJobPostRequest {
   salaryMin?: number;
   salaryMax?: number;
   requiredSkills?: string[];
-  experienceLevel?: string;
+  experienceMin?: number;
+  experienceMax?: number;
   status?: 'active' | 'closed' | 'draft';
   responsibilities?: string[];
   requirements?: string[];

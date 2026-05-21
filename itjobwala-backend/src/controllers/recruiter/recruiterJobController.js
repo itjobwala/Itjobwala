@@ -151,7 +151,8 @@ export const postJob = async (request, reply) => {
       salaryMin,
       salaryMax,
       requiredSkills,
-      experienceLevel,
+      experienceMin,
+      experienceMax,
       responsibilities,
       requirements,
       niceToHave,
@@ -182,13 +183,8 @@ export const postJob = async (request, reply) => {
       });
     }
 
-    // Map experienceLevel string to min/max
-    let expMin = 0, expMax = 10;
-    if (experienceLevel === 'Fresher') { expMin = 0; expMax = 1; }
-    else if (experienceLevel === '1-2 years') { expMin = 1; expMax = 2; }
-    else if (experienceLevel === '2-3 years') { expMin = 2; expMax = 3; }
-    else if (experienceLevel === '3-5 years') { expMin = 3; expMax = 5; }
-    else if (experienceLevel === '5+ years') { expMin = 5; expMax = 15; }
+    const expMin = typeof experienceMin === 'number' ? Math.max(0, Math.min(20, experienceMin)) : 0;
+    const expMax = typeof experienceMax === 'number' ? Math.max(expMin + 1, Math.min(20, experienceMax)) : 30;
 
     const recruiter = await Recruiter.query().findById(recruiterId).select('company_name');
     const companyName = recruiter?.company_name ?? 'Unknown Company';
@@ -199,7 +195,7 @@ export const postJob = async (request, reply) => {
       description: description || '',
       about_role: description || '',
       location,
-      job_type: jobType,
+      job_type: jobType?.toLowerCase(),
       work_mode: workMode,
       salary_min: salaryMin,
       salary_max: salaryMax,
@@ -243,7 +239,7 @@ export const postJob = async (request, reply) => {
         salaryMin: newJob.salary_min,
         salaryMax: newJob.salary_max,
         requiredSkills: requiredSkills || [],
-        experienceLevel,
+        experienceLevel: `${expMin}-${expMax} years`,
         applicationCount: 0,
         postedDate: null,
         status: 'draft',
@@ -330,7 +326,7 @@ export const updateJob = async (request, reply) => {
     if (updateData.title != null)       mappedUpdate.title = updateData.title.trim();
     if (updateData.description != null) { mappedUpdate.description = updateData.description.trim(); mappedUpdate.about_role = updateData.description.trim(); }
     if (updateData.location != null)    mappedUpdate.location = updateData.location.trim();
-    if (updateData.jobType != null)     mappedUpdate.job_type = updateData.jobType;
+    if (updateData.jobType != null)     mappedUpdate.job_type = updateData.jobType?.toLowerCase();
     if (updateData.workMode != null)    mappedUpdate.work_mode = updateData.workMode;
     if (updateData.salaryMin != null)   mappedUpdate.salary_min = Number(updateData.salaryMin) || null;
     if (updateData.salaryMax != null)   mappedUpdate.salary_max = Number(updateData.salaryMax) || null;
@@ -344,15 +340,11 @@ export const updateJob = async (request, reply) => {
     if (updateData.closesAt !== undefined)  mappedUpdate.closes_at = updateData.closesAt || null;
     if (updateData.jobLevel !== undefined)  mappedUpdate.job_level = updateData.jobLevel || null;
 
-    if (updateData.experienceLevel != null) {
-      let expMin = 0, expMax = 10;
-      if (updateData.experienceLevel === 'Fresher')   { expMin = 0; expMax = 1; }
-      else if (updateData.experienceLevel === '1-2 years') { expMin = 1; expMax = 2; }
-      else if (updateData.experienceLevel === '2-3 years') { expMin = 2; expMax = 3; }
-      else if (updateData.experienceLevel === '3-5 years') { expMin = 3; expMax = 5; }
-      else if (updateData.experienceLevel === '5+ years')  { expMin = 5; expMax = 15; }
-      mappedUpdate.experience_min = expMin;
-      mappedUpdate.experience_max = expMax;
+    if (updateData.experienceMin != null || updateData.experienceMax != null) {
+      const eMin = updateData.experienceMin != null ? Math.max(0, Math.min(20, Number(updateData.experienceMin))) : (job.experience_min ?? 0);
+      const eMax = updateData.experienceMax != null ? Math.max(eMin + 1, Math.min(20, Number(updateData.experienceMax))) : (job.experience_max ?? 30);
+      mappedUpdate.experience_min = eMin;
+      mappedUpdate.experience_max = eMax;
     }
 
     const updatedJob = await job.$query().patchAndFetch(mappedUpdate);

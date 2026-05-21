@@ -207,8 +207,40 @@ function LeftPanel() {
 
 const JOB_TYPES = ['Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance'];
 const WORK_MODES = ['Remote', 'On-site', 'Hybrid'];
-const EXPERIENCE_LEVELS = ['Fresher', '1-2 years', '2-3 years', '3-5 years', '5+ years'];
 const JOB_LEVELS = ['Junior', 'Mid', 'Senior', 'Lead', 'Manager'];
+
+function ExperienceSlider({ minVal, maxVal, onChange }: {
+  minVal: number; maxVal: number;
+  onChange: (min: number, max: number) => void;
+}) {
+  const minPct = (minVal / 20) * 100;
+  const maxPct = (maxVal / 20) * 100;
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <label className="text-[13px] font-bold text-gray-600">Experience required</label>
+        <span className="text-[13px] font-bold" style={{ color: PRIMARY }}>
+          {minVal === 0 ? 'Any' : `${minVal} yrs`} – {maxVal === 20 ? '20+ yrs' : `${maxVal} yrs`}
+        </span>
+      </div>
+      <div className="relative h-5 flex items-center">
+        <div className="absolute inset-x-0 h-1.5 rounded-full bg-gray-200 pointer-events-none" />
+        <div className="absolute h-1.5 rounded-full pointer-events-none"
+          style={{ left: `${minPct}%`, right: `${100 - maxPct}%`, background: PRIMARY }} />
+        <input type="range" min={0} max={20} step={1} value={minVal}
+          onChange={e => onChange(Math.min(+e.target.value, maxVal - 1), maxVal)}
+          className="salary-thumb absolute w-full"
+          style={{ zIndex: minVal >= maxVal - 1 ? 5 : 3 }} />
+        <input type="range" min={0} max={20} step={1} value={maxVal}
+          onChange={e => onChange(minVal, Math.max(+e.target.value, minVal + 1))}
+          className="salary-thumb absolute w-full" style={{ zIndex: 4 }} />
+      </div>
+      <div className="flex justify-between mt-2 text-[11px] text-gray-400 select-none">
+        <span>0</span><span>5 yrs</span><span>10 yrs</span><span>15 yrs</span><span>20 yrs</span>
+      </div>
+    </div>
+  );
+}
 
 function parseBullets(text: string): string[] {
   return text.split('\n').map(l => l.trim()).filter(Boolean);
@@ -225,7 +257,8 @@ function RecruiterJobForm() {
     jobType: 'Full-time', workMode: 'On-site',
     salaryMinLpa: 5, salaryMaxLpa: 20,
     requiredSkills: [] as string[],
-    experienceLevel: 'Fresher',
+    experienceMin: 0,
+    experienceMax: 5,
     jobLevel: '',
     vacancies: '',
     closesAt: '',
@@ -296,7 +329,8 @@ function RecruiterJobForm() {
         salaryMin: form.salaryMinLpa * 100000,
         salaryMax: form.salaryMaxLpa * 100000,
         requiredSkills: form.requiredSkills,
-        experienceLevel: form.experienceLevel,
+        experienceMin: form.experienceMin,
+        experienceMax: form.experienceMax,
         jobLevel: form.jobLevel || undefined,
         vacancies: form.vacancies ? Number(form.vacancies) : undefined,
         closesAt: form.closesAt || undefined,
@@ -350,23 +384,20 @@ function RecruiterJobForm() {
             </div>
           </div>
 
-          {/* Location + Experience */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Location <span style={{ color: PRIMARY }}>*</span></label>
-              <input value={form.location} onChange={e => set('location', e.target.value)} placeholder="e.g. Bengaluru / Remote"
-                className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none"
-                style={{ borderColor: errors.location ? '#ef4444' : '#e5e7eb' }} />
-              {errors.location && <p className="text-xs text-red-500 mt-1">{errors.location}</p>}
-            </div>
-            <div>
-              <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Experience level</label>
-              <select value={form.experienceLevel} onChange={e => set('experienceLevel', e.target.value)}
-                className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none bg-white">
-                {EXPERIENCE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-              </select>
-            </div>
+          {/* Location */}
+          <div>
+            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Location <span style={{ color: PRIMARY }}>*</span></label>
+            <input value={form.location} onChange={e => set('location', e.target.value)} placeholder="e.g. Bengaluru / Remote"
+              className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none"
+              style={{ borderColor: errors.location ? '#ef4444' : '#e5e7eb' }} />
+            {errors.location && <p className="text-xs text-red-500 mt-1">{errors.location}</p>}
           </div>
+
+          {/* Experience slider */}
+          <ExperienceSlider
+            minVal={form.experienceMin} maxVal={form.experienceMax}
+            onChange={(min, max) => { set('experienceMin', min); set('experienceMax', max); }}
+          />
 
           {/* Job type + Work mode */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -677,7 +708,7 @@ export default function RecruiterPostJobPage() {
           </Link>
           <div className="flex items-center gap-3 sm:gap-5">
             <span className="hidden sm:inline text-[13px] text-gray-500">Already a recruiter?</span>
-            <Link href="/recruiter/login"
+            <Link href="/login?role=recruiter"
               className="text-sm font-bold rounded-lg px-4 sm:px-[18px] py-2 transition-all duration-200"
               style={{ color: PRIMARY, border: `1.5px solid ${PRIMARY}`, textDecoration: 'none' }}
               onMouseEnter={e => { e.currentTarget.style.background = PRIMARY; e.currentTarget.style.color = '#fff'; }}
@@ -724,30 +755,11 @@ export default function RecruiterPostJobPage() {
                   <Field label="Mobile Number" id="phone" type="tel" placeholder="10-digit mobile"
                     value={form.phone} onChange={v => set('phone', v.replace(/\D/g, '').slice(0, 10))} error={errors.phone}
                     icon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.71a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16z" /></svg>}
-                    suffix={<span className="text-xs text-gray-400 font-medium">+91</span>}
+                    prefix={<span>+91</span>}
                   />
                   <PasswordField label="Password" id="password" placeholder="Min. 8 characters"
                     value={form.password} onChange={v => set('password', v)} error={errors.password}
                   />
-                  <div className="flex items-center gap-3 my-4">
-                    <div className="flex-1 h-px bg-gray-200" />
-                    <span className="text-xs font-semibold text-gray-400">or</span>
-                    <div className="flex-1 h-px bg-gray-200" />
-                  </div>
-                  <button type="button"
-                    className="w-full flex items-center justify-center gap-2.5 bg-white rounded-xl font-semibold text-sm text-gray-700 cursor-pointer transition-all duration-200 mb-2"
-                    style={{ border: '1.5px solid #e5e7eb', padding: 13 }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = PRIMARY; e.currentTarget.style.background = '#f8faff'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.background = '#fff'; }}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 48 48">
-                      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
-                      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
-                      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
-                      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
-                    </svg>
-                    Continue with Google
-                  </button>
                 </div>
               )}
 
@@ -881,6 +893,30 @@ export default function RecruiterPostJobPage() {
                   }
                 </button>
               </div>
+
+              {step === 0 && (
+                <>
+                  <div className="flex items-center gap-3 mt-4">
+                    <div className="flex-1 h-px bg-gray-200" />
+                    <span className="text-xs font-semibold text-gray-400">or</span>
+                    <div className="flex-1 h-px bg-gray-200" />
+                  </div>
+                  <button type="button"
+                    className="w-full flex items-center justify-center gap-2.5 bg-white rounded-xl font-semibold text-sm text-gray-700 cursor-pointer transition-all duration-200 mt-3"
+                    style={{ border: '1.5px solid #e5e7eb', padding: 13 }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = PRIMARY; e.currentTarget.style.background = '#f8faff'; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.background = '#fff'; }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 48 48">
+                      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                    </svg>
+                    Continue with Google
+                  </button>
+                </>
+              )}
 
               <p className="text-center text-[13px] text-gray-400 mt-5">
                 Looking for a job?{' '}

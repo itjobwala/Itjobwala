@@ -268,7 +268,9 @@ function RoleToggle({ role, onChange }: { role: Role; onChange: (r: Role) => voi
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
-  const [role, setRole] = useState<Role>('candidate');
+  const [role, setRole] = useState<Role>(() =>
+    searchParams.get('role') === 'recruiter' ? 'recruiter' : 'candidate'
+  );
   const [screen, setScreen] = useState<'login' | 'forgot' | 'forgot-sent'>('login');
 
   /* Candidate form state */

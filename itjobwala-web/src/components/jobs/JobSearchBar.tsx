@@ -20,10 +20,12 @@ function MapPinIcon() {
   );
 }
 
-function BuildingIcon() {
+function BriefcaseIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
-      <path d="M4 9V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4M4 21h16M9 21v-7h6v7" />
+      <rect x="2" y="7" width="20" height="14" rx="2" />
+      <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+      <path d="M12 12v2M8 12v2M16 12v2" />
     </svg>
   );
 }
@@ -65,7 +67,7 @@ export default function JobSearchBar({ search, onChange, onSearch }: Props) {
 
         {/* Company input */}
         <div className="flex items-center gap-3 px-4 py-2 text-gray-400 border border-gray-100 rounded-lg">
-          <BuildingIcon />
+          <BriefcaseIcon />
           <input
             type="text"
             placeholder="Company"
@@ -138,7 +140,7 @@ export default function JobSearchBar({ search, onChange, onSearch }: Props) {
 
         {/* Company input */}
         <div className="flex items-center gap-2 flex-1 px-3 py-2 text-gray-400 min-w-0">
-          <BuildingIcon />
+          <BriefcaseIcon />
           <input
             type="text"
             placeholder="Company"

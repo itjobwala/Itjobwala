@@ -12,12 +12,13 @@ type FieldProps = {
   onChange: (value: string) => void;
   error?: string;
   icon?: ReactNode;
+  prefix?: ReactNode;
   suffix?: ReactNode;
   hint?: ReactNode;
 };
 
 export default function Field({
-  label, id, type = 'text', placeholder, value, onChange, error, icon, suffix, hint,
+  label, id, type = 'text', placeholder, value, onChange, error, icon, prefix, suffix, hint,
 }: FieldProps) {
   const [focused, setFocused] = useState(false);
 
@@ -42,6 +43,11 @@ export default function Field({
         {icon && (
           <div className={`px-3.5 shrink-0 transition-colors duration-200 ${focused ? 'text-[#1557FF]' : 'text-gray-400'}`}>
             {icon}
+          </div>
+        )}
+        {prefix && (
+          <div className="shrink-0 text-[14px] font-semibold text-gray-500 pr-1 border-r border-gray-200 mr-2 pl-0">
+            {prefix}
           </div>
         )}
         <input

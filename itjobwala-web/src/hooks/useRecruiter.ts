@@ -33,8 +33,9 @@ export const recruiterKeys = {
   stats: () => ['recruiter', 'stats'] as const,
   jobs: () => ['recruiter', 'jobs'] as const,
   jobDetail: (id: string) => ['recruiter', 'jobs', id] as const,
+  applicantsAll: () => ['recruiter', 'applicants'] as const,
   applicants: (filters?: any) => ['recruiter', 'applicants', filters] as const,
-  applicantDetail: (id: string) => ['recruiter', 'applicants', id] as const,
+  applicantDetail: (id: string) => ['recruiter', 'applicants', 'detail', id] as const,
   interviews: () => ['recruiter', 'interviews'] as const,
   notifications: () => ['recruiter', 'notifications'] as const,
 };
@@ -163,10 +164,9 @@ export function useUpdateApplicantStatusMutation() {
       data: UpdateApplicantStatusRequest;
     }) => updateApplicantStatus(applicantId, data),
     onSuccess: (_, { applicantId }) => {
-      qc.invalidateQueries({ queryKey: recruiterKeys.applicants() });
-      qc.invalidateQueries({
-        queryKey: recruiterKeys.applicantDetail(applicantId),
-      });
+      qc.invalidateQueries({ queryKey: recruiterKeys.applicantsAll() });
+      qc.invalidateQueries({ queryKey: recruiterKeys.applicantDetail(applicantId) });
+      qc.invalidateQueries({ queryKey: recruiterKeys.stats() });
     },
   });
 }
@@ -176,10 +176,9 @@ export function useRejectApplicantMutation() {
   return useMutation({
     mutationFn: (applicantId: string) => rejectApplicant(applicantId),
     onSuccess: (_, applicantId) => {
-      qc.invalidateQueries({ queryKey: recruiterKeys.applicants() });
-      qc.invalidateQueries({
-        queryKey: recruiterKeys.applicantDetail(applicantId),
-      });
+      qc.invalidateQueries({ queryKey: recruiterKeys.applicantsAll() });
+      qc.invalidateQueries({ queryKey: recruiterKeys.applicantDetail(applicantId) });
+      qc.invalidateQueries({ queryKey: recruiterKeys.stats() });
     },
   });
 }
@@ -189,10 +188,9 @@ export function useShortlistApplicantMutation() {
   return useMutation({
     mutationFn: (applicantId: string) => shortlistApplicant(applicantId),
     onSuccess: (_, applicantId) => {
-      qc.invalidateQueries({ queryKey: recruiterKeys.applicants() });
-      qc.invalidateQueries({
-        queryKey: recruiterKeys.applicantDetail(applicantId),
-      });
+      qc.invalidateQueries({ queryKey: recruiterKeys.applicantsAll() });
+      qc.invalidateQueries({ queryKey: recruiterKeys.applicantDetail(applicantId) });
+      qc.invalidateQueries({ queryKey: recruiterKeys.stats() });
     },
   });
 }
@@ -228,10 +226,9 @@ export function useHireApplicantMutation() {
   return useMutation({
     mutationFn: (applicantId: string) => hireApplicant(applicantId),
     onSuccess: (_, applicantId) => {
-      qc.invalidateQueries({ queryKey: recruiterKeys.applicants() });
-      qc.invalidateQueries({
-        queryKey: recruiterKeys.applicantDetail(applicantId),
-      });
+      qc.invalidateQueries({ queryKey: recruiterKeys.applicantsAll() });
+      qc.invalidateQueries({ queryKey: recruiterKeys.applicantDetail(applicantId) });
+      qc.invalidateQueries({ queryKey: recruiterKeys.stats() });
     },
   });
 }

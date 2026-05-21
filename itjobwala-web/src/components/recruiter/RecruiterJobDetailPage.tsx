@@ -167,6 +167,8 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
           <Card overflow>
             <h2 className="text-[15px] font-extrabold text-[#0f172a] mb-4">Job Details</h2>
             <div className="grid grid-cols-2 gap-4 text-[13px]">
+              <div><span className="text-gray-400">Location</span><p className="font-semibold text-[#0f172a] mt-0.5">{job.location || '—'}</p></div>
+              <div><span className="text-gray-400">Work Mode</span><p className="font-semibold text-[#0f172a] mt-0.5">{job.workMode || '—'}</p></div>
               <div><span className="text-gray-400">Experience</span><p className="font-semibold text-[#0f172a] mt-0.5">{job.experienceLevel}</p></div>
               <div><span className="text-gray-400">Level</span><p className="font-semibold text-[#0f172a] mt-0.5">{job.jobLevel || '—'}</p></div>
               <div><span className="text-gray-400">Posted</span><p className="font-semibold text-[#0f172a] mt-0.5">{formatDate(job.postedDate ?? job.createdAt)}</p></div>

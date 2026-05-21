@@ -9,6 +9,7 @@ const NAV_LINKS = [
   { label: 'Find Jobs', href: '/jobs' },
   { label: 'Companies', href: '#' },
   { label: 'Resources', href: '#' },
+  { label: 'Post a Free Job', href: '/recruiter/post-job' },
 ];
 
 export default function Navbar() {
