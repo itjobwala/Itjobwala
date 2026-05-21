@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useRecruiterAuth } from '@/src/hooks/useRecruiterAuth';
 import { useRecruiterCompanyProfileQuery, useRecruiterStatsQuery } from '@/src/hooks/useRecruiter';
@@ -118,13 +119,11 @@ export default function RecruiterSidebar({ isOpen, onClose }: RecruiterSidebarPr
       >
         {/* Logo */}
         <div className="px-6 h-[68px] flex items-center shrink-0">
-          <Link
-            href="/recruiter/dashboard"
-            className="font-extrabold text-[20px] text-[#0f172a] hover:opacity-80 transition-opacity"
-            style={{ letterSpacing: '-0.5px' }}
-          >
-            <span>it</span>
-            <span className="text-primary">Jobwala</span>
+          <Link href="/recruiter/dashboard" className="flex items-center gap-1 hover:opacity-80 transition-opacity">
+            <Image src="/logo.png" alt="itJobwala" width={30} height={30} />
+            <span className="font-extrabold text-[20px] text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
+              it<span className="text-primary">Jobwala</span>
+            </span>
           </Link>
         </div>
         {/* Company info */}

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { FOOTER_COLS } from '@/src/lib/data';
 import { PRIMARY } from '@/src/lib/constants';
 
@@ -60,13 +61,12 @@ export default function Footer() {
 
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <div
-              className="font-extrabold text-xl mb-4"
-              style={{ letterSpacing: '-0.5px' }}
-            >
-              <span className="text-[#0f172a]">it</span>
-              <span style={{ color: PRIMARY }}>Jobwala</span>
-            </div>
+            <Link href="/" className="flex items-center gap-1 mb-4 hover:opacity-80 transition-opacity w-fit">
+              <Image src="/logo.png" alt="itJobwala" width={28} height={28} />
+              <span className="font-extrabold text-xl text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
+                it<span style={{ color: PRIMARY }}>Jobwala</span>
+              </span>
+            </Link>
             <p className="text-sm text-[#475569] leading-[1.8] mb-7">
               Find IT jobs without the noise.<br />Apply directly. No middlemen.
             </p>

@@ -24,7 +24,10 @@ export default function NavbarSkeleton() {
         suppressHydrationWarning
       >
         {/* Logo skeleton */}
-        <div className="w-28 h-6 bg-gray-200 rounded-md animate-pulse shrink-0" />
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="w-8 h-8 bg-gray-200 rounded-md animate-pulse" />
+          <div className="w-24 h-5 bg-gray-200 rounded-md animate-pulse" />
+        </div>
 
         {/* Nav links skeleton — desktop only */}
         <div className="hidden md:flex items-center gap-6 flex-1">

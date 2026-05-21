@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import RecruiterDropdown from '@/src/components/navbar/RecruiterDropdown';
 
 const PRIMARY = '#1557FF';
@@ -32,13 +33,11 @@ export default function Navbar() {
     >
       <div suppressHydrationWarning className="max-w-[1440px] mx-auto px-5 lg:px-10 flex items-center h-[68px] gap-9">
         {/* Logo */}
-        <Link
-          href="/"
-          className="font-extrabold text-xl shrink-0 text-[#0f172a] hover:opacity-80 transition-opacity"
-          style={{ letterSpacing: '-0.5px' }}
-        >
-          <span>it</span>
-          <span className="text-primary">Jobwala</span>
+        <Link href="/" className="flex items-center gap-1 shrink-0 hover:opacity-80 transition-opacity">
+          <Image src="/logo.png" alt="itJobwala" width={32} height={32} />
+          <span className="font-extrabold text-xl text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
+            it<span className="text-primary">Jobwala</span>
+          </span>
         </Link>
 
         {/* Nav links — desktop */}

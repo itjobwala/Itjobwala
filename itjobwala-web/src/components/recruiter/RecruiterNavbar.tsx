@@ -21,6 +21,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useRecruiterAuth } from '@/src/hooks/useRecruiterAuth';
 
@@ -40,9 +41,11 @@ export default function RecruiterNavbar() {
     <nav className="fixed top-0 left-0 right-0 z-[100] bg-white border-b border-gray-100">
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 h-[68px] flex items-center justify-between gap-6">
         {/* Logo */}
-        <Link href="/recruiter/dashboard" className="font-extrabold text-xl shrink-0 text-[#0f172a]">
-          <span>it</span>
-          <span className="text-primary">Jobwala</span>
+        <Link href="/recruiter/dashboard" className="flex items-center gap-1 shrink-0 hover:opacity-80 transition-opacity">
+          <Image src="/logo.png" alt="itJobwala" width={30} height={30} />
+          <span className="font-extrabold text-xl text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
+            it<span className="text-primary">Jobwala</span>
+          </span>
         </Link>
 
         {/* Nav items */}
