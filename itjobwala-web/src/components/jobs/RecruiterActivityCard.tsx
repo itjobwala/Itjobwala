@@ -1,4 +1,5 @@
 import type { JobDetail } from './types';
+import Card from '@/src/components/ui/Card';
 
 interface Props {
   job: JobDetail;
@@ -8,7 +9,7 @@ export default function RecruiterActivityCard({ job }: Props) {
   const metrics = job.metrics || { views: 0, applicants: job.applicants, shortlisted: 0, interviews: 0 };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5">
+    <Card overflow>
       <h3 className="text-[14px] font-extrabold text-[#0f172a] mb-4">Recruiter activity</h3>
 
       {/* Recruiter info */}
@@ -113,6 +114,6 @@ export default function RecruiterActivityCard({ job }: Props) {
           </p>
         </div>
       )}
-    </div>
+    </Card>
   );
 }

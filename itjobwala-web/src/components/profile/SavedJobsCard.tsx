@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import type { SavedJob } from '@/src/types/applications';
+import Card from '@/src/components/ui/Card';
 
 const COLOR_CLASSES = [
   'bg-blue-600', 'bg-green-600', 'bg-indigo-600', 'bg-violet-600',
@@ -43,7 +44,7 @@ export default function SavedJobsCard({ jobs: initialJobs, total, hasMore, onUns
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5">
+    <Card overflow>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-[14px] font-extrabold text-[#0f172a]">Saved jobs</h3>
         <span className="text-[12px] text-gray-400">{total ?? visible.length} saved</span>
@@ -54,7 +55,8 @@ export default function SavedJobsCard({ jobs: initialJobs, total, hasMore, onUns
           <p className="text-[13px] text-gray-400 mb-3">You haven't saved any jobs yet.</p>
           <Link
             href="/jobs"
-            className="inline-block text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:brightness-110 transition-all"
+            className="inline-block text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
+            style={{ color: '#fff' }}
           >
             Browse Jobs
           </Link>
@@ -120,6 +122,6 @@ export default function SavedJobsCard({ jobs: initialJobs, total, hasMore, onUns
           </svg>
         </Link>
       )}
-    </div>
+    </Card>
   );
 }

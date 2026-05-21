@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Certification } from '@/src/types/profile';
+import Card from '@/src/components/ui/Card';
 
 interface Props {
   certifications: Certification[];
@@ -30,7 +31,7 @@ function ReadOnlyField({ label, value, url }: { label: string; value: string; ur
 
 export default function CertificationsSection({ certifications, onEdit, onAdd }: Props & { onEdit?: (id: string) => void; onAdd?: () => void }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8">
+    <Card padding="none" className="p-6 sm:p-8" overflow>
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-[16px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.3px' }}>Certifications</h2>
         {certifications.length > 0 ? (
@@ -80,6 +81,6 @@ export default function CertificationsSection({ certifications, onEdit, onAdd }:
           ))}
         </div>
       )}
-    </div>
+    </Card>
   );
 }

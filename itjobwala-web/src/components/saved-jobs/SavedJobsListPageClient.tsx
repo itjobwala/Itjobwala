@@ -7,6 +7,9 @@ import ProtectedRoute from '@/src/components/auth/ProtectedRoute';
 import ConfirmationDialog from '@/src/components/common/ConfirmationDialog';
 import { useSavedJobsInfiniteQuery, useUnsaveJobMutation } from '@/src/hooks/useApplications';
 import { useAuthHydration } from '@/src/hooks/useAuthHydration';
+import { useToast } from '@/src/hooks/useToast';
+import Toast from '@/src/components/ui/Toast';
+import Card from '@/src/components/ui/Card';
 
 const COLOR_CLASSES = [
   'bg-blue-600', 'bg-green-600', 'bg-indigo-600', 'bg-violet-600',
@@ -33,8 +36,7 @@ export default function SavedJobsListPageClient() {
   const canLoadCandidateData = isHydrated && !authLoading && session?.userRole === 'candidate';
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [unsavingId, setUnsavingId] = useState<string | null>(null);
-  const [errorToast, setErrorToast] = useState('');
-  const [successToast, setSuccessToast] = useState('');
+  const { toast, show: showToast } = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingUnsaveId, setPendingUnsaveId] = useState<string | null>(null);
   const observerTarget = useRef<HTMLDivElement>(null);
@@ -80,12 +82,9 @@ export default function SavedJobsListPageClient() {
     setUnsavingId(pendingUnsaveId);
     try {
       await unsaveMutation.mutateAsync(pendingUnsaveId);
-      setSuccessToast('Job removed from saved list');
-      setTimeout(() => setSuccessToast(''), 4000);
+      showToast('Job removed from saved list', 'success');
     } catch (error) {
-      const message = (error as Error).message || 'Failed to unsave job';
-      setErrorToast(message);
-      setTimeout(() => setErrorToast(''), 4000);
+      showToast((error as Error).message || 'Failed to unsave job', 'error');
     } finally {
       setUnsavingId(null);
       setPendingUnsaveId(null);
@@ -128,7 +127,8 @@ export default function SavedJobsListPageClient() {
                 </div>
                 <Link
                   href="/jobs"
-                  className="text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:brightness-110 transition-all"
+                  className="text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
+                  style={{ color: '#fff' }}
                 >
                   Find More Jobs
                 </Link>
@@ -138,12 +138,13 @@ export default function SavedJobsListPageClient() {
 
           <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
             {/* Sort Filter */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-6">
+            <Card padding="lg" className="mb-6" overflow>
               <div className="w-full sm:w-64">
-                <label className="block text-[12px] font-bold text-gray-500 mb-2">
+                <label htmlFor="saved-sort-order" className="block text-[12px] font-bold text-gray-500 mb-2">
                   Sort By
                 </label>
                 <select
+                  id="saved-sort-order"
                   value={sortOrder}
                   onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
                   className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none focus:border-primary/50 transition-colors"
@@ -152,7 +153,7 @@ export default function SavedJobsListPageClient() {
                   <option value="oldest">Oldest First</option>
                 </select>
               </div>
-            </div>
+            </Card>
 
             {/* Saved Jobs List */}
             {isLoading ? (
@@ -160,7 +161,7 @@ export default function SavedJobsListPageClient() {
                 <p className="text-[13px] text-gray-400">Loading saved jobs...</p>
               </div>
             ) : savedJobs.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+              <Card padding="none" className="p-12 text-center" overflow>
                 <svg
                   width="48"
                   height="48"
@@ -178,11 +179,12 @@ export default function SavedJobsListPageClient() {
                 </p>
                 <Link
                   href="/jobs"
-                  className="inline-block text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:brightness-110 transition-all"
+                  className="inline-block text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
+                  style={{ color: '#fff' }}
                 >
                   Browse Jobs
                 </Link>
-              </div>
+              </Card>
             ) : (
               <div className="flex flex-col gap-3">
                 {savedJobs.map((job) => {
@@ -191,9 +193,10 @@ export default function SavedJobsListPageClient() {
                   const color = job.company_color_class ?? hashColor(job.company);
 
                   return (
-                    <div
+                    <Card
                       key={job.id}
-                      className="bg-white rounded-2xl border border-gray-100 p-5 hover:border-primary/20 transition-colors group"
+                      className="hover:border-primary/20 transition-colors group"
+                      overflow
                     >
                       <div className="flex items-start gap-4">
                         {/* Company Logo */}
@@ -259,7 +262,7 @@ export default function SavedJobsListPageClient() {
                           </button>
                         </div>
                       </div>
-                    </div>
+                    </Card>
                   );
                 })}
               </div>
@@ -282,38 +285,7 @@ export default function SavedJobsListPageClient() {
         </div>
       </div>
 
-      {/* Success toast */}
-      <div
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] transition-all duration-300 ${
-          successToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-        }`}
-      >
-        <div className="flex items-center gap-3 bg-green-600 text-white text-[13px] font-semibold rounded-2xl px-5 py-3.5 shadow-2xl">
-          <span className="w-5 h-5 rounded-full bg-green-700 flex items-center justify-center shrink-0">
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5">
-              <path d="M2 6l3 3 5-5" />
-            </svg>
-          </span>
-          {successToast}
-        </div>
-      </div>
-
-      {/* Error toast */}
-      <div
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] transition-all duration-300 ${
-          errorToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-        }`}
-      >
-        <div className="flex items-center gap-3 bg-red-600 text-white text-[13px] font-semibold rounded-2xl px-5 py-3.5 shadow-2xl">
-          <span className="w-5 h-5 rounded-full bg-red-700 flex items-center justify-center shrink-0">
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5">
-              <line x1="1" y1="1" x2="11" y2="11" />
-              <line x1="11" y1="1" x2="1" y2="11" />
-            </svg>
-          </span>
-          {errorToast}
-        </div>
-      </div>
+      <Toast message={toast.message} variant={toast.variant} visible={toast.visible} />
 
       {/* Unsave confirmation dialog */}
       <ConfirmationDialog

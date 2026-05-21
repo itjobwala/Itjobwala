@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import SmartNavbar from '@/src/components/SmartNavbar';
+import { useToast } from '@/src/hooks/useToast';
+import Toast from '@/src/components/ui/Toast';
 import ProtectedRoute from '@/src/components/auth/ProtectedRoute';
 import ProfileHeader from './ProfileHeader';
 import AboutSection from './AboutSection';
@@ -12,6 +14,7 @@ import CertificationsSection from './CertificationsSection';
 import CareerProfileSection from './CareerProfileSection';
 import PersonalDetailsSection from './PersonalDetailsSection';
 import ResumeCard from './ResumeCard';
+import Card from '@/src/components/ui/Card';
 import ProfileCompletionCard from './ProfileCompletionCard';
 import AppliedJobsCard from './AppliedJobsCard';
 import SavedJobsCard from './SavedJobsCard';
@@ -82,16 +85,13 @@ export default function ProfilePageClient() {
 
   const { activeModal, draft, saving, openEditModal, closeModal, setSaving: setSavingState, updateDraft } = useProfileManager(profile);
 
-  const [errorToast, setErrorToast] = useState('');
+  const { toast, show: showToast } = useToast();
 
   const loading = profileLoading || appsLoading || savedLoading;
   const applications = appsData?.applications ?? [];
   const savedJobs = savedData?.saved_jobs ?? [];
 
-  const showError = (msg: string) => {
-    setErrorToast(msg);
-    setTimeout(() => setErrorToast(''), 4000);
-  };
+  const showError = (msg: string) => showToast(msg, 'error');
 
   const validateModal = (): ValidationError | null => {
     switch (activeModal) {
@@ -348,7 +348,7 @@ export default function ProfilePageClient() {
                       onEdit={() => openEditModal('resume-upload')}
                     />
                   ) : (
-                    <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8">
+                    <Card padding="none" className="p-6 sm:p-8" overflow>
                       <h2 className="text-[16px] font-extrabold text-[#0f172a] mb-4" style={{ letterSpacing: '-0.3px' }}>Resume</h2>
                       <button
                         onClick={() => openEditModal('resume-upload')}
@@ -363,7 +363,7 @@ export default function ProfilePageClient() {
                       <p className="text-[12px] text-gray-400 mt-3 text-center">
                         Accepted formats: PDF, DOC, DOCX • Max 5 MB
                       </p>
-                    </div>
+                    </Card>
                   )}
                   <AboutSection about={profile.about ?? profile.bio ?? ''} onEdit={() => openEditModal('about')} />
                   <CareerProfileSection careerProfile={profile.career_profile} expectedSalary={profile.expected_salary != null ? Number(profile.expected_salary) : undefined} onEdit={() => openEditModal('career-profile')} onAdd={() => openEditModal('career-profile')} />
@@ -481,21 +481,7 @@ export default function ProfilePageClient() {
           isUploading={uploadProfileCoverMutation.isPending}
         />
 
-        {/* Error Toast */}
-        <div
-          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[10000] transition-all duration-300 ${
-            errorToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-          }`}
-        >
-          <div className="flex items-center gap-3 bg-red-600 text-white text-[13px] font-semibold rounded-2xl px-5 py-3.5 shadow-2xl">
-            <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center shrink-0">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                <path d="M18 6L6 18M6 6l12 12" />
-              </svg>
-            </span>
-            {errorToast}
-          </div>
-        </div>
+        <Toast message={toast.message} variant={toast.variant} visible={toast.visible} />
       </div>
     </ProtectedRoute>
   );

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Card from '@/src/components/ui/Card';
 import type { CandidateProfile } from '@/src/types/profile';
 
 interface Props {
@@ -30,7 +31,7 @@ export default function ProfileHeader({ profile, onEdit, onUploadPhoto, onUpload
   const initials    = getInitials(profile);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+    <Card padding="none">
       {/* Cover banner */}
       <button
         onClick={onUploadCover}
@@ -149,7 +150,7 @@ export default function ProfileHeader({ profile, onEdit, onUploadPhoto, onUpload
         </div>
       </div>
 
-    </div>
+    </Card>
   );
 }
 

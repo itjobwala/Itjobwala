@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Card from '@/src/components/ui/Card';
 
 const ACTIONS = [
   {
@@ -60,7 +61,7 @@ const ACTIONS = [
 
 export default function QuickActions() {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+    <Card className="shadow-sm" overflow>
       <h2 className="text-[15px] font-extrabold text-[#0f172a] mb-4" style={{ letterSpacing: '-0.3px' }}>
         Quick Actions
       </h2>
@@ -79,6 +80,6 @@ export default function QuickActions() {
           </Link>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }

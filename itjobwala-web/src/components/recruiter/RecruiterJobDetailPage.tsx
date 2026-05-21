@@ -7,20 +7,11 @@ import {
   useUpdateRecruiterJobMutation,
   useRecruiterApplicantsQuery,
 } from '@/src/hooks/useRecruiter';
-
-const STATUS_STYLES: Record<string, string> = {
-  active: 'bg-green-50 text-green-700',
-  draft:  'bg-yellow-50 text-yellow-700',
-  closed: 'bg-gray-100 text-gray-500',
-};
-
-const APPLICANT_STATUS_STYLES: Record<string, string> = {
-  applied:     'bg-blue-50 text-blue-700',
-  shortlisted: 'bg-green-50 text-green-700',
-  interview:   'bg-amber-50 text-amber-700',
-  hired:       'bg-purple-50 text-purple-700',
-  rejected:    'bg-red-50 text-red-600',
-};
+import StatusBadge from '@/src/components/ui/StatusBadge';
+import Avatar from '@/src/components/ui/Avatar';
+import PageHeader from '@/src/components/ui/PageHeader';
+import Button, { buttonVariants } from '@/src/components/ui/Button';
+import Card from '@/src/components/ui/Card';
 
 function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return '—';
@@ -60,14 +51,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function ApplicantInitials({ name }: { name: string }) {
-  const initials = name.split(' ').slice(0, 2).map((w) => w[0]?.toUpperCase() ?? '').join('');
-  return (
-    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-      <span className="text-[11px] font-bold text-primary">{initials}</span>
-    </div>
-  );
-}
 
 interface Props {
   jobId: string;
@@ -117,15 +100,7 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
     <div className="max-w-[900px] mx-auto px-5 sm:px-8 py-8 space-y-6">
       {/* Back + header */}
       <div>
-        <button
-          onClick={() => router.back()}
-          className="text-[13px] text-gray-500 hover:text-primary font-medium transition-colors mb-4 flex items-center gap-1"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-          Back to Posted Jobs
-        </button>
+        <PageHeader backLabel="Back to Posted Jobs" onBack={() => router.back()} className="mb-4" />
 
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
@@ -133,9 +108,7 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
               <h1 className="text-[24px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
                 {job.title}
               </h1>
-              <span className={`px-2.5 py-1 rounded-full text-[12px] font-semibold capitalize ${STATUS_STYLES[job.status] ?? STATUS_STYLES.closed}`}>
-                {job.status}
-              </span>
+              <StatusBadge status={job.status} size="md" />
             </div>
             <p className="text-[13px] text-gray-500 mt-1">
               {job.location} · {job.jobType} · {job.workMode}
@@ -145,32 +118,24 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
           {/* Action buttons */}
           <div className="flex gap-2 shrink-0">
             {job.status === 'draft' && (
-              <button
-                onClick={handlePublish}
-                disabled={updateMutation.isPending}
-                className="px-4 py-2 bg-primary text-white text-[13px] font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity"
-              >
-                {updateMutation.isPending ? 'Publishing…' : 'Publish'}
-              </button>
+              <Button onClick={handlePublish} loading={updateMutation.isPending}>
+                Publish
+              </Button>
             )}
             {job.status === 'active' && (
-              <button
-                onClick={handleClose}
-                disabled={updateMutation.isPending}
-                className="px-4 py-2 bg-white border border-gray-200 text-gray-700 text-[13px] font-semibold rounded-xl hover:bg-gray-50 disabled:opacity-50 transition-colors"
-              >
-                {updateMutation.isPending ? 'Closing…' : 'Close Job'}
-              </button>
+              <Button variant="secondary" onClick={handleClose} loading={updateMutation.isPending}>
+                Close Job
+              </Button>
             )}
             <Link
               href={`/recruiter/posted-jobs/${job.id}/edit`}
-              className="px-4 py-2 bg-white border border-gray-200 text-gray-700 text-[13px] font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+              className={buttonVariants({ variant: 'secondary' })}
             >
               Edit
             </Link>
             <Link
               href={`/recruiter/applicants?jobId=${job.id}`}
-              className="px-4 py-2 bg-white border border-gray-200 text-primary text-[13px] font-semibold rounded-xl hover:bg-gray-50 transition-colors"
+              className={buttonVariants({ variant: 'secondary', className: 'text-primary' })}
             >
               View All Applicants
             </Link>
@@ -199,7 +164,7 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
         {/* Left: job content */}
         <div className="space-y-6">
           {/* Meta */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-5">
+          <Card overflow>
             <h2 className="text-[15px] font-extrabold text-[#0f172a] mb-4">Job Details</h2>
             <div className="grid grid-cols-2 gap-4 text-[13px]">
               <div><span className="text-gray-400">Experience</span><p className="font-semibold text-[#0f172a] mt-0.5">{job.experienceLevel}</p></div>
@@ -221,10 +186,10 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
                 </div>
               </div>
             )}
-          </div>
+          </Card>
 
           {/* Description */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-5">
+          <Card className="space-y-5" overflow>
             <h2 className="text-[15px] font-extrabold text-[#0f172a]">About the Role</h2>
 
             {job.description && (
@@ -254,12 +219,12 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
                 <BulletList items={job.benefits} />
               </Section>
             )}
-          </div>
+          </Card>
         </div>
 
         {/* Right: applicants sidebar */}
         <div className="space-y-4">
-          <div className="bg-white rounded-2xl border border-gray-100 p-5">
+          <Card overflow>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-[15px] font-extrabold text-[#0f172a]">
                 Applicants
@@ -290,23 +255,17 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
                     href={`/recruiter/applicants/${applicant.id}`}
                     className="flex items-center gap-3 hover:bg-gray-50 -mx-2 px-2 py-1 rounded-lg transition-colors"
                   >
-                    {applicant.profilePhoto ? (
-                      <img src={applicant.profilePhoto} alt={applicant.candidateName} className="w-8 h-8 rounded-lg object-cover shrink-0" />
-                    ) : (
-                      <ApplicantInitials name={applicant.candidateName} />
-                    )}
+                    <Avatar name={applicant.candidateName} photo={applicant.profilePhoto} size="sm" />
                     <div className="flex-1 min-w-0">
                       <p className="text-[13px] font-semibold text-[#0f172a] truncate">{applicant.candidateName}</p>
                       <p className="text-[11px] text-gray-400 truncate">{applicant.candidateEmail}</p>
                     </div>
-                    <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-semibold ${APPLICANT_STATUS_STYLES[applicant.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                      {applicant.status}
-                    </span>
+                    <StatusBadge status={applicant.status} size="sm" className="shrink-0" />
                   </Link>
                 ))}
               </div>
             )}
-          </div>
+          </Card>
         </div>
       </div>
     </div>

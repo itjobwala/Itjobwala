@@ -7,16 +7,10 @@ import ProtectedRoute from '@/src/components/auth/ProtectedRoute';
 import ConfirmationDialog from '@/src/components/common/ConfirmationDialog';
 import { useMyApplicationsInfiniteQuery, useWithdrawApplicationMutation } from '@/src/hooks/useApplications';
 import { useAuthHydration } from '@/src/hooks/useAuthHydration';
-
-const STATUS_CONFIG: Record<string, { label: string; className: string; color: string }> = {
-  applied:     { label: 'Applied',     className: 'bg-blue-50 text-blue-700',       color: 'bg-blue-100' },
-  shortlisted: { label: 'Shortlisted', className: 'bg-purple-50 text-purple-700',   color: 'bg-purple-100' },
-  interview:   { label: 'Interview',   className: 'bg-yellow-50 text-yellow-700',   color: 'bg-yellow-100' },
-  offer:       { label: 'Offer',       className: 'bg-emerald-50 text-emerald-700', color: 'bg-emerald-100' },
-  hired:       { label: 'Hired',       className: 'bg-green-50 text-green-700',     color: 'bg-green-100' },
-  rejected:    { label: 'Rejected',    className: 'bg-red-50 text-red-500',         color: 'bg-red-100' },
-  withdrawn:   { label: 'Withdrawn',   className: 'bg-gray-50 text-gray-500',       color: 'bg-gray-100' },
-};
+import { useToast } from '@/src/hooks/useToast';
+import Toast from '@/src/components/ui/Toast';
+import StatusBadge from '@/src/components/ui/StatusBadge';
+import Card from '@/src/components/ui/Card';
 
 const COLOR_CLASSES = [
   'bg-blue-600', 'bg-green-600', 'bg-indigo-600', 'bg-violet-600',
@@ -44,7 +38,7 @@ export default function ApplicationsListPageClient() {
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [withdrawingId, setWithdrawingId] = useState<string | null>(null);
-  const [errorToast, setErrorToast] = useState('');
+  const { toast, show: showToast } = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingWithdrawId, setPendingWithdrawId] = useState<string | null>(null);
   const observerTarget = useRef<HTMLDivElement>(null);
@@ -92,9 +86,7 @@ export default function ApplicationsListPageClient() {
     try {
       await withdrawMutation.mutateAsync(pendingWithdrawId);
     } catch (error) {
-      const message = (error as Error).message || 'Failed to withdraw application';
-      setErrorToast(message);
-      setTimeout(() => setErrorToast(''), 4000);
+      showToast((error as Error).message || 'Failed to withdraw application', 'error');
     } finally {
       setWithdrawingId(null);
       setPendingWithdrawId(null);
@@ -137,7 +129,8 @@ export default function ApplicationsListPageClient() {
                 </div>
                 <Link
                   href="/jobs"
-                  className="text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:brightness-110 transition-all"
+                  className="text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
+                  style={{ color: '#fff' }}
                 >
                   Find More Jobs
                 </Link>
@@ -147,33 +140,33 @@ export default function ApplicationsListPageClient() {
 
           <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
             {/* Filters */}
-            <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-6">
+            <Card padding="lg" className="mb-6" overflow>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Status Filter */}
                 <div>
-                  <label className="block text-[12px] font-bold text-gray-500 mb-2">
+                  <label htmlFor="app-filter-status" className="block text-[12px] font-bold text-gray-500 mb-2">
                     Filter by Status
                   </label>
                   <select
+                    id="app-filter-status"
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
                     className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none focus:border-primary/50 transition-colors"
                   >
                     <option value="">All Status</option>
-                    {Object.entries(STATUS_CONFIG).map(([status, { label }]) => (
-                      <option key={status} value={status}>
-                        {label}
-                      </option>
+                    {(['applied','shortlisted','interview','offer','hired','rejected','withdrawn'] as const).map(s => (
+                      <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
                     ))}
                   </select>
                 </div>
 
                 {/* Sort Order */}
                 <div>
-                  <label className="block text-[12px] font-bold text-gray-500 mb-2">
+                  <label htmlFor="app-sort-order" className="block text-[12px] font-bold text-gray-500 mb-2">
                     Sort By
                   </label>
                   <select
+                    id="app-sort-order"
                     value={sortOrder}
                     onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
                     className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none focus:border-primary/50 transition-colors"
@@ -183,7 +176,7 @@ export default function ApplicationsListPageClient() {
                   </select>
                 </div>
               </div>
-            </div>
+            </Card>
 
             {/* Applications List */}
             {isLoading ? (
@@ -191,7 +184,7 @@ export default function ApplicationsListPageClient() {
                 <p className="text-[13px] text-gray-400">Loading applications...</p>
               </div>
             ) : applications.length === 0 ? (
-              <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+              <Card padding="none" className="p-12 text-center" overflow>
                 <svg
                   width="48"
                   height="48"
@@ -211,23 +204,24 @@ export default function ApplicationsListPageClient() {
                 </p>
                 <Link
                   href="/jobs"
-                  className="inline-block text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:brightness-110 transition-all"
+                  className="inline-block text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
+                  style={{ color: '#fff' }}
                 >
                   Browse Jobs
                 </Link>
-              </div>
+              </Card>
             ) : (
               <div className="flex flex-col gap-3">
                 {applications.map((app) => {
-                  const cfg = STATUS_CONFIG[app.status] ?? STATUS_CONFIG.applied;
                   const logoUrl = app.company_logo || null;
                   const logoFallback = (app.company?.[0] || '?').toUpperCase();
                   const color = app.company_color_class ?? hashColor(app.company);
 
                   return (
-                    <div
+                    <Card
                       key={app.id}
-                      className="bg-white rounded-2xl border border-gray-100 p-5 hover:border-primary/20 transition-colors group"
+                      className="hover:border-primary/20 transition-colors group"
+                      overflow
                     >
                       <div className="flex items-start gap-4">
                         {/* Company Logo */}
@@ -257,9 +251,7 @@ export default function ApplicationsListPageClient() {
                                 {app.company} {app.location && `· ${app.location}`}
                               </p>
                             </div>
-                            <span className={`text-[11px] font-bold rounded-full px-3 py-1 shrink-0 ${cfg.className}`}>
-                              {cfg.label}
-                            </span>
+                            <StatusBadge status={app.status} size="md" className="shrink-0" />
                           </div>
 
                           {/* Meta */}
@@ -290,7 +282,7 @@ export default function ApplicationsListPageClient() {
                           )}
                         </div>
                       </div>
-                    </div>
+                    </Card>
                   );
                 })}
               </div>
@@ -313,22 +305,7 @@ export default function ApplicationsListPageClient() {
         </div>
       </div>
 
-      {/* Error toast */}
-      <div
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] transition-all duration-300 ${
-          errorToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-        }`}
-      >
-        <div className="flex items-center gap-3 bg-red-600 text-white text-[13px] font-semibold rounded-2xl px-5 py-3.5 shadow-2xl">
-          <span className="w-5 h-5 rounded-full bg-red-700 flex items-center justify-center shrink-0">
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5">
-              <line x1="1" y1="1" x2="11" y2="11" />
-              <line x1="11" y1="1" x2="1" y2="11" />
-            </svg>
-          </span>
-          {errorToast}
-        </div>
-      </div>
+      <Toast message={toast.message} variant={toast.variant} visible={toast.visible} />
 
       {/* Withdraw confirmation dialog */}
       <ConfirmationDialog

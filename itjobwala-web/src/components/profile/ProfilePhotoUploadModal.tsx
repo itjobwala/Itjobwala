@@ -34,6 +34,15 @@ export default function ProfilePhotoUploadModal({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'Escape' && !isUploading) onClose();
+    }
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [isOpen, isUploading, onClose]);
+
   const validateFile = (file: File): string | null => {
     const fileExt = '.' + file.name.split('.').pop()?.toLowerCase();
     if (!ACCEPTED_TYPES.includes(fileExt)) {
@@ -102,14 +111,20 @@ export default function ProfilePhotoUploadModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="photo-upload-title"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4"
+    >
       <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 className="text-[16px] font-extrabold text-[#0f172a]">Upload Profile Photo</h2>
+          <h2 id="photo-upload-title" className="text-[16px] font-extrabold text-[#0f172a]">Upload Profile Photo</h2>
           <button
             onClick={onClose}
             disabled={isUploading}
+            aria-label="Close"
             className="text-gray-400 hover:text-gray-600 disabled:opacity-50 transition-colors"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

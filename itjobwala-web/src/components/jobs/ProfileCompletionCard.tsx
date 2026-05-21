@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import Card from '@/src/components/ui/Card';
 import { useAuthHydration } from '@/src/hooks/useAuthHydration';
 import { getProfileCompletion } from '@/src/lib/api/profile';
 
@@ -60,9 +61,9 @@ export default function ProfileCompletionCard() {
 
   if (!isHydrated || isLoading) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 p-5">
+      <Card overflow>
         <div className="h-20 bg-gray-100 rounded-lg animate-pulse" />
-      </div>
+      </Card>
     );
   }
 
@@ -71,14 +72,14 @@ export default function ProfileCompletionCard() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 p-5">
+      <Card overflow>
         <div className="h-20 bg-gray-100 rounded-lg animate-pulse" />
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5">
+    <Card overflow>
       <div className="flex items-start justify-between mb-1">
         <h3 className="text-[14px] font-extrabold text-[#0f172a]">Profile strength</h3>
         <span className="text-[13px] font-bold text-primary">{completion}%</span>
@@ -121,6 +122,6 @@ export default function ProfileCompletionCard() {
       >
         Complete profile →
       </Link>
-    </div>
+    </Card>
   );
 }

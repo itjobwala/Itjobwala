@@ -1,4 +1,5 @@
 import type { CareerProfile } from '@/src/types/profile';
+import Card from '@/src/components/ui/Card';
 
 function formatLpa(val: number): string {
   const lpa = val / 100000;
@@ -27,7 +28,7 @@ export default function CareerProfileSection({ careerProfile, expectedSalary, on
   const hasContent = careerProfile && Object.values(careerProfile).some(val => val) || expectedSalary != null;
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8 relative group">
+    <Card padding="none" className="p-6 sm:p-8 relative group" overflow>
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-[16px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.3px' }}>Career profile</h2>
         {hasContent ? (
@@ -65,6 +66,6 @@ export default function CareerProfileSection({ careerProfile, expectedSalary, on
           </div>
         </div>
       )}
-    </div>
+    </Card>
   );
 }

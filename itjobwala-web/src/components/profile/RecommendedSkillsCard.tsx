@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Card from '@/src/components/ui/Card';
 
 interface Props {
   trendingSkills: string[];
@@ -9,7 +10,7 @@ export default function RecommendedSkillsCard({ trendingSkills, currentSkills, o
   const suggestions = trendingSkills.filter(s => !currentSkills.includes(s));
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5">
+    <Card overflow>
       <div className="flex items-center justify-between mb-1">
         <h3 className="text-[14px] font-extrabold text-[#0f172a]">Trending skills</h3>
         <span className="text-[10px] font-bold text-orange-500 bg-orange-50 rounded-full px-2 py-0.5">Trending</span>
@@ -30,6 +31,6 @@ export default function RecommendedSkillsCard({ trendingSkills, currentSkills, o
           </button>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }

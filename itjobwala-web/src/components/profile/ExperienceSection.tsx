@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import Card from '@/src/components/ui/Card';
 import type { WorkExperience } from '@/src/types/profile';
 
 function formatDateDisplay(dateStr?: string | null): string {
@@ -73,7 +74,7 @@ function ExperienceCard({ exp, onEdit }: { exp: WorkExperience; onEdit?: (id: st
 
 export default function ExperienceSection({ experiences, onEdit, onAdd }: Props & { onEdit?: (id: string) => void; onAdd?: () => void }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8">
+    <Card padding="none" className="p-6 sm:p-8" overflow>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-[16px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.3px' }}>Experience</h2>
         {experiences.length > 0 ? (
@@ -98,6 +99,6 @@ export default function ExperienceSection({ experiences, onEdit, onAdd }: Props 
           {experiences.map(exp => <ExperienceCard key={exp.id} exp={exp} onEdit={onEdit} />)}
         </div>
       )}
-    </div>
+    </Card>
   );
 }

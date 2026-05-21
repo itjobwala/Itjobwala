@@ -1,12 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-
-const JOB_STATUS_STYLES: Record<string, { badge: string; dot: string }> = {
-  active: { badge: 'bg-green-50 text-green-700', dot: 'bg-green-500' },
-  paused: { badge: 'bg-amber-50 text-amber-700', dot: 'bg-amber-500' },
-  closed: { badge: 'bg-gray-100 text-gray-500',  dot: 'bg-gray-400'  },
-};
+import StatusBadge from '@/src/components/ui/StatusBadge';
 
 export interface Job {
   id: string;
@@ -23,8 +18,6 @@ interface Props {
 }
 
 export default function JobStatusCard({ job }: Props) {
-  const s = JOB_STATUS_STYLES[job.status];
-
   return (
     <div className="px-5 py-4 hover:bg-gray-50/40 transition-colors group">
       <div className="flex items-start sm:items-center justify-between gap-3">
@@ -33,10 +26,7 @@ export default function JobStatusCard({ job }: Props) {
             <h3 className="text-[14px] font-bold text-[#0f172a] group-hover:text-primary transition-colors">
               {job.title}
             </h3>
-            <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full ${s.badge}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
-              {job.status.charAt(0).toUpperCase() + job.status.slice(1)}
-            </span>
+            <StatusBadge status={job.status} size="sm" showDot className="text-[10px]" />
             <span className="text-[10px] font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
               {job.type}
             </span>

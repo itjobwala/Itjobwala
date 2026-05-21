@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import CompanyLogo from './CompanyLogo';
+import Card from '@/src/components/ui/Card';
 import type { JobDetail } from './types';
 
 const WORK_MODE_CLASS: Record<JobDetail['workMode'], string> = {
@@ -110,7 +111,7 @@ export default function JobDetailsHeader({ job, onApply, applied, saved, onSave,
   const colorClass = job.companyColorClass || getColorClass(job.company);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8">
+    <Card padding="none" className="p-6 sm:p-8" overflow>
       {/* Back */}
       <Link
         href="/jobs"
@@ -263,6 +264,6 @@ export default function JobDetailsHeader({ job, onApply, applied, saved, onSave,
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

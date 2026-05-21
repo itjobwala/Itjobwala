@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Card from '@/src/components/ui/Card';
 
 interface Props {
   completion: number;
@@ -10,7 +11,7 @@ interface Props {
 export default function ProfileEditSidebar({ completion, saving, lastUpdated, onSave }: Props) {
   return (
     <>
-      <div className="bg-white rounded-2xl border border-gray-100 p-5">
+      <Card overflow>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-[15px] font-extrabold text-[#0f172a] tracking-[-0.3px]">Profile completion</h2>
           <span className="text-[13px] font-extrabold text-primary">{completion}%</span>
@@ -30,15 +31,15 @@ export default function ProfileEditSidebar({ completion, saving, lastUpdated, on
             </div>
           ))}
         </div>
-      </div>
+      </Card>
 
-      <div className="bg-white rounded-2xl border border-gray-100 p-5">
+      <Card overflow>
         <div className="flex flex-col gap-2.5">
           <button
             type="button"
             onClick={onSave}
             disabled={saving}
-            className="w-full flex items-center justify-center gap-2 text-[14px] font-bold text-white bg-primary rounded-xl px-4 py-3 hover:brightness-110 disabled:cursor-not-allowed disabled:bg-blue-300 transition-[filter]"
+            className="w-full flex items-center justify-center gap-2 text-[14px] font-bold text-white bg-primary rounded-xl px-4 py-3 hover:opacity-90 active:opacity-80 disabled:cursor-not-allowed disabled:opacity-50 transition-opacity"
           >
             {saving && <span className="w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin" />}
             {saving ? 'Saving changes' : 'Save changes'}
@@ -56,15 +57,15 @@ export default function ProfileEditSidebar({ completion, saving, lastUpdated, on
             Profile preview
           </Link>
         </div>
-      </div>
+      </Card>
 
-      <div className="bg-white rounded-2xl border border-gray-100 p-5">
+      <Card overflow>
         <p className="text-[12px] font-bold text-gray-400 uppercase tracking-[1.2px] mb-1.5">Last updated</p>
         <p className="text-[13px] font-semibold text-gray-600">{lastUpdated}</p>
         <p className="text-[12px] text-gray-400 leading-[1.6] mt-3">
           Changes are saved as a draft in this mock edit view.
         </p>
-      </div>
+      </Card>
     </>
   );
 }

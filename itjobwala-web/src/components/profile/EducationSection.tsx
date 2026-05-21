@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { Education } from '@/src/types/profile';
+import Card from '@/src/components/ui/Card';
 
 function getYear(dateStr?: string | null, yearNum?: number | null): string {
   if (yearNum) return String(yearNum);
@@ -29,7 +30,7 @@ function ReadOnlyField({ label, value }: { label: string; value: string }) {
 
 export default function EducationSection({ education, onEdit, onAdd }: Props & { onEdit?: (id: string) => void; onAdd?: () => void }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8">
+    <Card padding="none" className="p-6 sm:p-8" overflow>
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-[16px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.3px' }}>Education</h2>
         {education.length > 0 ? (
@@ -78,6 +79,6 @@ export default function EducationSection({ education, onEdit, onAdd }: Props & {
           ))}
         </div>
       )}
-    </div>
+    </Card>
   );
 }

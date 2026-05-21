@@ -1,10 +1,12 @@
+import Card from '@/src/components/ui/Card';
+
 interface Props {
   skills: string[];
 }
 
 export default function SkillsTags({ skills }: Props) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8">
+    <Card padding="none" className="p-6 sm:p-8" overflow>
       <h2 className="text-[16px] font-extrabold text-[#0f172a] mb-4" style={{ letterSpacing: '-0.3px' }}>
         Skills required
       </h2>
@@ -18,6 +20,6 @@ export default function SkillsTags({ skills }: Props) {
           </span>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }

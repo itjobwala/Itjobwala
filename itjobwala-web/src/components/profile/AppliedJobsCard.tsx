@@ -1,15 +1,7 @@
 import Link from 'next/link';
 import type { Application } from '@/src/types/applications';
-
-const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
-  applied:     { label: 'Applied',     className: 'bg-blue-50 text-blue-700'     },
-  shortlisted: { label: 'Shortlisted', className: 'bg-purple-50 text-purple-700' },
-  interview:   { label: 'Interview',   className: 'bg-yellow-50 text-yellow-700' },
-  offer:       { label: 'Offer',       className: 'bg-emerald-50 text-emerald-700' },
-  hired:       { label: 'Hired',       className: 'bg-green-50 text-green-700'   },
-  rejected:    { label: 'Rejected',    className: 'bg-red-50 text-red-500'       },
-  withdrawn:   { label: 'Withdrawn',   className: 'bg-gray-50 text-gray-500'     },
-};
+import StatusBadge from '@/src/components/ui/StatusBadge';
+import Card from '@/src/components/ui/Card';
 
 const COLOR_CLASSES = [
   'bg-blue-600', 'bg-green-600', 'bg-indigo-600', 'bg-violet-600',
@@ -36,7 +28,7 @@ interface Props {
 
 export default function AppliedJobsCard({ jobs }: Props) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5">
+    <Card overflow>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-[14px] font-extrabold text-[#0f172a]">Applied jobs</h3>
         {jobs.length > 0 && (
@@ -51,7 +43,8 @@ export default function AppliedJobsCard({ jobs }: Props) {
           <p className="text-[13px] text-gray-400 mb-3">You haven't applied to any jobs yet.</p>
           <Link
             href="/jobs"
-            className="inline-block text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:brightness-110 transition-all"
+            className="inline-block text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
+            style={{ color: '#fff' }}
           >
             Find Jobs to Apply
           </Link>
@@ -59,7 +52,6 @@ export default function AppliedJobsCard({ jobs }: Props) {
       ) : (
         <div className="flex flex-col gap-1">
           {jobs.map(job => {
-            const cfg = STATUS_CONFIG[job.status] ?? STATUS_CONFIG.applied;
             const logoUrl = job.company_logo || null;
             const logoFallback = (job.company?.[0] || '?').toUpperCase();
             const color = job.company_color_class ?? hashColor(job.company);
@@ -86,14 +78,12 @@ export default function AppliedJobsCard({ jobs }: Props) {
                   </p>
                   <p className="text-[11px] text-gray-400">{job.company} &middot; {relativeDate(job.applied_at)}</p>
                 </div>
-                <span className={`text-[10px] font-bold rounded-full px-2 py-0.5 shrink-0 ${cfg.className}`}>
-                  {cfg.label}
-                </span>
+                <StatusBadge status={job.status} size="sm" className="shrink-0" />
               </Link>
             );
           })}
         </div>
       )}
-    </div>
+    </Card>
   );
 }

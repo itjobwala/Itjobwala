@@ -1,3 +1,5 @@
+import Card from '@/src/components/ui/Card';
+
 const PRIMARY = '#1557FF';
 
 const PLAN = {
@@ -12,7 +14,7 @@ export default function SubscriptionCard() {
   const jobPct = Math.round((PLAN.jobsUsed / PLAN.jobsTotal) * 100);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+    <Card className="shadow-sm" overflow>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-[15px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.3px' }}>
           Subscription
@@ -47,6 +49,6 @@ export default function SubscriptionCard() {
         <p className="text-[13px] font-bold text-[#0f172a] mb-1">Upgrade coming soon</p>
         <p className="text-[11px] text-gray-500">Paid plans with higher limits will be available shortly.</p>
       </div>
-    </div>
+    </Card>
   );
 }

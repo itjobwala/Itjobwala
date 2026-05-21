@@ -4,12 +4,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRecruiterPostedJobsQuery, useUpdateRecruiterJobMutation } from '@/src/hooks/useRecruiter';
 import RecruiterShell from './RecruiterShell';
-
-const STATUS_STYLES: Record<string, string> = {
-  active: 'bg-green-50 text-green-700',
-  draft:  'bg-yellow-50 text-yellow-700',
-  closed: 'bg-gray-100 text-gray-500',
-};
+import { useToast } from '@/src/hooks/useToast';
+import Toast from '@/src/components/ui/Toast';
+import StatusBadge from '@/src/components/ui/StatusBadge';
+import EmptyState from '@/src/components/ui/EmptyState';
+import { buttonVariants } from '@/src/components/ui/Button';
+import Card from '@/src/components/ui/Card';
 
 const STATUS_FILTERS = [
   { value: '',       label: 'All' },
@@ -28,8 +28,7 @@ export default function RecruiterPostedJobsPage() {
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [page, setPage] = useState(1);
-  const [successToast, setSuccessToast] = useState('');
-  const [errorToast, setErrorToast] = useState('');
+  const { toast, show: showToast } = useToast();
   const [publishingId, setPublishingId] = useState<string | null>(null);
 
   const filters = {
@@ -63,11 +62,9 @@ export default function RecruiterPostedJobsPage() {
     setPublishingId(jobId);
     try {
       await updateMutation.mutateAsync({ jobId, data: { status: 'active' } });
-      setSuccessToast('Job published successfully');
-      setTimeout(() => setSuccessToast(''), 3000);
+      showToast('Job published successfully', 'success');
     } catch (err) {
-      setErrorToast(err instanceof Error ? err.message : 'Failed to publish job');
-      setTimeout(() => setErrorToast(''), 4000);
+      showToast(err instanceof Error ? err.message : 'Failed to publish job', 'error');
     } finally {
       setPublishingId(null);
     }
@@ -92,7 +89,7 @@ export default function RecruiterPostedJobsPage() {
             </div>
             <Link
               href="/recruiter/post-job"
-              className="px-4 py-2.5 bg-primary text-white text-[13px] font-semibold rounded-xl hover:opacity-90 transition-opacity"
+              className={buttonVariants({ variant: 'primary', size: 'lg', className: 'px-4' })}
             >
               + Post a Job
             </Link>
@@ -168,26 +165,15 @@ export default function RecruiterPostedJobsPage() {
             {error instanceof Error ? error.message : 'Failed to load posted jobs'}
           </div>
         ) : !data || data.jobs.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-[40px] mb-4">📋</div>
-            <h3 className="text-[18px] font-semibold text-[#0f172a] mb-2">
-              {search || statusFilter ? 'No jobs match your filters' : 'No jobs posted yet'}
-            </h3>
-            <p className="text-gray-500 mb-6">
-              {search || statusFilter ? 'Try changing the status filter or search term' : 'Start by posting your first job listing'}
-            </p>
-            {!search && !statusFilter && (
-              <Link
-                href="/recruiter/post-job"
-                className="inline-block px-4 py-2.5 bg-primary text-white font-semibold rounded-xl hover:opacity-90 transition-opacity"
-              >
-                + Post a Job
-              </Link>
-            )}
-          </div>
+          <EmptyState
+            emoji="📋"
+            title={search || statusFilter ? 'No jobs match your filters' : 'No jobs posted yet'}
+            description={search || statusFilter ? 'Try changing the status filter or search term' : 'Start by posting your first job listing'}
+            cta={!search && !statusFilter ? { label: '+ Post a Job', href: '/recruiter/post-job' } : undefined}
+          />
         ) : (
           <>
-            <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+            <Card padding="none">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-50 border-b border-gray-100">
@@ -210,9 +196,7 @@ export default function RecruiterPostedJobsPage() {
                         <td className="px-6 py-4 text-[13px] text-gray-600">{job.location}</td>
                         <td className="px-6 py-4 text-[13px] text-gray-600">{job.applicationCount ?? 0}</td>
                         <td className="px-6 py-4">
-                          <span className={`inline-block px-3 py-1 text-[12px] font-semibold rounded-full capitalize ${STATUS_STYLES[job.status] ?? STATUS_STYLES.closed}`}>
-                            {job.status}
-                          </span>
+                          <StatusBadge status={job.status} size="md" />
                         </td>
                         <td className="px-6 py-4 text-[13px] text-gray-600">{formatDate(job.postedDate ?? job.createdAt)}</td>
                         <td className="px-6 py-4">
@@ -241,7 +225,7 @@ export default function RecruiterPostedJobsPage() {
                   </tbody>
                 </table>
               </div>
-            </div>
+            </Card>
 
             {/* Pagination */}
             {pagination && totalPages > 1 && (
@@ -274,37 +258,7 @@ export default function RecruiterPostedJobsPage() {
         )}
       </div>
 
-      {/* Success toast */}
-      <div
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] transition-all duration-300 ${
-          successToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-        }`}
-      >
-        <div className="flex items-center gap-3 bg-green-600 text-white text-[13px] font-semibold rounded-2xl px-5 py-3.5 shadow-2xl">
-          <span className="w-5 h-5 rounded-full bg-green-700 flex items-center justify-center shrink-0">
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5">
-              <path d="M2 6l3 3 5-5" />
-            </svg>
-          </span>
-          {successToast}
-        </div>
-      </div>
-
-      {/* Error toast */}
-      <div
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] transition-all duration-300 ${
-          errorToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-        }`}
-      >
-        <div className="flex items-center gap-3 bg-red-600 text-white text-[13px] font-semibold rounded-2xl px-5 py-3.5 shadow-2xl">
-          <span className="w-5 h-5 rounded-full bg-red-700 flex items-center justify-center shrink-0">
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5">
-              <path d="M1 1l10 10M11 1L1 11" />
-            </svg>
-          </span>
-          {errorToast}
-        </div>
-      </div>
+      <Toast message={toast.message} variant={toast.variant} visible={toast.visible} />
     </RecruiterShell>
   );
 }

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import JobStatusCard, { type Job } from './JobStatusCard';
 import { useRecruiterPostedJobsQuery } from '@/src/hooks/useRecruiter';
+import Card from '@/src/components/ui/Card';
 
 function relativeDate(iso: string): string {
   const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
@@ -26,7 +27,7 @@ export default function PostedJobs() {
   }));
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <Card padding="none" className="shadow-sm">
       <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
         <div>
           <h2 className="text-[15px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.3px' }}>
@@ -37,6 +38,7 @@ export default function PostedJobs() {
         <Link
           href="/recruiter/post-job"
           className="flex items-center gap-1.5 text-[12px] font-bold text-white bg-primary px-3.5 py-1.5 rounded-xl hover:bg-primary/90 transition-colors"
+          style={{ color: '#fff' }}
         >
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
             <line x1="12" y1="5" x2="12" y2="19" />
@@ -63,6 +65,6 @@ export default function PostedJobs() {
           View all jobs →
         </Link>
       </div>
-    </div>
+    </Card>
   );
 }

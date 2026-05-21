@@ -39,6 +39,14 @@ import type { RecruiterCompanyProfile } from '@/src/types/recruiter';
 import { uploadRecruiterCompanyLogo } from '@/src/lib/api/recruiter';
 import type { ApiError } from '@/src/lib/api/client';
 import RecruiterShell from './RecruiterShell';
+import { useToast } from '@/src/hooks/useToast';
+import Toast from '@/src/components/ui/Toast';
+import Button from '@/src/components/ui/Button';
+import Input from '@/src/components/ui/Input';
+import Textarea from '@/src/components/ui/Textarea';
+import Select from '@/src/components/ui/Select';
+import FormField from '@/src/components/ui/FormField';
+import Card from '@/src/components/ui/Card';
 
 type FormErrors = Partial<Record<'companyName' | 'industry' | 'website' | 'location' | 'description' | 'companySize' | 'foundedYear', string>>;
 
@@ -75,8 +83,7 @@ export default function RecruiterCompanyProfilePage() {
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<RecruiterCompanyProfile>>({});
   const [errors, setErrors] = useState<FormErrors>({});
-  const [successToast, setSuccessToast] = useState('');
-  const [errorToast, setErrorToast] = useState('');
+  const { toast, show: showToast } = useToast();
   const [logoUploading, setLogoUploading] = useState(false);
   const [logoPreview, setLogoPreview] = useState('');
   const logoInputRef = useRef<HTMLInputElement>(null);
@@ -104,11 +111,9 @@ export default function RecruiterCompanyProfilePage() {
       const url = await uploadRecruiterCompanyLogo(file);
       setLogoPreview(url);
       setFormData(f => ({ ...f, logo: url }));
-      setSuccessToast('Company logo updated');
-      setTimeout(() => setSuccessToast(''), 3000);
+      showToast('Company logo updated', 'success');
     } catch {
-      setErrorToast('Failed to upload logo. Please try again.');
-      setTimeout(() => setErrorToast(''), 4000);
+      showToast('Failed to upload logo. Please try again.', 'error');
     } finally {
       setLogoUploading(false);
       if (logoInputRef.current) logoInputRef.current.value = '';
@@ -131,8 +136,7 @@ export default function RecruiterCompanyProfilePage() {
         location: formData.location,
         foundedYear: formData.foundedYear,
       });
-      setSuccessToast('Company profile updated successfully');
-      setTimeout(() => setSuccessToast(''), 4000);
+      showToast('Company profile updated successfully', 'success');
       setEditing(false);
       setErrors({});
     } catch (err) {
@@ -140,8 +144,7 @@ export default function RecruiterCompanyProfilePage() {
       if (apiErr.details && Object.keys(apiErr.details).length > 0) {
         setErrors(apiErr.details as FormErrors);
       }
-      setErrorToast(apiErr.message || 'Failed to save company profile');
-      setTimeout(() => setErrorToast(''), 4000);
+      showToast(apiErr.message || 'Failed to save company profile', 'error');
     }
   };
 
@@ -167,17 +170,19 @@ export default function RecruiterCompanyProfilePage() {
               </div>
               <div className="flex items-center gap-3">
                 {editing && (
-                  <button onClick={handleCancel} className="px-5 py-2.5 border border-gray-200 text-gray-600 font-semibold rounded-xl hover:bg-gray-50 transition-colors">
+                  <Button variant="secondary" size="lg" onClick={handleCancel}>
                     Cancel
-                  </button>
+                  </Button>
                 )}
-                <button
+                <Button
+                  variant="primary"
+                  size="lg"
+                  loading={updateMutation.isPending}
+                  className="px-6"
                   onClick={() => editing ? handleSave() : setEditing(true)}
-                  disabled={updateMutation.isPending}
-                  className="px-6 py-2.5 bg-primary text-white font-semibold rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
                 >
-                  {updateMutation.isPending ? 'Saving...' : editing ? 'Save Changes' : 'Edit Profile'}
-                </button>
+                  {editing ? 'Save Changes' : 'Edit Profile'}
+                </Button>
               </div>
             </div>
           </div>
@@ -197,7 +202,7 @@ export default function RecruiterCompanyProfilePage() {
               {error instanceof Error ? error.message : 'Failed to load company profile'}
             </div>
           ) : profile ? (
-            <div className="bg-white rounded-2xl border border-gray-100 p-8">
+            <Card padding="xl" overflow>
               {/* Logo upload — always visible */}
               <div className="flex items-center gap-5 mb-8 pb-6 border-b border-gray-100">
                 <div className="relative group">
@@ -237,106 +242,92 @@ export default function RecruiterCompanyProfilePage() {
                 <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
-                    {/* Company Name */}
-                    <div>
-                      <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">
-                        Company Name <span className="text-red-500">*</span>
-                      </label>
-                      <input
+                    <FormField label="Company Name" htmlFor="cp-companyName" required error={errors.companyName}>
+                      <Input
+                        id="cp-companyName"
                         type="text"
                         value={formData.companyName || ''}
                         onChange={(e) => setField('companyName', e.target.value)}
-                        className={`w-full px-4 py-2.5 border rounded-xl text-[13px] focus:outline-none focus:border-primary transition-colors ${errors.companyName ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
                         placeholder="e.g. Razorpay"
+                        error={errors.companyName}
                       />
-                      {errors.companyName && <p className="text-[12px] text-red-500 mt-1">{errors.companyName}</p>}
-                    </div>
+                    </FormField>
 
-                    {/* Industry */}
-                    <div>
-                      <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">
-                        Industry <span className="text-red-500">*</span>
-                      </label>
-                      <input
+                    <FormField label="Industry" htmlFor="cp-industry" required error={errors.industry}>
+                      <Input
+                        id="cp-industry"
                         type="text"
                         value={formData.industry || ''}
                         onChange={(e) => setField('industry', e.target.value)}
-                        className={`w-full px-4 py-2.5 border rounded-xl text-[13px] focus:outline-none focus:border-primary transition-colors ${errors.industry ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
                         placeholder="e.g. IT / Software"
+                        error={errors.industry}
                       />
-                      {errors.industry && <p className="text-[12px] text-red-500 mt-1">{errors.industry}</p>}
-                    </div>
+                    </FormField>
 
-                    {/* Website */}
-                    <div>
-                      <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Website</label>
-                      <input
-                        type="text"
+                    <FormField label="Website" htmlFor="cp-website" error={errors.website}>
+                      <Input
+                        id="cp-website"
+                        type="url"
                         value={formData.website || ''}
                         onChange={(e) => setField('website', e.target.value)}
-                        className={`w-full px-4 py-2.5 border rounded-xl text-[13px] focus:outline-none focus:border-primary transition-colors ${errors.website ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
                         placeholder="https://yourcompany.com"
+                        error={errors.website}
                       />
-                      {errors.website && <p className="text-[12px] text-red-500 mt-1">{errors.website}</p>}
-                    </div>
+                    </FormField>
 
-                    {/* Location */}
-                    <div>
-                      <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Location</label>
-                      <input
+                    <FormField label="Location" htmlFor="cp-location" error={errors.location}>
+                      <Input
+                        id="cp-location"
                         type="text"
                         value={formData.location || ''}
                         onChange={(e) => setField('location', e.target.value)}
-                        className={`w-full px-4 py-2.5 border rounded-xl text-[13px] focus:outline-none focus:border-primary transition-colors ${errors.location ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
                         placeholder="e.g. Bengaluru"
+                        error={errors.location}
                       />
-                      {errors.location && <p className="text-[12px] text-red-500 mt-1">{errors.location}</p>}
-                    </div>
+                    </FormField>
 
-                    {/* Company Size */}
-                    <div>
-                      <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Company Size</label>
-                      <select
+                    <FormField label="Company Size" htmlFor="cp-companySize">
+                      <Select
+                        id="cp-companySize"
                         value={formData.companySize || ''}
                         onChange={(e) => setField('companySize', e.target.value)}
-                        className="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-[13px] bg-white focus:outline-none focus:border-primary"
                       >
                         <option value="">Select size</option>
                         {COMPANY_SIZES.map(s => <option key={s} value={s}>{s} employees</option>)}
-                      </select>
-                    </div>
+                      </Select>
+                    </FormField>
 
-                    {/* Founded Year */}
-                    <div>
-                      <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">Founded Year</label>
-                      <input
+                    <FormField label="Founded Year" htmlFor="cp-foundedYear" error={errors.foundedYear}>
+                      <Input
+                        id="cp-foundedYear"
                         type="number"
                         value={formData.foundedYear || ''}
                         onChange={(e) => setField('foundedYear', e.target.value ? Number(e.target.value) : undefined)}
-                        className={`w-full px-4 py-2.5 border rounded-xl text-[13px] focus:outline-none focus:border-primary transition-colors ${errors.foundedYear ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
                         placeholder="e.g. 2015"
                         min={1900}
                         max={new Date().getFullYear()}
+                        error={errors.foundedYear}
                       />
-                      {errors.foundedYear && <p className="text-[12px] text-red-500 mt-1">{errors.foundedYear}</p>}
-                    </div>
+                    </FormField>
                   </div>
 
-                  {/* Description */}
-                  <div>
-                    <label className="block text-[13px] font-semibold text-gray-700 mb-1.5">About Company</label>
-                    <textarea
+                  {/* Description — custom count+error row preserved */}
+                  <FormField label="About Company" htmlFor="cp-description">
+                    <Textarea
+                      id="cp-description"
                       value={formData.description || ''}
                       onChange={(e) => setField('description', e.target.value)}
                       rows={5}
-                      className={`w-full px-4 py-2.5 border rounded-xl text-[13px] focus:outline-none focus:border-primary transition-colors resize-none ${errors.description ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
                       placeholder="Describe your company, culture, and what makes it a great place to work…"
+                      error={errors.description}
                     />
-                    <div className="flex items-center justify-between mt-1">
-                      {errors.description ? <p className="text-[12px] text-red-500">{errors.description}</p> : <span />}
+                    <div className="flex items-center justify-between">
+                      {errors.description
+                        ? <p className="text-[12px] text-red-500" role="alert">{errors.description}</p>
+                        : <span />}
                       <span className="text-[11px] text-gray-400">{(formData.description || '').length} / 2000</span>
                     </div>
-                  </div>
+                  </FormField>
                 </form>
               ) : (
                 <div className="space-y-6">
@@ -382,7 +373,7 @@ export default function RecruiterCompanyProfilePage() {
                   )}
                 </div>
               )}
-            </div>
+            </Card>
           ) : (
             <div className="text-center py-12">
               <div className="text-[40px] mb-4">🏢</div>
@@ -392,37 +383,7 @@ export default function RecruiterCompanyProfilePage() {
           )}
         </div>
 
-      {/* Success toast */}
-      <div
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] transition-all duration-300 ${
-          successToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-        }`}
-      >
-        <div className="flex items-center gap-3 bg-green-600 text-white text-[13px] font-semibold rounded-2xl px-5 py-3.5 shadow-2xl">
-          <span className="w-5 h-5 rounded-full bg-green-700 flex items-center justify-center shrink-0">
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5">
-              <path d="M2 6l3 3 5-5" />
-            </svg>
-          </span>
-          {successToast}
-        </div>
-      </div>
-
-      {/* Error toast */}
-      <div
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] transition-all duration-300 ${
-          errorToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-        }`}
-      >
-        <div className="flex items-center gap-3 bg-red-600 text-white text-[13px] font-semibold rounded-2xl px-5 py-3.5 shadow-2xl">
-          <span className="w-5 h-5 rounded-full bg-red-700 flex items-center justify-center shrink-0">
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5">
-              <path d="M1 1l10 10M11 1L1 11" />
-            </svg>
-          </span>
-          {errorToast}
-        </div>
-      </div>
+      <Toast message={toast.message} variant={toast.variant} visible={toast.visible} />
     </RecruiterShell>
   );
 }

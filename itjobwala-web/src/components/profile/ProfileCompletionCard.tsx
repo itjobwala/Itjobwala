@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { getProfileCompletion } from '@/src/lib/api/profile';
+import Card from '@/src/components/ui/Card';
 import type { ProfileCompletionData } from '@/src/types/profile';
 
 interface ProfileStep {
@@ -57,24 +58,24 @@ export default function ProfileCompletionCard() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 p-5">
+      <Card overflow>
         <h3 className="text-[14px] font-extrabold text-[#0f172a] mb-4">Profile strength</h3>
         <div className="h-20 bg-gray-100 rounded-lg animate-pulse" />
-      </div>
+      </Card>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 p-5">
+      <Card overflow>
         <h3 className="text-[14px] font-extrabold text-[#0f172a] mb-4">Profile strength</h3>
         <p className="text-[12px] text-gray-500">{error}</p>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5">
+    <Card overflow>
       <h3 className="text-[14px] font-extrabold text-[#0f172a] mb-4">Profile strength</h3>
 
       {/* Circular progress */}
@@ -134,6 +135,6 @@ export default function ProfileCompletionCard() {
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }

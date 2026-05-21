@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import Card from '@/src/components/ui/Card';
 
 interface Props {
   fileName: string;
@@ -34,7 +35,7 @@ export default function ResumeCard({ fileName, uploadDate, fileUrl, onEdit }: Pr
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8">
+    <Card padding="none" className="p-6 sm:p-8" overflow>
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-[16px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.3px' }}>Resume</h2>
         <button
@@ -94,6 +95,6 @@ export default function ResumeCard({ fileName, uploadDate, fileUrl, onEdit }: Pr
       <p className="text-[12px] text-gray-400 mt-3 text-center">
         Accepted formats: PDF, DOC, DOCX &middot; Max 5 MB
       </p>
-    </div>
+    </Card>
   );
 }

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Card from '@/src/components/ui/Card';
 
 interface Props {
   skills: string[];
@@ -6,7 +7,7 @@ interface Props {
 
 export default function SkillsSection({ skills, onEdit }: Props & { onEdit?: () => void }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8">
+    <Card padding="none" className="p-6 sm:p-8" overflow>
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-[16px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.3px' }}>Skills</h2>
         {skills.length > 0 ? (
@@ -38,6 +39,6 @@ export default function SkillsSection({ skills, onEdit }: Props & { onEdit?: () 
           ))}
         </div>
       )}
-    </div>
+    </Card>
   );
 }

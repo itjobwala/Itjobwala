@@ -1,5 +1,6 @@
 import type { JobDetail } from './types';
 import CompanyLogo from './CompanyLogo';
+import Card from '@/src/components/ui/Card';
 
 const COLOR_CLASSES = [
   'bg-blue-500',
@@ -44,7 +45,7 @@ export default function JobDescription({ job }: Props) {
   const colorClass = job.companyColorClass || getColorClass(job.company);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8 flex flex-col gap-8">
+    <Card padding="none" className="p-6 sm:p-8 flex flex-col gap-8" overflow>
       {/* Job Overview */}
       {job.description && (
         <>
@@ -140,6 +141,6 @@ export default function JobDescription({ job }: Props) {
           ))}
         </div>
       </section>
-    </div>
+    </Card>
   );
 }

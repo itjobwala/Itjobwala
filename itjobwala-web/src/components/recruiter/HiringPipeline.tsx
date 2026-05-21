@@ -1,6 +1,7 @@
 'use client';
 
 import { useRecruiterStatsQuery } from '@/src/hooks/useRecruiter';
+import Card from '@/src/components/ui/Card';
 
 const STAGE_CONFIGS = [
   { stage: 'applied',     label: 'Applied',     color: 'bg-blue-500',    lightBg: 'bg-blue-50',    text: 'text-blue-700'   },
@@ -23,7 +24,7 @@ export default function HiringPipeline() {
   const maxCount = Math.max(...stages.map(s => s.count), 1);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+    <Card className="shadow-sm" overflow>
       <div className="mb-5">
         <h2 className="text-[15px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.3px' }}>
           Hiring Pipeline
@@ -75,6 +76,6 @@ export default function HiringPipeline() {
           </span>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

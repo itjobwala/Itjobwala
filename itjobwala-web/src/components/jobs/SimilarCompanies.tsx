@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Card from '@/src/components/ui/Card';
 
 interface Company {
   id: string;
@@ -16,7 +17,7 @@ interface Props {
 export default function SimilarCompanies({ companies }: Props) {
   if (!companies || companies.length === 0) return null;
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5">
+    <Card overflow>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-[14px] font-extrabold text-[#0f172a]">Similar companies hiring</h3>
       </div>
@@ -42,6 +43,6 @@ export default function SimilarCompanies({ companies }: Props) {
           </Link>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }

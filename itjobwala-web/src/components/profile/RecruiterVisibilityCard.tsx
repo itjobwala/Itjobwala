@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Card from '@/src/components/ui/Card';
 import { getRecruiterVisibility, updateRecruiterVisibility } from '@/src/lib/api/profile';
 import { ProfileValidator } from '@/src/lib/validation/profile';
 
@@ -92,15 +93,15 @@ export default function RecruiterVisibilityCard() {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-2xl border border-gray-100 p-5">
+      <Card overflow>
         <h3 className="text-[14px] font-extrabold text-[#0f172a] mb-4">Recruiter visibility</h3>
         <div className="h-40 bg-gray-100 rounded-lg animate-pulse" />
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5">
+    <Card overflow>
       <h3 className="text-[14px] font-extrabold text-[#0f172a] mb-4">Recruiter visibility</h3>
 
       {/* Visibility toggle */}
@@ -173,6 +174,6 @@ export default function RecruiterVisibilityCard() {
           <p className="text-[11px] text-gray-400">Recruiter msgs</p>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

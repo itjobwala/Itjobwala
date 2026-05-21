@@ -5,14 +5,19 @@ import Link from 'next/link';
 import { useRecruiterInterviewsQuery, useScheduleInterviewMutation } from '@/src/hooks/useRecruiter';
 import type { RecruiterInterview, ScheduleInterviewRequest } from '@/src/types/recruiter';
 import RecruiterShell from './RecruiterShell';
+import { useToast } from '@/src/hooks/useToast';
+import Toast from '@/src/components/ui/Toast';
+import StatusBadge from '@/src/components/ui/StatusBadge';
+import EmptyState from '@/src/components/ui/EmptyState';
+import Avatar from '@/src/components/ui/Avatar';
+import Input from '@/src/components/ui/Input';
+import Textarea from '@/src/components/ui/Textarea';
+import Select from '@/src/components/ui/Select';
+import FormField from '@/src/components/ui/FormField';
+import Button from '@/src/components/ui/Button';
 
 type FilterTab = 'all' | 'scheduled' | 'past' | 'not_scheduled';
 
-const STATUS_CONFIG = {
-  scheduled:     { label: 'Scheduled',      bg: 'bg-blue-50',   text: 'text-blue-700',   dot: 'bg-blue-500'  },
-  past:          { label: 'Past',           bg: 'bg-gray-100',  text: 'text-gray-600',   dot: 'bg-gray-400'  },
-  not_scheduled: { label: 'Not Scheduled',  bg: 'bg-amber-50',  text: 'text-amber-700',  dot: 'bg-amber-400' },
-};
 
 const MODE_CONFIG = {
   video:     { label: 'Video Call',  icon: <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg> },
@@ -35,15 +40,6 @@ function formatDateTime(iso: string) {
   return `${dayLabel} · ${time}`;
 }
 
-function Avatar({ name, photo }: { name: string; photo?: string | null }) {
-  if (photo) return <img src={photo} alt={name} className="w-10 h-10 rounded-xl object-cover shrink-0" />;
-  const initials = name.split(' ').slice(0, 2).map(w => w[0]?.toUpperCase() ?? '').join('');
-  return (
-    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-      <span className="text-[12px] font-bold text-primary">{initials}</span>
-    </div>
-  );
-}
 
 interface ScheduleModalProps {
   interview: RecruiterInterview;
@@ -149,96 +145,88 @@ function ScheduleModal({ interview, onClose, onSuccess, onError }: ScheduleModal
 
           {/* Date & time */}
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-[12px] font-semibold text-gray-700 mb-1.5">Date <span className="text-red-500">*</span></label>
-              <input
+            <FormField label="Date" htmlFor="si-date" required error={errors.date}>
+              <Input
+                id="si-date"
                 type="date"
                 value={form.date}
                 onChange={e => { setForm(f => ({ ...f, date: e.target.value })); setErrors(ev => ({ ...ev, date: '' })); }}
                 min={new Date().toISOString().split('T')[0]}
-                className={`w-full px-3 py-2 border rounded-xl text-[13px] outline-none focus:border-primary transition-colors ${errors.date ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
+                inputSize="sm"
+                error={errors.date}
               />
-              {errors.date && <p className="text-[11px] text-red-500 mt-1">{errors.date}</p>}
-            </div>
-            <div>
-              <label className="block text-[12px] font-semibold text-gray-700 mb-1.5">Time <span className="text-red-500">*</span></label>
-              <input
+            </FormField>
+            <FormField label="Time" htmlFor="si-time" required error={errors.time}>
+              <Input
+                id="si-time"
                 type="time"
                 value={form.time}
                 onChange={e => { setForm(f => ({ ...f, time: e.target.value })); setErrors(ev => ({ ...ev, time: '' })); }}
-                className={`w-full px-3 py-2 border rounded-xl text-[13px] outline-none focus:border-primary transition-colors ${errors.time ? 'border-red-400 bg-red-50' : 'border-gray-200'}`}
+                inputSize="sm"
+                error={errors.time}
               />
-              {errors.time && <p className="text-[11px] text-red-500 mt-1">{errors.time}</p>}
-            </div>
+            </FormField>
           </div>
 
           {/* Duration */}
-          <div>
-            <label className="block text-[12px] font-semibold text-gray-700 mb-1.5">Duration (minutes)</label>
-            <select
+          <FormField label="Duration (minutes)" htmlFor="si-duration">
+            <Select
+              id="si-duration"
               value={form.durationMinutes}
               onChange={e => setForm(f => ({ ...f, durationMinutes: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-200 rounded-xl text-[13px] bg-white outline-none focus:border-primary"
+              inputSize="sm"
             >
               {[30, 45, 60, 90, 120].map(d => <option key={d} value={d}>{d} minutes</option>)}
-            </select>
-          </div>
+            </Select>
+          </FormField>
 
           {/* Meeting link (video only) */}
           {form.interviewType === 'video' && (
-            <div>
-              <label className="block text-[12px] font-semibold text-gray-700 mb-1.5">Meeting Link</label>
-              <input
+            <FormField label="Meeting Link" htmlFor="si-meetingLink">
+              <Input
+                id="si-meetingLink"
                 type="url"
                 value={form.meetingLink}
                 onChange={e => setForm(f => ({ ...f, meetingLink: e.target.value }))}
                 placeholder="https://meet.google.com/..."
-                className="w-full px-3 py-2 border border-gray-200 rounded-xl text-[13px] outline-none focus:border-primary transition-colors"
+                inputSize="sm"
               />
-            </div>
+            </FormField>
           )}
 
           {/* Location (in_person only) */}
           {form.interviewType === 'in_person' && (
-            <div>
-              <label className="block text-[12px] font-semibold text-gray-700 mb-1.5">Location</label>
-              <input
+            <FormField label="Location" htmlFor="si-location">
+              <Input
+                id="si-location"
                 type="text"
                 value={form.location}
                 onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
                 placeholder="e.g. Office, 3rd Floor, Conference Room A"
-                className="w-full px-3 py-2 border border-gray-200 rounded-xl text-[13px] outline-none focus:border-primary transition-colors"
+                inputSize="sm"
               />
-            </div>
+            </FormField>
           )}
 
           {/* Notes */}
-          <div>
-            <label className="block text-[12px] font-semibold text-gray-700 mb-1.5">Notes (optional)</label>
-            <textarea
+          <FormField label="Notes (optional)" htmlFor="si-note">
+            <Textarea
+              id="si-note"
               value={form.note}
               onChange={e => setForm(f => ({ ...f, note: e.target.value }))}
               rows={2}
               placeholder="e.g. Focus on system design, bring portfolio…"
-              className="w-full px-3 py-2 border border-gray-200 rounded-xl text-[13px] outline-none focus:border-primary transition-colors resize-none"
+              inputSize="sm"
             />
-          </div>
+          </FormField>
 
           <div className="flex gap-3 pt-1">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-600 text-[13px] font-semibold rounded-xl hover:bg-gray-50 transition-colors"
-            >
+            <Button type="button" variant="secondary" fullWidth onClick={onClose}>
               Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={mutation.isPending}
-              className="flex-1 px-4 py-2.5 bg-primary text-white text-[13px] font-semibold rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity"
-            >
-              {mutation.isPending ? 'Scheduling…' : 'Schedule'}
-            </button>
+            </Button>
+            <Button type="submit" fullWidth loading={mutation.isPending}>
+              Schedule
+            </Button>
           </div>
         </form>
       </div>
@@ -257,8 +245,7 @@ export default function RecruiterInterviewsPage() {
   const [filter, setFilter] = useState<FilterTab>('all');
   const [search, setSearch] = useState('');
   const [schedulingFor, setSchedulingFor] = useState<RecruiterInterview | null>(null);
-  const [successToast, setSuccessToast] = useState('');
-  const [errorToast, setErrorToast] = useState('');
+  const { toast, show: showToast } = useToast();
 
   const { data: interviews = [], isLoading, error } = useRecruiterInterviewsQuery(true);
 
@@ -279,14 +266,8 @@ export default function RecruiterInterviewsPage() {
     return matchesFilter && matchesSearch;
   });
 
-  function showSuccess(msg: string) {
-    setSuccessToast(msg);
-    setTimeout(() => setSuccessToast(''), 3000);
-  }
-  function showError(msg: string) {
-    setErrorToast(msg);
-    setTimeout(() => setErrorToast(''), 4000);
-  }
+  function showSuccess(msg: string) { showToast(msg, 'success'); }
+  function showError(msg: string)   { showToast(msg, 'error');   }
 
   return (
     <RecruiterShell>
@@ -369,29 +350,23 @@ export default function RecruiterInterviewsPage() {
             {error instanceof Error ? error.message : 'Failed to load interviews'}
           </div>
         ) : interviews.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="text-5xl mb-4">📅</div>
-            <p className="text-[15px] font-bold text-[#0f172a]">No interviews yet</p>
-            <p className="text-[13px] text-gray-400 mt-1">
-              Move applicants to the Interview stage to see them here.
-            </p>
-            <Link
-              href="/recruiter/applicants"
-              className="inline-block mt-4 px-4 py-2 bg-primary text-white text-[13px] font-semibold rounded-xl hover:opacity-90 transition-opacity"
-            >
-              Go to Applicants
-            </Link>
-          </div>
+          <EmptyState
+            emoji="📅"
+            title="No interviews yet"
+            description="Move applicants to the Interview stage to see them here."
+            cta={{ label: 'Go to Applicants', href: '/recruiter/applicants' }}
+            className="py-16"
+          />
         ) : filtered.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="text-5xl mb-4">🔍</div>
-            <p className="text-[15px] font-bold text-[#0f172a]">No interviews found</p>
-            <p className="text-[13px] text-gray-400 mt-1">Try adjusting your filters or search.</p>
-          </div>
+          <EmptyState
+            emoji="🔍"
+            title="No interviews found"
+            description="Try adjusting your filters or search."
+            className="py-16"
+          />
         ) : (
           <div className="space-y-3">
             {filtered.map(interview => {
-              const status = STATUS_CONFIG[interview.status];
               const mode = interview.interviewType ? MODE_CONFIG[interview.interviewType] : null;
               return (
                 <div
@@ -399,7 +374,7 @@ export default function RecruiterInterviewsPage() {
                   className="bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 hover:border-gray-200 hover:shadow-sm transition-all"
                 >
                   <div className="flex items-start gap-4">
-                    <Avatar name={interview.candidateName} photo={interview.candidatePhoto} />
+                    <Avatar name={interview.candidateName} photo={interview.candidatePhoto} size="md" />
 
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
@@ -411,10 +386,7 @@ export default function RecruiterInterviewsPage() {
                             >
                               {interview.candidateName}
                             </Link>
-                            <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold ${status.bg} ${status.text}`}>
-                              <span className={`w-1.5 h-1.5 rounded-full ${status.dot}`} />
-                              {status.label}
-                            </span>
+                            <StatusBadge status={interview.status} showDot />
                           </div>
                           <p className="text-[13px] text-gray-500 mt-0.5">{interview.jobTitle}</p>
                           <p className="text-[12px] text-gray-400">{interview.candidateEmail}</p>
@@ -501,25 +473,7 @@ export default function RecruiterInterviewsPage() {
         />
       )}
 
-      {/* Success toast */}
-      <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] transition-all duration-300 ${successToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
-        <div className="flex items-center gap-3 bg-green-600 text-white text-[13px] font-semibold rounded-2xl px-5 py-3.5 shadow-2xl">
-          <span className="w-5 h-5 rounded-full bg-green-700 flex items-center justify-center shrink-0">
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5"><path d="M2 6l3 3 5-5"/></svg>
-          </span>
-          {successToast}
-        </div>
-      </div>
-
-      {/* Error toast */}
-      <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] transition-all duration-300 ${errorToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
-        <div className="flex items-center gap-3 bg-red-600 text-white text-[13px] font-semibold rounded-2xl px-5 py-3.5 shadow-2xl">
-          <span className="w-5 h-5 rounded-full bg-red-700 flex items-center justify-center shrink-0">
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5"><path d="M1 1l10 10M11 1L1 11"/></svg>
-          </span>
-          {errorToast}
-        </div>
-      </div>
+      <Toast message={toast.message} variant={toast.variant} visible={toast.visible} />
     </RecruiterShell>
   );
 }

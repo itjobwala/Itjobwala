@@ -1,28 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-
-const STATUS_STYLES: Record<string, string> = {
-  applied:     'bg-blue-50 text-blue-700',
-  shortlisted: 'bg-green-50 text-green-700',
-  interview:   'bg-amber-50 text-amber-700',
-  hired:       'bg-purple-50 text-purple-700',
-  rejected:    'bg-red-50 text-red-500',
-  selected:    'bg-green-50 text-green-700',
-  withdrawn:   'bg-gray-100 text-gray-500',
-  offer:       'bg-indigo-50 text-indigo-700',
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  applied:     'Applied',
-  shortlisted: 'Shortlisted',
-  interview:   'Interview',
-  hired:       'Hired',
-  rejected:    'Rejected',
-  selected:    'Selected',
-  withdrawn:   'Withdrawn',
-  offer:       'Offer',
-};
+import StatusBadge from '@/src/components/ui/StatusBadge';
 
 export interface Applicant {
   id: string;
@@ -88,11 +67,7 @@ export default function ApplicantsTable({ applicants }: Props) {
                 <span className="text-[12px] text-gray-400">{a.appliedDate}</span>
               </td>
               <td className="px-4 py-3.5">
-                <span
-                  className={`text-[11px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap ${STATUS_STYLES[a.status]}`}
-                >
-                  {STATUS_LABELS[a.status]}
-                </span>
+                <StatusBadge status={a.status} />
               </td>
               <td className="px-4 py-3.5 text-right">
                 <Link

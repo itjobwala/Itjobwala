@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import ApplicantsTable, { type Applicant } from './ApplicantsTable';
 import { useRecruiterApplicantsQuery } from '@/src/hooks/useRecruiter';
+import Card from '@/src/components/ui/Card';
 
 const GRADIENT_COLORS = [
   'from-blue-500 to-blue-400',
@@ -45,7 +46,7 @@ export default function RecentApplicants() {
   }));
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+    <Card padding="none" className="shadow-sm">
       <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
         <div>
           <h2 className="text-[15px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.3px' }}>
@@ -65,6 +66,6 @@ export default function RecentApplicants() {
       ) : (
         <ApplicantsTable applicants={applicants} />
       )}
-    </div>
+    </Card>
   );
 }

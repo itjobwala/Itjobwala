@@ -1,4 +1,5 @@
 import type { PersonalDetails } from '@/src/types/profile';
+import Card from '@/src/components/ui/Card';
 
 interface Props {
   personalDetails?: PersonalDetails;
@@ -38,7 +39,7 @@ export default function PersonalDetailsSection({ personalDetails, onEdit, onAdd 
   const hasContent = personalDetails && Object.values(personalDetails).some(val => val !== null && val !== undefined && val !== '' && (!Array.isArray(val) || val.length > 0));
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8 relative group">
+    <Card padding="none" className="p-6 sm:p-8 relative group" overflow>
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-[16px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.3px' }}>Personal details</h2>
         {hasContent ? (
@@ -128,6 +129,6 @@ export default function PersonalDetailsSection({ personalDetails, onEdit, onAdd 
           )}
         </div>
       )}
-    </div>
+    </Card>
   );
 }

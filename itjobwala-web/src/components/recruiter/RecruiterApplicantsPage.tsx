@@ -9,6 +9,11 @@ import {
   useHireApplicantMutation,
   useUpdateApplicantStatusMutation,
 } from '@/src/hooks/useRecruiter';
+import { useToast } from '@/src/hooks/useToast';
+import Toast from '@/src/components/ui/Toast';
+import StatusBadge from '@/src/components/ui/StatusBadge';
+import EmptyState from '@/src/components/ui/EmptyState';
+import Avatar from '@/src/components/ui/Avatar';
 import type { RecruiterApplicant } from '@/src/types/recruiter';
 import RecruiterShell from './RecruiterShell';
 
@@ -23,49 +28,7 @@ const STATUS_FILTERS: { value: string; label: string }[] = [
   { value: 'rejected',    label: 'Rejected' },
 ];
 
-const STATUS_STYLES: Record<string, string> = {
-  applied:     'bg-blue-50 text-blue-700',
-  shortlisted: 'bg-green-50 text-green-700',
-  interview:   'bg-amber-50 text-amber-700',
-  hired:       'bg-purple-50 text-purple-700',
-  rejected:    'bg-red-50 text-red-600',
-  selected:    'bg-green-50 text-green-700',
-  withdrawn:   'bg-gray-100 text-gray-500',
-  offer:       'bg-indigo-50 text-indigo-700',
-};
 
-const STATUS_LABELS: Record<string, string> = {
-  applied:     'Applied',
-  shortlisted: 'Shortlisted',
-  interview:   'Interview',
-  hired:       'Hired',
-  rejected:    'Rejected',
-  selected:    'Selected',
-  withdrawn:   'Withdrawn',
-  offer:       'Offer',
-};
-
-function Avatar({ name, photo }: { name: string; photo?: string | null }) {
-  if (photo) {
-    return (
-      <img
-        src={photo}
-        alt={name}
-        className="w-11 h-11 rounded-xl object-cover shrink-0"
-      />
-    );
-  }
-  const initials = name
-    .split(' ')
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? '')
-    .join('');
-  return (
-    <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-      <span className="text-[13px] font-bold text-primary">{initials}</span>
-    </div>
-  );
-}
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-IN', {
@@ -132,8 +95,7 @@ function ActionButtons({ applicant, loadingId, onShortlist, onInterview, onHire,
 export default function RecruiterApplicantsPage() {
   const [filterStatus, setFilterStatus] = useState('all');
   const [loadingId, setLoadingId] = useState<string | null>(null);
-  const [successToast, setSuccessToast] = useState('');
-  const [errorToast, setErrorToast] = useState('');
+  const { toast, show: showToast } = useToast();
 
   const filters = filterStatus === 'all' ? {} : { status: filterStatus as ApplicantStatus };
   const { data, isLoading, error } = useRecruiterApplicantsQuery(filters, true);
@@ -143,14 +105,8 @@ export default function RecruiterApplicantsPage() {
   const hireMutation      = useHireApplicantMutation();
   const statusMutation    = useUpdateApplicantStatusMutation();
 
-  function showSuccess(msg: string) {
-    setSuccessToast(msg);
-    setTimeout(() => setSuccessToast(''), 3000);
-  }
-  function showError(msg: string) {
-    setErrorToast(msg);
-    setTimeout(() => setErrorToast(''), 4000);
-  }
+  function showSuccess(msg: string) { showToast(msg, 'success'); }
+  function showError(msg: string)   { showToast(msg, 'error');   }
 
   async function handleShortlist(id: string) {
     setLoadingId(id);
@@ -245,17 +201,13 @@ export default function RecruiterApplicantsPage() {
             {error instanceof Error ? error.message : 'Failed to load applicants'}
           </div>
         ) : !data || data.applicants.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-[40px] mb-4">📨</div>
-            <h3 className="text-[18px] font-semibold text-[#0f172a] mb-2">No applicants yet</h3>
-            <p className="text-gray-500">Applications for your jobs will appear here</p>
-          </div>
+          <EmptyState emoji="📨" title="No applicants yet" description="Applications for your jobs will appear here" />
         ) : (
           <div className="space-y-3">
             {data.applicants.map((applicant) => (
               <div key={applicant.id} className="bg-white rounded-xl border border-gray-100 p-5 hover:border-gray-200 transition-colors">
                 <div className="flex items-start gap-4">
-                  <Avatar name={applicant.candidateName} photo={applicant.profilePhoto} />
+                  <Avatar name={applicant.candidateName} photo={applicant.profilePhoto} size="lg" />
 
                   <div className="flex-1 min-w-0">
                     {/* Top row: name + status + view link */}
@@ -272,9 +224,7 @@ export default function RecruiterApplicantsPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold ${STATUS_STYLES[applicant.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                          {STATUS_LABELS[applicant.status] ?? applicant.status}
-                        </span>
+                        <StatusBadge status={applicant.status} />
                         <Link
                           href={`/recruiter/applicants/${applicant.id}`}
                           className="text-[12px] font-semibold text-primary hover:underline"
@@ -341,37 +291,7 @@ export default function RecruiterApplicantsPage() {
         )}
       </div>
 
-      {/* Success toast */}
-      <div
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] transition-all duration-300 ${
-          successToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-        }`}
-      >
-        <div className="flex items-center gap-3 bg-green-600 text-white text-[13px] font-semibold rounded-2xl px-5 py-3.5 shadow-2xl">
-          <span className="w-5 h-5 rounded-full bg-green-700 flex items-center justify-center shrink-0">
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5">
-              <path d="M2 6l3 3 5-5" />
-            </svg>
-          </span>
-          {successToast}
-        </div>
-      </div>
-
-      {/* Error toast */}
-      <div
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] transition-all duration-300 ${
-          errorToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-        }`}
-      >
-        <div className="flex items-center gap-3 bg-red-600 text-white text-[13px] font-semibold rounded-2xl px-5 py-3.5 shadow-2xl">
-          <span className="w-5 h-5 rounded-full bg-red-700 flex items-center justify-center shrink-0">
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5">
-              <path d="M1 1l10 10M11 1L1 11" />
-            </svg>
-          </span>
-          {errorToast}
-        </div>
-      </div>
+      <Toast message={toast.message} variant={toast.variant} visible={toast.visible} />
     </RecruiterShell>
   );
 }

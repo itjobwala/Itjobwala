@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Card from '@/src/components/ui/Card';
 
 interface Props {
   about: string;
@@ -6,7 +7,7 @@ interface Props {
 
 export default function AboutSection({ about, onEdit }: Props & { onEdit?: () => void }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8">
+    <Card padding="none" className="p-6 sm:p-8" overflow>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-[16px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.3px' }}>About</h2>
         {about ? (
@@ -36,6 +37,6 @@ export default function AboutSection({ about, onEdit }: Props & { onEdit?: () =>
           <span className="text-[13px] font-semibold">Add a professional summary</span>
         </button>
       )}
-    </div>
+    </Card>
   );
 }

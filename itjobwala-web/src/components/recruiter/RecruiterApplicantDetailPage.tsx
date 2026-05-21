@@ -3,6 +3,12 @@
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useState } from 'react';
+import { useToast } from '@/src/hooks/useToast';
+import Toast from '@/src/components/ui/Toast';
+import StatusBadge from '@/src/components/ui/StatusBadge';
+import Avatar from '@/src/components/ui/Avatar';
+import PageHeader from '@/src/components/ui/PageHeader';
+import Card from '@/src/components/ui/Card';
 import {
   useRecruiterApplicantDetailQuery,
   useShortlistApplicantMutation,
@@ -11,27 +17,6 @@ import {
   useUpdateApplicantStatusMutation,
 } from '@/src/hooks/useRecruiter';
 
-const STATUS_STYLES: Record<string, string> = {
-  applied:     'bg-blue-50 text-blue-700',
-  shortlisted: 'bg-green-50 text-green-700',
-  interview:   'bg-amber-50 text-amber-700',
-  hired:       'bg-purple-50 text-purple-700',
-  rejected:    'bg-red-50 text-red-600',
-  selected:    'bg-green-50 text-green-700',
-  withdrawn:   'bg-gray-100 text-gray-500',
-  offer:       'bg-indigo-50 text-indigo-700',
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  applied:     'Applied',
-  shortlisted: 'Shortlisted',
-  interview:   'Interview',
-  hired:       'Hired',
-  rejected:    'Rejected',
-  selected:    'Selected',
-  withdrawn:   'Withdrawn',
-  offer:       'Offer',
-};
 
 function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return '—';
@@ -40,27 +25,6 @@ function formatDate(dateStr: string | null | undefined): string {
   });
 }
 
-function Avatar({ name, photo }: { name: string; photo?: string | null }) {
-  if (photo) {
-    return (
-      <img
-        src={photo}
-        alt={name}
-        className="w-20 h-20 rounded-2xl object-cover shrink-0"
-      />
-    );
-  }
-  const initials = name
-    .split(' ')
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? '')
-    .join('');
-  return (
-    <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
-      <span className="text-[22px] font-bold text-primary">{initials}</span>
-    </div>
-  );
-}
 
 interface Props {
   applicantId: string;
@@ -69,8 +33,7 @@ interface Props {
 export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
   const router = useRouter();
   const [actionLoading, setActionLoading] = useState(false);
-  const [successToast, setSuccessToast] = useState('');
-  const [errorToast, setErrorToast] = useState('');
+  const { toast, show: showToast } = useToast();
 
   const { data: applicant, isLoading, error } = useRecruiterApplicantDetailQuery(applicantId, true);
 
@@ -79,14 +42,8 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
   const hireMutation      = useHireApplicantMutation();
   const statusMutation    = useUpdateApplicantStatusMutation();
 
-  function showSuccess(msg: string) {
-    setSuccessToast(msg);
-    setTimeout(() => setSuccessToast(''), 3000);
-  }
-  function showError(msg: string) {
-    setErrorToast(msg);
-    setTimeout(() => setErrorToast(''), 4000);
-  }
+  function showSuccess(msg: string) { showToast(msg, 'success'); }
+  function showError(msg: string)   { showToast(msg, 'error');   }
 
   async function handleShortlist() {
     setActionLoading(true);
@@ -163,21 +120,12 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
 
   return (
     <div className="max-w-[860px] mx-auto px-5 sm:px-8 py-8 space-y-6">
-      {/* Back button */}
-      <button
-        onClick={() => router.back()}
-        className="text-[13px] text-gray-500 hover:text-primary font-medium transition-colors flex items-center gap-1"
-      >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
-        Back to Applicants
-      </button>
+      <PageHeader backLabel="Back to Applicants" onBack={() => router.back()} />
 
       {/* Header card */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6">
+      <Card padding="lg" overflow>
         <div className="flex flex-col sm:flex-row sm:items-start gap-5">
-          <Avatar name={applicant.candidateName} photo={applicant.profilePhoto} />
+          <Avatar name={applicant.candidateName} photo={applicant.profilePhoto} size="xl" />
 
           <div className="flex-1 min-w-0">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
@@ -198,9 +146,7 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
                   </p>
                 )}
               </div>
-              <span className={`shrink-0 px-3 py-1.5 rounded-full text-[12px] font-semibold ${STATUS_STYLES[applicant.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                {STATUS_LABELS[applicant.status] ?? applicant.status}
-              </span>
+              <StatusBadge status={applicant.status} size="lg" className="shrink-0" />
             </div>
 
             {/* Contact row */}
@@ -265,7 +211,7 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         {/* Left column: main content */}
@@ -273,27 +219,27 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
 
           {/* About */}
           {applicant.profile?.about && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-6">
+            <Card padding="lg" overflow>
               <h2 className="text-[14px] font-bold text-[#0f172a] mb-3">About</h2>
               <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">
                 {applicant.profile.about}
               </p>
-            </div>
+            </Card>
           )}
 
           {/* Cover letter */}
           {applicant.coverLetter && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-6">
+            <Card padding="lg" overflow>
               <h2 className="text-[14px] font-bold text-[#0f172a] mb-3">Cover Letter</h2>
               <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">
                 {applicant.coverLetter}
               </p>
-            </div>
+            </Card>
           )}
 
           {/* Skills */}
           {applicant.skills && applicant.skills.length > 0 && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-6">
+            <Card padding="lg" overflow>
               <h2 className="text-[14px] font-bold text-[#0f172a] mb-3">Skills</h2>
               <div className="flex flex-wrap gap-2">
                 {applicant.skills.map((skill) => (
@@ -302,7 +248,7 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
                   </span>
                 ))}
               </div>
-            </div>
+            </Card>
           )}
         </div>
 
@@ -310,7 +256,7 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
         <div className="space-y-5">
 
           {/* Application info */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-5">
+          <Card overflow>
             <h2 className="text-[13px] font-bold text-[#0f172a] mb-4">Application Info</h2>
             <div className="space-y-3">
               <div>
@@ -336,16 +282,14 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
               )}
               <div>
                 <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wide mb-0.5">Status</p>
-                <span className={`inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold ${STATUS_STYLES[applicant.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                  {STATUS_LABELS[applicant.status] ?? applicant.status}
-                </span>
+                <StatusBadge status={applicant.status} />
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Actions */}
           {!isFinal && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+            <Card overflow>
               <h2 className="text-[13px] font-bold text-[#0f172a] mb-4">Actions</h2>
               <div className="flex flex-col gap-2">
                 {applicant.status === 'applied' && (
@@ -383,42 +327,12 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
                   {actionLoading ? 'Loading…' : 'Reject'}
                 </button>
               </div>
-            </div>
+            </Card>
           )}
         </div>
       </div>
 
-      {/* Success toast */}
-      <div
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] transition-all duration-300 ${
-          successToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-        }`}
-      >
-        <div className="flex items-center gap-3 bg-green-600 text-white text-[13px] font-semibold rounded-2xl px-5 py-3.5 shadow-2xl">
-          <span className="w-5 h-5 rounded-full bg-green-700 flex items-center justify-center shrink-0">
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5">
-              <path d="M2 6l3 3 5-5" />
-            </svg>
-          </span>
-          {successToast}
-        </div>
-      </div>
-
-      {/* Error toast */}
-      <div
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] transition-all duration-300 ${
-          errorToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-        }`}
-      >
-        <div className="flex items-center gap-3 bg-red-600 text-white text-[13px] font-semibold rounded-2xl px-5 py-3.5 shadow-2xl">
-          <span className="w-5 h-5 rounded-full bg-red-700 flex items-center justify-center shrink-0">
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5">
-              <path d="M1 1l10 10M11 1L1 11" />
-            </svg>
-          </span>
-          {errorToast}
-        </div>
-      </div>
+      <Toast message={toast.message} variant={toast.variant} visible={toast.visible} />
     </div>
   );
 }

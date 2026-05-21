@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useRecruiterNotificationsQuery } from '@/src/hooks/useRecruiter';
+import Card from '@/src/components/ui/Card';
 
 const TYPE_CONFIG: Record<string, { dotColor: string; icon: React.ReactNode }> = {
   application: {
@@ -75,7 +76,7 @@ export default function ActivityFeed() {
   const { data: notifications, isLoading } = useRecruiterNotificationsQuery(10);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+    <Card className="shadow-sm" overflow>
       <div className="mb-5">
         <h2 className="text-[15px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.3px' }}>
           Activity Feed
@@ -136,6 +137,6 @@ export default function ActivityFeed() {
           View all activity →
         </button>
       </div>
-    </div>
+    </Card>
   );
 }

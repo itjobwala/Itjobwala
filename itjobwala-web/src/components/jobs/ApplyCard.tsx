@@ -1,6 +1,7 @@
 'use client';
 
 import type { JobDetail } from './types';
+import Card from '@/src/components/ui/Card';
 
 interface Props {
   job: JobDetail;
@@ -8,7 +9,6 @@ interface Props {
 
 export default function ApplyCard({ job }: Props) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5">
-    </div>
+    <Card overflow>{null}</Card>
   );
 }
