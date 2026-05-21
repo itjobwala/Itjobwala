@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import RecruiterDropdown from '@/src/components/RecruiterDropdown';
+import RecruiterDropdown from '@/src/components/navbar/RecruiterDropdown';
 
 const PRIMARY = '#1557FF';
 const NAV_LINKS = [

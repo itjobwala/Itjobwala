@@ -2,8 +2,8 @@
 
 import dynamic from 'next/dynamic';
 import { Suspense } from 'react';
-import Navbar from '@/src/components/Navbar';
-import NavbarSkeleton from '@/src/components/NavbarSkeleton';
+import Navbar from '@/src/components/navbar/Navbar';
+import NavbarSkeleton from '@/src/components/navbar/NavbarSkeleton';
 import { useAuthHydration } from '@/src/hooks/useAuthHydration';
 
 /**

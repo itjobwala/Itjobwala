@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthHydration } from '@/src/hooks/useAuthHydration';
-import SmartNavbar from "@/src/components/SmartNavbar";
+import SmartNavbar from "@/src/components/navbar/SmartNavbar";
 import HeroSection from "@/src/components/home/HeroSection";
 import StatsStrip from "@/src/components/home/StatsStrip";
 import CompanyMarquee from "@/src/components/home/CompanyMarquee";

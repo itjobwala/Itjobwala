@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import SmartNavbar from '@/src/components/SmartNavbar';
+import SmartNavbar from '@/src/components/navbar/SmartNavbar';
 import JobDetailsHeader from './JobDetailsHeader';
 import JobDescription from './JobDescription';
 import SkillsTags from './SkillsTags';

@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import Field from '@/src/components/Field';
+import Field from '@/src/components/ui/Field';
 import { PRIMARY } from '@/src/lib/constants';
 import { signinCandidate } from '@/src/lib/api';
 

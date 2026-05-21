@@ -3,10 +3,10 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import Field from '@/src/components/Field';
-import PasswordField from '@/src/components/PasswordField';
-import SelectField from '@/src/components/SelectField';
-import OTPInput from '@/src/components/OTPInput';
+import Field from '@/src/components/ui/Field';
+import PasswordField from '@/src/components/ui/PasswordField';
+import SelectField from '@/src/components/ui/SelectField';
+import OTPInput from '@/src/components/ui/OTPInput';
 import { PRIMARY } from '@/src/lib/constants';
 import { signupRecruiter } from '@/src/lib/api';
 import { createRecruiterJob } from '@/src/lib/api/recruiter';

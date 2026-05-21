@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import RecruiterLoginPage from '@/src/components/RecruiterLoginPage';
+import RecruiterLoginPage from '@/src/components/recruiter/RecruiterLoginPage';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = { title: 'Recruiter Login – itJobwala' };

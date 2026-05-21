@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import SmartNavbar from '@/src/components/SmartNavbar';
+import SmartNavbar from '@/src/components/navbar/SmartNavbar';
 import ProtectedRoute from '@/src/components/auth/ProtectedRoute';
 import EditProfileHeader, { type EditableProfile } from './EditProfileHeader';
 import EditAboutSection from './EditAboutSection';

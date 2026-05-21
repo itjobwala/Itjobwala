@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import SmartNavbar from '@/src/components/SmartNavbar';
+import SmartNavbar from '@/src/components/navbar/SmartNavbar';
 import ProtectedRoute from '@/src/components/auth/ProtectedRoute';
 import ConfirmationDialog from '@/src/components/common/ConfirmationDialog';
 import { useMyApplicationsInfiniteQuery, useWithdrawApplicationMutation } from '@/src/hooks/useApplications';

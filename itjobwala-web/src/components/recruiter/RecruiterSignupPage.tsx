@@ -2,8 +2,8 @@
 
 import { useState, type FormEvent } from 'react';
 import Link from 'next/link';
-import Field from '@/src/components/Field';
-import PasswordField from '@/src/components/PasswordField';
+import Field from '@/src/components/ui/Field';
+import PasswordField from '@/src/components/ui/PasswordField';
 import { PRIMARY } from '@/src/lib/constants';
 import { signupRecruiter, signinRecruiter } from '@/src/lib/api';
 

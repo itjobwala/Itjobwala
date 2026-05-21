@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import SmartNavbar from '@/src/components/SmartNavbar';
+import SmartNavbar from '@/src/components/navbar/SmartNavbar';
 import { useToast } from '@/src/hooks/useToast';
 import Toast from '@/src/components/ui/Toast';
 import ProtectedRoute from '@/src/components/auth/ProtectedRoute';

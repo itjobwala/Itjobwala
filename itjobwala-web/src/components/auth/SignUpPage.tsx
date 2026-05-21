@@ -2,9 +2,9 @@
 
 import { useState, type FormEvent, type CSSProperties } from 'react';
 import Link from 'next/link';
-import Field from '@/src/components/Field';
-import SelectField from '@/src/components/SelectField';
-import PasswordField from '@/src/components/PasswordField';
+import Field from '@/src/components/ui/Field';
+import SelectField from '@/src/components/ui/SelectField';
+import PasswordField from '@/src/components/ui/PasswordField';
 import { PRIMARY } from '@/src/lib/constants';
 import { registerCandidate } from '@/src/lib/api';
 

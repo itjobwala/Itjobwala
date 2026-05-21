@@ -2,7 +2,7 @@
 
 import QueryProvider from './QueryProvider';
 import { LoadingProvider } from '@/src/contexts/LoadingContext';
-import LoadingOverlay from '@/src/components/LoadingOverlay';
+import LoadingOverlay from '@/src/components/common/LoadingOverlay';
 
 export default function RootProvider({ children }: { children: React.ReactNode }) {
   return (

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
-import SmartNavbar from '@/src/components/SmartNavbar';
+import SmartNavbar from '@/src/components/navbar/SmartNavbar';
 import ProtectedRoute from '@/src/components/auth/ProtectedRoute';
 import JobSearchBar from '@/src/components/jobs/JobSearchBar';
 import JobFilterSidebar from '@/src/components/jobs/JobFilterSidebar';
