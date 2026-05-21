@@ -4,12 +4,12 @@ import jwtPlugin from './src/plugins/jwt.js';
 import 'dotenv/config';
 
 import multipart from '@fastify/multipart';
-import indexRoutes from './src/routes/indexRoutes.js';
-import userRoutes from './src/routes/userRoutes.js';
-import recruiterRoutes from './src/routes/recruiterRoutes.js';
-import jobRoutes from './src/routes/jobRoutes.js';
-import candidateProfileRoutes from './src/routes/candidateProfileRoutes.js';
-import applicationRoutes from './src/routes/applicationRoutes.js';
+import indexRoutes from './src/routes/common/indexRoutes.js';
+import userRoutes from './src/routes/candidate/userRoutes.js';
+import recruiterRoutes from './src/routes/recruiter/recruiterRoutes.js';
+import jobRoutes from './src/routes/jobs/jobRoutes.js';
+import candidateProfileRoutes from './src/routes/candidate/candidateProfileRoutes.js';
+import applicationRoutes from './src/routes/jobs/applicationRoutes.js';
 
 const fastify = Fastify({ logger: true });
 
@@ -54,16 +54,16 @@ fastify.register(recruiterRoutes, { prefix: '/api' });
 fastify.register(jobRoutes, { prefix: '/api' });
 fastify.register(candidateProfileRoutes, { prefix: '/api' });
 fastify.register(applicationRoutes, { prefix: '/api' });
-fastify.register((await import('./src/routes/savedJobRoutes.js')).default, { prefix: '/api' });
-fastify.register((await import('./src/routes/recruiterDashboardRoutes.js')).default, { prefix: '/api' });
-fastify.register((await import('./src/routes/recruiterJobRoutes.js')).default, { prefix: '/api' });
-fastify.register((await import('./src/routes/recruiterApplicantRoutes.js')).default, { prefix: '/api' });
-fastify.register((await import('./src/routes/notificationRoutes.js')).default, { prefix: '/api' });
-fastify.register((await import('./src/routes/searchRoutes.js')).default, { prefix: '/api' });
-fastify.register((await import('./src/routes/companyRoutes.js')).default, { prefix: '/api' });
-fastify.register((await import('./src/routes/homeRoutes.js')).default, { prefix: '/api' });
-fastify.register((await import('./src/routes/recruiterInterviewRoutes.js')).default, { prefix: '/api' });
-fastify.register((await import('./src/routes/skillRoutes.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/jobs/savedJobRoutes.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/recruiter/recruiterDashboardRoutes.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/recruiter/recruiterJobRoutes.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/recruiter/recruiterApplicantRoutes.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/common/notificationRoutes.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/common/searchRoutes.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/recruiter/companyRoutes.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/common/homeRoutes.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/recruiter/recruiterInterviewRoutes.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/common/skillRoutes.js')).default, { prefix: '/api' });
 
 // Centralized Error Handler
 fastify.setErrorHandler(function (error, request, reply) {
