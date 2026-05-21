@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import RecruiterDropdown from '@/src/components/navbar/RecruiterDropdown';
@@ -11,6 +11,105 @@ const NAV_LINKS = [
   { label: 'Companies', href: '#' },
   { label: 'Resources', href: '#' },
 ];
+
+function AuthDropdown({
+  label,
+  candidateHref,
+  recruiterHref,
+  variant,
+}: {
+  label: string;
+  candidateHref: string;
+  recruiterHref: string;
+  variant: 'ghost' | 'solid';
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative hidden sm:block">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="text-sm font-semibold px-3.5 py-2 rounded-lg transition-colors"
+        style={
+          variant === 'solid'
+            ? { background: PRIMARY, color: '#fff', boxShadow: `0 4px 16px ${PRIMARY}44` }
+            : { color: '#374151' }
+        }
+        onMouseEnter={e => { if (variant === 'ghost') e.currentTarget.style.color = PRIMARY; }}
+        onMouseLeave={e => { if (variant === 'ghost') e.currentTarget.style.color = '#374151'; }}
+      >
+        {label}
+        <svg className="inline ml-1 -mr-0.5" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden z-[300]">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-4 pt-3 pb-1.5">
+            {label} as
+          </p>
+
+          {/* Candidate — default / highlighted */}
+          <Link
+            href={candidateHref}
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-3 px-4 py-3 transition-colors"
+            style={{ background: '#eff6ff' }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#dbeafe'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = '#eff6ff'; }}
+          >
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: '#bfdbfe' }}>
+              <svg width="15" height="15" fill="none" stroke={PRIMARY} strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </div>
+            <div>
+              <div className="text-[13px] font-bold" style={{ color: PRIMARY }}>Candidate</div>
+              <div className="text-[11px] text-gray-400">Find &amp; apply to jobs</div>
+            </div>
+            <div className="ml-auto">
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full" style={{ background: PRIMARY, color: '#fff' }}>Default</span>
+            </div>
+          </Link>
+
+          {/* Recruiter */}
+          <Link
+            href={recruiterHref}
+            onClick={() => setOpen(false)}
+            className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-gray-50"
+          >
+            <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
+              <svg width="15" height="15" fill="none" stroke="#f97316" strokeWidth="2" viewBox="0 0 24 24">
+                <rect x="2" y="7" width="20" height="14" rx="2" />
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+              </svg>
+            </div>
+            <div>
+              <div className="text-[13px] font-bold text-[#0f172a]">Recruiter</div>
+              <div className="text-[11px] text-gray-400">Post jobs &amp; hire talent</div>
+            </div>
+          </Link>
+
+          <div className="h-px bg-gray-100" />
+          <div className="px-4 py-2.5 text-[11px] text-gray-400 text-center">
+            Not sure? <Link href="/jobs" onClick={() => setOpen(false)} className="font-semibold" style={{ color: PRIMARY }}>Browse jobs →</Link>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -48,7 +147,7 @@ export default function Navbar() {
               href={l.href}
               className="text-sm font-medium"
               style={{ color: '#374151', textDecoration: 'none' }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#1557FF'; }}
+              onMouseEnter={e => { e.currentTarget.style.color = PRIMARY; }}
               onMouseLeave={e => { e.currentTarget.style.color = '#374151'; }}
             >
               {l.label}
@@ -58,47 +157,19 @@ export default function Navbar() {
 
         {/* Right controls */}
         <div className="flex gap-2 items-center ml-auto">
-          {/* Log in — desktop */}
-          <Link
-            href="/login"
-            className="hidden sm:block text-sm font-semibold px-3.5 py-2 rounded-lg"
-            style={{ color: '#374151', textDecoration: 'none' }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#1557FF'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = '#374151'; }}
-          >
-            Log in
-          </Link>
+          <AuthDropdown
+            label="Log in"
+            candidateHref="/login"
+            recruiterHref="/recruiter/login"
+            variant="ghost"
+          />
 
-          {/* Get Hired Free */}
-          <Link
-            href="/signup"
-            className="hidden sm:flex items-center gap-2 text-white text-sm font-bold rounded-lg py-[10px] px-5 transition-all duration-200"
-            style={{ background: PRIMARY, color: '#fff', boxShadow: `0 4px 16px ${PRIMARY}44` }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.transform = 'translateY(-1px)';
-              el.style.boxShadow = `0 8px 24px ${PRIMARY}55`;
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget as HTMLElement;
-              el.style.transform = 'translateY(0)';
-              el.style.boxShadow = `0 4px 16px ${PRIMARY}44`;
-            }}
-          >
-            <span
-              className="w-[7px] h-[7px] rounded-full bg-[#4ade80] shrink-0 pulse-dot"
-              style={{ boxShadow: '0 0 6px #4ade80' }}
-            />
-            Get Hired Free
-          </Link>
-
-          {/* Divider — desktop */}
-          <div className="hidden sm:block w-px h-6 bg-gray-200 mx-1" />
-
-          {/* Recruiter dropdown — desktop */}
-          <div className="hidden sm:block">
-            <RecruiterDropdown />
-          </div>
+          <AuthDropdown
+            label="Sign up"
+            candidateHref="/signup"
+            recruiterHref="/recruiter/signup"
+            variant="solid"
+          />
 
           {/* Hamburger — mobile */}
           <button
@@ -132,40 +203,25 @@ export default function Navbar() {
               onClick={() => setMenuOpen(false)}
               className="py-3 text-sm font-semibold border-b border-gray-50 last:border-0"
               style={{ color: '#374151', textDecoration: 'none' }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#1557FF'; }}
-              onMouseLeave={e => { e.currentTarget.style.color = '#374151'; }}
             >
               {l.label}
             </Link>
           ))}
           <div className="pt-4 flex flex-col gap-2.5">
-            <Link
-              href="/login"
-              onClick={() => setMenuOpen(false)}
+            <Link href="/login" onClick={() => setMenuOpen(false)}
               className="text-sm font-semibold py-2.5 text-center border-[1.5px] rounded-lg"
-              style={{ color: '#374151', textDecoration: 'none', borderColor: '#e5e7eb' }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#1557FF'; e.currentTarget.style.borderColor = '#1557FF'; }}
-              onMouseLeave={e => { e.currentTarget.style.color = '#374151'; e.currentTarget.style.borderColor = '#e5e7eb'; }}
-            >
-              Log in
+              style={{ color: '#374151', borderColor: '#e5e7eb', textDecoration: 'none' }}>
+              Log in — Candidate
             </Link>
-            <Link
-              href="/signup"
-              onClick={() => setMenuOpen(false)}
+            <Link href="/recruiter/login" onClick={() => setMenuOpen(false)}
+              className="text-sm font-semibold py-2.5 text-center border-[1.5px] rounded-lg"
+              style={{ color: '#374151', borderColor: '#e5e7eb', textDecoration: 'none' }}>
+              Log in — Recruiter
+            </Link>
+            <Link href="/signup" onClick={() => setMenuOpen(false)}
               className="text-sm font-bold py-2.5 text-center rounded-lg"
-              style={{ background: PRIMARY, color: '#fff', textDecoration: 'none' }}
-            >
-              Get Hired Free
-            </Link>
-            <Link
-              href="/recruiter/login"
-              onClick={() => setMenuOpen(false)}
-              className="text-sm font-semibold py-2.5 text-center border-[1.5px] rounded-lg"
-              style={{ color: '#374151', textDecoration: 'none', borderColor: '#e5e7eb' }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#1557FF'; e.currentTarget.style.borderColor = '#1557FF'; }}
-              onMouseLeave={e => { e.currentTarget.style.color = '#374151'; e.currentTarget.style.borderColor = '#e5e7eb'; }}
-            >
-              For Recruiters
+              style={{ background: PRIMARY, color: '#fff', textDecoration: 'none' }}>
+              Sign up free
             </Link>
           </div>
         </div>
