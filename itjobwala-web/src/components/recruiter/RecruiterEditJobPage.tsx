@@ -10,6 +10,7 @@ import {
 import SalaryRangeSlider from '@/src/components/ui/SalaryRangeSlider';
 import { validateSkill } from '@/src/lib/skillValidation';
 import { useSkillSuggestions } from '@/src/hooks/useSkillSuggestions';
+import { validateSkillsRemote } from '@/src/lib/api/skills';
 
 const PRIMARY = '#1557FF';
 
@@ -96,12 +97,21 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
     setApiError('');
   }
 
-  function addSkill(override?: string) {
+  async function addSkill(override?: string, fromSuggestion = false) {
     const s = (override ?? skillInput).trim();
     if (!s) return;
     const error = validateSkill(s);
     if (error) { setSkillError(error); return; }
     if (form.requiredSkills.includes(s)) { setSkillError('Skill already added'); return; }
+    if (!fromSuggestion) {
+      try {
+        const result = await validateSkillsRemote([s]);
+        if (!result.valid) {
+          setSkillError('Not a recognised skill — please select from suggestions');
+          return;
+        }
+      } catch { /* network error — allow through */ }
+    }
     set('requiredSkills', [...form.requiredSkills, s]);
     setSkillInput('');
     setSkillError('');
@@ -383,7 +393,7 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
             <div className="flex flex-wrap gap-1.5 mb-3">
               {skillSuggestions.map(s => (
                 <button key={s} type="button"
-                  onClick={() => addSkill(s)}
+                  onClick={() => addSkill(s, true)}
                   className="px-2.5 py-1 rounded-lg text-[12px] font-semibold bg-gray-100 text-gray-500 hover:bg-primary/10 hover:text-primary transition-colors">
                   + {s}
                 </button>

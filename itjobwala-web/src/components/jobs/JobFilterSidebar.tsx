@@ -6,6 +6,7 @@ import Card from '@/src/components/ui/Card';
 import SalaryRangeSlider from '@/src/components/ui/SalaryRangeSlider';
 import { validateSkill } from '@/src/lib/skillValidation';
 import { useSkillSuggestions } from '@/src/hooks/useSkillSuggestions';
+import { validateSkillsRemote } from '@/src/lib/api/skills';
 
 const JOB_TYPES = [
   { value: 'full-time', label: 'Full-time' },
@@ -88,13 +89,22 @@ export default function JobFilterSidebar({ filters, onChange, onReset, activeCou
   const [skillError, setSkillError] = useState('');
   const skillSuggestions = useSkillSuggestions(skillInput, filters.skills || []);
 
-  function addSkillFromFilter(override?: string) {
+  async function addSkillFromFilter(override?: string, fromSuggestion = false) {
     const skill = (override ?? skillInput).trim();
     if (!skill) return;
     const error = validateSkill(skill);
     if (error) { setSkillError(error); return; }
     const currentSkills = filters.skills || [];
     if (currentSkills.includes(skill)) { setSkillError('Skill already added'); return; }
+    if (!fromSuggestion) {
+      try {
+        const result = await validateSkillsRemote([skill]);
+        if (!result.valid) {
+          setSkillError('Not a recognised skill — please select from suggestions');
+          return;
+        }
+      } catch { /* network error — allow through */ }
+    }
     onChange({ ...filters, skills: [...currentSkills, skill] });
     setSkillInput('');
     setSkillError('');
@@ -202,7 +212,7 @@ export default function JobFilterSidebar({ filters, onChange, onReset, activeCou
             <div className="flex flex-wrap gap-1.5 mt-1.5">
               {skillSuggestions.map(s => (
                 <button key={s} type="button"
-                  onClick={() => addSkillFromFilter(s)}
+                  onClick={() => addSkillFromFilter(s, true)}
                   className="px-2 py-1 rounded-md text-[11px] font-semibold bg-gray-100 text-gray-500 hover:bg-primary/10 hover:text-primary transition-colors">
                   + {s}
                 </button>

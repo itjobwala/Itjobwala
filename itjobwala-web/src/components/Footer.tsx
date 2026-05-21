@@ -141,7 +141,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-7 border-t border-gray-200">
-          <span className="text-[13px] text-[#334155]">© 2024 itJobwala. All rights reserved.</span>
+          <span className="text-[13px] text-[#334155]">© 2026 itJobwala. All rights reserved.</span>
           <span className="text-[13px] text-[#334155]">Built for IT professionals in India</span>
         </div>
 

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { validateSkill } from '@/src/lib/skillValidation';
 import { useSkillSuggestions } from '@/src/hooks/useSkillSuggestions';
+import { validateSkillsRemote } from '@/src/lib/api/skills';
 
 interface Props {
   skills: string[];
@@ -14,12 +15,21 @@ export default function EditSkillsSection({ skills, onChange }: Props) {
   const [skillError, setSkillError] = useState('');
   const suggestions = useSkillSuggestions(input, skills);
 
-  function addSkill(skill: string) {
+  async function addSkill(skill: string, fromSuggestion = false) {
     const trimmed = skill.trim();
     if (!trimmed) return;
     const error = validateSkill(trimmed);
     if (error) { setSkillError(error); return; }
     if (skills.includes(trimmed)) { setSkillError('Skill already added'); return; }
+    if (!fromSuggestion) {
+      try {
+        const result = await validateSkillsRemote([trimmed]);
+        if (!result.valid) {
+          setSkillError('Not a recognised skill — please select from suggestions');
+          return;
+        }
+      } catch { /* network error — allow through */ }
+    }
     onChange([...skills, trimmed]);
     setInput('');
     setSkillError('');
@@ -75,7 +85,7 @@ export default function EditSkillsSection({ skills, onChange }: Props) {
             <button
               key={s}
               type="button"
-              onClick={() => addSkill(s)}
+              onClick={() => addSkill(s, true)}
               className="px-2.5 py-1 rounded-lg text-[12px] font-semibold bg-gray-100 text-gray-500 hover:bg-primary/10 hover:text-primary transition-colors"
             >
               + {s}

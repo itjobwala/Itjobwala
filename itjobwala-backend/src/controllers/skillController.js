@@ -7,42 +7,27 @@ import knex from '../config/db.js';
  */
 export async function getSkills(request, reply) {
   const { q = '', limit = 8, category } = request.query;
+  const cap = Math.min(Number(limit), 20);
+  const term = q.trim().toLowerCase();
 
-  let query = Skill.query()
-    .select('id', 'name', 'category')
-    .orderBy('usage_count', 'desc')
-    .orderBy('name', 'asc')
-    .limit(Math.min(Number(limit), 20));
+  let query = Skill.query().select('id', 'name', 'category');
 
-  if (q.trim()) {
-    query = query.where('name_lower', 'like', `${q.trim().toLowerCase()}%`)
-      .union(
-        Skill.query()
-          .select('id', 'name', 'category')
-          .where('name_lower', 'like', `%${q.trim().toLowerCase()}%`)
-          .whereNot('name_lower', 'like', `${q.trim().toLowerCase()}%`)
-          .orderBy('usage_count', 'desc')
-          .orderBy('name', 'asc')
-          .limit(Math.min(Number(limit), 20)),
-        true,
+  if (term) {
+    query = query
+      .where('name_lower', 'like', `%${term}%`)
+      .orderByRaw(
+        `CASE WHEN name_lower LIKE ? THEN 0 ELSE 1 END, usage_count DESC, name ASC`,
+        [`${term}%`],
       );
+  } else {
+    query = query.orderBy('usage_count', 'desc').orderBy('name', 'asc');
   }
 
-  if (category) {
-    query = query.where('category', category);
-  }
+  if (category) query = query.where('category', category);
 
-  const skills = await query;
+  const skills = await query.limit(cap);
 
-  // De-duplicate (union may produce dupes at boundary) and cap at limit
-  const seen = new Set();
-  const unique = [];
-  for (const s of skills) {
-    if (!seen.has(s.id)) { seen.add(s.id); unique.push(s); }
-    if (unique.length >= Number(limit)) break;
-  }
-
-  return reply.send({ success: true, data: unique });
+  return reply.send({ success: true, data: skills });
 }
 
 /**
