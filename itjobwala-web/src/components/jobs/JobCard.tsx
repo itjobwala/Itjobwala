@@ -124,7 +124,13 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false }:
             <div className="min-w-0">
               {/* Badges */}
               <div className="flex items-center gap-2 mb-1 flex-wrap">
-                {job.isNew && (
+                {job.hasApplied && (
+                  <span className="text-[11px] font-bold rounded-full py-[2px] px-2 bg-green-50 text-green-700 flex items-center gap-1">
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
+                    Applied
+                  </span>
+                )}
+                {job.isNew && !job.hasApplied && (
                   <span className="text-[11px] font-bold rounded-full py-[2px] px-2 bg-green-50 text-green-700">New</span>
                 )}
                 {job.isHot && (

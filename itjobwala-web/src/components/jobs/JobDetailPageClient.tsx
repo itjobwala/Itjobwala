@@ -11,7 +11,8 @@ import ProfileCompletionCard from './ProfileCompletionCard';
 import JobDetailSkeleton from './JobDetailSkeleton';
 import { useSaveJobMutation, useUnsaveJobMutation } from '@/src/hooks/useApplications';
 import { useRecommendedJobsQuery, useSimilarCompaniesQuery } from '@/src/hooks/useJobs';
-import { applyToJob } from '@/src/lib/api/applications';
+import { applyToJob, getMyApplications } from '@/src/lib/api/applications';
+import { safeLocalStorageGetItem } from '@/src/lib/hydration-safe';
 import { normalizeJob } from './types';
 import type { JobDetail } from './types';
 
@@ -36,6 +37,19 @@ export default function JobDetailPageClient({ job }: Props) {
     return () => clearTimeout(t);
   }, []);
 
+  // Client-side applied check — SSR doesn't have candidate's token, so we verify after mount
+  useEffect(() => {
+    if (applied) return; // already know it's applied
+    const token = safeLocalStorageGetItem('token');
+    if (!token) return;
+    getMyApplications({ limit: 200 })
+      .then(data => {
+        const alreadyApplied = data.applications.some(a => a.job_id === String(job.id));
+        if (alreadyApplied) setApplied(true);
+      })
+      .catch(() => {});
+  }, [job.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   async function handleApply() {
     if (applied) return;
     try {
@@ -44,8 +58,12 @@ export default function JobDetailPageClient({ job }: Props) {
       setShowAppliedToast(true);
       setTimeout(() => setShowAppliedToast(false), 4000);
     } catch (error) {
+      const err = error as { status?: number };
+      if (err.status === 409) {
+        setApplied(true); // already applied — sync state silently
+        return;
+      }
       console.error('[JobDetailPageClient] Failed to apply for job:', error);
-      // Error handling can be enhanced with a toast notification
     }
   }
 

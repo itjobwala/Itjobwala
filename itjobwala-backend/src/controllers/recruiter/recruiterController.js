@@ -38,9 +38,16 @@ export const recruiterSignup = async (request, reply) => {
 
     delete newRecruiter.password;
 
+    const token = request.server.jwt.sign({
+      id: newRecruiter.id,
+      email: newRecruiter.email,
+      role: 'recruiter'
+    });
+
     return reply.status(201).send({
       success: true,
-      message: 'Recruiter registered successfully'
+      message: 'Recruiter registered successfully',
+      token
     });
   } catch (error) {
     request.server.log.error(error);

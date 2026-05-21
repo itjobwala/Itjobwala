@@ -1,9 +1,21 @@
 import Job from '../../models/jobs/Job.js';
 import Recruiter from '../../models/recruiter/Recruiter.js';
+import Application from '../../models/jobs/Application.js';
 import { ref, raw } from 'objection';
 
+// Resolve candidate user ID from request JWT without throwing (optional auth)
+const getCandidateId = async (request) => {
+  try {
+    await request.jwtVerify();
+    if (request.user?.role === 'recruiter') return null;
+    return request.user?.id ?? null;
+  } catch {
+    return null;
+  }
+};
+
 // Helper to map DB result to contract shape
-const formatJob = (job) => {
+const formatJob = (job, hasApplied = false) => {
   return {
     id: `job_${job.id}`,
     title: job.title,
@@ -52,7 +64,7 @@ const formatJob = (job) => {
       interviews: parseInt(job.interview_count || 0, 10)
     },
     is_saved: false, // mock
-    has_applied: false // mock
+    has_applied: hasApplied,
   };
 };
 
@@ -144,13 +156,24 @@ export const getJobs = async (request, reply) => {
     const pageIndex = Math.max(0, parseInt(page, 10) - 1);
     const pageSize = parseInt(limit, 10);
 
+    const candidateId = await getCandidateId(request);
     const result = await query.page(pageIndex, pageSize);
+
+    let appliedJobIds = new Set();
+    if (candidateId && result.results.length > 0) {
+      const jobIds = result.results.map(j => j.id);
+      const applications = await Application.query()
+        .whereIn('job_id', jobIds)
+        .where('user_id', candidateId)
+        .select('job_id');
+      appliedJobIds = new Set(applications.map(a => a.job_id));
+    }
 
     return reply.status(200).send({
       success: true,
       message: 'Jobs fetched successfully.',
       data: {
-        jobs: result.results.map(formatJob),
+        jobs: result.results.map(j => formatJob(j, appliedJobIds.has(j.id))),
         pagination: {
           page: pageIndex + 1,
           limit: pageSize,
@@ -170,27 +193,36 @@ export const getJobs = async (request, reply) => {
 export const getJobDetails = async (request, reply) => {
   try {
     const jobId = request.params.job_id.replace('job_', '');
-    const job = await Job.query()
-      .findById(jobId)
-      .withGraphFetched('recruiter')
-      .select('jobs.*')
-      .select(
-        Job.relatedQuery('applications')
-          .count()
-          .as('applicant_count')
-      )
-      .select(
-        Job.relatedQuery('applications')
-          .where('status', 'shortlisted')
-          .count()
-          .as('shortlisted_count')
-      )
-      .select(
-        Job.relatedQuery('applications')
-          .where('status', 'interview')
-          .count()
-          .as('interview_count')
-      );
+    const candidateId = await getCandidateId(request);
+
+    const [job, existingApplication] = await Promise.all([
+      Job.query()
+        .findById(jobId)
+        .withGraphFetched('recruiter')
+        .select('jobs.*')
+        .select(
+          Job.relatedQuery('applications')
+            .count()
+            .as('applicant_count')
+        )
+        .select(
+          Job.relatedQuery('applications')
+            .where('status', 'shortlisted')
+            .count()
+            .as('shortlisted_count')
+        )
+        .select(
+          Job.relatedQuery('applications')
+            .where('status', 'interview')
+            .count()
+            .as('interview_count')
+        ),
+      candidateId
+        ? Application.query()
+            .findOne({ job_id: jobId, user_id: candidateId })
+            .select('id')
+        : Promise.resolve(null),
+    ]);
 
     if (!job) {
       return reply.status(404).send({ success: false, message: 'Job not found or has been removed.' });
@@ -199,7 +231,7 @@ export const getJobDetails = async (request, reply) => {
     return reply.status(200).send({
       success: true,
       message: 'Job details fetched successfully.',
-      data: formatJob(job)
+      data: formatJob(job, !!existingApplication),
     });
   } catch (error) {
     request.server.log.error(error);

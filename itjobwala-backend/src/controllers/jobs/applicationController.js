@@ -17,6 +17,12 @@ export const applyToJob = async (request, reply) => {
       return reply.status(410).send({ success: false, message: 'This job is no longer accepting applications.', data: {}, errors: [] });
     }
 
+    // Prevent duplicate applications
+    const existing = await Application.query().findOne({ job_id: parseInt(actualJobId, 10), user_id: userId });
+    if (existing) {
+      return reply.status(409).send({ success: false, message: 'You have already applied for this job.', data: {}, errors: [] });
+    }
+
     const application = await Application.query().insert({
       job_id: parseInt(actualJobId, 10),
       user_id: userId,

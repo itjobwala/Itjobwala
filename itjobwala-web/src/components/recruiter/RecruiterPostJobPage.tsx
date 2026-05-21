@@ -6,11 +6,8 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import Field from '@/src/components/ui/Field';
 import PasswordField from '@/src/components/ui/PasswordField';
-import SelectField from '@/src/components/ui/SelectField';
-import OTPInput from '@/src/components/ui/OTPInput';
 import { PRIMARY } from '@/src/lib/constants';
-import { signupRecruiter } from '@/src/lib/api';
-import { createRecruiterJob } from '@/src/lib/api/recruiter';
+import { signupRecruiter, createRecruiterJob } from '@/src/lib/api/recruiter';
 import { safeLocalStorageGetItem } from '@/src/lib/hydration-safe';
 import { decodeJwtPayload } from '@/src/lib/auth';
 import RecruiterShell from '@/src/components/recruiter/RecruiterShell';
@@ -19,152 +16,66 @@ import { validateSkill } from '@/src/lib/skillValidation';
 import { useSkillSuggestions } from '@/src/hooks/useSkillSuggestions';
 import { validateSkillsRemote } from '@/src/lib/api/skills';
 
-const STEPS = ['Account', 'Company', 'Hiring Needs', 'Verify'];
+// ── Utility ───────────────────────────────────────────────────────────────────
 
-const INDUSTRIES = [
-  { value: '', label: 'Select industry' },
-  { value: 'it_software', label: 'IT / Software' },
-  { value: 'fintech', label: 'Fintech' },
-  { value: 'ecommerce', label: 'E-commerce' },
-  { value: 'saas', label: 'SaaS / Product' },
-  { value: 'banking', label: 'Banking / Finance' },
-  { value: 'healthtech', label: 'Healthcare Tech' },
-  { value: 'edtech', label: 'EdTech' },
-  { value: 'consulting', label: 'Consulting' },
-  { value: 'other', label: 'Other' },
-];
+function scrollToFirstError() {
+  requestAnimationFrame(() => {
+    const firstErr = document.querySelector<HTMLElement>('p.text-red-500:not(:empty)');
+    if (!firstErr) return;
+    const container = firstErr.closest<HTMLElement>('div');
+    const input = container?.querySelector<HTMLElement>(
+      'input:not([type=hidden]):not([type=range]):not([type=checkbox]), textarea, select'
+    );
+    if (input) {
+      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      input.focus({ preventScroll: true });
+    } else {
+      firstErr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
+}
 
-const COMPANY_SIZES = [
-  { value: '', label: 'Select company size' },
-  { value: '1_10', label: '1–10 employees' },
-  { value: '11_50', label: '11–50 employees' },
-  { value: '51_200', label: '51–200 employees' },
-  { value: '201_500', label: '201–500 employees' },
-  { value: '501_1000', label: '501–1000 employees' },
-  { value: '1000_plus', label: '1000+ employees' },
-];
+// ── Constants ─────────────────────────────────────────────────────────────────
 
-const HIRING_VOLUMES = [
-  { value: '', label: 'Select hiring volume' },
-  { value: '1_5', label: '1–5 hires/month' },
-  { value: '6_10', label: '6–10 hires/month' },
-  { value: '11_25', label: '11–25 hires/month' },
-  { value: '25_plus', label: '25+ hires/month' },
-];
+const STEPS = ['Your Account', 'Job Basics', 'Job Details'];
 
-const HIRING_URGENCIES = [
-  { value: '', label: 'Select hiring urgency' },
-  { value: 'immediate', label: 'Immediately (within 2 weeks)' },
-  { value: 'month', label: 'Within a month' },
-  { value: '1_3_months', label: 'In 1–3 months' },
-  { value: 'planning', label: 'Planning ahead (3+ months)' },
-];
-
-const HIRING_ROLES = [
-  'QA / Testing', 'Frontend Dev', 'Backend Dev', 'Full Stack',
-  'DevOps / Cloud', 'Data / AI-ML', 'Mobile Dev', 'Product Manager',
-  'UI/UX Designer', 'Scrum Master', 'Other',
-];
+const JOB_TYPES = ['Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance'];
+const WORK_MODES = ['Remote', 'On-site', 'Hybrid'];
+const JOB_LEVELS = ['Junior', 'Mid', 'Senior', 'Lead', 'Manager'];
 
 const PERKS = [
-  { icon: '⚡', title: 'Post in 2 minutes', sub: 'Simple job posting, no bloated forms' },
+  { icon: '⚡', title: 'Post in 2 minutes',       sub: 'Simple job posting, no bloated forms' },
   { icon: '🎯', title: 'Reach matched candidates', sub: 'Only relevant profiles, no mass spam' },
-  { icon: '💬', title: 'Direct messaging', sub: 'Chat with candidates without a recruiter' },
-  { icon: '📊', title: 'Smart analytics', sub: 'Track views, clicks and application rates' },
-  { icon: '🔒', title: 'Verified profiles only', sub: 'All candidates are identity-verified' },
+  { icon: '💬', title: 'Direct messaging',         sub: 'Chat with candidates without a recruiter' },
+  { icon: '📊', title: 'Smart analytics',          sub: 'Track views, clicks and application rates' },
+  { icon: '🔒', title: 'Verified profiles only',   sub: 'All candidates are identity-verified' },
 ];
 
-type FormState = {
-  name: string; email: string; phone: string; password: string;
-  company: string; website: string; industry: string; size: string;
-  city: string; designation: string;
-  roles: string[]; volume: string; urgency: string;
-  terms: boolean;
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type AccountForm = {
+  fullName: string; companyName: string;
+  email: string; password: string; terms: boolean;
 };
-type Errors = Partial<Record<keyof FormState | 'otp', string>>;
+type AccountErrors = Partial<Record<keyof AccountForm, string>>;
 
-const STEP_TITLES = [
-  'Create recruiter account',
-  'Tell us about your company',
-  'Your hiring needs',
-  'Verify your identity',
-];
-const STEP_SUBS = [
-  'Step 1 of 4 — Basic account details',
-  'Step 2 of 4 — Company information',
-  'Step 3 of 4 — Who are you hiring?',
-  'Step 4 of 4 — Verify your mobile number',
-];
+type JobForm = {
+  title: string; description: string; location: string;
+  jobType: string; workMode: string;
+  salaryMinLpa: number; salaryMaxLpa: number;
+  requiredSkills: string[];
+  experienceMin: number; experienceMax: number;
+  jobLevel: string; vacancies: string; closesAt: string;
+  responsibilities: string; requirements: string;
+  niceToHave: string; benefits: string;
+};
+type JobErrors = Partial<Record<keyof JobForm, string>>;
 
-function StepBar({ current }: { current: number }) {
-  return (
-    <div className="flex items-center mb-8">
-      {STEPS.map((s, i) => {
-        const done = i < current;
-        const active = i === current;
-        return (
-          <div key={i} className="flex items-center flex-1 last:flex-none">
-            <div className="flex flex-col items-center gap-1.5">
-              <div
-                className="w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300"
-                style={{
-                  background: done ? PRIMARY : active ? '#fff' : '#f3f4f6',
-                  border: `2px solid ${done || active ? PRIMARY : '#e5e7eb'}`,
-                  boxShadow: active ? `0 0 0 4px ${PRIMARY}18` : 'none',
-                }}
-              >
-                {done
-                  ? <svg width="14" height="14" fill="none" stroke="#fff" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
-                  : <span className="text-xs font-bold" style={{ color: active ? PRIMARY : '#9ca3af' }}>{i + 1}</span>
-                }
-              </div>
-              <span className="text-[11px] whitespace-nowrap" style={{ fontWeight: active ? 700 : 500, color: active ? PRIMARY : done ? '#374151' : '#9ca3af' }}>{s}</span>
-            </div>
-            {i < STEPS.length - 1 && (
-              <div className="flex-1 h-[2px] mx-2 mb-5 transition-colors duration-300" style={{ background: i < current ? PRIMARY : '#e5e7eb' }} />
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-function ChipSelect({ label, options, selected, onToggle, error, max }: {
-  label: string; options: string[]; selected: string[];
-  onToggle: (v: string) => void; error?: string; max?: number;
-}) {
-  return (
-    <div className="mb-[18px]">
-      <label className="block text-[13px] font-semibold text-gray-700 mb-2">
-        {label} <span style={{ color: PRIMARY }}>*</span>
-        {max && <span className="text-[11px] text-gray-400 font-normal ml-1.5">Select up to {max}</span>}
-      </label>
-      <div className="flex flex-wrap gap-2">
-        {options.map(o => {
-          const active = selected.includes(o);
-          return (
-            <button key={o} type="button" onClick={() => onToggle(o)}
-              className="px-3.5 py-[7px] rounded-full text-[13px] font-semibold transition-all duration-[180ms]"
-              style={{
-                border: `1.5px solid ${active ? PRIMARY : '#e5e7eb'}`,
-                background: active ? `${PRIMARY}12` : '#fff',
-                color: active ? PRIMARY : '#6b7280',
-              }}
-            >
-              {active && <span className="mr-1">✓</span>}{o}
-            </button>
-          );
-        })}
-      </div>
-      {error && <p className="text-xs text-red-500 mt-1.5 font-medium">{error}</p>}
-    </div>
-  );
-}
+// ── Shared sub-components ─────────────────────────────────────────────────────
 
 function LeftPanel() {
   return (
-    <div className="hidden lg:flex flex-col justify-between relative overflow-hidden shrink-0 w-[440px]"
+    <div className="hidden lg:flex flex-col justify-between relative overflow-hidden shrink-0 w-[420px]"
       style={{ background: `linear-gradient(160deg, ${PRIMARY} 0%, #4338ca 100%)`, padding: '52px 44px' }}>
       <div className="absolute pointer-events-none" style={{ top: -60, right: -60, width: 220, height: 220, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
       <div className="absolute pointer-events-none" style={{ bottom: -80, left: -40, width: 260, height: 260, borderRadius: '50%', background: 'rgba(255,255,255,0.04)' }} />
@@ -174,16 +85,21 @@ function LeftPanel() {
           <span className="inline-block rounded-full" style={{ width: 7, height: 7, background: '#4ade80' }} />
           <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>Free to post — no credit card needed</span>
         </div>
-        <h2 className="font-extrabold text-white mb-4" style={{ fontSize: 36, lineHeight: 1.15, letterSpacing: -1.5 }}>
+
+        <h2 className="font-extrabold text-white mb-4" style={{ fontSize: 34, lineHeight: 1.15, letterSpacing: -1.5 }}>
           Hire IT talent<br />the smart way.
         </h2>
         <p className="text-sm mb-10" style={{ color: 'rgba(255,255,255,0.65)', lineHeight: 1.8 }}>
           Post jobs and connect directly with skilled IT professionals — no middlemen, no noise.
         </p>
+
         <div>
           {PERKS.map(p => (
             <div key={p.title} className="flex gap-3.5 mb-5">
-              <div className="shrink-0 flex items-center justify-center rounded-[10px]" style={{ width: 38, height: 38, background: 'rgba(255,255,255,0.12)', fontSize: 17 }}>{p.icon}</div>
+              <div className="shrink-0 flex items-center justify-center rounded-[10px]"
+                style={{ width: 38, height: 38, background: 'rgba(255,255,255,0.12)', fontSize: 17 }}>
+                {p.icon}
+              </div>
               <div>
                 <div className="text-sm font-bold text-white mb-0.5">{p.title}</div>
                 <div className="text-xs" style={{ color: 'rgba(255,255,255,0.55)' }}>{p.sub}</div>
@@ -205,9 +121,37 @@ function LeftPanel() {
   );
 }
 
-const JOB_TYPES = ['Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance'];
-const WORK_MODES = ['Remote', 'On-site', 'Hybrid'];
-const JOB_LEVELS = ['Junior', 'Mid', 'Senior', 'Lead', 'Manager'];
+function StepBar({ current }: { current: number }) {
+  return (
+    <div className="flex items-center gap-0 mb-8 justify-center">
+      {STEPS.map((s, i) => {
+        const done = i < current;
+        const active = i === current;
+        return (
+          <div key={i} className="flex items-center">
+            <div className="flex flex-col items-center gap-1">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300"
+                style={{
+                  background: done ? PRIMARY : active ? '#fff' : '#f3f4f6',
+                  border: `2px solid ${done || active ? PRIMARY : '#e5e7eb'}`,
+                  boxShadow: active ? `0 0 0 3px ${PRIMARY}18` : 'none',
+                }}>
+                {done
+                  ? <svg width="13" height="13" fill="none" stroke="#fff" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
+                  : <span className="text-xs font-bold" style={{ color: active ? PRIMARY : '#9ca3af' }}>{i + 1}</span>
+                }
+              </div>
+              <span className="text-[11px] whitespace-nowrap" style={{ fontWeight: active ? 700 : 500, color: active ? PRIMARY : done ? '#374151' : '#9ca3af' }}>{s}</span>
+            </div>
+            {i < STEPS.length - 1 && (
+              <div className="h-[2px] mb-4 transition-colors duration-300" style={{ width: 48, background: i < current ? PRIMARY : '#e5e7eb', margin: '0 10px 16px' }} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 function ExperienceSlider({ minVal, maxVal, onChange }: {
   minVal: number; maxVal: number;
@@ -242,6 +186,8 @@ function ExperienceSlider({ minVal, maxVal, onChange }: {
   );
 }
 
+// ── RecruiterJobForm: for already-logged-in recruiters ────────────────────────
+
 function parseBullets(text: string): string[] {
   return text.split('\n').map(l => l.trim()).filter(Boolean);
 }
@@ -252,25 +198,20 @@ function RecruiterJobForm() {
   const [error, setError] = useState('');
   const [skillInput, setSkillInput] = useState('');
   const [skillError, setSkillError] = useState('');
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<JobForm>({
     title: '', description: '', location: '',
     jobType: 'Full-time', workMode: 'On-site',
     salaryMinLpa: 5, salaryMaxLpa: 20,
-    requiredSkills: [] as string[],
-    experienceMin: 0,
-    experienceMax: 5,
-    jobLevel: '',
-    vacancies: '',
-    closesAt: '',
-    responsibilities: '',
-    requirements: '',
-    niceToHave: '',
-    benefits: '',
+    requiredSkills: [],
+    experienceMin: 0, experienceMax: 5,
+    jobLevel: '', vacancies: '', closesAt: '',
+    responsibilities: '', requirements: '',
+    niceToHave: '', benefits: '',
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<JobErrors>({});
   const skillSuggestions = useSkillSuggestions(skillInput, form.requiredSkills);
 
-  function set(k: string, v: any) {
+  function set(k: keyof JobForm, v: any) {
     setForm(f => ({ ...f, [k]: v }));
     setErrors(e => ({ ...e, [k]: '' }));
     setError('');
@@ -279,16 +220,13 @@ function RecruiterJobForm() {
   async function addSkill(override?: string, fromSuggestion = false) {
     const s = (override ?? skillInput).trim();
     if (!s) return;
-    const error = validateSkill(s);
-    if (error) { setSkillError(error); return; }
+    const err = validateSkill(s);
+    if (err) { setSkillError(err); return; }
     if (form.requiredSkills.includes(s)) { setSkillError('Skill already added'); return; }
     if (!fromSuggestion) {
       try {
         const result = await validateSkillsRemote([s]);
-        if (!result.valid) {
-          setSkillError('Not a recognised skill — please select from suggestions');
-          return;
-        }
+        if (!result.valid) { setSkillError('Not a recognised skill — please select from suggestions'); return; }
       } catch { /* network error — allow through */ }
     }
     set('requiredSkills', [...form.requiredSkills, s]);
@@ -300,8 +238,8 @@ function RecruiterJobForm() {
     set('requiredSkills', form.requiredSkills.filter(s => s !== skill));
   }
 
-  function validate() {
-    const e: Record<string, string> = {};
+  function validate(): JobErrors {
+    const e: JobErrors = {};
     if (!form.title.trim() || form.title.length < 5) e.title = 'Title must be at least 5 characters';
     if (form.title.trim().length > 150) e.title = 'Title must be under 150 characters';
     if (!form.description.trim() || form.description.length < 50) e.description = 'Description must be at least 50 characters';
@@ -316,7 +254,7 @@ function RecruiterJobForm() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const errs = validate();
-    if (Object.keys(errs).length) { setErrors(errs); return; }
+    if (Object.keys(errs).length) { setErrors(errs); scrollToFirstError(); return; }
     setLoading(true);
     setError('');
     try {
@@ -361,180 +299,11 @@ function RecruiterJobForm() {
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8 flex flex-col gap-5" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
-
-          {/* Title */}
-          <div>
-            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Job title <span style={{ color: PRIMARY }}>*</span></label>
-            <input value={form.title} onChange={e => set('title', e.target.value)} placeholder="e.g. Senior React Developer"
-              className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none transition-colors placeholder:text-gray-400"
-              style={{ borderColor: errors.title ? '#ef4444' : '#e5e7eb' }} />
-            {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
-          </div>
-
-          {/* Description */}
-          <div>
-            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Job description <span style={{ color: PRIMARY }}>*</span></label>
-            <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={6}
-              placeholder="Describe the role, responsibilities, and requirements (min. 50 characters)..."
-              className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none transition-colors placeholder:text-gray-400 resize-none"
-              style={{ borderColor: errors.description ? '#ef4444' : '#e5e7eb' }} />
-            <div className="flex items-center justify-between mt-1">
-              {errors.description ? <p className="text-xs text-red-500">{errors.description}</p> : <span />}
-              <span className="text-[11px] text-gray-400">{form.description.length} chars</span>
-            </div>
-          </div>
-
-          {/* Location */}
-          <div>
-            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Location <span style={{ color: PRIMARY }}>*</span></label>
-            <input value={form.location} onChange={e => set('location', e.target.value)} placeholder="e.g. Bengaluru / Remote"
-              className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none"
-              style={{ borderColor: errors.location ? '#ef4444' : '#e5e7eb' }} />
-            {errors.location && <p className="text-xs text-red-500 mt-1">{errors.location}</p>}
-          </div>
-
-          {/* Experience slider */}
-          <ExperienceSlider
-            minVal={form.experienceMin} maxVal={form.experienceMax}
-            onChange={(min, max) => { set('experienceMin', min); set('experienceMax', max); }}
-          />
-
-          {/* Job type + Work mode */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Job type</label>
-              <select value={form.jobType} onChange={e => set('jobType', e.target.value)}
-                className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none bg-white">
-                {JOB_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Work mode</label>
-              <select value={form.workMode} onChange={e => set('workMode', e.target.value)}
-                className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none bg-white">
-                {WORK_MODES.map(m => <option key={m} value={m}>{m}</option>)}
-              </select>
-            </div>
-          </div>
-
-          {/* Salary */}
-          <SalaryRangeSlider
-            minLpa={form.salaryMinLpa}
-            maxLpa={form.salaryMaxLpa}
-            onChange={(min, max) => { set('salaryMinLpa', min); set('salaryMaxLpa', max); }}
-          />
-
-          {/* Job level + Vacancies + Closes at */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Job level</label>
-              <select value={form.jobLevel} onChange={e => set('jobLevel', e.target.value)}
-                className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none bg-white">
-                <option value="">Select level</option>
-                {JOB_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Vacancies</label>
-              <input type="number" min="1" value={form.vacancies} onChange={e => set('vacancies', e.target.value)} placeholder="e.g. 2"
-                className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none" />
-            </div>
-            <div>
-              <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Application deadline</label>
-              <input type="date" value={form.closesAt} onChange={e => set('closesAt', e.target.value)}
-                min={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
-                className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none"
-                style={{ borderColor: errors.closesAt ? '#ef4444' : '#e5e7eb' }} />
-              {errors.closesAt && <p className="text-xs text-red-500 mt-1">{errors.closesAt}</p>}
-            </div>
-          </div>
-
-          {/* Skills */}
-          <div>
-            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">
-              Required skills <span style={{ color: PRIMARY }}>*</span>
-            </label>
-            <div className="flex gap-2 mb-2">
-              <input value={skillInput} onChange={e => { setSkillInput(e.target.value); setSkillError(''); }}
-                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }}
-                placeholder="Type to search skills (e.g. React, Node.js)"
-                className="flex-1 rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none"
-                style={{ borderColor: skillError || errors.requiredSkills ? '#ef4444' : '#e5e7eb' }} />
-              <button type="button" onClick={() => addSkill()}
-                className="px-4 py-2.5 rounded-xl text-[13px] font-bold text-white shrink-0"
-                style={{ background: PRIMARY }}>
-                Add
-              </button>
-            </div>
-            {skillError && <p className="text-xs text-red-500 mb-2">{skillError}</p>}
-            {skillSuggestions.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-3">
-                {skillSuggestions.map(s => (
-                  <button key={s} type="button"
-                    onClick={() => addSkill(s, true)}
-                    className="px-2.5 py-1 rounded-lg text-[12px] font-semibold bg-gray-100 text-gray-500 hover:bg-primary/10 hover:text-primary transition-colors">
-                    + {s}
-                  </button>
-                ))}
-              </div>
-            )}
-            {form.requiredSkills.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-1">
-                {form.requiredSkills.map(s => (
-                  <span key={s} className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-semibold"
-                    style={{ background: `${PRIMARY}12`, color: PRIMARY, border: `1.5px solid ${PRIMARY}30` }}>
-                    {s}
-                    <button type="button" onClick={() => removeSkill(s)} className="hover:text-red-500 transition-colors">×</button>
-                  </span>
-                ))}
-              </div>
-            )}
-            {errors.requiredSkills && <p className="text-xs text-red-500 mt-1">{errors.requiredSkills}</p>}
-          </div>
-
-          {/* Responsibilities */}
-          <div>
-            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">
-              Responsibilities <span style={{ color: PRIMARY }}>*</span>
-            </label>
-            <textarea value={form.responsibilities} onChange={e => set('responsibilities', e.target.value)} rows={5}
-              placeholder={"Build and maintain scalable APIs\nCollaborate with cross-functional teams\nWrite unit and integration tests"}
-              className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none placeholder:text-gray-400 resize-none"
-              style={{ borderColor: errors.responsibilities ? '#ef4444' : '#e5e7eb' }} />
-            <p className="text-[11px] text-gray-400 mt-1">One item per line. Each line becomes a bullet point.</p>
-            {errors.responsibilities && <p className="text-xs text-red-500 mt-1">{errors.responsibilities}</p>}
-          </div>
-
-          {/* Requirements */}
-          <div>
-            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">
-              Requirements <span style={{ color: PRIMARY }}>*</span>
-            </label>
-            <textarea value={form.requirements} onChange={e => set('requirements', e.target.value)} rows={5}
-              placeholder={"3+ years of experience with React\nStrong understanding of REST APIs\nExperience with PostgreSQL or similar"}
-              className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none placeholder:text-gray-400 resize-none"
-              style={{ borderColor: errors.requirements ? '#ef4444' : '#e5e7eb' }} />
-            <p className="text-[11px] text-gray-400 mt-1">One item per line.</p>
-            {errors.requirements && <p className="text-xs text-red-500 mt-1">{errors.requirements}</p>}
-          </div>
-
-          {/* Nice to have */}
-          <div>
-            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Nice to have <span className="text-gray-400 font-normal text-[11px]">(optional)</span></label>
-            <textarea value={form.niceToHave} onChange={e => set('niceToHave', e.target.value)} rows={3}
-              placeholder={"Experience with Docker/Kubernetes\nFamiliarity with GraphQL"}
-              className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none placeholder:text-gray-400 resize-none" />
-            <p className="text-[11px] text-gray-400 mt-1">One item per line.</p>
-          </div>
-
-          {/* Benefits */}
-          <div>
-            <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Perks &amp; benefits <span className="text-gray-400 font-normal text-[11px]">(optional)</span></label>
-            <textarea value={form.benefits} onChange={e => set('benefits', e.target.value)} rows={3}
-              placeholder={"Health insurance\nFlexible working hours\nAnnual learning budget"}
-              className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none placeholder:text-gray-400 resize-none" />
-            <p className="text-[11px] text-gray-400 mt-1">One item per line.</p>
-          </div>
+          <JobFields form={form} errors={errors} setField={set}
+            skillInput={skillInput} setSkillInput={setSkillInput}
+            skillError={skillError} setSkillError={setSkillError}
+            skillSuggestions={skillSuggestions}
+            addSkill={addSkill} removeSkill={removeSkill} />
 
           {error && (
             <div className="rounded-xl px-4 py-3 text-sm font-medium text-red-600 bg-red-50 border border-red-200">{error}</div>
@@ -558,24 +327,408 @@ function RecruiterJobForm() {
   );
 }
 
+// ── JobFieldsBasic: step 2 — title, description, location, experience, type, salary ──
+
+interface JobFieldsBasicProps {
+  form: JobForm;
+  errors: JobErrors;
+  setField: (k: keyof JobForm, v: any) => void;
+}
+
+function JobFieldsBasic({ form, errors, setField }: JobFieldsBasicProps) {
+  const inputCls = (hasError: boolean) =>
+    `w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none transition-colors placeholder:text-gray-400 ${hasError ? 'border-red-400' : 'border-gray-200'}`;
+
+  return (
+    <>
+      <div>
+        <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Job title <span style={{ color: PRIMARY }}>*</span></label>
+        <input value={form.title} onChange={e => setField('title', e.target.value)}
+          placeholder="e.g. Senior React Developer" className={inputCls(!!errors.title)} />
+        {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
+      </div>
+
+      <div>
+        <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Job description <span style={{ color: PRIMARY }}>*</span></label>
+        <textarea value={form.description} onChange={e => setField('description', e.target.value)} rows={6}
+          placeholder="Describe the role, responsibilities, and requirements (min. 50 characters)..."
+          className={`${inputCls(!!errors.description)} resize-none`} />
+        <div className="flex items-center justify-between mt-1">
+          {errors.description ? <p className="text-xs text-red-500">{errors.description}</p> : <span />}
+          <span className="text-[11px] text-gray-400">{form.description.length} chars</span>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Location <span style={{ color: PRIMARY }}>*</span></label>
+        <input value={form.location} onChange={e => setField('location', e.target.value)}
+          placeholder="e.g. Bengaluru / Remote" className={inputCls(!!errors.location)} />
+        {errors.location && <p className="text-xs text-red-500 mt-1">{errors.location}</p>}
+      </div>
+
+      <ExperienceSlider minVal={form.experienceMin} maxVal={form.experienceMax}
+        onChange={(min, max) => { setField('experienceMin', min); setField('experienceMax', max); }} />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Job type</label>
+          <select value={form.jobType} onChange={e => setField('jobType', e.target.value)}
+            className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none bg-white">
+            {JOB_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Work mode</label>
+          <select value={form.workMode} onChange={e => setField('workMode', e.target.value)}
+            className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none bg-white">
+            {WORK_MODES.map(m => <option key={m} value={m}>{m}</option>)}
+          </select>
+        </div>
+      </div>
+
+      <SalaryRangeSlider minLpa={form.salaryMinLpa} maxLpa={form.salaryMaxLpa}
+        onChange={(min, max) => { setField('salaryMinLpa', min); setField('salaryMaxLpa', max); }} />
+    </>
+  );
+}
+
+// ── JobFieldsDetail: step 3 — level, vacancies, deadline, skills, responsibilities ──
+
+interface JobFieldsDetailProps {
+  form: JobForm;
+  errors: JobErrors;
+  setField: (k: keyof JobForm, v: any) => void;
+  skillInput: string;
+  setSkillInput: (v: string) => void;
+  skillError: string;
+  setSkillError: (v: string) => void;
+  skillSuggestions: string[];
+  addSkill: (override?: string, fromSuggestion?: boolean) => void;
+  removeSkill: (skill: string) => void;
+}
+
+function JobFieldsDetail({ form, errors, setField, skillInput, setSkillInput, skillError, setSkillError, skillSuggestions, addSkill, removeSkill }: JobFieldsDetailProps) {
+  const inputCls = (hasError: boolean) =>
+    `w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none transition-colors placeholder:text-gray-400 ${hasError ? 'border-red-400' : 'border-gray-200'}`;
+
+  return (
+    <>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Job level</label>
+          <select value={form.jobLevel} onChange={e => setField('jobLevel', e.target.value)}
+            className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none bg-white">
+            <option value="">Select level</option>
+            {JOB_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Vacancies</label>
+          <input type="number" min="1" value={form.vacancies} onChange={e => setField('vacancies', e.target.value)}
+            placeholder="e.g. 2" className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none" />
+        </div>
+        <div>
+          <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Application deadline</label>
+          <input type="date" value={form.closesAt} onChange={e => setField('closesAt', e.target.value)}
+            min={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
+            className={inputCls(!!errors.closesAt)} />
+          {errors.closesAt && <p className="text-xs text-red-500 mt-1">{errors.closesAt}</p>}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Required skills <span style={{ color: PRIMARY }}>*</span></label>
+        <div className="flex gap-2 mb-2">
+          <input value={skillInput} onChange={e => { setSkillInput(e.target.value); setSkillError(''); }}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }}
+            placeholder="Type to search skills (e.g. React, Node.js)"
+            className={`flex-1 rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none ${skillError || errors.requiredSkills ? 'border-red-400' : 'border-gray-200'}`} />
+          <button type="button" onClick={() => addSkill()} className="px-4 py-2.5 rounded-xl text-[13px] font-bold text-white shrink-0" style={{ background: PRIMARY }}>Add</button>
+        </div>
+        {skillError && <p className="text-xs text-red-500 mb-2">{skillError}</p>}
+        {skillSuggestions.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {skillSuggestions.map(s => (
+              <button key={s} type="button" onClick={() => addSkill(s, true)}
+                className="px-2.5 py-1 rounded-lg text-[12px] font-semibold bg-gray-100 text-gray-500 hover:bg-primary/10 hover:text-primary transition-colors">
+                + {s}
+              </button>
+            ))}
+          </div>
+        )}
+        {form.requiredSkills.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-1">
+            {form.requiredSkills.map(s => (
+              <span key={s} className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-semibold"
+                style={{ background: `${PRIMARY}12`, color: PRIMARY, border: `1.5px solid ${PRIMARY}30` }}>
+                {s}
+                <button type="button" onClick={() => removeSkill(s)} className="hover:text-red-500 transition-colors">×</button>
+              </span>
+            ))}
+          </div>
+        )}
+        {errors.requiredSkills && <p className="text-xs text-red-500 mt-1">{errors.requiredSkills}</p>}
+      </div>
+
+      <div>
+        <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Responsibilities <span style={{ color: PRIMARY }}>*</span></label>
+        <textarea value={form.responsibilities} onChange={e => setField('responsibilities', e.target.value)} rows={5}
+          placeholder={"Build and maintain scalable APIs\nCollaborate with cross-functional teams\nWrite unit and integration tests"}
+          className={`${inputCls(!!errors.responsibilities)} resize-none`} />
+        <p className="text-[11px] text-gray-400 mt-1">One item per line. Each line becomes a bullet point.</p>
+        {errors.responsibilities && <p className="text-xs text-red-500 mt-1">{errors.responsibilities}</p>}
+      </div>
+
+      <div>
+        <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Requirements <span style={{ color: PRIMARY }}>*</span></label>
+        <textarea value={form.requirements} onChange={e => setField('requirements', e.target.value)} rows={5}
+          placeholder={"3+ years of experience with React\nStrong understanding of REST APIs\nExperience with PostgreSQL or similar"}
+          className={`${inputCls(!!errors.requirements)} resize-none`} />
+        <p className="text-[11px] text-gray-400 mt-1">One item per line.</p>
+        {errors.requirements && <p className="text-xs text-red-500 mt-1">{errors.requirements}</p>}
+      </div>
+
+      <div>
+        <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Nice to have <span className="text-gray-400 font-normal text-[11px]">(optional)</span></label>
+        <textarea value={form.niceToHave} onChange={e => setField('niceToHave', e.target.value)} rows={3}
+          placeholder={"Experience with Docker/Kubernetes\nFamiliarity with GraphQL"}
+          className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none placeholder:text-gray-400 resize-none" />
+        <p className="text-[11px] text-gray-400 mt-1">One item per line.</p>
+      </div>
+
+      <div>
+        <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Perks &amp; benefits <span className="text-gray-400 font-normal text-[11px]">(optional)</span></label>
+        <textarea value={form.benefits} onChange={e => setField('benefits', e.target.value)} rows={3}
+          placeholder={"Health insurance\nFlexible working hours\nAnnual learning budget"}
+          className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none placeholder:text-gray-400 resize-none" />
+        <p className="text-[11px] text-gray-400 mt-1">One item per line.</p>
+      </div>
+    </>
+  );
+}
+
+// ── JobFields: shared job form fields (used in both flows) ────────────────────
+
+interface JobFieldsProps {
+  form: JobForm;
+  errors: JobErrors;
+  setField: (k: keyof JobForm, v: any) => void;
+  skillInput: string;
+  setSkillInput: (v: string) => void;
+  skillError: string;
+  setSkillError: (v: string) => void;
+  skillSuggestions: string[];
+  addSkill: (override?: string, fromSuggestion?: boolean) => void;
+  removeSkill: (skill: string) => void;
+}
+
+function JobFields({ form, errors, setField, skillInput, setSkillInput, skillError, setSkillError, skillSuggestions, addSkill, removeSkill }: JobFieldsProps) {
+  const inputCls = (hasError: boolean) =>
+    `w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none transition-colors placeholder:text-gray-400 ${hasError ? 'border-red-400' : 'border-gray-200'}`;
+
+  return (
+    <>
+      {/* Title */}
+      <div>
+        <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Job title <span style={{ color: PRIMARY }}>*</span></label>
+        <input value={form.title} onChange={e => setField('title', e.target.value)}
+          placeholder="e.g. Senior React Developer"
+          className={inputCls(!!errors.title)} />
+        {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title}</p>}
+      </div>
+
+      {/* Description */}
+      <div>
+        <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Job description <span style={{ color: PRIMARY }}>*</span></label>
+        <textarea value={form.description} onChange={e => setField('description', e.target.value)} rows={6}
+          placeholder="Describe the role, responsibilities, and requirements (min. 50 characters)..."
+          className={`${inputCls(!!errors.description)} resize-none`} />
+        <div className="flex items-center justify-between mt-1">
+          {errors.description ? <p className="text-xs text-red-500">{errors.description}</p> : <span />}
+          <span className="text-[11px] text-gray-400">{form.description.length} chars</span>
+        </div>
+      </div>
+
+      {/* Location */}
+      <div>
+        <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Location <span style={{ color: PRIMARY }}>*</span></label>
+        <input value={form.location} onChange={e => setField('location', e.target.value)}
+          placeholder="e.g. Bengaluru / Remote"
+          className={inputCls(!!errors.location)} />
+        {errors.location && <p className="text-xs text-red-500 mt-1">{errors.location}</p>}
+      </div>
+
+      {/* Experience */}
+      <ExperienceSlider minVal={form.experienceMin} maxVal={form.experienceMax}
+        onChange={(min, max) => { setField('experienceMin', min); setField('experienceMax', max); }} />
+
+      {/* Job type + Work mode */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Job type</label>
+          <select value={form.jobType} onChange={e => setField('jobType', e.target.value)}
+            className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none bg-white">
+            {JOB_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Work mode</label>
+          <select value={form.workMode} onChange={e => setField('workMode', e.target.value)}
+            className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none bg-white">
+            {WORK_MODES.map(m => <option key={m} value={m}>{m}</option>)}
+          </select>
+        </div>
+      </div>
+
+      {/* Salary */}
+      <SalaryRangeSlider minLpa={form.salaryMinLpa} maxLpa={form.salaryMaxLpa}
+        onChange={(min, max) => { setField('salaryMinLpa', min); setField('salaryMaxLpa', max); }} />
+
+      {/* Level + Vacancies + Deadline */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Job level</label>
+          <select value={form.jobLevel} onChange={e => setField('jobLevel', e.target.value)}
+            className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none bg-white">
+            <option value="">Select level</option>
+            {JOB_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Vacancies</label>
+          <input type="number" min="1" value={form.vacancies} onChange={e => setField('vacancies', e.target.value)} placeholder="e.g. 2"
+            className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none" />
+        </div>
+        <div>
+          <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Application deadline</label>
+          <input type="date" value={form.closesAt} onChange={e => setField('closesAt', e.target.value)}
+            min={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
+            className={inputCls(!!errors.closesAt)} />
+          {errors.closesAt && <p className="text-xs text-red-500 mt-1">{errors.closesAt}</p>}
+        </div>
+      </div>
+
+      {/* Skills */}
+      <div>
+        <label className="block text-[13px] font-bold text-gray-600 mb-1.5">
+          Required skills <span style={{ color: PRIMARY }}>*</span>
+        </label>
+        <div className="flex gap-2 mb-2">
+          <input value={skillInput}
+            onChange={e => { setSkillInput(e.target.value); setSkillError(''); }}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }}
+            placeholder="Type to search skills (e.g. React, Node.js)"
+            className={`flex-1 rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none ${skillError || errors.requiredSkills ? 'border-red-400' : 'border-gray-200'}`} />
+          <button type="button" onClick={() => addSkill()}
+            className="px-4 py-2.5 rounded-xl text-[13px] font-bold text-white shrink-0"
+            style={{ background: PRIMARY }}>
+            Add
+          </button>
+        </div>
+        {skillError && <p className="text-xs text-red-500 mb-2">{skillError}</p>}
+        {skillSuggestions.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            {skillSuggestions.map(s => (
+              <button key={s} type="button" onClick={() => addSkill(s, true)}
+                className="px-2.5 py-1 rounded-lg text-[12px] font-semibold bg-gray-100 text-gray-500 hover:bg-primary/10 hover:text-primary transition-colors">
+                + {s}
+              </button>
+            ))}
+          </div>
+        )}
+        {form.requiredSkills.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-1">
+            {form.requiredSkills.map(s => (
+              <span key={s} className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-semibold"
+                style={{ background: `${PRIMARY}12`, color: PRIMARY, border: `1.5px solid ${PRIMARY}30` }}>
+                {s}
+                <button type="button" onClick={() => removeSkill(s)} className="hover:text-red-500 transition-colors">×</button>
+              </span>
+            ))}
+          </div>
+        )}
+        {errors.requiredSkills && <p className="text-xs text-red-500 mt-1">{errors.requiredSkills}</p>}
+      </div>
+
+      {/* Responsibilities */}
+      <div>
+        <label className="block text-[13px] font-bold text-gray-600 mb-1.5">
+          Responsibilities <span style={{ color: PRIMARY }}>*</span>
+        </label>
+        <textarea value={form.responsibilities} onChange={e => setField('responsibilities', e.target.value)} rows={5}
+          placeholder={"Build and maintain scalable APIs\nCollaborate with cross-functional teams\nWrite unit and integration tests"}
+          className={`${inputCls(!!errors.responsibilities)} resize-none`} />
+        <p className="text-[11px] text-gray-400 mt-1">One item per line. Each line becomes a bullet point.</p>
+        {errors.responsibilities && <p className="text-xs text-red-500 mt-1">{errors.responsibilities}</p>}
+      </div>
+
+      {/* Requirements */}
+      <div>
+        <label className="block text-[13px] font-bold text-gray-600 mb-1.5">
+          Requirements <span style={{ color: PRIMARY }}>*</span>
+        </label>
+        <textarea value={form.requirements} onChange={e => setField('requirements', e.target.value)} rows={5}
+          placeholder={"3+ years of experience with React\nStrong understanding of REST APIs\nExperience with PostgreSQL or similar"}
+          className={`${inputCls(!!errors.requirements)} resize-none`} />
+        <p className="text-[11px] text-gray-400 mt-1">One item per line.</p>
+        {errors.requirements && <p className="text-xs text-red-500 mt-1">{errors.requirements}</p>}
+      </div>
+
+      {/* Nice to have */}
+      <div>
+        <label className="block text-[13px] font-bold text-gray-600 mb-1.5">
+          Nice to have <span className="text-gray-400 font-normal text-[11px]">(optional)</span>
+        </label>
+        <textarea value={form.niceToHave} onChange={e => setField('niceToHave', e.target.value)} rows={3}
+          placeholder={"Experience with Docker/Kubernetes\nFamiliarity with GraphQL"}
+          className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none placeholder:text-gray-400 resize-none" />
+        <p className="text-[11px] text-gray-400 mt-1">One item per line.</p>
+      </div>
+
+      {/* Benefits */}
+      <div>
+        <label className="block text-[13px] font-bold text-gray-600 mb-1.5">
+          Perks &amp; benefits <span className="text-gray-400 font-normal text-[11px]">(optional)</span>
+        </label>
+        <textarea value={form.benefits} onChange={e => setField('benefits', e.target.value)} rows={3}
+          placeholder={"Health insurance\nFlexible working hours\nAnnual learning budget"}
+          className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none placeholder:text-gray-400 resize-none" />
+        <p className="text-[11px] text-gray-400 mt-1">One item per line.</p>
+      </div>
+    </>
+  );
+}
+
+// ── Main public "Post a Free Job" page ────────────────────────────────────────
+
 export default function RecruiterPostJobPage() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [apiError, setApiError] = useState('');
+  const [postedJobId, setPostedJobId] = useState('');
 
-  const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState('');
-  const [timer, setTimer] = useState(0);
-
-  const [form, setForm] = useState<FormState>({
-    name: '', email: '', phone: '', password: '',
-    company: '', website: '', industry: '', size: '', city: '', designation: '',
-    roles: [], volume: '', urgency: '',
-    terms: false,
+  // Account form (step 1)
+  const [account, setAccount] = useState<AccountForm>({
+    fullName: '', companyName: '', email: '', password: '', terms: false,
   });
-  const [errors, setErrors] = useState<Errors>({});
+  const [accountErrors, setAccountErrors] = useState<AccountErrors>({});
+
+  // Job form (step 2)
+  const [job, setJob] = useState<JobForm>({
+    title: '', description: '', location: '',
+    jobType: 'Full-time', workMode: 'On-site',
+    salaryMinLpa: 5, salaryMaxLpa: 20,
+    requiredSkills: [],
+    experienceMin: 0, experienceMax: 5,
+    jobLevel: '', vacancies: '', closesAt: '',
+    responsibilities: '', requirements: '',
+    niceToHave: '', benefits: '',
+  });
+  const [jobErrors, setJobErrors] = useState<JobErrors>({});
+  const [skillInput, setSkillInput] = useState('');
+  const [skillError, setSkillError] = useState('');
+  const skillSuggestions = useSkillSuggestions(skillInput, job.requiredSkills);
 
   useEffect(() => {
     const token = safeLocalStorageGetItem('recruiter_token');
@@ -584,141 +737,200 @@ export default function RecruiterPostJobPage() {
     setIsLoggedIn(valid);
   }, []);
 
-  useEffect(() => {
-    if (timer <= 0) return;
-    const t = setInterval(() => setTimer(v => v > 0 ? v - 1 : 0), 1000);
-    return () => clearInterval(t);
-  }, [timer]);
-
   if (isLoggedIn === null) return null;
   if (isLoggedIn) return <RecruiterJobForm />;
 
-  function set<K extends keyof FormState>(k: K, v: FormState[K]) {
-    setForm(f => ({ ...f, [k]: v }));
-    setErrors(e => ({ ...e, [k]: '' }));
+  // ── Account helpers ──
+
+  function setAccountField<K extends keyof AccountForm>(k: K, v: AccountForm[K]) {
+    setAccount(f => ({ ...f, [k]: v }));
+    setAccountErrors(e => ({ ...e, [k]: undefined }));
     setApiError('');
   }
 
-  function toggleRole(r: string) {
-    const cur = form.roles;
-    if (cur.includes(r)) set('roles', cur.filter(x => x !== r));
-    else if (cur.length < 5) set('roles', [...cur, r]);
-  }
-
-  function validate(): Errors {
-    const e: Errors = {};
-    if (step === 0) {
-      if (!form.name.trim()) e.name = 'Full name is required';
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Enter a valid work email';
-      if (!/^[6-9]\d{9}$/.test(form.phone)) e.phone = 'Enter a valid 10-digit mobile number';
-      if (!form.password || form.password.length < 8) e.password = 'Password must be at least 8 characters';
-    }
-    if (step === 1) {
-      if (!form.company.trim()) e.company = 'Company name is required';
-      if (!form.industry) e.industry = 'Select an industry';
-      if (!form.size) e.size = 'Select company size';
-      if (!form.city.trim()) e.city = 'City is required';
-      if (!form.designation.trim()) e.designation = 'Your designation is required';
-    }
-    if (step === 2) {
-      if (!form.roles.length) e.roles = 'Select at least one role you are hiring for';
-      if (!form.volume) e.volume = 'Select expected hiring volume';
-      if (!form.urgency) e.urgency = 'Select hiring urgency';
-    }
-    if (step === 3) {
-      if (otp.replace(/\s/g, '').length < 6) e.otp = 'Enter the 6-digit OTP';
-      if (!form.terms) e.terms = 'You must accept the Terms & Conditions';
-    }
+  function validateAccount(): AccountErrors {
+    const e: AccountErrors = {};
+    if (!account.fullName.trim()) e.fullName = 'Full name is required';
+    if (!account.companyName.trim()) e.companyName = 'Company name is required';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(account.email)) e.email = 'Enter a valid work email';
+    if (!account.password || account.password.length < 8) e.password = 'Password must be at least 8 characters';
+    if (!account.terms) e.terms = 'You must accept the Terms & Conditions';
     return e;
   }
 
-  async function handleNext(e: FormEvent<HTMLFormElement>) {
+  function handleAccountContinue(e: FormEvent) {
     e.preventDefault();
-    const errs = validate();
-    if (Object.keys(errs).length) { setErrors(errs); return; }
+    const errs = validateAccount();
+    if (Object.keys(errs).length) { setAccountErrors(errs); scrollToFirstError(); return; }
+    setStep(1);
+    window.scrollTo(0, 0);
+  }
 
-    if (step === 2 && !otpSent) {
-      setOtpSent(true);
-      setTimer(30);
-    }
+  // ── Job helpers ──
 
-    if (step < 3) {
-      setStep(s => s + 1);
-      return;
+  function setJobField(k: keyof JobForm, v: any) {
+    setJob(f => ({ ...f, [k]: v }));
+    setJobErrors(e => ({ ...e, [k]: undefined }));
+    setApiError('');
+  }
+
+  async function addSkill(override?: string, fromSuggestion = false) {
+    const s = (override ?? skillInput).trim();
+    if (!s) return;
+    const err = validateSkill(s);
+    if (err) { setSkillError(err); return; }
+    if (job.requiredSkills.includes(s)) { setSkillError('Skill already added'); return; }
+    if (!fromSuggestion) {
+      try {
+        const result = await validateSkillsRemote([s]);
+        if (!result.valid) { setSkillError('Not a recognised skill — please select from suggestions'); return; }
+      } catch { /* network error — allow through */ }
     }
+    setJobField('requiredSkills', [...job.requiredSkills, s]);
+    setSkillInput('');
+    setSkillError('');
+  }
+
+  function removeSkill(skill: string) {
+    setJobField('requiredSkills', job.requiredSkills.filter(s => s !== skill));
+  }
+
+  function validateJobBasic(): JobErrors {
+    const e: JobErrors = {};
+    if (!job.title.trim() || job.title.length < 5) e.title = 'Title must be at least 5 characters';
+    if (job.title.trim().length > 150) e.title = 'Title must be under 150 characters';
+    if (!job.description.trim() || job.description.length < 50) e.description = 'Description must be at least 50 characters';
+    if (!job.location.trim()) e.location = 'Location is required';
+    return e;
+  }
+
+  function handleJobBasicContinue(e: FormEvent) {
+    e.preventDefault();
+    const errs = validateJobBasic();
+    if (Object.keys(errs).length) { setJobErrors(errs); scrollToFirstError(); return; }
+    setJobErrors({});
+    setStep(2);
+    window.scrollTo(0, 0);
+  }
+
+  function validateJobDetail(): JobErrors {
+    const e: JobErrors = {};
+    if (job.requiredSkills.length === 0) e.requiredSkills = 'Add at least one required skill';
+    if (job.closesAt && new Date(job.closesAt) <= new Date()) e.closesAt = 'Deadline must be a future date';
+    if (!job.responsibilities.trim()) e.responsibilities = 'At least one responsibility is required';
+    if (!job.requirements.trim()) e.requirements = 'At least one requirement is required';
+    return e;
+  }
+
+  async function handleJobSubmit(e: FormEvent) {
+    e.preventDefault();
+    const errs = validateJobDetail();
+    if (Object.keys(errs).length) { setJobErrors(errs); scrollToFirstError(); return; }
 
     setLoading(true);
     setApiError('');
     try {
+      // 1. Create recruiter account (also sets token in localStorage)
       await signupRecruiter({
-        full_name: form.name.trim(),
-        company_name: form.company.trim(),
-        email: form.email.trim(),
-        password: form.password,
-        terms_accepted: form.terms,
+        full_name: account.fullName.trim(),
+        company_name: account.companyName.trim(),
+        email: account.email.trim(),
+        password: account.password,
+        terms_accepted: account.terms,
       });
-      setSuccess(true);
+
+      // 2. Post the job using the freshly stored token
+      const posted = await createRecruiterJob({
+        title: job.title.trim(),
+        description: job.description.trim(),
+        location: job.location.trim(),
+        jobType: job.jobType,
+        workMode: job.workMode,
+        salaryMin: job.salaryMinLpa * 100000,
+        salaryMax: job.salaryMaxLpa * 100000,
+        requiredSkills: job.requiredSkills,
+        experienceMin: job.experienceMin,
+        experienceMax: job.experienceMax,
+        jobLevel: job.jobLevel || undefined,
+        vacancies: job.vacancies ? Number(job.vacancies) : undefined,
+        closesAt: job.closesAt || undefined,
+        responsibilities: parseBullets(job.responsibilities),
+        requirements: parseBullets(job.requirements),
+        niceToHave: parseBullets(job.niceToHave),
+        benefits: parseBullets(job.benefits),
+      });
+
+      setPostedJobId(posted.id);
     } catch (err) {
-      setApiError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
+      setApiError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
   }
 
-  const submitLabel = loading
-    ? step === 3 ? 'Creating account…' : 'Loading…'
-    : step === 3 ? (otpSent ? 'Verify & Create Account →' : 'Send OTP →') : 'Continue →';
+  // ── Success screen ──
 
-  if (success) return (
-    <div className="min-h-screen flex items-center justify-center p-5 sm:p-6" style={{ fontFamily: 'var(--font-plus-jakarta)', background: '#f8faff' }}>
-      <div className="fade-up text-center rounded-3xl w-full px-6 py-10 sm:px-12 sm:py-14" style={{ background: '#fff', maxWidth: 440, boxShadow: `0 24px 64px ${PRIMARY}12` }}>
-        <div className="flex items-center justify-center rounded-full mx-auto mb-6" style={{ width: 80, height: 80, background: '#f0fdf4', border: '2px solid #bbf7d0' }}>
-          <svg width="36" height="36" fill="none" stroke="#22c55e" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
+  if (postedJobId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-5 sm:p-6" style={{ fontFamily: 'var(--font-plus-jakarta)', background: '#f8faff' }}>
+        <div className="text-center rounded-3xl w-full px-6 py-10 sm:px-12 sm:py-14" style={{ background: '#fff', maxWidth: 460, boxShadow: `0 24px 64px ${PRIMARY}12` }}>
+          <div className="flex items-center justify-center rounded-full mx-auto mb-6" style={{ width: 80, height: 80, background: '#f0fdf4', border: '2px solid #bbf7d0' }}>
+            <svg width="36" height="36" fill="none" stroke="#22c55e" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
+          </div>
+          <h2 className="font-extrabold text-[#0f172a] mb-2" style={{ fontSize: 26, letterSpacing: -0.8 }}>
+            Account created & job posted!
+          </h2>
+          <p className="text-sm text-gray-500 mb-2 leading-relaxed">
+            Your recruiter account at <strong style={{ color: PRIMARY }}>itJobwala</strong> is ready and your job is live as a draft.
+          </p>
+          <p className="text-[13px] text-gray-400 mb-8">
+            Review and publish your job from the dashboard to start receiving applications.
+          </p>
+          <Link href={`/recruiter/posted-jobs/${postedJobId}`}
+            className="block text-white rounded-xl font-bold text-[15px] text-center mb-3 py-3.5 transition-all"
+            style={{ background: PRIMARY, textDecoration: 'none' }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#0d3fd4'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = PRIMARY; }}>
+            View &amp; publish your job →
+          </Link>
+          <Link href="/recruiter/dashboard"
+            className="block text-[13px] font-semibold"
+            style={{ color: PRIMARY, textDecoration: 'none' }}>
+            Go to dashboard
+          </Link>
         </div>
-        <h2 className="font-extrabold text-[#0f172a] mb-2 text-2xl">Welcome aboard!</h2>
-        <p className="text-sm text-gray-500 mb-2" style={{ lineHeight: 1.7 }}>
-          Your recruiter account at <strong style={{ color: PRIMARY }}>itJobwala</strong> is ready.
-        </p>
-        <p className="text-[13px] text-gray-400 mb-8">Start posting jobs and reach thousands of IT professionals.</p>
-        <Link href="/recruiter/login" className="block text-white rounded-xl font-bold text-[15px] text-center mb-3 py-3.5"
-          style={{ background: PRIMARY, textDecoration: 'none' }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#0d3fd4'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = PRIMARY; }}>
-          Go to dashboard →
-        </Link>
-        <Link href="/recruiter/signup" className="block text-[13px] font-semibold"
-          style={{ color: PRIMARY, textDecoration: 'none' }}>
-          Back to quick signup
-        </Link>
       </div>
-    </div>
+    );
+  }
+
+  // ── Shared navbar ──
+
+  const Navbar = () => (
+    <nav className="sticky top-0 z-[200] border-b border-black/[0.06] shrink-0" style={{ background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(14px)' }}>
+      <div className="max-w-[1440px] mx-auto px-5 lg:px-10 flex items-center justify-between h-[68px]">
+        <Link href="/" className="flex items-center gap-1 hover:opacity-80 transition-opacity" style={{ textDecoration: 'none' }}>
+          <Image src="/logo.png" alt="itJobwala" width={30} height={30} />
+          <span className="font-extrabold text-xl text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
+            it<span style={{ color: PRIMARY }}>Jobwala</span>
+          </span>
+        </Link>
+        <div className="flex items-center gap-3 sm:gap-5">
+          <span className="hidden sm:inline text-[13px] text-gray-500">Already a recruiter?</span>
+          <Link href="/recruiter/login"
+            className="text-sm font-bold rounded-lg px-4 sm:px-[18px] py-2 transition-all duration-200"
+            style={{ color: PRIMARY, border: `1.5px solid ${PRIMARY}`, textDecoration: 'none' }}
+            onMouseEnter={e => { e.currentTarget.style.background = PRIMARY; e.currentTarget.style.color = '#fff'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = PRIMARY; }}>
+            Log in
+          </Link>
+        </div>
+      </div>
+    </nav>
   );
 
   return (
     <div className="min-h-screen flex flex-col" style={{ fontFamily: 'var(--font-plus-jakarta)', background: '#f8faff' }}>
-
-      {/* Navbar */}
-      <nav className="sticky top-0 z-[200] border-b border-black/[0.06] shrink-0" style={{ background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(14px)' }}>
-        <div className="max-w-[1440px] mx-auto px-5 lg:px-10 flex items-center justify-between h-[68px]">
-          <Link href="/" className="flex items-center gap-1 hover:opacity-80 transition-opacity" style={{ textDecoration: 'none' }}>
-            <Image src="/logo.png" alt="itJobwala" width={30} height={30} />
-            <span className="font-extrabold text-xl text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
-              it<span style={{ color: PRIMARY }}>Jobwala</span>
-            </span>
-          </Link>
-          <div className="flex items-center gap-3 sm:gap-5">
-            <span className="hidden sm:inline text-[13px] text-gray-500">Already a recruiter?</span>
-            <Link href="/login?role=recruiter"
-              className="text-sm font-bold rounded-lg px-4 sm:px-[18px] py-2 transition-all duration-200"
-              style={{ color: PRIMARY, border: `1.5px solid ${PRIMARY}`, textDecoration: 'none' }}
-              onMouseEnter={e => { e.currentTarget.style.background = PRIMARY; e.currentTarget.style.color = '#fff'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = PRIMARY; }}
-            >
-              Log in
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar />
 
       <div className="flex-1 flex">
         <LeftPanel />
@@ -727,124 +939,52 @@ export default function RecruiterPostJobPage() {
         <div className="flex-1 flex items-start justify-center overflow-y-auto px-5 py-10 sm:px-10 sm:py-12 lg:px-14 lg:py-14">
           <div className="w-full max-w-[520px]">
 
-            <div className="fade-up mb-2">
+            {/* Title */}
+            <div className="mb-2">
               <h1 className="font-extrabold text-[#0f172a] mb-1 text-2xl sm:text-[26px]" style={{ letterSpacing: -0.8 }}>
-                {STEP_TITLES[step]}
+                {step === 0 ? 'Create your free account' : step === 1 ? 'Job basics' : 'Job details'}
               </h1>
-              <p className="text-sm text-gray-500">{STEP_SUBS[step]}</p>
+              <p className="text-sm text-gray-500">
+                {step === 0 ? 'Step 1 of 3 — Account details' : step === 1 ? 'Step 2 of 3 — Basic job info' : 'Step 3 of 3 — Skills & description'}
+              </p>
             </div>
 
-            <div className="fade-up my-6">
+            <div className="my-6">
               <StepBar current={step} />
             </div>
 
-            <form onSubmit={handleNext} noValidate>
+            {/* ── Step 1: Account ── */}
+            {step === 0 && (
+              <form onSubmit={handleAccountContinue} noValidate>
+                <Field
+                  label="Full Name" id="fullName" placeholder="e.g. Amit Sharma"
+                  value={account.fullName} onChange={v => setAccountField('fullName', v)} error={accountErrors.fullName}
+                  icon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>}
+                />
+                <Field
+                  label="Company Name" id="companyName" placeholder="e.g. Razorpay"
+                  value={account.companyName} onChange={v => setAccountField('companyName', v)} error={accountErrors.companyName}
+                  icon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>}
+                />
+                <Field
+                  label="Work Email" id="email" type="email" placeholder="you@company.com"
+                  value={account.email} onChange={v => setAccountField('email', v)} error={accountErrors.email}
+                  hint={<span className="text-[11px] text-gray-400 font-normal">Use your official company email</span>}
+                  icon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>}
+                />
+                <PasswordField
+                  label="Password" id="password" placeholder="Min. 8 characters"
+                  value={account.password} onChange={v => setAccountField('password', v)} error={accountErrors.password}
+                />
 
-              {/* Step 0 — Account */}
-              {step === 0 && (
-                <div className="fade-up">
-                  <Field label="Full Name" id="name" placeholder="e.g. Amit Sharma"
-                    value={form.name} onChange={v => set('name', v)} error={errors.name}
-                    icon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>}
-                  />
-                  <Field label="Work Email" id="email" type="email" placeholder="you@company.com"
-                    value={form.email} onChange={v => set('email', v)} error={errors.email}
-                    hint={<span className="text-[11px] text-gray-400 font-normal">Use your official company email</span>}
-                    icon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>}
-                  />
-                  <Field label="Mobile Number" id="phone" type="tel" placeholder="10-digit mobile"
-                    value={form.phone} onChange={v => set('phone', v.replace(/\D/g, '').slice(0, 10))} error={errors.phone}
-                    icon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.71a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16z" /></svg>}
-                    prefix={<span>+91</span>}
-                  />
-                  <PasswordField label="Password" id="password" placeholder="Min. 8 characters"
-                    value={form.password} onChange={v => set('password', v)} error={errors.password}
-                  />
-                </div>
-              )}
-
-              {/* Step 1 — Company */}
-              {step === 1 && (
-                <div className="fade-up">
-                  <Field label="Company Name" id="company" placeholder="e.g. Razorpay"
-                    value={form.company} onChange={v => set('company', v)} error={errors.company}
-                    icon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>}
-                  />
-                  <Field label="Company Website" id="website" placeholder="https://yourcompany.com"
-                    value={form.website} onChange={v => set('website', v)} error={errors.website}
-                    icon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><line x1="2" y1="12" x2="22" y2="12" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>}
-                  />
-                  <div className="grid grid-cols-2 gap-4">
-                    <SelectField label="Industry" id="industry" value={form.industry} onChange={v => set('industry', v)} options={INDUSTRIES} error={errors.industry} />
-                    <SelectField label="Company Size" id="size" value={form.size} onChange={v => set('size', v)} options={COMPANY_SIZES} error={errors.size} />
-                  </div>
-                  <Field label="City / Location" id="city" placeholder="e.g. Bengaluru"
-                    value={form.city} onChange={v => set('city', v)} error={errors.city}
-                    icon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" /><circle cx="12" cy="9" r="2.5" /></svg>}
-                  />
-                  <Field label="Your Designation" id="designation" placeholder="e.g. HR Manager, Talent Acquisition Lead"
-                    value={form.designation} onChange={v => set('designation', v)} error={errors.designation}
-                    icon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg>}
-                  />
-                </div>
-              )}
-
-              {/* Step 2 — Hiring Needs */}
-              {step === 2 && (
-                <div className="fade-up">
-                  <ChipSelect label="Roles you're hiring for" options={HIRING_ROLES}
-                    selected={form.roles} onToggle={toggleRole} error={errors.roles} max={5}
-                  />
-                  <SelectField label="Expected hiring volume" id="volume" value={form.volume} onChange={v => set('volume', v)} options={HIRING_VOLUMES} error={errors.volume} />
-                  <SelectField label="Hiring urgency" id="urgency" value={form.urgency} onChange={v => set('urgency', v)} options={HIRING_URGENCIES} error={errors.urgency} />
-                  <div className="flex gap-3 rounded-[10px] p-4 mt-1" style={{ background: '#eef3ff' }}>
-                    <svg width="18" height="18" fill="none" stroke={PRIMARY} strokeWidth="2" viewBox="0 0 24 24" className="shrink-0 mt-0.5"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-                    <p className="text-[13px] text-gray-700 leading-[1.6]">We'll use this to recommend the right candidates and match your job posts to qualified applicants faster.</p>
-                  </div>
-                </div>
-              )}
-
-              {/* Step 3 — Verify */}
-              {step === 3 && (
-                <div className="fade-up">
-                  {!otpSent ? (
-                    <div className="text-center py-5">
-                      <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-5" style={{ background: '#eef3ff', border: '1.5px solid #c7d7fe' }}>
-                        <svg width="28" height="28" fill="none" stroke={PRIMARY} strokeWidth="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.71a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16z" /></svg>
-                      </div>
-                      <p className="text-[15px] text-gray-600 mb-1">We'll send an OTP to</p>
-                      <p className="text-lg font-bold text-[#0f172a] mb-6">+91 {form.phone}</p>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="text-center mb-5">
-                        <div className="text-[13px] text-gray-500 mb-1">OTP sent to <strong className="text-gray-900">+91 {form.phone}</strong></div>
-                        <button type="button" onClick={() => { setOtpSent(false); setOtp(''); }}
-                          className="bg-transparent border-none text-xs font-semibold cursor-pointer" style={{ color: PRIMARY }}>
-                          Change number
-                        </button>
-                      </div>
-                      <label className="block text-[13px] font-semibold text-gray-700 mb-3.5 text-center">Enter 6-digit OTP</label>
-                      <OTPInput value={otp} onChange={setOtp} />
-                      {errors.otp && <p className="text-xs text-red-500 text-center font-medium mt-1 mb-3">{errors.otp}</p>}
-                      <div className="text-center mb-5">
-                        {timer > 0
-                          ? <span className="text-[13px] text-gray-400">Resend OTP in <strong className="text-gray-700">{timer}s</strong></span>
-                          : <button type="button" onClick={() => { setOtp(''); setTimer(30); }}
-                            className="bg-transparent border-none text-[13px] font-bold cursor-pointer" style={{ color: PRIMARY }}>
-                            Resend OTP
-                          </button>
-                        }
-                      </div>
-                    </>
-                  )}
-
-                  <label className="flex items-start gap-3 cursor-pointer mb-1.5">
+                {/* Terms */}
+                <div className="mb-6">
+                  <label className="flex items-start gap-3 cursor-pointer">
                     <div className="relative shrink-0 mt-0.5">
-                      <input type="checkbox" checked={form.terms} onChange={e => set('terms', e.target.checked)} className="sr-only" />
+                      <input type="checkbox" checked={account.terms} onChange={e => setAccountField('terms', e.target.checked)} className="sr-only" />
                       <div className="flex items-center justify-center rounded-[6px] border-2 transition-all duration-[180ms]"
-                        style={{ width: 20, height: 20, borderColor: form.terms ? PRIMARY : errors.terms ? '#ef4444' : '#d1d5db', background: form.terms ? PRIMARY : '#fff' }}>
-                        {form.terms && <svg width="10" height="10" fill="none" stroke="#fff" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>}
+                        style={{ width: 20, height: 20, borderColor: account.terms ? PRIMARY : accountErrors.terms ? '#ef4444' : '#d1d5db', background: account.terms ? PRIMARY : '#fff' }}>
+                        {account.terms && <svg width="10" height="10" fill="none" stroke="#fff" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>}
                       </div>
                     </div>
                     <span className="text-[13px] text-gray-600 leading-[1.6]">
@@ -854,75 +994,109 @@ export default function RecruiterPostJobPage() {
                       <Link href="#" className="font-semibold" style={{ color: PRIMARY, textDecoration: 'none' }}>Recruiter Policy</Link>
                     </span>
                   </label>
-                  {errors.terms && <p className="text-xs text-red-500 mt-1.5 font-medium">{errors.terms}</p>}
+                  {accountErrors.terms && <p className="text-xs text-red-500 mt-1.5 font-medium">{accountErrors.terms}</p>}
                 </div>
-              )}
 
-              {apiError && (
-                <div className="mt-4 rounded-xl px-4 py-3 text-sm font-medium text-red-600 bg-red-50 border border-red-200">
-                  {apiError}
+                <button type="submit"
+                  className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-[15px] transition-all duration-200"
+                  style={{ padding: 15, background: PRIMARY, boxShadow: `0 4px 20px ${PRIMARY}44`, cursor: 'pointer' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = '#0d3fd4'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = PRIMARY; }}>
+                  Continue to post your job →
+                </button>
+
+                {/* Divider + Google */}
+                <div className="flex items-center gap-3 mt-5 mb-4">
+                  <div className="flex-1 h-px bg-gray-200" />
+                  <span className="text-xs font-semibold text-gray-400">or</span>
+                  <div className="flex-1 h-px bg-gray-200" />
                 </div>
-              )}
+                <button type="button"
+                  className="w-full flex items-center justify-center gap-2.5 bg-white rounded-xl font-semibold text-sm text-gray-700 cursor-pointer transition-all duration-200"
+                  style={{ border: '1.5px solid #e5e7eb', padding: 13 }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = PRIMARY; e.currentTarget.style.background = '#f8faff'; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.background = '#fff'; }}>
+                  <svg width="18" height="18" viewBox="0 0 48 48">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                  </svg>
+                  Continue with Google
+                </button>
 
-              {/* Navigation buttons */}
-              <div className="flex gap-3 mt-6">
-                {step > 0 && (
-                  <button type="button" onClick={() => setStep(s => s - 1)}
+                <p className="text-center text-[13px] text-gray-400 mt-5">
+                  Looking for a job?{' '}
+                  <Link href="/signup" className="font-bold" style={{ color: PRIMARY, textDecoration: 'none' }}>Sign up as candidate</Link>
+                </p>
+              </form>
+            )}
+
+            {/* ── Step 2: Job Basics ── */}
+            {step === 1 && (
+              <form onSubmit={handleJobBasicContinue} noValidate className="flex flex-col gap-5">
+                <JobFieldsBasic form={job} errors={jobErrors} setField={setJobField} />
+
+                <div className="flex gap-3 pt-1">
+                  <button type="button" onClick={() => { setStep(0); setApiError(''); }}
                     className="flex-1 bg-white font-semibold text-[14px] rounded-xl transition-all duration-200"
                     style={{ color: '#374151', border: '1.5px solid #e5e7eb', padding: 13 }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = PRIMARY; e.currentTarget.style.color = PRIMARY; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.color = '#374151'; }}
-                  >
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.color = '#374151'; }}>
                     ← Back
                   </button>
-                )}
-                <button type="submit" disabled={loading}
-                  className="flex-[2] flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-[15px] transition-all duration-200"
-                  style={{
-                    padding: 14,
-                    cursor: loading ? 'not-allowed' : 'pointer',
-                    background: loading ? '#93aef5' : PRIMARY,
-                    boxShadow: loading ? 'none' : `0 4px 18px ${PRIMARY}44`,
-                  }}
-                  onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#0d3fd4'; }}
-                  onMouseLeave={e => { if (!loading) e.currentTarget.style.background = PRIMARY; }}
-                >
-                  {loading
-                    ? <><div className="w-4 h-4 border-[2.5px] border-white/40 border-t-white rounded-full animate-spin" /> {submitLabel}</>
-                    : submitLabel
-                  }
-                </button>
-              </div>
-
-              {step === 0 && (
-                <>
-                  <div className="flex items-center gap-3 mt-4">
-                    <div className="flex-1 h-px bg-gray-200" />
-                    <span className="text-xs font-semibold text-gray-400">or</span>
-                    <div className="flex-1 h-px bg-gray-200" />
-                  </div>
-                  <button type="button"
-                    className="w-full flex items-center justify-center gap-2.5 bg-white rounded-xl font-semibold text-sm text-gray-700 cursor-pointer transition-all duration-200 mt-3"
-                    style={{ border: '1.5px solid #e5e7eb', padding: 13 }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = PRIMARY; e.currentTarget.style.background = '#f8faff'; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.background = '#fff'; }}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 48 48">
-                      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
-                      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
-                      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
-                      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
-                    </svg>
-                    Continue with Google
+                  <button type="submit"
+                    className="flex-[2] flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-[15px] transition-all duration-200"
+                    style={{ padding: 14, cursor: 'pointer', background: PRIMARY, boxShadow: `0 4px 18px ${PRIMARY}44` }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#0d3fd4'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = PRIMARY; }}>
+                    Continue →
                   </button>
-                </>
-              )}
+                </div>
+              </form>
+            )}
 
-              <p className="text-center text-[13px] text-gray-400 mt-5">
-                Looking for a job?{' '}
-                <Link href="/signup" className="font-bold" style={{ color: PRIMARY, textDecoration: 'none' }}>Sign up as candidate</Link>
-              </p>
-            </form>
+            {/* ── Step 3: Job Details ── */}
+            {step === 2 && (
+              <form onSubmit={handleJobSubmit} noValidate className="flex flex-col gap-5">
+                <JobFieldsDetail
+                  form={job} errors={jobErrors} setField={setJobField}
+                  skillInput={skillInput} setSkillInput={setSkillInput}
+                  skillError={skillError} setSkillError={setSkillError}
+                  skillSuggestions={skillSuggestions}
+                  addSkill={addSkill} removeSkill={removeSkill}
+                />
+
+                {apiError && (
+                  <div className="rounded-xl px-4 py-3 text-sm font-medium text-red-600 bg-red-50 border border-red-200">{apiError}</div>
+                )}
+
+                <div className="flex gap-3 pt-1">
+                  <button type="button" onClick={() => { setStep(1); setApiError(''); }}
+                    className="flex-1 bg-white font-semibold text-[14px] rounded-xl transition-all duration-200"
+                    style={{ color: '#374151', border: '1.5px solid #e5e7eb', padding: 13 }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = PRIMARY; e.currentTarget.style.color = PRIMARY; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.color = '#374151'; }}>
+                    ← Back
+                  </button>
+                  <button type="submit" disabled={loading}
+                    className="flex-[2] flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-[15px] transition-all duration-200"
+                    style={{
+                      padding: 14, cursor: loading ? 'not-allowed' : 'pointer',
+                      background: loading ? '#93aef5' : PRIMARY,
+                      boxShadow: loading ? 'none' : `0 4px 18px ${PRIMARY}44`,
+                    }}
+                    onMouseEnter={e => { if (!loading) e.currentTarget.style.background = '#0d3fd4'; }}
+                    onMouseLeave={e => { if (!loading) e.currentTarget.style.background = PRIMARY; }}>
+                    {loading
+                      ? <><div className="w-4 h-4 border-[2.5px] border-white/40 border-t-white rounded-full animate-spin" /> Creating account &amp; posting…</>
+                      : 'Create account & post job →'
+                    }
+                  </button>
+                </div>
+              </form>
+            )}
+
           </div>
         </div>
       </div>
