@@ -2,6 +2,7 @@ import Job from '../models/Job.js';
 import Activity from '../models/Activity.js';
 import Application from '../models/Application.js';
 import Recruiter from '../models/Recruiter.js';
+import { incrementSkillUsage } from './skillController.js';
 
 export const getJobs = async (request, reply) => {
   try {
@@ -224,6 +225,11 @@ export const postJob = async (request, reply) => {
       entity_type: 'job'
     });
 
+    // Bump usage_count for each skill so autocomplete surfaces popular skills first
+    if (requiredSkills && requiredSkills.length > 0) {
+      await incrementSkillUsage(requiredSkills);
+    }
+
     return reply.status(201).send({
       success: true,
       message: 'Job created successfully',
@@ -351,6 +357,10 @@ export const updateJob = async (request, reply) => {
 
     const updatedJob = await job.$query().patchAndFetch(mappedUpdate);
     const appCount = await Application.query().where('job_id', updatedJob.id).resultSize();
+
+    if (updateData.requiredSkills && updateData.requiredSkills.length > 0) {
+      await incrementSkillUsage(updateData.requiredSkills);
+    }
 
     function parseJsonArray(val) {
       if (!val) return [];

@@ -13,6 +13,9 @@ import { createRecruiterJob } from '@/src/lib/api/recruiter';
 import { safeLocalStorageGetItem } from '@/src/lib/hydration-safe';
 import { decodeJwtPayload } from '@/src/lib/auth';
 import RecruiterShell from '@/src/components/recruiter/RecruiterShell';
+import SalaryRangeSlider from '@/src/components/ui/SalaryRangeSlider';
+import { validateSkill } from '@/src/lib/skillValidation';
+import { useSkillSuggestions } from '@/src/hooks/useSkillSuggestions';
 
 const STEPS = ['Account', 'Company', 'Hiring Needs', 'Verify'];
 
@@ -214,10 +217,11 @@ function RecruiterJobForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [skillInput, setSkillInput] = useState('');
+  const [skillError, setSkillError] = useState('');
   const [form, setForm] = useState({
     title: '', description: '', location: '',
     jobType: 'Full-time', workMode: 'On-site',
-    salaryMin: '', salaryMax: '',
+    salaryMinLpa: 5, salaryMaxLpa: 20,
     requiredSkills: [] as string[],
     experienceLevel: 'Fresher',
     jobLevel: '',
@@ -229,6 +233,7 @@ function RecruiterJobForm() {
     benefits: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const skillSuggestions = useSkillSuggestions(skillInput, form.requiredSkills);
 
   function set(k: string, v: any) {
     setForm(f => ({ ...f, [k]: v }));
@@ -236,10 +241,15 @@ function RecruiterJobForm() {
     setError('');
   }
 
-  function addSkill() {
-    const s = skillInput.trim();
-    if (s && !form.requiredSkills.includes(s)) set('requiredSkills', [...form.requiredSkills, s]);
+  function addSkill(override?: string) {
+    const s = (override ?? skillInput).trim();
+    if (!s) return;
+    const error = validateSkill(s);
+    if (error) { setSkillError(error); return; }
+    if (form.requiredSkills.includes(s)) { setSkillError('Skill already added'); return; }
+    set('requiredSkills', [...form.requiredSkills, s]);
     setSkillInput('');
+    setSkillError('');
   }
 
   function removeSkill(skill: string) {
@@ -253,9 +263,6 @@ function RecruiterJobForm() {
     if (!form.description.trim() || form.description.length < 50) e.description = 'Description must be at least 50 characters';
     if (!form.location.trim()) e.location = 'Location is required';
     if (form.requiredSkills.length === 0) e.requiredSkills = 'Add at least one required skill';
-    const min = form.salaryMin ? Number(form.salaryMin) : undefined;
-    const max = form.salaryMax ? Number(form.salaryMax) : undefined;
-    if (min !== undefined && max !== undefined && min > max) e.salaryMin = 'Min salary cannot exceed max';
     if (form.closesAt && new Date(form.closesAt) <= new Date()) e.closesAt = 'Deadline must be a future date';
     if (!form.responsibilities.trim()) e.responsibilities = 'At least one responsibility is required';
     if (!form.requirements.trim()) e.requirements = 'At least one requirement is required';
@@ -275,8 +282,8 @@ function RecruiterJobForm() {
         location: form.location.trim(),
         jobType: form.jobType,
         workMode: form.workMode,
-        salaryMin: form.salaryMin ? Number(form.salaryMin) : undefined,
-        salaryMax: form.salaryMax ? Number(form.salaryMax) : undefined,
+        salaryMin: form.salaryMinLpa * 100000,
+        salaryMax: form.salaryMaxLpa * 100000,
         requiredSkills: form.requiredSkills,
         experienceLevel: form.experienceLevel,
         jobLevel: form.jobLevel || undefined,
@@ -369,20 +376,11 @@ function RecruiterJobForm() {
           </div>
 
           {/* Salary */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Min salary (₹/yr)</label>
-              <input type="number" value={form.salaryMin} onChange={e => set('salaryMin', e.target.value)} placeholder="e.g. 500000"
-                className="w-full rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none"
-                style={{ borderColor: errors.salaryMin ? '#ef4444' : '#e5e7eb' }} />
-              {errors.salaryMin && <p className="text-xs text-red-500 mt-1">{errors.salaryMin}</p>}
-            </div>
-            <div>
-              <label className="block text-[13px] font-bold text-gray-600 mb-1.5">Max salary (₹/yr)</label>
-              <input type="number" value={form.salaryMax} onChange={e => set('salaryMax', e.target.value)} placeholder="e.g. 1000000"
-                className="w-full rounded-xl border border-gray-200 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none" />
-            </div>
-          </div>
+          <SalaryRangeSlider
+            minLpa={form.salaryMinLpa}
+            maxLpa={form.salaryMaxLpa}
+            onChange={(min, max) => { set('salaryMinLpa', min); set('salaryMaxLpa', max); }}
+          />
 
           {/* Job level + Vacancies + Closes at */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -415,17 +413,29 @@ function RecruiterJobForm() {
               Required skills <span style={{ color: PRIMARY }}>*</span>
             </label>
             <div className="flex gap-2 mb-2">
-              <input value={skillInput} onChange={e => setSkillInput(e.target.value)}
+              <input value={skillInput} onChange={e => { setSkillInput(e.target.value); setSkillError(''); }}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }}
-                placeholder="e.g. React, Node.js"
-                className={`flex-1 rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none`}
-                style={{ borderColor: errors.requiredSkills ? '#ef4444' : '#e5e7eb' }} />
-              <button type="button" onClick={addSkill}
-                className="px-4 py-2.5 rounded-xl text-[13px] font-bold text-white"
+                placeholder="Type to search skills (e.g. React, Node.js)"
+                className="flex-1 rounded-xl border px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none"
+                style={{ borderColor: skillError || errors.requiredSkills ? '#ef4444' : '#e5e7eb' }} />
+              <button type="button" onClick={() => addSkill()}
+                className="px-4 py-2.5 rounded-xl text-[13px] font-bold text-white shrink-0"
                 style={{ background: PRIMARY }}>
                 Add
               </button>
             </div>
+            {skillError && <p className="text-xs text-red-500 mb-2">{skillError}</p>}
+            {skillSuggestions.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                {skillSuggestions.map(s => (
+                  <button key={s} type="button"
+                    onClick={() => addSkill(s)}
+                    className="px-2.5 py-1 rounded-lg text-[12px] font-semibold bg-gray-100 text-gray-500 hover:bg-primary/10 hover:text-primary transition-colors">
+                    + {s}
+                  </button>
+                ))}
+              </div>
+            )}
             {form.requiredSkills.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-1">
                 {form.requiredSkills.map(s => (

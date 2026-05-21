@@ -11,6 +11,7 @@ export default function HeroSection() {
   const [search, setSearch] = useState<SearchState>({ jobTitle: '', company: '', city: '' });
 
   function handleSearch() {
+    if (!search.jobTitle && !search.company && !search.city) return;
     const query = new URLSearchParams();
     if (search.jobTitle) query.set('q', search.jobTitle);
     if (search.company) query.set('company', search.company);

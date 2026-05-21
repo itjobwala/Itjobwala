@@ -68,7 +68,7 @@ export default function
             <Link
               href="/jobs"
               className="inline-flex items-center gap-2 text-sm font-bold text-white rounded-[10px] py-[13px] px-6 transition-[filter] hover:brightness-110"
-              style={{ background: PRIMARY }}
+              style={{ background: PRIMARY, color: '#fff' }}
             >
               Browse all jobs
 

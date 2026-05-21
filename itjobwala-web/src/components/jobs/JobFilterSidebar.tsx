@@ -1,6 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import type { FilterState } from './types';
+import Card from '@/src/components/ui/Card';
+import SalaryRangeSlider from '@/src/components/ui/SalaryRangeSlider';
+import { validateSkill } from '@/src/lib/skillValidation';
+import { useSkillSuggestions } from '@/src/hooks/useSkillSuggestions';
 
 const JOB_TYPES = [
   { value: 'full-time', label: 'Full-time' },
@@ -79,8 +84,24 @@ function toggleArr(arr: string[], val: string): string[] {
 }
 
 export default function JobFilterSidebar({ filters, onChange, onReset, activeCount }: Props) {
+  const [skillInput, setSkillInput] = useState('');
+  const [skillError, setSkillError] = useState('');
+  const skillSuggestions = useSkillSuggestions(skillInput, filters.skills || []);
+
+  function addSkillFromFilter(override?: string) {
+    const skill = (override ?? skillInput).trim();
+    if (!skill) return;
+    const error = validateSkill(skill);
+    if (error) { setSkillError(error); return; }
+    const currentSkills = filters.skills || [];
+    if (currentSkills.includes(skill)) { setSkillError('Skill already added'); return; }
+    onChange({ ...filters, skills: [...currentSkills, skill] });
+    setSkillInput('');
+    setSkillError('');
+  }
+
   return (
-    <aside className="bg-white rounded-2xl border border-gray-100 p-5">
+    <Card as="aside" overflow>
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
         <span className="font-bold text-[15px] text-[#0f172a]">Filters</span>
@@ -153,63 +174,15 @@ export default function JobFilterSidebar({ filters, onChange, onReset, activeCou
 
         {/* Salary Range */}
         <FilterGroup title="Salary Range">
-          <div className="flex flex-col gap-4">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-[11px] font-semibold text-gray-700">Min: ₹{filters.salaryMin ? (filters.salaryMin / 100000).toFixed(1) : '0'} LPA</label>
-                <button
-                  onClick={() => onChange({ ...filters, salaryMin: undefined })}
-                  className="text-[10px] font-semibold text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  Reset
-                </button>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="5000000"
-                step="100000"
-                value={filters.salaryMin || 0}
-                onChange={(e) => onChange({ ...filters, salaryMin: parseInt(e.target.value) || undefined })}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
-              />
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-[11px] font-semibold text-gray-700">Max: ₹{filters.salaryMax ? (filters.salaryMax / 100000).toFixed(1) : '50'} LPA</label>
-                <button
-                  onClick={() => onChange({ ...filters, salaryMax: undefined })}
-                  className="text-[10px] font-semibold text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  Reset
-                </button>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="5000000"
-                step="100000"
-                value={filters.salaryMax || 5000000}
-                onChange={(e) => onChange({ ...filters, salaryMax: parseInt(e.target.value) || undefined })}
-                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary"
-              />
-            </div>
-
-            <div className="bg-primary/5 border border-primary/10 rounded-lg px-3 py-2">
-              <p className="text-[11px] text-gray-600">
-                {filters.salaryMin || filters.salaryMax ? (
-                  <>
-                    <span className="font-semibold text-primary">
-                      ₹{filters.salaryMin ? (filters.salaryMin / 100000).toFixed(1) : '0'} - ₹{filters.salaryMax ? (filters.salaryMax / 100000).toFixed(1) : '50'} LPA
-                    </span>
-                  </>
-                ) : (
-                  'Select salary range'
-                )}
-              </p>
-            </div>
-          </div>
+          <SalaryRangeSlider
+            minLpa={filters.salaryMin ? Math.round(filters.salaryMin / 100000) : 0}
+            maxLpa={filters.salaryMax ? Math.round(filters.salaryMax / 100000) : 50}
+            onChange={(minLpa, maxLpa) => onChange({
+              ...filters,
+              salaryMin: minLpa > 0 ? minLpa * 100000 : undefined,
+              salaryMax: maxLpa < 50 ? maxLpa * 100000 : undefined,
+            })}
+          />
         </FilterGroup>
 
         <div className="h-px bg-gray-100" />
@@ -218,19 +191,24 @@ export default function JobFilterSidebar({ filters, onChange, onReset, activeCou
         <FilterGroup title="Skills">
           <input
             type="text"
-            placeholder="Add skill"
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && e.currentTarget.value.trim()) {
-                const skill = e.currentTarget.value.trim();
-                const currentSkills = filters.skills || [];
-                if (!currentSkills.includes(skill)) {
-                  onChange({ ...filters, skills: [...currentSkills, skill] });
-                }
-                e.currentTarget.value = '';
-              }
-            }}
-            className="w-full px-2.5 py-2 text-[12px] border border-gray-200 rounded-lg focus:outline-none focus:border-primary"
+            value={skillInput}
+            placeholder="Type to search skills…"
+            onChange={e => { setSkillInput(e.target.value); setSkillError(''); }}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkillFromFilter(); } }}
+            className={`w-full px-2.5 py-2 text-[12px] border rounded-lg focus:outline-none ${skillError ? 'border-red-400' : 'border-gray-200 focus:border-primary'}`}
           />
+          {skillError && <p className="text-[11px] text-red-500 mt-1">{skillError}</p>}
+          {skillSuggestions.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-1.5">
+              {skillSuggestions.map(s => (
+                <button key={s} type="button"
+                  onClick={() => addSkillFromFilter(s)}
+                  className="px-2 py-1 rounded-md text-[11px] font-semibold bg-gray-100 text-gray-500 hover:bg-primary/10 hover:text-primary transition-colors">
+                  + {s}
+                </button>
+              ))}
+            </div>
+          )}
           {filters.skills && filters.skills.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-2">
               {filters.skills.map((skill) => (
@@ -251,6 +229,6 @@ export default function JobFilterSidebar({ filters, onChange, onReset, activeCou
           )}
         </FilterGroup>
       </div>
-    </aside>
+    </Card>
   );
 }

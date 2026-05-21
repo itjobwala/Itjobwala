@@ -43,10 +43,10 @@ export const STATS = [
 ];
 
 export const WHY = [
-  { icon: "💰", title: "Salary transparency",   desc: "See salary ranges upfront. No surprises at the offer stage."       },
-  { icon: "🚫", title: "Zero recruiter spam",   desc: "No unsolicited calls. No follow-up emails. Just real jobs."        },
-  { icon: "🎯", title: "Direct to hiring teams",desc: "Your application goes straight to the people who decide."          },
-  { icon: "✅", title: "Curated listings only", desc: "Every listing is manually reviewed. No duplicates, no noise."      },
+  { icon: "salary",  title: "Salary transparency",    desc: "See salary ranges upfront. No surprises at the offer stage."       },
+  { icon: "spam",    title: "Zero recruiter spam",    desc: "No unsolicited calls. No follow-up emails. Just real jobs."        },
+  { icon: "direct",  title: "Direct to hiring teams", desc: "Your application goes straight to the people who decide."          },
+  { icon: "curated", title: "Curated listings only",  desc: "Every listing is manually reviewed. No duplicates, no noise."      },
 ];
 
 export const HOW_STEPS = [

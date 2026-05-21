@@ -63,6 +63,7 @@ fastify.register((await import('./src/routes/searchRoutes.js')).default, { prefi
 fastify.register((await import('./src/routes/companyRoutes.js')).default, { prefix: '/api' });
 fastify.register((await import('./src/routes/homeRoutes.js')).default, { prefix: '/api' });
 fastify.register((await import('./src/routes/recruiterInterviewRoutes.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/skillRoutes.js')).default, { prefix: '/api' });
 
 // Centralized Error Handler
 fastify.setErrorHandler(function (error, request, reply) {

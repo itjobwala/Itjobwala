@@ -8,7 +8,8 @@
     "dev": "nodemon server.js",
     "test:api": "newman run postman/ITJobwala_Advanced_Collection.json -e postman/ITJobwala_Environment.json -r cli,htmlextra,junit --reporter-htmlextra-export ./reports/api-report.html --reporter-junit-export ./reports/junit.xml",
     "test:ci": "newman run postman/ITJobwala_Advanced_Collection.json -e postman/ITJobwala_Environment.json --reporters cli",
-    "test:load": "k6 run tests/load_test.js"
+    "test:load": "k6 run tests/load_test.js",
+    "db:skills": "node scripts/database/create_skills_table.js"
   },
   "keywords": [],
   "author": "",

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import SmartNavbar from '@/src/components/SmartNavbar';
 import JobSearchBar from './JobSearchBar';
@@ -12,6 +12,8 @@ import { useJobsQuery } from '@/src/hooks/useJobs';
 import { useSavedJobsQuery, useSaveJobMutation, useUnsaveJobMutation } from '@/src/hooks/useApplications';
 import { useAuthHydration } from '@/src/hooks/useAuthHydration';
 import type { JobFilters } from '@/src/types/jobs';
+import { useToast } from '@/src/hooks/useToast';
+import Toast from '@/src/components/ui/Toast';
 
 const SORT_OPTIONS = [
   { value: 'newest',             label: 'Newest first' },
@@ -71,6 +73,20 @@ export default function JobsPageClient() {
     salaryMax: getNumberParam(searchParams, 'salary_max'),
     skills: getCsvParam(searchParams, 'skills'),
   });
+  const [salaryForApi, setSalaryForApi] = useState<{ min?: number; max?: number }>({
+    min: getNumberParam(searchParams, 'salary_min'),
+    max: getNumberParam(searchParams, 'salary_max'),
+  });
+  const salaryTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  // Debounce salary filter changes — slider fires on every px drag
+  useEffect(() => {
+    salaryTimerRef.current = setTimeout(() => {
+      setSalaryForApi({ min: filters.salaryMin, max: filters.salaryMax });
+    }, 400);
+    return () => clearTimeout(salaryTimerRef.current);
+  }, [filters.salaryMin, filters.salaryMax]);
+
   const [search, setSearch]             = useState<SearchState>({
     jobTitle: searchParams.get('q') ?? '',
     company:  searchParams.get('company') ?? '',
@@ -84,8 +100,7 @@ export default function JobsPageClient() {
   const [sort, setSort]         = useState('newest');
   const [page, setPage]         = useState(1);
   const [showFilters, setShowFilters] = useState(false);
-  const [errorToast, setErrorToast] = useState('');
-  const [successToast, setSuccessToast] = useState('');
+  const { toast, show: showToast } = useToast();
 
   const canLoadSavedJobs = isHydrated && !authLoading && session?.userRole === 'candidate';
   const { data: savedData } = useSavedJobsQuery({ limit: 100 }, canLoadSavedJobs);
@@ -104,17 +119,19 @@ export default function JobsPageClient() {
     ...(filters.workMode.length > 0 ? { work_mode: filters.workMode.join(',') } : {}),
     ...(filters.experience ? { experience: filters.experience } : {}),
     ...(filters.companyType.length > 0 ? { company_type: filters.companyType.join(',') } : {}),
-    ...(filters.salaryMin ? { salary_min: filters.salaryMin } : {}),
-    ...(filters.salaryMax ? { salary_max: filters.salaryMax } : {}),
+    ...(salaryForApi.min ? { salary_min: salaryForApi.min } : {}),
+    ...(salaryForApi.max ? { salary_max: salaryForApi.max } : {}),
     ...(filters.skills.length > 0 ? { skills: filters.skills.join(',') } : {}),
   };
 
   const { data, isLoading, isError } = useJobsQuery(apiFilters);
 
   const handleReset = useCallback(() => {
+    clearTimeout(salaryTimerRef.current);
     setFilters(DEFAULT_FILTERS);
     setSearch(DEFAULT_SEARCH);
     setAppliedSearch(DEFAULT_SEARCH);
+    setSalaryForApi({ min: undefined, max: undefined });
     setPage(1);
   }, []);
 
@@ -127,19 +144,14 @@ export default function JobsPageClient() {
   const handleSaveJob = async (jobId: string) => {
     if (!canLoadSavedJobs) {
       const message = 'Please log in as a candidate to save jobs';
-      setErrorToast(message);
-      setTimeout(() => setErrorToast(''), 4000);
+      showToast(message, 'error');
       throw new Error(message);
     }
-
     try {
       await saveJobMutation.mutateAsync(jobId);
-      setSuccessToast('Job saved successfully');
-      setTimeout(() => setSuccessToast(''), 4000);
+      showToast('Job saved successfully', 'success');
     } catch (error) {
-      const message = (error as Error).message || 'Failed to save job';
-      setErrorToast(message);
-      setTimeout(() => setErrorToast(''), 4000);
+      showToast((error as Error).message || 'Failed to save job', 'error');
       throw error;
     }
   };
@@ -147,19 +159,14 @@ export default function JobsPageClient() {
   const handleUnsaveJob = async (jobId: string) => {
     if (!canLoadSavedJobs) {
       const message = 'Please log in as a candidate to manage saved jobs';
-      setErrorToast(message);
-      setTimeout(() => setErrorToast(''), 4000);
+      showToast(message, 'error');
       throw new Error(message);
     }
-
     try {
       await unsaveJobMutation.mutateAsync(jobId);
-      setSuccessToast('Job removed from saved list');
-      setTimeout(() => setSuccessToast(''), 4000);
+      showToast('Job removed from saved list', 'success');
     } catch (error) {
-      const message = (error as Error).message || 'Failed to unsave job';
-      setErrorToast(message);
-      setTimeout(() => setErrorToast(''), 4000);
+      showToast((error as Error).message || 'Failed to unsave job', 'error');
       throw error;
     }
   };
@@ -292,38 +299,7 @@ export default function JobsPageClient() {
         </div>
       </div>
 
-      {/* Success toast */}
-      <div
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] transition-all duration-300 ${
-          successToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-        }`}
-      >
-        <div className="flex items-center gap-3 bg-green-600 text-white text-[13px] font-semibold rounded-2xl px-5 py-3.5 shadow-2xl">
-          <span className="w-5 h-5 rounded-full bg-green-700 flex items-center justify-center shrink-0">
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5">
-              <path d="M2 6l3 3 5-5" />
-            </svg>
-          </span>
-          {successToast}
-        </div>
-      </div>
-
-      {/* Error toast */}
-      <div
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] transition-all duration-300 ${
-          errorToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-        }`}
-      >
-        <div className="flex items-center gap-3 bg-red-600 text-white text-[13px] font-semibold rounded-2xl px-5 py-3.5 shadow-2xl">
-          <span className="w-5 h-5 rounded-full bg-red-700 flex items-center justify-center shrink-0">
-            <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5">
-              <line x1="1" y1="1" x2="11" y2="11" />
-              <line x1="11" y1="1" x2="1" y2="11" />
-            </svg>
-          </span>
-          {errorToast}
-        </div>
-      </div>
+      <Toast message={toast.message} variant={toast.variant} visible={toast.visible} />
     </div>
   );
 }
