@@ -1,3 +1,4 @@
+
 import Badge, { type BadgeVariant, type BadgeSize } from './Badge';
 
 interface StatusConfig {
@@ -17,7 +18,8 @@ const STATUS_MAP: Record<string, StatusConfig> = {
   rejected:      { label: 'Rejected',      variant: 'error',    dot: 'bg-red-500'    },
   withdrawn:     { label: 'Withdrawn',     variant: 'default',  dot: 'bg-gray-400'   },
   // ── Job statuses ──────────────────────────────────────────────────────────
-  active:        { label: 'Active',        variant: 'success',  dot: 'bg-green-500'  },
+  active:        { label: 'Active',   
+  variant: 'success',  dot: 'bg-green-500'  },
   draft:         { label: 'Draft',         variant: 'yellow',   dot: 'bg-yellow-400' },
   closed:        { label: 'Closed',        variant: 'default',  dot: 'bg-gray-400'   },
   // ── Interview statuses ────────────────────────────────────────────────────

@@ -5,7 +5,7 @@ import type { Job } from './types';
 export default function RecommendedJobCard({ job }: { job: Job }) {
   return (
     <Link
-      href={`/jobs/${job.id}`}
+      href={`/candidate/jobs/${job.id}`}
       className="group flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100"
     >
       <CompanyLogo

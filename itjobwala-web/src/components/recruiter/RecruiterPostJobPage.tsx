@@ -908,7 +908,7 @@ export default function RecruiterPostJobPage() {
   const Navbar = () => (
     <nav className="sticky top-0 z-[200] border-b border-black/[0.06] shrink-0" style={{ background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(14px)' }}>
       <div className="max-w-[1440px] mx-auto px-5 lg:px-10 flex items-center justify-between h-[68px]">
-        <Link href="/" className="flex items-center gap-1 hover:opacity-80 transition-opacity" style={{ textDecoration: 'none' }}>
+        <Link href="/" className="flex items-center gap-1 hover:opacity-80 transition-opacity">
           <Image src="/logo.png" alt="itJobwala" width={30} height={30} />
           <span className="font-extrabold text-xl text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
             it<span style={{ color: PRIMARY }}>Jobwala</span>
@@ -916,7 +916,7 @@ export default function RecruiterPostJobPage() {
         </Link>
         <div className="flex items-center gap-3 sm:gap-5">
           <span className="hidden sm:inline text-[13px] text-gray-500">Already a recruiter?</span>
-          <Link href="/recruiter/login"
+          <Link href="/auth/login?role=recruiter"
             className="text-sm font-bold rounded-lg px-4 sm:px-[18px] py-2 transition-all duration-200"
             style={{ color: PRIMARY, border: `1.5px solid ${PRIMARY}`, textDecoration: 'none' }}
             onMouseEnter={e => { e.currentTarget.style.background = PRIMARY; e.currentTarget.style.color = '#fff'; }}
@@ -1027,7 +1027,7 @@ export default function RecruiterPostJobPage() {
 
                 <p className="text-center text-[13px] text-gray-400 mt-5">
                   Looking for a job?{' '}
-                  <Link href="/signup" className="font-bold" style={{ color: PRIMARY, textDecoration: 'none' }}>Sign up as candidate</Link>
+                  <Link href="/auth/signup" className="font-bold" style={{ color: PRIMARY, textDecoration: 'none' }}>Sign up as candidate</Link>
                 </p>
               </form>
             )}

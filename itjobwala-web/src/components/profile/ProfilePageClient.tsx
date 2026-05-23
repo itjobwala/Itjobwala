@@ -162,6 +162,22 @@ export default function ProfilePageClient() {
       return showError(validationError.message);
     }
 
+    // Salary must be > 0 if provided
+    if (activeModal === 'personal-info') {
+      const s = draft.profile?.currentSalary;
+      if (s !== '' && s != null && s !== undefined) {
+        const n = Number(s);
+        if (isNaN(n) || n <= 0) return showError('Current salary must be greater than 0');
+      }
+    }
+    if (activeModal === 'career-profile') {
+      const s = draft.careerProfile?.expected_salary;
+      if (s !== '' && s != null && s !== undefined) {
+        const n = Number(s);
+        if (isNaN(n) || n <= 0) return showError('Expected salary must be greater than 0');
+      }
+    }
+
     setSavingState(true);
     try {
       switch (activeModal) {

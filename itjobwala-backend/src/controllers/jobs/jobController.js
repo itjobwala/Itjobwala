@@ -428,13 +428,24 @@ export const getJobCategories = async (request, reply) => {
       });
     }
 
-    allCategories.sort((a, b) => b.count - a.count);
+    // Merge entries where the same value appears with different casing (e.g. "Remote" vs "remote")
+    const categoryMap = new Map();
+    for (const cat of allCategories) {
+      const uniqueKey = `${cat.category_type}|${cat.key}`;
+      if (categoryMap.has(uniqueKey)) {
+        categoryMap.get(uniqueKey).count += cat.count;
+      } else {
+        categoryMap.set(uniqueKey, { ...cat });
+      }
+    }
+    const deduped = Array.from(categoryMap.values());
+    deduped.sort((a, b) => b.count - a.count);
 
     return reply.status(200).send({
       success: true,
       message: 'Categories fetched.',
       data: {
-        categories: allCategories
+        categories: deduped
       }
     });
   } catch (error) {

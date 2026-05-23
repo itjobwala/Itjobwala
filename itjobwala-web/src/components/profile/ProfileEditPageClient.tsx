@@ -103,7 +103,7 @@ export default function ProfileEditPageClient() {
     setSaving(true);
     window.setTimeout(() => {
       setSaving(false);
-      router.push('/profile');
+      router.push('/candidate/profile');
     }, 900);
   }
 

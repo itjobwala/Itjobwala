@@ -32,7 +32,7 @@ export default function AppliedJobsCard({ jobs }: Props) {
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-[14px] font-extrabold text-[#0f172a]">Applied jobs</h3>
         {jobs.length > 0 && (
-          <Link href="/jobs" className="text-[12px] font-semibold text-primary hover:underline">
+          <Link href="/candidate/jobs" className="text-[12px] font-semibold text-primary hover:underline">
             Browse more
           </Link>
         )}
@@ -42,7 +42,7 @@ export default function AppliedJobsCard({ jobs }: Props) {
         <div className="py-6 text-center">
           <p className="text-[13px] text-gray-400 mb-3">You haven't applied to any jobs yet.</p>
           <Link
-            href="/jobs"
+            href="/candidate/jobs"
             className="inline-block text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
             style={{ color: '#fff' }}
           >
@@ -58,7 +58,7 @@ export default function AppliedJobsCard({ jobs }: Props) {
             return (
               <Link
                 key={job.id}
-                href={`/jobs/${job.job_id}`}
+                href={`/candidate/jobs/${job.job_id}`}
                 className="group flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 transition-colors"
               >
                 {logoUrl ? (

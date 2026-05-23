@@ -61,12 +61,15 @@ export default function Footer() {
 
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="flex items-center gap-1 mb-4 hover:opacity-80 transition-opacity w-fit">
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+              className="flex items-center gap-1 mb-4 hover:opacity-80 transition-opacity w-fit cursor-pointer bg-transparent border-none p-0"
+            >
               <Image src="/logo.png" alt="itJobwala" width={28} height={28} />
               <span className="font-extrabold text-xl text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
                 it<span style={{ color: PRIMARY }}>Jobwala</span>
               </span>
-            </Link>
+            </button>
             <p className="text-sm text-[#475569] leading-[1.8] mb-7">
               Find IT jobs without the noise.<br />Apply directly. No middlemen.
             </p>
@@ -98,14 +101,14 @@ export default function Footer() {
               <div className="flex flex-col gap-3">
                 {col.links.map((l) => (
                   <Link
-                    key={l}
-                    href="#"
+                    key={l.label}
+                    href={l.href}
                     className="text-sm"
                     style={{ color: '#6b7280', textDecoration: 'none' }}
                     onMouseEnter={e => { e.currentTarget.style.color = '#1557FF'; }}
                     onMouseLeave={e => { e.currentTarget.style.color = '#6b7280'; }}
                   >
-                    {l}
+                    {l.label}
                   </Link>
                 ))}
               </div>

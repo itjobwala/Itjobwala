@@ -126,7 +126,7 @@ export default function SavedJobsListPageClient() {
                   </p>
                 </div>
                 <Link
-                  href="/jobs"
+                  href="/candidate/jobs"
                   className="text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
                   style={{ color: '#fff' }}
                 >
@@ -143,15 +143,20 @@ export default function SavedJobsListPageClient() {
                 <label htmlFor="saved-sort-order" className="block text-[12px] font-bold text-gray-500 mb-2">
                   Sort By
                 </label>
-                <select
-                  id="saved-sort-order"
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
-                  className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none focus:border-primary/50 transition-colors"
-                >
-                  <option value="newest">Recently Saved</option>
-                  <option value="oldest">Oldest First</option>
-                </select>
+                <div className="relative">
+                  <select
+                    id="saved-sort-order"
+                    value={sortOrder}
+                    onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
+                    className="appearance-none w-full rounded-xl border border-gray-200 bg-white pl-3.5 pr-9 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none focus:border-primary/50 transition-colors cursor-pointer"
+                  >
+                    <option value="newest">Recently Saved</option>
+                    <option value="oldest">Oldest First</option>
+                  </select>
+                  <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </div>
               </div>
             </Card>
 
@@ -178,7 +183,7 @@ export default function SavedJobsListPageClient() {
                   Save jobs to revisit them later
                 </p>
                 <Link
-                  href="/jobs"
+                  href="/candidate/jobs"
                   className="inline-block text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
                   style={{ color: '#fff' }}
                 >
@@ -217,7 +222,7 @@ export default function SavedJobsListPageClient() {
                           <div className="flex items-start justify-between mb-2">
                             <div>
                               <Link
-                                href={`/jobs/${job.job_id}`}
+                                href={`/candidate/jobs/${job.job_id}`}
                                 className="text-[15px] font-bold text-[#0f172a] hover:text-primary transition-colors block"
                               >
                                 {job.title}
@@ -248,7 +253,7 @@ export default function SavedJobsListPageClient() {
                         {/* Actions */}
                         <div className="flex items-center gap-2 shrink-0">
                           <Link
-                            href={`/jobs/${job.job_id}`}
+                            href={`/candidate/jobs/${job.job_id}`}
                             className="text-[12px] font-semibold text-primary bg-primary/10 rounded-lg px-3 py-2 hover:bg-primary/20 transition-colors"
                           >
                             View & Apply

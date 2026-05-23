@@ -80,6 +80,11 @@ export class ProfileValidator {
     const firstNameError = this.validateRequired(data.fullName, 'Full name');
     if (firstNameError) return firstNameError;
 
+    if (data.currentSalary !== '' && data.currentSalary != null) {
+      const val = Number(data.currentSalary);
+      if (isNaN(val) || val <= 0) return { field: 'currentSalary', message: 'Current salary must be greater than 0' };
+    }
+
     return this.validateEmail(data.email);
   }
 
@@ -134,6 +139,11 @@ export class ProfileValidator {
     if (!career?.department?.trim()) return { field: 'department', message: 'Department is required' };
     if (!career?.role_category?.trim()) return { field: 'role_category', message: 'Role category is required' };
     if (!career?.job_role?.trim()) return { field: 'job_role', message: 'Job role is required' };
+
+    if (career?.expected_salary !== '' && career?.expected_salary != null) {
+      const val = Number(career.expected_salary);
+      if (isNaN(val) || val <= 0) return { field: 'expected_salary', message: 'Expected salary must be greater than 0' };
+    }
 
     // Optional field validations (enum values) - trim before checking
     const validJobTypes = ['Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance'];

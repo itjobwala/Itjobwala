@@ -263,7 +263,7 @@ export default function SignUpPage() {
         work_status:    cForm.workStatus as 'fresher' | 'experienced',
         terms_accepted: cForm.terms,
       });
-      window.location.href = token ? '/dashboard' : '/login?registered=1';
+      window.location.href = token ? '/candidate/dashboard' : '/auth/login?registered=1';
     } catch (err) {
       setCApiError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
       setCLoading(false);
@@ -312,7 +312,7 @@ export default function SignUpPage() {
         <p className="text-sm text-gray-500 mb-8" style={{ lineHeight: 1.7 }}>
           Your recruiter account at <strong style={{ color: PRIMARY }}>itJobwala</strong> is ready. Start posting jobs and reach thousands of IT professionals.
         </p>
-        <Link href="/recruiter/login" className="block text-white rounded-xl font-bold text-[15px] text-center py-3.5"
+        <Link href="/auth/login?role=recruiter" className="block text-white rounded-xl font-bold text-[15px] text-center py-3.5"
           style={{ background: PRIMARY, textDecoration: 'none' }}>
           Go to dashboard →
         </Link>
@@ -335,7 +335,7 @@ export default function SignUpPage() {
           </Link>
           <div className="flex items-center gap-3 sm:gap-5">
             <span className="hidden sm:inline text-[13px] text-gray-500">Already have an account?</span>
-            <Link href="/login"
+            <Link href="/auth/login"
               className="text-sm font-bold rounded-lg px-4 sm:px-[18px] py-2 transition-all duration-200"
               style={{ color: PRIMARY, border: `1.5px solid ${PRIMARY}`, textDecoration: 'none' }}
               onMouseEnter={e => { e.currentTarget.style.background = PRIMARY; e.currentTarget.style.color = '#fff'; }}
@@ -448,7 +448,7 @@ export default function SignUpPage() {
                 </div>
                 <p className="fade-up delay-7 text-center text-[13px] text-gray-400 mt-1">
                   Already have an account?{' '}
-                  <Link href="/login" className="font-bold" style={{ color: PRIMARY, textDecoration: 'none' }}>Log in</Link>
+                  <Link href="/auth/login" className="font-bold" style={{ color: PRIMARY, textDecoration: 'none' }}>Log in</Link>
                 </p>
               </form>
             )}
@@ -529,7 +529,7 @@ export default function SignUpPage() {
                 </div>
                 <p className="text-center text-[13px] text-gray-400 mt-1">
                   Already a recruiter?{' '}
-                  <Link href="/login" className="font-bold" style={{ color: PRIMARY, textDecoration: 'none' }}>Log in</Link>
+                  <Link href="/auth/login" className="font-bold" style={{ color: PRIMARY, textDecoration: 'none' }}>Log in</Link>
                 </p>
               </form>
             )}

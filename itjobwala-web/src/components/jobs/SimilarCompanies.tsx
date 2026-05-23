@@ -25,7 +25,7 @@ export default function SimilarCompanies({ companies }: Props) {
         {companies.map(c => (
           <Link
             key={c.id}
-            href={`/jobs?company=${encodeURIComponent(c.name)}`}
+            href={`/candidate/jobs?company=${encodeURIComponent(c.name)}`}
             className="group flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 transition-colors"
           >
             <img

@@ -55,7 +55,7 @@ export function useRecruiterAuth(): UseRecruiterAuthReturn {
   const logout = () => {
     clearRecruiterAuth();
     setIsAuthenticated(false);
-    router.push('/recruiter/login');
+    router.push('/auth/login?role=recruiter');
   };
 
   return {

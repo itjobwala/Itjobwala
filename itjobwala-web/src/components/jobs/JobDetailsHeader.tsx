@@ -114,7 +114,7 @@ export default function JobDetailsHeader({ job, onApply, applied, saved, onSave,
     <Card padding="none" className="p-6 sm:p-8" overflow>
       {/* Back */}
       <Link
-        href="/jobs"
+        href="/candidate/jobs"
         className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-gray-400 hover:text-primary transition-colors mb-6"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -151,12 +151,16 @@ export default function JobDetailsHeader({ job, onApply, applied, saved, onSave,
 
           {/* Meta chips */}
           <div className="flex flex-wrap gap-2 mb-4">
-            <span className={`text-[12px] font-semibold rounded-full py-1 px-3 ${WORK_MODE_CLASS[job.workMode]}`}>
-              {WORK_MODE_LABEL[job.workMode]}
-            </span>
-            <span className="text-[12px] font-semibold rounded-full py-1 px-3 bg-gray-100 text-gray-600">
-              {JOB_TYPE_LABEL[job.jobType]}
-            </span>
+            {WORK_MODE_LABEL[job.workMode] && (
+              <span className={`text-[12px] font-semibold rounded-full py-1 px-3 ${WORK_MODE_CLASS[job.workMode] ?? 'bg-gray-100 text-gray-600'}`}>
+                {WORK_MODE_LABEL[job.workMode]}
+              </span>
+            )}
+            {JOB_TYPE_LABEL[job.jobType] && (
+              <span className="text-[12px] font-semibold rounded-full py-1 px-3 bg-gray-100 text-gray-600">
+                {JOB_TYPE_LABEL[job.jobType]}
+              </span>
+            )}
             <span className="text-[12px] font-semibold rounded-full py-1 px-3 bg-primary/10 text-primary">
               {job.experienceMin === 0 && job.experienceMax === 0
                 ? '0 yrs'

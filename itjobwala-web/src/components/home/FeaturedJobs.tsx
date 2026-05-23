@@ -66,7 +66,7 @@ export default function
             </p>
 
             <Link
-              href="/jobs"
+              href="/candidate/jobs"
               className="inline-flex items-center gap-2 text-sm font-bold text-white rounded-[10px] py-[13px] px-6 transition-[filter] hover:brightness-110"
               style={{ background: PRIMARY, color: '#fff' }}
             >
@@ -130,7 +130,7 @@ export default function
 
                 return (
                   <Link
-                    href={`/jobs/${job?.id}`}
+                    href={`/candidate/jobs/${job?.id}`}
                     key={job?.id}
                     className={`reveal stagger-${i + 1} bg-white rounded-2xl py-5 px-5 sm:px-6 flex flex-col sm:flex-row sm:items-center gap-4 cursor-pointer transition-all duration-[250ms]`}
                     style={{

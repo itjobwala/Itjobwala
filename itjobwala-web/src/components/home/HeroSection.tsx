@@ -16,7 +16,7 @@ export default function HeroSection() {
     if (search.jobTitle) query.set('q', search.jobTitle);
     if (search.company) query.set('company', search.company);
     if (search.city) query.set('loc', search.city);
-    window.location.href = `/jobs?${query.toString()}`;
+    window.location.href = `/candidate/jobs?${query.toString()}`;
   }
 
   return (
@@ -89,7 +89,7 @@ export default function HeroSection() {
           {TRENDING.slice(0, 6).map((t) => (
             <Link
               key={t}
-              href={`/jobs?skills=${encodeURIComponent(t)}`}
+              href={`/candidate/jobs?skills=${encodeURIComponent(t)}`}
               className="text-[13px] font-semibold bg-white rounded-full py-[5px] px-[14px] border border-gray-200 transition-all"
               style={{ color: PRIMARY }}
               onMouseEnter={(e) => {

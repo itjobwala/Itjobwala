@@ -117,7 +117,7 @@ export default function ProfileCompletionCard() {
       </div>
 
       <Link
-        href="/profile"
+        href="/candidate/profile"
         className="block text-center text-[13px] font-bold text-primary border border-primary/30 rounded-xl py-2.5 hover:bg-primary/5 transition-colors"
       >
         Complete profile →

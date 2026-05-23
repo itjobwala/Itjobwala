@@ -6,7 +6,7 @@ import { useAuth } from '@/src/hooks/useAuth';
 
 interface Props {
   children: React.ReactNode;
-  /** Defaults to '/login'. Override for recruiter or other auth flows. */
+  /** Defaults to '/auth/login'. Override for recruiter or other auth flows. */
   redirectTo?: string;
 }
 
@@ -21,7 +21,7 @@ function AuthSpinner() {
   );
 }
 
-export default function ProtectedRoute({ children, redirectTo = '/login' }: Props) {
+export default function ProtectedRoute({ children, redirectTo = '/auth/login' }: Props) {
   const { session, loading } = useAuth();
   const router   = useRouter();
   const pathname = usePathname();

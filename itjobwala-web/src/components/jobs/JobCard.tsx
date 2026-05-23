@@ -113,7 +113,7 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false }:
   };
 
   return (
-    <div onClick={() => router.push(`/jobs/${job.id}`)} className="group bg-white rounded-2xl border border-gray-100 hover:border-primary/40 hover:shadow-lg transition-all duration-200 cursor-pointer p-5 sm:p-6">
+    <div onClick={() => router.push(`/candidate/jobs/${job.id}`)} className="group bg-white rounded-2xl border border-gray-100 hover:border-primary/40 hover:shadow-lg transition-all duration-200 cursor-pointer p-5 sm:p-6">
       <div className="flex items-start gap-4">
         {/* Company logo */}
         <CompanyLogo name={job.company} logo={job.companyLogo} colorClass={job.companyColorClass} />
@@ -185,12 +185,16 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false }:
 
           {/* Tags row */}
           <div className="flex flex-wrap items-center gap-2 mt-3">
-            <span className={`text-[12px] font-semibold rounded-full py-[3px] px-3 ${WORK_MODE_CLASS[job.workMode]}`}>
-              {WORK_MODE_LABEL[job.workMode]}
-            </span>
-            <span className="text-[12px] font-semibold rounded-full py-[3px] px-3 bg-gray-100 text-gray-600">
-              {JOB_TYPE_LABEL[job.jobType]}
-            </span>
+            {WORK_MODE_LABEL[job.workMode] && (
+              <span className={`text-[12px] font-semibold rounded-full py-[3px] px-3 ${WORK_MODE_CLASS[job.workMode] ?? 'bg-gray-100 text-gray-600'}`}>
+                {WORK_MODE_LABEL[job.workMode]}
+              </span>
+            )}
+            {JOB_TYPE_LABEL[job.jobType] && (
+              <span className="text-[12px] font-semibold rounded-full py-[3px] px-3 bg-gray-100 text-gray-600">
+                {JOB_TYPE_LABEL[job.jobType]}
+              </span>
+            )}
             {job.skills.slice(0, 3).map(skill => (
               <span key={skill} className="text-[12px] font-medium rounded-full py-[3px] px-3 bg-gray-50 text-gray-500 border border-gray-100">
                 {skill}

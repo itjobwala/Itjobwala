@@ -10,7 +10,7 @@ import { updateAuthProfile } from '@/src/lib/auth';
 import { useCandidateProfileQuery } from '@/src/hooks/useProfile';
 
 const NAV_LINKS = [
-  { label: 'Find Jobs',   href: '/jobs'    },
+  { label: 'Find Jobs',   href: '/candidate/jobs'    },
   { label: 'Companies',   href: '#'        },
   { label: 'Resources',   href: '#'        },
 ];
@@ -71,13 +71,25 @@ export default function AuthNavbar({ user }: Props) {
       }`}>
       <div suppressHydrationWarning className="max-w-[1440px] mx-auto px-5 lg:px-10 flex items-center h-[68px] gap-6 lg:gap-9">
 
-        {/* ── Logo ── */}
-        <Link href="/dashboard" className="flex items-center gap-1 shrink-0 hover:opacity-80 transition-opacity">
-          <Image src="/logo.png" alt="itJobwala" width={30} height={30} />
-          <span className="font-extrabold text-xl text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
-            it<span className="text-primary">Jobwala</span>
-          </span>
-        </Link>
+        {/* ── Logo — scroll to top on homepage, navigate to jobs elsewhere ── */}
+        {pathname === '/' ? (
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            className="flex items-center gap-1 shrink-0 hover:opacity-80 transition-opacity bg-transparent border-none p-0 cursor-pointer"
+          >
+            <Image src="/logo.png" alt="itJobwala" width={30} height={30} />
+            <span className="font-extrabold text-xl text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
+              it<span className="text-primary">Jobwala</span>
+            </span>
+          </button>
+        ) : (
+          <Link href="/candidate/jobs" className="flex items-center gap-1 shrink-0 hover:opacity-80 transition-opacity">
+            <Image src="/logo.png" alt="itJobwala" width={30} height={30} />
+            <span className="font-extrabold text-xl text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
+              it<span className="text-primary">Jobwala</span>
+            </span>
+          </Link>
+        )}
 
         {/* ── Nav links — desktop ── */}
         <div className="hidden md:flex items-center gap-6 flex-1">

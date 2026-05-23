@@ -45,13 +45,13 @@ export default function ProfileEditSidebar({ completion, saving, lastUpdated, on
             {saving ? 'Saving changes' : 'Save changes'}
           </button>
           <Link
-            href="/profile"
+            href="/candidate/profile"
             className="w-full text-center text-[14px] font-bold text-gray-600 border border-gray-200 rounded-xl px-4 py-3 hover:bg-gray-50 hover:border-gray-300 transition-colors"
           >
             Cancel
           </Link>
           <Link
-            href="/profile"
+            href="/candidate/profile"
             className="w-full text-center text-[13px] font-semibold text-primary bg-primary/5 border border-primary/10 rounded-xl px-4 py-2.5 hover:bg-primary/10 transition-colors"
           >
             Profile preview

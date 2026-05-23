@@ -19,9 +19,6 @@ export default function RecruiterShell({ children }: { children: React.ReactNode
           <span className="block w-5 h-[2px] bg-gray-700 rounded-full" />
           <span className="block w-5 h-[2px] bg-gray-700 rounded-full" />
         </button>
-        <span className="font-extrabold text-[17px] text-[#0f172a]" style={{ letterSpacing: '-0.4px' }}>
-          it<span className="text-primary">Jobwala</span>
-        </span>
       </div>
 
       <div className="flex">

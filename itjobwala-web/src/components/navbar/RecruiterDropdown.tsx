@@ -37,7 +37,7 @@ export default function RecruiterDropdown() {
     clearRecruiterAuth();
     setIsRecruiterLoggedIn(false);
     setOpen(false);
-    router.push('/recruiter/login');
+    router.push('/auth/login?role=recruiter');
   }
 
   return (
@@ -139,7 +139,7 @@ export default function RecruiterDropdown() {
             <>
               {/* Recruiter Sign Up */}
               <Link
-                href="/recruiter/login?tab=signup"
+                href="/auth/signup"
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-3 px-3.5 py-3 rounded-[10px] transition-colors hover:bg-[#f5f7ff]"
               >
@@ -157,7 +157,7 @@ export default function RecruiterDropdown() {
 
               {/* Recruiter Login */}
               <Link
-                href="/recruiter/login"
+                href="/auth/login?role=recruiter"
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-3 px-3.5 py-3 rounded-[10px] transition-colors hover:bg-[#f5f7ff]"
               >

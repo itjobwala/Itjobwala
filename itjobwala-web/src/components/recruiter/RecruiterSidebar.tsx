@@ -119,12 +119,12 @@ export default function RecruiterSidebar({ isOpen, onClose }: RecruiterSidebarPr
       >
         {/* Logo */}
         <div className="px-6 h-[68px] flex items-center shrink-0">
-          <Link href="/recruiter/dashboard" className="flex items-center gap-1 hover:opacity-80 transition-opacity">
+          <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-1 hover:opacity-80 transition-opacity bg-transparent border-none p-0 cursor-pointer">
             <Image src="/logo.png" alt="itJobwala" width={30} height={30} />
             <span className="font-extrabold text-[20px] text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
               it<span className="text-primary">Jobwala</span>
             </span>
-          </Link>
+          </button>
         </div>
         {/* Company info */}
         <div className="px-4 py-4 border-b border-gray-100">

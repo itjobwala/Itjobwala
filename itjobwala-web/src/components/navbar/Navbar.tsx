@@ -6,7 +6,7 @@ import Image from 'next/image';
 
 const PRIMARY = '#1557FF';
 const NAV_LINKS = [
-  { label: 'Find Jobs', href: '/jobs' },
+  { label: 'Find Jobs', href: '/candidate/jobs' },
   { label: 'Companies', href: '#' },
   { label: 'Resources', href: '#' },
   { label: 'Post a Free Job', href: '/recruiter/post-job' },
@@ -33,12 +33,15 @@ export default function Navbar() {
     >
       <div suppressHydrationWarning className="max-w-[1440px] mx-auto px-5 lg:px-10 flex items-center h-[68px] gap-9">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-1 shrink-0 hover:opacity-80 transition-opacity">
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="flex items-center gap-1 shrink-0 hover:opacity-80 transition-opacity bg-transparent border-none p-0 cursor-pointer"
+        >
           <Image src="/logo.png" alt="itJobwala" width={32} height={32} />
           <span className="font-extrabold text-xl text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
             it<span className="text-primary">Jobwala</span>
           </span>
-        </Link>
+        </button>
 
         {/* Nav links — desktop */}
         <div className="hidden md:flex items-center gap-6 flex-1">
@@ -60,7 +63,7 @@ export default function Navbar() {
         <div className="flex gap-2 items-center ml-auto">
           {/* Log in — desktop */}
           <Link
-            href="/login"
+            href="/auth/login"
             className="hidden sm:block text-sm font-semibold px-3.5 py-2 rounded-lg transition-colors"
             style={{ color: '#374151', textDecoration: 'none' }}
             onMouseEnter={e => { e.currentTarget.style.color = PRIMARY; }}
@@ -71,7 +74,7 @@ export default function Navbar() {
 
           {/* Sign up — desktop */}
           <Link
-            href="/signup"
+            href="/auth/signup"
             className="hidden sm:block text-sm font-semibold px-3.5 py-2 rounded-lg transition-all"
             style={{ background: PRIMARY, color: '#fff', textDecoration: 'none', boxShadow: `0 4px 16px ${PRIMARY}44` }}
             onMouseEnter={e => { e.currentTarget.style.background = '#0d3fd4'; }}
@@ -118,7 +121,7 @@ export default function Navbar() {
           ))}
           <div className="pt-4 flex flex-col gap-2.5">
             <Link
-              href="/login"
+              href="/auth/login"
               onClick={() => setMenuOpen(false)}
               className="text-sm font-semibold py-2.5 text-center border-[1.5px] rounded-lg"
               style={{ color: '#374151', borderColor: '#e5e7eb', textDecoration: 'none' }}
@@ -126,7 +129,7 @@ export default function Navbar() {
               Log in
             </Link>
             <Link
-              href="/signup"
+              href="/auth/signup"
               onClick={() => setMenuOpen(false)}
               className="text-sm font-bold py-2.5 text-center rounded-lg"
               style={{ background: PRIMARY, color: '#fff', textDecoration: 'none' }}

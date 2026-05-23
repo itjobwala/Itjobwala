@@ -128,8 +128,8 @@ export default function ApplicationsListPageClient() {
                   </p>
                 </div>
                 <Link
-                  href="/jobs"
-                  className="text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
+                  href="/candidate/jobs"
+                  className="text-[13px] font-semibold text-white bg-primary rounded-xl px-4 py-2 hover:opacity-90 active:opacity-80 transition-opacity"
                   style={{ color: '#fff' }}
                 >
                   Find More Jobs
@@ -147,17 +147,22 @@ export default function ApplicationsListPageClient() {
                   <label htmlFor="app-filter-status" className="block text-[12px] font-bold text-gray-500 mb-2">
                     Filter by Status
                   </label>
-                  <select
-                    id="app-filter-status"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none focus:border-primary/50 transition-colors"
-                  >
-                    <option value="">All Status</option>
-                    {(['applied','shortlisted','interview','offer','hired','rejected','withdrawn'] as const).map(s => (
-                      <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      id="app-filter-status"
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      className="appearance-none w-full rounded-xl border border-gray-200 bg-white pl-3.5 pr-9 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none focus:border-primary/50 transition-colors cursor-pointer"
+                    >
+                      <option value="">All Status</option>
+                      {(['applied','shortlisted','interview','offer','hired','rejected','withdrawn'] as const).map(s => (
+                        <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                      ))}
+                    </select>
+                    <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </div>
                 </div>
 
                 {/* Sort Order */}
@@ -165,15 +170,20 @@ export default function ApplicationsListPageClient() {
                   <label htmlFor="app-sort-order" className="block text-[12px] font-bold text-gray-500 mb-2">
                     Sort By
                   </label>
-                  <select
-                    id="app-sort-order"
-                    value={sortOrder}
-                    onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
-                    className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none focus:border-primary/50 transition-colors"
-                  >
-                    <option value="newest">Newest First</option>
-                    <option value="oldest">Oldest First</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      id="app-sort-order"
+                      value={sortOrder}
+                      onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
+                      className="appearance-none w-full rounded-xl border border-gray-200 bg-white pl-3.5 pr-9 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none focus:border-primary/50 transition-colors cursor-pointer"
+                    >
+                      <option value="newest">Newest First</option>
+                      <option value="oldest">Oldest First</option>
+                    </select>
+                    <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </Card>
@@ -203,7 +213,7 @@ export default function ApplicationsListPageClient() {
                   {statusFilter ? 'No applications with this status' : 'You haven\'t applied to any jobs yet'}
                 </p>
                 <Link
-                  href="/jobs"
+                  href="/candidate/jobs"
                   className="inline-block text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
                   style={{ color: '#fff' }}
                 >
@@ -239,21 +249,15 @@ export default function ApplicationsListPageClient() {
 
                         {/* Content */}
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between mb-2">
-                            <div>
-                              <Link
-                                href={`/jobs/${app.job_id}`}
-                                className="text-[15px] font-bold text-[#0f172a] hover:text-primary transition-colors block"
-                              >
-                                {app.title}
-                              </Link>
-                              <p className="text-[13px] text-gray-500 mt-1">
-                                {app.company} {app.location && `· ${app.location}`}
-                              </p>
-                            </div>
-                            <StatusBadge status={app.status} size="md" className="shrink-0" />
-                          </div>
-
+                          <Link
+                            href={`/candidate/jobs/${app.job_id}`}
+                            className="text-[15px] font-bold text-[#0f172a] hover:text-primary transition-colors block mb-0.5"
+                          >
+                            {app.title}
+                          </Link>
+                          <p className="text-[13px] text-gray-500 mb-2">
+                            {app.company} {app.location && `· ${app.location}`}
+                          </p>
                           {/* Meta */}
                           <p className="text-[12px] text-gray-400">
                             Applied {relativeDate(app.applied_at)}
@@ -265,9 +269,10 @@ export default function ApplicationsListPageClient() {
 
                         {/* Actions */}
                         <div className="flex items-center gap-2 shrink-0">
+                          <StatusBadge status={app.status} size="md" className="shrink-0" />
                           <Link
-                            href={`/jobs/${app.job_id}`}
-                            className="text-[12px] font-semibold text-gray-600 border border-gray-200 rounded-lg px-3 py-2 hover:border-primary/40 hover:text-primary transition-colors"
+                            href={`/candidate/jobs/${app.job_id}`}
+                            className="text-[12px] font-semibold text-gray-600 border border-gray-200 rounded-xl px-3 py-2 hover:border-primary/40 hover:text-primary transition-colors"
                           >
                             View Job
                           </Link>
@@ -275,7 +280,7 @@ export default function ApplicationsListPageClient() {
                             <button
                               onClick={() => handleWithdrawClick(app.id)}
                               disabled={withdrawingId === app.id}
-                              className="text-[12px] font-semibold text-red-600 border border-red-200 rounded-lg px-3 py-2 hover:bg-red-50 disabled:opacity-50 transition-colors"
+                              className="text-[12px] font-semibold text-red-600 border border-red-200 rounded-xl px-3 py-2 hover:bg-red-50 disabled:opacity-50 transition-colors"
                             >
                               {withdrawingId === app.id ? 'Withdrawing...' : 'Withdraw'}
                             </button>

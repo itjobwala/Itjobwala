@@ -25,7 +25,7 @@ const MENU_ITEMS = [
     group: 'account',
     items: [
       {
-        href: '/profile',
+        href: '/candidate/profile',
         label: 'View Profile',
         icon: (
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -34,7 +34,7 @@ const MENU_ITEMS = [
         ),
       },
       {
-        href: '/saved-jobs',
+        href: '/candidate/saved-jobs',
         label: 'Saved Jobs',
         icon: (
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
@@ -43,7 +43,7 @@ const MENU_ITEMS = [
         ),
       },
       {
-        href: '/applications',
+        href: '/candidate/applications',
         label: 'My Applications',
         icon: (
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">

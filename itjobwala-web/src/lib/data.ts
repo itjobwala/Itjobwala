@@ -88,7 +88,32 @@ export const FAQS = [
 ];
 
 export const FOOTER_COLS = [
-  { title: "Job Seekers", links: ["Browse Jobs","Companies","Create Profile","Job Alerts","Resources"] },
-  { title: "Recruiters",  links: ["Post a Job","Pricing","Recruiter Login","Resources"] },
-  { title: "Company",     links: ["About Us","Contact Us","Privacy Policy","Terms of Service"] },
+  {
+    title: "Job Seekers",
+    links: [
+      { label: "Browse Jobs",     href: "/candidate/jobs" },
+      { label: "Companies",       href: "#" },
+      { label: "Create Profile",  href: "/auth/signup" },
+      { label: "Job Alerts",      href: "#" },
+      { label: "Resources",       href: "#" },
+    ],
+  },
+  {
+    title: "Recruiters",
+    links: [
+      { label: "Post a Job",      href: "/recruiter/post-job" },
+      { label: "Pricing",         href: "#" },
+      { label: "Recruiter Login", href: "/auth/login?role=recruiter" },
+      { label: "Resources",       href: "#" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { label: "About Us",        href: "#" },
+      { label: "Contact Us",      href: "#" },
+      { label: "Privacy Policy",  href: "#" },
+      { label: "Terms of Service",href: "#" },
+    ],
+  },
 ];

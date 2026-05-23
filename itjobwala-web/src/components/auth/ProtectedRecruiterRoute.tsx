@@ -26,7 +26,7 @@ export default function ProtectedRecruiterRoute({ children }: Props) {
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      router.replace(`/recruiter/login?next=${encodeURIComponent(pathname)}`);
+      router.replace(`/auth/login?role=recruiter?next=${encodeURIComponent(pathname)}`);
     }
   }, [isAuthenticated, loading, router, pathname]);
 

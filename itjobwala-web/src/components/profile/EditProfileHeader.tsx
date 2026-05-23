@@ -121,7 +121,24 @@ export default function EditProfileHeader({ profile, onChange, profilePhotoUrl }
           <Field label="Current role / title" value={profile.title} onChange={value => update('title', value)} />
           <Field label="Experience (Years)" value={profile.experienceYears} onChange={value => update('experienceYears', value)} type="number" />
           <Field label="Location" value={profile.location} onChange={value => update('location', value)} />
-          <Field label="Current Salary" value={profile.currentSalary || ''} onChange={value => update('currentSalary', value)} type="number" placeholder="e.g. 80000" />
+          <label className="block">
+            <span className="block text-[12px] font-bold text-gray-500 mb-1.5">Current Salary</span>
+            <input
+              type="number"
+              min="1"
+              value={profile.currentSalary || ''}
+              onChange={e => update('currentSalary', e.target.value)}
+              placeholder="e.g. 80000"
+              className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none transition-colors placeholder:text-gray-400 ${
+                profile.currentSalary !== '' && profile.currentSalary != null && Number(profile.currentSalary) <= 0
+                  ? 'border-red-300 focus:border-red-400'
+                  : 'border-gray-200 focus:border-primary/50'
+              }`}
+            />
+            {profile.currentSalary !== '' && profile.currentSalary != null && Number(profile.currentSalary) <= 0 && (
+              <span className="mt-1 block text-[11px] font-semibold text-red-500">Current salary must be greater than 0</span>
+            )}
+          </label>
           <Field label="Available to join" value={profile.availabilityToJoin || ''} onChange={value => update('availabilityToJoin', value)} type="date" />
           <Field label="Email" value={profile.email} onChange={value => update('email', value)} type="email" error={!profile.email.includes('@') ? 'Enter a valid email' : ''} />
           <Field label="Phone" value={profile.phone} onChange={value => update('phone', value)} type="tel" />

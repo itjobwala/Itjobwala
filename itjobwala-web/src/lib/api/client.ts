@@ -73,7 +73,7 @@ recruiterClient.interceptors.response.use(
     const apiError = toApiError(error);
     if (apiError.status === 401 && typeof window !== 'undefined') {
       clearRecruiterAuth();
-      window.location.href = '/recruiter/login';
+      window.location.href = '/auth/login?role=recruiter';
     }
     return Promise.reject(apiError);
   },

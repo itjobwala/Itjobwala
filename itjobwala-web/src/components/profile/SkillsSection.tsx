@@ -16,7 +16,8 @@ export default function SkillsSection({ skills, onEdit }: Props & { onEdit?: () 
             className="flex items-center gap-1.5 text-[12px] font-semibold text-gray-400 hover:text-primary transition-colors"
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <circle cx="12" cy="12" r="10" /><path d="M12 8v8M8 12h8" />
+              <circle cx="12" cy="12" r="
+              10" /><path d="M12 8v8M8 12h8" />
             </svg>
             Edit skills
           </button>

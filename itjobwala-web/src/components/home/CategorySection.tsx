@@ -55,7 +55,7 @@ function getTheme(categoryType: string) {
 }
 
 function getCategoryHref(category: JobCategory) {
-  return `/jobs?${category.filter_key}=${category.key}`;
+  return `/candidate/jobs?${category.filter_key}=${category.key}`;
 }
 
 export default function CategorySection() {
@@ -90,7 +90,7 @@ export default function CategorySection() {
           </div>
           {!isWaitingForData && !isError && categoriesData.length > 0 && (
             <Link
-              href="/jobs"
+              href="/candidate/jobs"
               className="reveal-right flex items-center gap-1.5 text-sm font-semibold"
               style={{ color: PRIMARY }}
             >
@@ -127,7 +127,7 @@ export default function CategorySection() {
               return (
                 <Link
                   href={getCategoryHref(cat)}
-                  key={cat.key}
+                  key={`${cat.category_type}-${cat.key}-${i}`}
                   className={`reveal stagger-${(i % 4) + 1} block rounded-2xl relative overflow-hidden transition-all duration-300 no-underline`}
                   style={{
                     padding: '22px 22px 20px',

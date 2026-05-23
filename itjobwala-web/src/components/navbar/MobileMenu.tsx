@@ -6,16 +6,16 @@ import { clearAuth } from '@/src/lib/auth';
 import type { NavUser } from './UserDropdown';
 
 const NAV_LINKS = [
-  { label: 'Find Jobs',      href: '/jobs' },
+  { label: 'Find Jobs',      href: '/candidate/jobs' },
   { label: 'Companies',      href: '#' },
   { label: 'Resources',      href: '#' },
-  { label: 'Saved Jobs',     href: '/saved-jobs' },
-  { label: 'My Applications', href: '/applications' },
+  { label: 'Saved Jobs',     href: '/candidate/saved-jobs' },
+  { label: 'My Applications', href: '/candidate/applications' },
 ];
 
 const PROFILE_LINKS = [
   {
-    href: '/profile',
+    href: '/candidate/profile',
     label: 'View Profile',
     icon: (
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">

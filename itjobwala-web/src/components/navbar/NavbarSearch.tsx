@@ -9,7 +9,7 @@ export default function NavbarSearch() {
   const router = useRouter();
 
   function handleSearch() {
-    if (query.trim()) router.push(`/jobs?q=${encodeURIComponent(query.trim())}`);
+    if (query.trim()) router.push(`/candidate/jobs?q=${encodeURIComponent(query.trim())}`);
   }
 
   return (

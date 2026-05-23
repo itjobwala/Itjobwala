@@ -17,7 +17,7 @@ interface Props {
   onChange: (profile: EditableCareerProfile) => void;
 }
 
-function TextField({ label, value, onChange, placeholder = '', type = 'text' }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; type?: string }) {
+function TextField({ label, value, onChange, placeholder = '', type = 'text', error = '' }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string; type?: string; error?: string }) {
   return (
     <label className="block">
       <span className="block text-[12px] font-bold text-gray-500 mb-1.5">{label}</span>
@@ -26,8 +26,9 @@ function TextField({ label, value, onChange, placeholder = '', type = 'text' }: 
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none transition-colors focus:border-primary/50 placeholder:text-gray-400"
+        className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none transition-colors focus:border-primary/50 placeholder:text-gray-400 ${error ? 'border-red-400' : 'border-gray-200'}`}
       />
+      {error && <p className="text-[11px] text-red-500 mt-1 font-medium">{error}</p>}
     </label>
   );
 }
@@ -67,7 +68,24 @@ export default function EditCareerProfileSection({ profile, onChange }: Props) {
         <SelectField label="Desired job type" value={profile.desired_job_type} onChange={v => update('desired_job_type', v)} options={['Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance']} />
         <SelectField label="Desired employment type" value={profile.desired_employment_type} onChange={v => update('desired_employment_type', v)} options={['Permanent', 'Temporary', 'Contractual']} />
         <SelectField label="Preferred shift" value={profile.preferred_shift} onChange={v => update('preferred_shift', v)} options={['Day Shift', 'Night Shift', 'Flexible']} />
-        <TextField label="Expected salary (₹)" value={profile.expected_salary} onChange={v => update('expected_salary', v)} type="number" placeholder="e.g. 100000" />
+        <label className="block">
+          <span className="block text-[12px] font-bold text-gray-500 mb-1.5">Expected salary (₹)</span>
+          <input
+            type="number"
+            min="1"
+            value={profile.expected_salary}
+            onChange={e => update('expected_salary', e.target.value)}
+            placeholder="e.g. 100000"
+            className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none transition-colors placeholder:text-gray-400 ${
+              profile.expected_salary !== '' && profile.expected_salary != null && Number(profile.expected_salary) <= 0
+                ? 'border-red-300 focus:border-red-400'
+                : 'border-gray-200 focus:border-primary/50'
+            }`}
+          />
+          {profile.expected_salary !== '' && profile.expected_salary != null && Number(profile.expected_salary) <= 0 && (
+            <span className="mt-1 block text-[11px] font-semibold text-red-500">Expected salary must be greater than 0</span>
+          )}
+        </label>
       </div>
       <SelectField label="Preferred work location" value={profile.preferred_work_location} onChange={v => update('preferred_work_location', v)} options={['Remote', 'On-site', 'Hybrid']} />
     </div>

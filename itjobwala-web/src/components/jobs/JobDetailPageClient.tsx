@@ -12,6 +12,7 @@ import JobDetailSkeleton from './JobDetailSkeleton';
 import { useSaveJobMutation, useUnsaveJobMutation } from '@/src/hooks/useApplications';
 import { useRecommendedJobsQuery, useSimilarCompaniesQuery } from '@/src/hooks/useJobs';
 import { applyToJob, getMyApplications } from '@/src/lib/api/applications';
+import { getSavedJobs } from '@/src/lib/api/savedJobs';
 import { safeLocalStorageGetItem } from '@/src/lib/hydration-safe';
 import { normalizeJob } from './types';
 import type { JobDetail } from './types';
@@ -39,13 +40,26 @@ export default function JobDetailPageClient({ job }: Props) {
 
   // Client-side applied check — SSR doesn't have candidate's token, so we verify after mount
   useEffect(() => {
-    if (applied) return; // already know it's applied
+    if (applied) return;
     const token = safeLocalStorageGetItem('token');
     if (!token) return;
     getMyApplications({ limit: 200 })
       .then(data => {
         const alreadyApplied = data.applications.some(a => a.job_id === String(job.id));
         if (alreadyApplied) setApplied(true);
+      })
+      .catch(() => {});
+  }, [job.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Client-side saved check — same reason as applied check above
+  useEffect(() => {
+    if (saved) return;
+    const token = safeLocalStorageGetItem('token');
+    if (!token) return;
+    getSavedJobs({ limit: 200 })
+      .then(data => {
+        const alreadySaved = data.saved_jobs.some(j => j.job_id === String(job.id));
+        if (alreadySaved) setSaved(true);
       })
       .catch(() => {});
   }, [job.id]); // eslint-disable-line react-hooks/exhaustive-deps

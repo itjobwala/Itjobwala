@@ -121,10 +121,6 @@ export const withdrawApplication = async (request, reply) => {
     timeline.push({ status: 'withdrawn', at: new Date().toISOString(), note: 'Withdrawn by candidate' });
 
     await application.$query().patch({ status: 'withdrawn', timeline: timeline });
-    // Or we can delete it entirely, but contract says 409 if wrong stage, implying we keep it and update status, wait contract says "DELETE /candidate/applications/:application_id"
-    // So we can either delete or patch. I'll delete it if they want DELETE method, but actually usually withdraw is soft delete.
-    // Let's delete it.
-    await Application.query().deleteById(appId);
 
     return reply.status(200).send({
       success: true,
