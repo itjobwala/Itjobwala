@@ -1,7 +1,8 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import jwtPlugin from './src/plugins/jwt.js';
-import 'dotenv/config';
+import { env } from './src/config/env.js';
+import { runCleanup } from './src/utils/cleanupJob.js';
 
 import multipart from '@fastify/multipart';
 import indexRoutes from './src/routes/common/indexRoutes.js';
@@ -15,7 +16,7 @@ const fastify = Fastify({ logger: true });
 
 // Register plugins
 fastify.register(cors, {
-  origin: ['http://localhost:3000', 'https://qa-web.itjobwala.com'],
+  origin: env.corsOrigins,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   credentials: true
@@ -64,6 +65,7 @@ fastify.register((await import('./src/routes/recruiter/companyRoutes.js')).defau
 fastify.register((await import('./src/routes/common/homeRoutes.js')).default, { prefix: '/api' });
 fastify.register((await import('./src/routes/recruiter/recruiterInterviewRoutes.js')).default, { prefix: '/api' });
 fastify.register((await import('./src/routes/common/skillRoutes.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/auth/authRoutes.js')).default, { prefix: '/api' });
 
 // Centralized Error Handler
 fastify.setErrorHandler(function (error, request, reply) {
@@ -102,9 +104,12 @@ fastify.setErrorHandler(function (error, request, reply) {
 // Run the server!
 const start = async () => {
   try {
-    const port = process.env.PORT || 4000;
-    await fastify.listen({ port: port, host: '0.0.0.0' });
+    await fastify.listen({ port: env.port, host: '0.0.0.0' });
     fastify.log.info(`server listening on ${fastify.server.address().port}`);
+
+    // Run cleanup once on startup, then every 24 hours
+    runCleanup(fastify.log);
+    setInterval(() => runCleanup(fastify.log), 24 * 60 * 60 * 1000);
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);

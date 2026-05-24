@@ -2,8 +2,21 @@ import bcrypt from 'bcrypt';
 import dns from 'dns';
 import Recruiter from '../../models/recruiter/Recruiter.js';
 import cloudinary from '../../utils/cloudinary.js';
+import { generateAccessToken, generateRefreshToken, storeRefreshToken } from '../../utils/tokenService.js';
 
 const resolveMx = dns.promises.resolveMx;
+
+const REFRESH_COOKIE_MAX_AGE = 7 * 24 * 60 * 60;
+
+function setRefreshCookie(reply, token) {
+  reply.setCookie('refresh_token', token, {
+    httpOnly: true,
+    secure:   process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path:     '/',
+    maxAge:   REFRESH_COOKIE_MAX_AGE,
+  });
+}
 
 export const recruiterSignup = async (request, reply) => {
   const { full_name, company_name, email, password, terms_accepted } = request.body;
@@ -38,16 +51,23 @@ export const recruiterSignup = async (request, reply) => {
 
     delete newRecruiter.password;
 
-    const token = request.server.jwt.sign({
-      id: newRecruiter.id,
-      email: newRecruiter.email,
-      role: 'recruiter'
+    const accessToken  = generateAccessToken({ sub: newRecruiter.id, role: 'recruiter' });
+    const refreshToken = generateRefreshToken({ sub: newRecruiter.id, role: 'recruiter' });
+
+    await storeRefreshToken({
+      userId:    newRecruiter.id,
+      role:      'recruiter',
+      token:     refreshToken,
+      ipAddress: request.ip,
+      userAgent: request.headers['user-agent'],
     });
+
+    setRefreshCookie(reply, refreshToken);
 
     return reply.status(201).send({
       success: true,
       message: 'Recruiter registered successfully',
-      token
+      token:   accessToken,
     });
   } catch (error) {
     request.server.log.error(error);
@@ -84,20 +104,25 @@ export const recruiterSignin = async (request, reply) => {
       return reply.status(401).send({ success: false, message: 'Invalid credentials' });
     }
 
-    // Generate JWT token with a role flag to distinguish recruiters from users
-    const token = request.server.jwt.sign({
-      id: recruiter.id,
-      email: recruiter.email,
-      role: 'recruiter'
+    const accessToken  = generateAccessToken({ sub: recruiter.id, role: 'recruiter' });
+    const refreshToken = generateRefreshToken({ sub: recruiter.id, role: 'recruiter' });
+
+    await storeRefreshToken({
+      userId:    recruiter.id,
+      role:      'recruiter',
+      token:     refreshToken,
+      ipAddress: request.ip,
+      userAgent: request.headers['user-agent'],
     });
 
-    // Do not return password in response
+    setRefreshCookie(reply, refreshToken);
+
     delete recruiter.password;
 
     return reply.status(200).send({
       success: true,
       message: 'Signin successful',
-      token
+      token:   accessToken,
     });
   } catch (error) {
     request.server.log.error(error);

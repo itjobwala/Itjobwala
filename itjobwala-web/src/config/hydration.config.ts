@@ -1,3 +1,5 @@
+import { env } from '@/src/env';
+
 /**
  * Hydration Configuration
  *
@@ -76,7 +78,7 @@ export const ENABLE_ZUSTAND_DETECTION = false;
  *
  * Can override via env: NEXT_PUBLIC_DISABLE_AUTH_NAVBAR_SSR=true
  */
-export const DISABLE_AUTH_NAVBAR_SSR = process.env.NEXT_PUBLIC_DISABLE_AUTH_NAVBAR_SSR === 'true';
+export const DISABLE_AUTH_NAVBAR_SSR = env.disableAuthNavbarSsr;
 
 /**
  * Navbar Fallback Component
@@ -123,7 +125,7 @@ export const PERFORMANCE_BUDGET = {
  * - Store coordination
  * - Network requests
  */
-export const HYDRATION_DEBUG = process.env.NODE_ENV === 'development';
+export const HYDRATION_DEBUG = env.isDev;
 
 /**
  * Feature Flags
@@ -147,11 +149,11 @@ export const FEATURES = {
    * Show detailed error messages during hydration issues
    * (development only)
    */
-  VERBOSE_ERRORS: process.env.NODE_ENV === 'development',
+  VERBOSE_ERRORS: env.isDev,
 
   /**
    * Log hydration timeline
    * (helps identify bottlenecks)
    */
-  LOG_TIMELINE: process.env.NODE_ENV === 'development',
+  LOG_TIMELINE: env.isDev,
 };

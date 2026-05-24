@@ -142,3 +142,47 @@ export function formatCount(n: number | null | undefined): string {
 export function pluralise(count: number, singular: string, plural?: string): string {
   return `${count} ${count === 1 ? singular : (plural ?? singular + 's')}`;
 }
+
+/**
+ * Return a day-granularity relative date string.
+ * @example relativeDate('2024-05-18T00:00:00Z') → '1 day ago'
+ */
+export function relativeDate(iso: string): string {
+  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+  if (diff === 0) return 'Today';
+  if (diff === 1) return '1 day ago';
+  if (diff < 7) return `${diff} days ago`;
+  if (diff < 14) return '1 week ago';
+  return `${Math.floor(diff / 7)} weeks ago`;
+}
+
+// ── Color hashing ─────────────────────────────────────────────────────────────
+
+export const AVATAR_COLOR_CLASSES = [
+  'bg-blue-600', 'bg-green-600', 'bg-indigo-600', 'bg-violet-600',
+  'bg-orange-500', 'bg-teal-600', 'bg-red-600', 'bg-pink-600',
+];
+
+/**
+ * Hash a string to a deterministic Tailwind bg-color class.
+ */
+export function hashColor(str: string, classes = AVATAR_COLOR_CLASSES): string {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) & 0xffff;
+  return classes[h % classes.length];
+}
+
+// ── Salary (LPA) ─────────────────────────────────────────────────────────────
+
+export function formatLpa(val: string | number): string {
+  const n = parseFloat(String(val));
+  if (isNaN(n)) return '0';
+  return n % 1 === 0 ? String(Math.round(n)) : n.toFixed(1);
+}
+
+export function salaryLabel(lpaMin: string, lpaMax: string): string {
+  const min = parseFloat(lpaMin);
+  const max = parseFloat(lpaMax);
+  if (min === 0 && max === 0) return '0 LPA';
+  return `${formatLpa(min)}–${formatLpa(max)} LPA`;
+}

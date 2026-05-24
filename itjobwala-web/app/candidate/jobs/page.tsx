@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import JobsPageClient from '@/src/components/jobs/JobsPageClient';
+import { JobsPageClient } from '@/features/jobs/browse';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {

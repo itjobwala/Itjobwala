@@ -1,11 +1,22 @@
 import axios, { type InternalAxiosRequestConfig } from 'axios';
-import { clearCandidateAuth, clearRecruiterAuth } from '@/src/lib/auth';
+import { env } from '@/src/env';
+import { SESSION_EXPIRED_EVENT } from '@/src/features/auth/components/SessionExpiredToast';
+import { authLog } from '@/src/features/auth/session/auth.logger';
+import { useAuthStore } from '@/src/features/auth/session/auth.store';
+import { queueRefreshRequest } from '@/src/features/auth/session/refresh';
+import type { ApiResponse } from '@/src/types/api';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4001/api';
+const BASE_URL = env.apiUrl;
 
-export interface ApiError extends Error {
+export class ApiError extends Error {
   status?: number;
   details?: Record<string, string>;
+  constructor(message: string, status?: number, details?: Record<string, string>) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.details = details;
+  }
 }
 
 function toApiError(error: unknown): ApiError {
@@ -16,83 +27,125 @@ function toApiError(error: unknown): ApiError {
       ? error.message
       : 'Something went wrong';
 
-  const apiError: ApiError = new Error(message);
-  if (isAxios) {
-    apiError.status = error.response?.status;
-    apiError.details = error.response?.data?.details;
-  }
-  return apiError;
+  return new ApiError(
+    message,
+    isAxios ? error.response?.status : undefined,
+    isAxios ? error.response?.data?.details : undefined,
+  );
 }
 
-// ── Candidate client (injects `token`) ───────────────────────────────────────
-const apiClient = axios.create({
-  baseURL: BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
-  timeout: 10_000,
-  withCredentials: true,
-});
+export function unwrap<T>(response: ApiResponse<T>): T {
+  if (response.data === undefined) throw new ApiError(response.message || 'No data in response');
+  return response.data;
+}
 
-apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+type RetryableConfig = InternalAxiosRequestConfig & { _retry?: boolean };
+
+// ── 401 guard — prevents duplicate logout/toast/redirect storms ───────────────
+let isHandling401 = false;
+
+function handleUnauthorized(role: 'candidate' | 'recruiter'): void {
+  if (isHandling401) return;
+  isHandling401 = true;
+
+  authLog('[401]', `Unauthorized response — role: ${role}`);
+
+  // Notify UI to show toast (component in RootProvider listens for this)
   if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('token');
-    if (token) config.headers.Authorization = `Bearer ${token}`;
+    window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
   }
-  return config;
-});
 
-apiClient.interceptors.response.use(
-  (res) => res,
-  (error) => {
-    const apiError = toApiError(error);
-    if (apiError.status === 401 && typeof window !== 'undefined') {
-      clearCandidateAuth();
-    }
-    return Promise.reject(apiError);
-  },
-);
+  const { logoutCandidate, logoutRecruiter } = useAuthStore.getState();
 
-// ── Recruiter client (injects `recruiter_token`) ─────────────────────────────
-export const recruiterClient = axios.create({
-  baseURL: BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
-  timeout: 10_000,
-  withCredentials: true,
-});
-
-recruiterClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('recruiter_token');
-    if (token) config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-recruiterClient.interceptors.response.use(
-  (res) => res,
-  (error) => {
-    const apiError = toApiError(error);
-    if (apiError.status === 401 && typeof window !== 'undefined') {
-      clearRecruiterAuth();
+  if (role === 'candidate') {
+    logoutCandidate();
+    // ProtectedRoute handles redirect; reset guard after navigation settles
+  } else {
+    logoutRecruiter();
+    // Delay redirect so the toast is visible before the page changes
+    setTimeout(() => {
       window.location.href = '/auth/login?role=recruiter';
-    }
-    return Promise.reject(apiError);
-  },
-);
+    }, 1500);
+  }
+
+  // Reset guard after a safe window so future sessions work correctly
+  setTimeout(() => { isHandling401 = false; }, 5000);
+}
+
+type ClientOptions = {
+  getToken?: () => string | null;
+  on401?: () => void;
+};
+
+function makeClient({ getToken, on401 }: ClientOptions = {}) {
+  const client = axios.create({
+    baseURL: BASE_URL,
+    headers: { 'Content-Type': 'application/json' },
+    timeout: 10_000,
+    withCredentials: true,
+  });
+
+  if (getToken) {
+    client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+      const token = getToken();
+      if (token) config.headers.Authorization = `Bearer ${token}`;
+      return config;
+    });
+  }
+
+  client.interceptors.response.use(
+    (res) => res,
+    async (error) => {
+      const originalRequest = error.config as RetryableConfig | undefined;
+      const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+
+      if (
+        status === 401 &&
+        typeof window !== 'undefined' &&
+        on401 &&
+        originalRequest &&
+        !originalRequest._retry
+      ) {
+        originalRequest._retry = true;
+
+        authLog('[401]', 'Attempting token refresh before logout');
+        const newToken = await queueRefreshRequest();
+
+        if (newToken) {
+          authLog('[401]', 'Refresh succeeded — retrying original request');
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return client(originalRequest);
+        }
+
+        // Refresh failed — fall back to logout + toast
+        on401();
+      }
+
+      return Promise.reject(toApiError(error));
+    },
+  );
+
+  return client;
+}
+
+function getStoreToken(role: 'candidate' | 'recruiter'): string | null {
+  const state = useAuthStore.getState();
+  return state.role === role ? state.accessToken : null;
+}
+
+// ── Candidate client ──────────────────────────────────────────────────────────
+const apiClient = makeClient({
+  getToken: () => getStoreToken('candidate'),
+  on401:    () => handleUnauthorized('candidate'),
+});
+
+// ── Recruiter client ──────────────────────────────────────────────────────────
+export const recruiterClient = makeClient({
+  getToken: () => getStoreToken('recruiter'),
+  on401:    () => handleUnauthorized('recruiter'),
+});
 
 // ── Public client (no auth) ──────────────────────────────────────────────────
-export const publicClient = axios.create({
-  baseURL: BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
-  timeout: 10_000,
-  withCredentials: true,
-});
-
-publicClient.interceptors.response.use(
-  (res) => res,
-  (error) => {
-    const apiError = toApiError(error);
-    return Promise.reject(apiError);
-  },
-);
+export const publicClient = makeClient();
 
 export default apiClient;

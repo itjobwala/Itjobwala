@@ -1,8 +1,7 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import JobDetailPageClient from '@/src/components/jobs/JobDetailPageClient';
-import { getJobById } from '@/src/lib/api/jobs';
-import { normalizeJobDetail } from '@/src/components/jobs/types';
+import { JobDetailPageClient, normalizeJobDetail } from '@/features/jobs/detail';
+import { getJobById } from '@/features/jobs/shared';
 
 interface Props {
   params: Promise<{ id: string }>;

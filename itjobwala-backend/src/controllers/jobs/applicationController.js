@@ -1,5 +1,7 @@
 import Application from '../../models/jobs/Application.js';
 import Job from '../../models/jobs/Job.js';
+import User from '../../models/candidate/User.js';
+import { notifyRecruiter } from '../../utils/notifyHelper.js';
 
 export const applyToJob = async (request, reply) => {
   try {
@@ -35,6 +37,17 @@ export const applyToJob = async (request, reply) => {
       timeline: [{ status: 'applied', at: new Date().toISOString(), note: null }],
       status: 'applied'
     });
+
+    // Notify recruiter about the new application (non-blocking)
+    User.query().findById(userId).then(candidate => {
+      const candidateName = candidate?.full_name || 'A candidate';
+      notifyRecruiter(job.recruiter_id, {
+        type:      'application',
+        title:     'New Application Received',
+        message:   `${candidateName} applied for "${job.title}"`,
+        actionUrl: `/recruiter/applicants/applicant_${application.id}`,
+      });
+    }).catch(() => {});
 
     return reply.status(201).send({
       success: true,

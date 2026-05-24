@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { getAuth, clearAuth, type AuthSession } from '@/src/lib/auth';
+import type { AuthSession } from '@/src/lib/auth';
+import { useAuthStore } from '@/src/features/auth/session/auth.store';
 
 export interface UseAuthReturn {
   session: AuthSession | null;
@@ -12,29 +12,21 @@ export interface UseAuthReturn {
 }
 
 export function useAuth(): UseAuthReturn {
-  const [session, setSession] = useState<AuthSession | null>(null);
-  const [loading, setLoading]  = useState(true);
+  const { user, role, isAuthenticated, isHydrated, logout: storeLogout } = useAuthStore();
 
-  const refresh = useCallback(() => {
-    setSession(getAuth());
-    setLoading(false);
-  }, []);
-
-  // Resolve on mount — runs only in browser
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  const session: AuthSession | null =
+    isAuthenticated && role === 'candidate' && user ? (user as AuthSession) : null;
 
   function logout() {
-    clearAuth();
+    storeLogout();
     window.location.href = '/';
   }
 
   return {
     session,
-    loading,
+    loading: !isHydrated,
     isAuthenticated: !!session,
     logout,
-    refresh,
+    refresh: () => {},
   };
 }

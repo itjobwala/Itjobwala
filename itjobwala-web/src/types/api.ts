@@ -5,9 +5,10 @@ export interface ApiResponse<T = undefined> {
   errors?: Record<string, string> | unknown[];
 }
 
-export interface ApiError {
+export interface AuthTokenResponse {
+  success: boolean;
   message: string;
-  status?: number;
+  token?:  string;
 }
 
 export interface Pagination {

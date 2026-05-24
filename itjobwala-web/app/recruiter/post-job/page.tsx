@@ -1,4 +1,4 @@
-import RecruiterPostJobPage from '@/src/components/recruiter/RecruiterPostJobPage';
+import { RecruiterPostJobPage } from '@/features/recruiter/jobs';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = { title: 'Post a Free Job – itJobwala' };

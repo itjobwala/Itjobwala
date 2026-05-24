@@ -1,4 +1,4 @@
-import type { CandidateProfile, WorkExperience, Education, Certification } from '@/src/types/profile';
+import type { CandidateProfile, WorkExperience, Education, Certification } from '@/features/candidate/profile/types/profile.types';
 
 export function getRelativeDate(isoString: string): string {
   const diff = Math.floor((Date.now() - new Date(isoString).getTime()) / 86_400_000);

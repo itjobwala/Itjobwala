@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
-import CandidateDashboardPage from '@/src/components/dashboard/CandidateDashboardPage';
+import { CandidateDashboardPage } from '@/features/candidate/dashboard';
 
 export const metadata: Metadata = {
   title: 'Dashboard – itJobwala',

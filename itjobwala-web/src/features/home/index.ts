@@ -1,0 +1,11 @@
+export { default as HeroSection } from './components/HeroSection';
+export { default as StatsStrip } from './components/StatsStrip';
+export { default as CompanyMarquee } from './components/CompanyMarquee';
+export { default as CategorySection } from './components/CategorySection';
+export { default as FeaturedJobs } from './components/FeaturedJobs';
+export { default as HowItWorks } from './components/HowItWorks';
+export { default as WhyUs } from './components/WhyUs';
+export { default as Testimonials } from './components/Testimonials';
+export { default as FAQ } from './components/FAQ';
+export { default as RecruiterCTA } from './components/RecruiterCTA';
+export { default as Footer } from './components/Footer';

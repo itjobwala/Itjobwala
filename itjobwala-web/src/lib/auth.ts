@@ -1,5 +1,6 @@
-import type { NavUser } from '@/src/components/navbar/UserDropdown';
+import type { NavUser } from '@/layout/navbar';
 import { safeLocalStorageGetItem, safeLocalStorageSetItem, safeLocalStorageRemoveItem, safeDispatchEvent } from '@/src/lib/hydration-safe';
+import { getInitials } from '@/src/lib/utils/format';
 
 const AUTH_KEY     = 'itjobwala_auth';
 const TOKEN_KEY    = 'token';
@@ -81,12 +82,6 @@ function nameFromEmail(email: string): string {
     .join(' ');
 }
 
-function initialsFromName(name: string): string {
-  const parts = name.trim().split(' ').filter(Boolean);
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-  return name.slice(0, 2).toUpperCase();
-}
-
 function toDisplayRole(jwtRole: string): string {
   switch (jwtRole.toLowerCase()) {
     case 'candidate': return 'Candidate';
@@ -117,7 +112,7 @@ export function setAuth(email: string): void {
   const session: AuthSession = {
     email,
     name:                  displayName,
-    initials:              initialsFromName(displayName),
+    initials:              getInitials(displayName),
     role:                  toDisplayRole(jwtRole),
     userRole:              jwtRole,
     avatarColorClass:      'from-primary to-blue-400',

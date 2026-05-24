@@ -1,3 +1,6 @@
+export { default as ErrorBoundary }   from './ErrorBoundary';
+export { default as QueryErrorState } from './QueryErrorState';
+
 export { default as Toast }       from './Toast';
 export type { ToastProps, ToastVariant } from './Toast';
 

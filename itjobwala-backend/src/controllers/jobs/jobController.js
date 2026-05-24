@@ -115,20 +115,25 @@ export const getJobs = async (request, reply) => {
     if (job_type) query.whereIn('job_type', job_type.split(','));
     if (work_mode) query.whereIn('work_mode', work_mode.split(','));
     
-    // Filters involving recruiter relation
-    if (company || company_type || company_industry) {
-      query.joinRelated('recruiter');
-      if (company) {
-        query.where(builder => {
-          builder.where('jobs.company_name', 'ILIKE', `%${company}%`)
-                 .orWhere(qb => {
-                   qb.whereNull('jobs.company_name')
-                     .andWhere('recruiter.company_name', 'ILIKE', `%${company}%`);
-                 });
-        });
-      }
-      if (company_type) query.where('recruiter.company_type', 'ILIKE', company_type);
-      if (company_industry) query.where('recruiter.industry', 'ILIKE', company_industry);
+    // Match against jobs.company_name OR the linked recruiter's company_name (handles
+    // seeded/migrated rows where jobs.company_name was never populated)
+    if (company) {
+      query.where(builder => {
+        builder
+          .where('jobs.company_name', 'ILIKE', `%${company}%`)
+          .orWhereRaw(
+            `EXISTS (SELECT 1 FROM recruiters r WHERE r.id = jobs.recruiter_id AND r.company_name ILIKE ?)`,
+            [`%${company}%`]
+          );
+      });
+    }
+
+    // company_type / company_industry live on the recruiters table — use a plain join
+    // (joinRelated conflicts with withGraphFetched and produces 0 results)
+    if (company_type || company_industry) {
+      query.join('recruiters', 'jobs.recruiter_id', 'recruiters.id');
+      if (company_type) query.where('recruiters.company_type', 'ILIKE', company_type);
+      if (company_industry) query.where('recruiters.industry', 'ILIKE', company_industry);
     }
 
     if (category) query.where('category', 'ILIKE', category);
@@ -242,8 +247,10 @@ export const getJobDetails = async (request, reply) => {
 export const getRecommendedJobs = async (request, reply) => {
   try {
     const limit = parseInt(request.query.limit, 10) || 5;
-    // Mocking recommendations by fetching newest jobs
-    const jobs = await Job.query()
+    const excludeRaw = request.query.exclude;
+    const excludeId = excludeRaw ? excludeRaw.toString().replace('job_', '') : null;
+
+    const query = Job.query()
       .withGraphFetched('recruiter')
       .select('jobs.*')
       .select(
@@ -266,6 +273,10 @@ export const getRecommendedJobs = async (request, reply) => {
       .where('status', 'active')
       .orderBy('created_at', 'desc')
       .limit(limit);
+
+    if (excludeId) query.whereNot('id', excludeId);
+
+    const jobs = await query;
 
     return reply.status(200).send({
       success: true,

@@ -8,9 +8,10 @@ interface Props {
   maxLpa: number;
   onChange: (min: number, max: number) => void;
   error?: string;
+  minAllowed?: number;
 }
 
-export default function SalaryRangeSlider({ minLpa, maxLpa, onChange, error }: Props) {
+export default function SalaryRangeSlider({ minLpa, maxLpa, onChange, error, minAllowed = LPA_MIN }: Props) {
   const minPct = (minLpa / LPA_MAX) * 100;
   const maxPct = (maxLpa / LPA_MAX) * 100;
 
@@ -36,11 +37,11 @@ export default function SalaryRangeSlider({ minLpa, maxLpa, onChange, error }: P
         {/* Min handle */}
         <input
           type="range"
-          min={LPA_MIN}
+          min={minAllowed}
           max={LPA_MAX}
           step={1}
           value={minLpa}
-          onChange={e => onChange(Math.min(Number(e.target.value), maxLpa - 1), maxLpa)}
+          onChange={e => onChange(Math.max(minAllowed, Math.min(Number(e.target.value), maxLpa - 1)), maxLpa)}
           className="salary-thumb absolute w-full"
           style={{ zIndex: minLpa >= maxLpa - 1 ? 5 : 3 }}
           aria-label="Minimum salary"
@@ -49,7 +50,7 @@ export default function SalaryRangeSlider({ minLpa, maxLpa, onChange, error }: P
         {/* Max handle */}
         <input
           type="range"
-          min={LPA_MIN}
+          min={minAllowed}
           max={LPA_MAX}
           step={1}
           value={maxLpa}
@@ -61,7 +62,7 @@ export default function SalaryRangeSlider({ minLpa, maxLpa, onChange, error }: P
       </div>
 
       <div className="flex justify-between mt-2 text-[11px] text-gray-400 select-none">
-        <span>₹0</span>
+        <span>{minAllowed > 0 ? `₹${minAllowed}L` : '₹0'}</span>
         <span>₹12L</span>
         <span>₹25L</span>
         <span>₹38L</span>

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import ApplicationsListPageClient from '@/src/components/applications/ApplicationsListPageClient';
+import { ApplicationsListPageClient } from '@/features/candidate/applications';
 
 export const metadata: Metadata = {
   title: 'My Applications – itJobwala',

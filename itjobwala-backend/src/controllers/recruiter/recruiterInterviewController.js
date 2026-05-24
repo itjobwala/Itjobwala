@@ -1,5 +1,6 @@
 import Application from '../../models/jobs/Application.js';
 import Interview from '../../models/recruiter/Interview.js';
+import { notifyCandidate, notifyRecruiter } from '../../utils/notifyHelper.js';
 
 function deriveStatus(scheduledAt) {
   if (!scheduledAt) return 'not_scheduled';
@@ -127,6 +128,30 @@ export const scheduleInterview = async (request, reply) => {
         note: note || null,
       });
     }
+
+    // Format date for notification message
+    const interviewDate = new Date(scheduledAt).toLocaleString('en-IN', {
+      dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Kolkata'
+    });
+    const candidateName = application.applicant?.full_name || 'The candidate';
+    const jobTitle = application.job_title || 'the position';
+    const isReschedule = !!existing;
+
+    // Notify candidate
+    notifyCandidate(application.user_id, {
+      type:      'interview',
+      title:     isReschedule ? 'Interview Rescheduled' : 'Interview Scheduled',
+      message:   `Your interview for "${jobTitle}" has been ${isReschedule ? 'rescheduled' : 'scheduled'} on ${interviewDate}.`,
+      actionUrl: `/candidate/applications/app_${application.id}`,
+    });
+
+    // Notify recruiter (activity feed)
+    notifyRecruiter(recruiterId, {
+      type:      'interview',
+      title:     isReschedule ? 'Interview Rescheduled' : 'Interview Scheduled',
+      message:   `${isReschedule ? 'Rescheduled' : 'Scheduled'} interview with ${candidateName} for "${jobTitle}" on ${interviewDate}`,
+      actionUrl: `/recruiter/interviews`,
+    });
 
     return reply.status(200).send({
       success: true,

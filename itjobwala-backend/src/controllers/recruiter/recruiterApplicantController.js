@@ -2,6 +2,7 @@ import Application from '../../models/jobs/Application.js';
 import Job from '../../models/jobs/Job.js';
 import Activity from '../../models/recruiter/Activity.js';
 import User from '../../models/candidate/User.js';
+import { notifyCandidate, notifyRecruiter } from '../../utils/notifyHelper.js';
 
 function formatApplicant(app) {
   const candidate = app.applicant;
@@ -179,6 +180,34 @@ export const updateStatus = async (request, reply) => {
     }
 
     const updated = await application.$query().patchAndFetch({ status });
+
+    // Fire notifications (non-blocking)
+    const candidateId = application.user_id;
+    const candidateName = application.applicant?.full_name || 'The candidate';
+    const jobTitle = application.job_title || 'the position';
+    const appUrl  = `/candidate/applications/app_${application.id}`;
+    const appRecruiterUrl = `/recruiter/applicants/applicant_${application.id}`;
+
+    const CANDIDATE_MESSAGES = {
+      shortlisted: { type: 'shortlist',    title: 'Application Shortlisted', message: `Great news! Your application for "${jobTitle}" has been shortlisted.` },
+      interview:   { type: 'interview',    title: 'Selected for Interview',  message: `You've been selected for an interview for "${jobTitle}". Check your applications for details.` },
+      hired:       { type: 'application',  title: 'Offer Extended 🎉',       message: `Congratulations! You've been hired for "${jobTitle}".` },
+      rejected:    { type: 'application',  title: 'Application Update',      message: `Thank you for applying for "${jobTitle}". We have moved forward with other candidates.` },
+    };
+
+    const RECRUITER_MESSAGES = {
+      shortlisted: { type: 'shortlist',   title: 'Candidate Shortlisted', message: `You shortlisted ${candidateName} for "${jobTitle}"` },
+      interview:   { type: 'interview',   title: 'Interview Stage',        message: `${candidateName} moved to interview stage for "${jobTitle}"` },
+      hired:       { type: 'application', title: 'Candidate Hired',        message: `You hired ${candidateName} for "${jobTitle}"` },
+      rejected:    { type: 'application', title: 'Candidate Rejected',     message: `You rejected ${candidateName} for "${jobTitle}"` },
+    };
+
+    if (CANDIDATE_MESSAGES[status]) {
+      notifyCandidate(candidateId, { ...CANDIDATE_MESSAGES[status], actionUrl: appUrl });
+    }
+    if (RECRUITER_MESSAGES[status]) {
+      notifyRecruiter(recruiterId, { ...RECRUITER_MESSAGES[status], actionUrl: appRecruiterUrl });
+    }
 
     return reply.status(200).send({
       success: true,

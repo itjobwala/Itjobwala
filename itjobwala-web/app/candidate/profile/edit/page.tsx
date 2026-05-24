@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import ProfileEditPageClient from '@/src/components/profile/ProfileEditPageClient';
+import { ProfileEditPageClient } from '@/features/candidate/profile';
 
 export const metadata: Metadata = {
   title: 'Edit Profile - itJobwala',

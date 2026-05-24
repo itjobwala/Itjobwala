@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import SavedJobsListPageClient from '@/src/components/saved-jobs/SavedJobsListPageClient';
+import { SavedJobsListPageClient } from '@/features/candidate/saved-jobs';
 
 export const metadata: Metadata = {
   title: 'Saved Jobs – itJobwala',

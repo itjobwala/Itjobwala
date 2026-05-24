@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import ProtectedRecruiterRoute from '@/src/components/auth/ProtectedRecruiterRoute';
-import RecruiterApplicantsPage from '@/src/components/recruiter/RecruiterApplicantsPage';
+import { ProtectedRecruiterRoute } from '@/features/auth';
+import { RecruiterApplicantsPage } from '@/features/recruiter/applicants';
 
 export const metadata: Metadata = {
   title: 'Applicants – itJobwala Recruiter',

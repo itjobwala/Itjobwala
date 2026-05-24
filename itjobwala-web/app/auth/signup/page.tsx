@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import SignUpPage from '@/src/components/auth/SignUpPage';
+import { SignUpPage } from '@/features/auth';
 
 export const metadata: Metadata = {
   title: 'Sign Up – itJobwala',

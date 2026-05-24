@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { fetchSkillSuggestions } from '@/src/lib/api/skills';
+import { fetchSkillSuggestions } from '@/features/jobs/shared';
 
 /**
  * Returns skill name suggestions from the backend for the given input.

@@ -1,4 +1,4 @@
-import type { Job } from '@/src/components/jobs/types';
+import type { Job } from '@/features/jobs/shared/types';
 
 export const MOCK_JOBS: Job[] = [
   {

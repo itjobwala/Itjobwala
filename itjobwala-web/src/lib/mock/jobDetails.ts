@@ -1,4 +1,4 @@
-import type { JobDetail } from '@/src/components/jobs/types';
+import type { JobDetail } from '@/features/jobs/shared/types';
 
 export const JOB_DETAILS: JobDetail[] = [
   {

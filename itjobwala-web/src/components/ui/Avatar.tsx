@@ -1,4 +1,5 @@
 import { cn } from '@/src/lib/utils/cn';
+import { getInitials } from '@/src/lib/utils/format';
 
 const SIZE_MAP = {
   sm: { outer: 'w-8 h-8',   text: 'text-[11px]', rounded: 'rounded-lg'  },
@@ -14,14 +15,6 @@ interface Props {
   photo?: string | null;
   size?: AvatarSize;
   className?: string;
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase() ?? '')
-    .join('');
 }
 
 export default function Avatar({ name, photo, size = 'md', className }: Props) {

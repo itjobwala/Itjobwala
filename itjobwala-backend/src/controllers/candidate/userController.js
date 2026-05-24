@@ -1,8 +1,21 @@
 import bcrypt from 'bcrypt';
 import dns from 'dns';
 import User from '../../models/candidate/User.js';
+import { generateAccessToken, generateRefreshToken, storeRefreshToken } from '../../utils/tokenService.js';
 
 const resolveMx = dns.promises.resolveMx;
+
+const REFRESH_COOKIE_MAX_AGE = 7 * 24 * 60 * 60;
+
+function setRefreshCookie(reply, token) {
+  reply.setCookie('refresh_token', token, {
+    httpOnly: true,
+    secure:   process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path:     '/',
+    maxAge:   REFRESH_COOKIE_MAX_AGE,
+  });
+}
 
 export const candidateRegister = async (request, reply) => {
   const { full_name, email, mobile, password, work_status, terms_accepted } = request.body;
@@ -83,21 +96,26 @@ export const candidateSignin = async (request, reply) => {
       return reply.status(401).send({ success: false, message: 'Invalid credentials' });
     }
 
-    // Generate JWT token
-    const token = request.server.jwt.sign({
-      id: user.id,
-      email: user.email,
-      work_status: user.work_status,
-      role: 'candidate'
+    // Generate short-lived access token + long-lived refresh token
+    const accessToken  = generateAccessToken({ sub: user.id, role: 'candidate' });
+    const refreshToken = generateRefreshToken({ sub: user.id, role: 'candidate' });
+
+    await storeRefreshToken({
+      userId:    user.id,
+      role:      'candidate',
+      token:     refreshToken,
+      ipAddress: request.ip,
+      userAgent: request.headers['user-agent'],
     });
 
-    // Do not return password in response
+    setRefreshCookie(reply, refreshToken);
+
     delete user.password;
 
     return reply.status(200).send({
       success: true,
       message: 'Signin successful',
-      token
+      token:   accessToken,        // keep `token` field for frontend compat
     });
   } catch (error) {
     request.server.log.error(error);

@@ -36,8 +36,8 @@
   --z-raised:   10;
   --z-navbar:   200;
   --z-dropdown: 300;
-  --z-toast:    350;
-  --z-modal:    400;
+  --z-toast:    10000;
+  --z-modal:    9999;
   --z-overlay:  9999;
 
   /* ── Border radius ── */

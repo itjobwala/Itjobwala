@@ -6,7 +6,7 @@ import {
   getNotificationCount,
   markNotificationRead,
   markAllNotificationsRead,
-} from '@/src/lib/api/notifications';
+} from '@/features/navbar';
 
 export const notifKeys = {
   all:   () => ['notifications'] as const,
