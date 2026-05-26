@@ -15,6 +15,15 @@ for (const key of REQUIRED_ENV_VARS) {
   }
 }
 
-const nextConfig: NextConfig = {};
+const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
+    ],
+  },
+};
 
 export default nextConfig;
