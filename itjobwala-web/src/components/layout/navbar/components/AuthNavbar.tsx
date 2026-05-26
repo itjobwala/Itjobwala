@@ -83,7 +83,7 @@ export default function AuthNavbar({ user }: Props) {
             </span>
           </button>
         ) : (
-          <Link href="/candidate/jobs" className="flex items-center gap-1 shrink-0 hover:opacity-80 transition-opacity">
+          <Link href="/candidate/dashboard" className="flex items-center gap-1 shrink-0 hover:opacity-80 transition-opacity">
             <Image src="/logo.png" alt="itJobwala" width={30} height={30} />
             <span className="font-extrabold text-xl text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
               it<span className="text-primary">Jobwala</span>
