@@ -62,7 +62,7 @@ export default function ResumeInsightsDashboard({ resumeUrl }: Props) {
     <div className="space-y-4">
       {/* Header row: ATS ring + meta stats */}
       <Card padding="lg">
-        <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
+        <div className="flex flex-col gap-4 items-center">
           <ATSScoreRing
             score={insights.ats_score}
             label={insights.band_label}
@@ -143,7 +143,7 @@ function StatsGrid({ insights }: { insights: ResumeInsights }) {
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div className="grid grid-cols-2 gap-3">
       {stats.map(s => (
         <div key={s.label} className="bg-gray-50 rounded-xl p-3">
           <p className="text-[11px] text-gray-400 font-medium">{s.label}</p>
