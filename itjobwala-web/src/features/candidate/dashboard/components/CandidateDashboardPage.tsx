@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
 import { SmartNavbar } from '@/layout/navbar';
 import { ProtectedRoute } from '@/features/auth';
+import { useCandidateProfileQuery } from '@/features/candidate/profile';
 import { fetchCandidateDashboard } from '../services/dashboard.api';
 import type { RecentApplication } from '../services/dashboard.api';
 
@@ -143,7 +144,12 @@ export default function CandidateDashboardPage() {
     queryFn:  fetchCandidateDashboard,
   });
 
-  const firstName = data?.user.fullName.split(' ')[0] ?? '';
+  const { data: profile } = useCandidateProfileQuery();
+
+  const firstName    = data?.user.fullName.split(' ')[0] ?? '';
+  const topSkills    = profile?.skills?.slice(0, 4) ?? [];
+  const expYears     = profile?.experience_years;
+  const workStatus   = profile?.work_status;
 
   return (
     <ProtectedRoute>
@@ -189,13 +195,50 @@ export default function CandidateDashboardPage() {
                         {data.user.title && (
                           <p className="text-blue-200/70 text-[14px] mt-1.5 font-medium">{data.user.title}</p>
                         )}
-                        {data.user.location && (
-                          <p className="flex items-center gap-1.5 mt-1.5 text-white/35 text-[12px]">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
-                              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-                            </svg>
-                            {data.user.location}
-                          </p>
+                        {/* Location · Experience · Work status */}
+                        <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1.5">
+                          {data.user.location && (
+                            <span className="flex items-center gap-1 text-white/35 text-[12px]">
+                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5 flex-shrink-0">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                              </svg>
+                              {data.user.location}
+                            </span>
+                          )}
+                          {expYears != null && (
+                            <>
+                              <span className="text-white/20 text-[12px]">·</span>
+                              <span className="text-white/35 text-[12px]">
+                                {expYears === 0 ? 'Fresher' : `${expYears} yr${expYears !== 1 ? 's' : ''} exp`}
+                              </span>
+                            </>
+                          )}
+                          {workStatus && expYears == null && (
+                            <>
+                              <span className="text-white/20 text-[12px]">·</span>
+                              <span className="text-white/35 text-[12px] capitalize">{workStatus}</span>
+                            </>
+                          )}
+                        </div>
+
+                        {/* Top skills */}
+                        {topSkills.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 mt-3">
+                            {topSkills.map(skill => (
+                              <span
+                                key={skill}
+                                className="px-2.5 py-0.5 rounded-full text-[11px] font-medium"
+                                style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.1)' }}
+                              >
+                                {skill}
+                              </span>
+                            ))}
+                            {(profile?.skills?.length ?? 0) > 4 && (
+                              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                +{(profile?.skills?.length ?? 0) - 4} more
+                              </span>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>
