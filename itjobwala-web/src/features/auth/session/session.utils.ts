@@ -136,7 +136,7 @@ type PartialAuthState = Omit<AuthState, 'isHydrated'>;
 
 export function resolveSessionFromStorage(): PartialAuthState {
   const empty: PartialAuthState = {
-    user: null, role: null, accessToken: null, isAuthenticated: false,
+    user: null, role: null, accessToken: null, isAuthenticated: false, isLoggingOut: false,
   };
 
   if (typeof window === 'undefined') return empty;
@@ -148,7 +148,7 @@ export function resolveSessionFromStorage(): PartialAuthState {
     if (payload && !isTokenExpired(payload) && String(payload.role ?? '').toLowerCase() === 'candidate') {
       const stored = readSession();
       const user = buildCandidateUser(payload, stored);
-      return { accessToken: candidateToken, user, role: 'candidate', isAuthenticated: true };
+      return { accessToken: candidateToken, user, role: 'candidate', isAuthenticated: true, isLoggingOut: false };
     }
     authLog('[SESSION]', 'Candidate token expired during hydration — purging');
     removeToken(CANDIDATE_TOKEN_KEY);
@@ -162,7 +162,7 @@ export function resolveSessionFromStorage(): PartialAuthState {
     const payload = decodeJwt(recruiterToken);
     if (payload && !isTokenExpired(payload) && String(payload.role ?? '').toLowerCase() === 'recruiter') {
       const user = buildRecruiterUser(payload);
-      return { accessToken: recruiterToken, user, role: 'recruiter', isAuthenticated: true };
+      return { accessToken: recruiterToken, user, role: 'recruiter', isAuthenticated: true, isLoggingOut: false };
     }
     authLog('[SESSION]', 'Recruiter token expired during hydration — purging');
     removeToken(RECRUITER_TOKEN_KEY);
