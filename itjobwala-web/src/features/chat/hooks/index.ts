@@ -7,7 +7,7 @@ import {
   getMessages,
   sendMessage,
 } from '../services/chat.api';
-import type { Message } from '../types/chat.types';
+import type { Message, SenderRole } from '../types/chat.types';
 
 export const chatKeys = {
   all:           () => ['chat'] as const,
@@ -49,7 +49,7 @@ export function useGetOrCreateConversationMutation() {
   });
 }
 
-export function useSendMessageMutation(conversationId: number, myId: number, myRole: string) {
+export function useSendMessageMutation(conversationId: number, myId: number, myRole: SenderRole) {
   const qc = useQueryClient();
 
   return useMutation({

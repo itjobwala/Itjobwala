@@ -5,6 +5,7 @@ import { useSendMessageMutation } from '../../hooks';
 import { safeEmit }              from '../../socket/socketClient';
 import { EVENTS }                from '../../socket/socketEvents';
 import { useAuthStore }          from '@/src/features/auth/session/auth.store';
+import type { SenderRole }       from '../../types/chat.types';
 
 interface Props {
   conversationId: number;
@@ -16,7 +17,7 @@ export default function ChatInput({ conversationId, myId, disabled }: Props) {
   const [text, setText]         = useState('');
   const typingRef               = useRef(false);
   const typingTimer             = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const myRole                  = useAuthStore(s => s.role) ?? 'candidate';
+  const myRole                  = (useAuthStore(s => s.role) ?? 'candidate') as SenderRole;
   const sendMutation            = useSendMessageMutation(conversationId, myId, myRole);
 
   const stopTyping = useCallback(() => {
