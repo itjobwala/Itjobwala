@@ -29,8 +29,19 @@ import type {
 } from '@/features/candidate/profile/types/profile.types';
 
 export const profileKeys = {
-  me: () => ['candidate', 'profile'] as const,
+  me:         () => ['candidate', 'profile'] as const,
+  completion: () => ['candidate', 'profile-completion'] as const,
+  all:        () => ['candidate'] as const,
 };
+
+export function useProfileCompletionQuery(enabled = true) {
+  return useQuery({
+    queryKey: profileKeys.completion(),
+    queryFn:  getProfileCompletion,
+    enabled,
+    staleTime: 0,
+  });
+}
 
 export function useCandidateProfileQuery(enabled = true) {
   return useQuery({
@@ -44,7 +55,7 @@ export function useUpdateProfileMutation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: UpdateProfileRequest) => updateCandidateProfile(data),
-    onSuccess:  () => qc.invalidateQueries({ queryKey: profileKeys.me() }),
+    onSuccess:  () => qc.invalidateQueries({ queryKey: profileKeys.all() }),
   });
 }
 
@@ -52,7 +63,7 @@ export function useUpdateSkillsMutation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: UpdateSkillsRequest) => updateSkills(data),
-    onSuccess:  () => qc.invalidateQueries({ queryKey: profileKeys.me() }),
+    onSuccess:  () => qc.invalidateQueries({ queryKey: profileKeys.all() }),
   });
 }
 
@@ -60,7 +71,7 @@ export function useAddExperienceMutation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: AddExperienceRequest) => addExperience(data),
-    onSuccess:  () => qc.invalidateQueries({ queryKey: profileKeys.me() }),
+    onSuccess:  () => qc.invalidateQueries({ queryKey: profileKeys.all() }),
   });
 }
 
@@ -69,7 +80,7 @@ export function useUpdateExperienceMutation() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: AddExperienceRequest }) =>
       updateExperience(id, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: profileKeys.me() }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: profileKeys.all() }),
   });
 }
 
@@ -77,7 +88,7 @@ export function useDeleteExperienceMutation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (expId: string) => deleteExperience(expId),
-    onSuccess:  () => qc.invalidateQueries({ queryKey: profileKeys.me() }),
+    onSuccess:  () => qc.invalidateQueries({ queryKey: profileKeys.all() }),
   });
 }
 
@@ -85,7 +96,7 @@ export function useAddEducationMutation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: AddEducationRequest) => addEducation(data),
-    onSuccess:  () => qc.invalidateQueries({ queryKey: profileKeys.me() }),
+    onSuccess:  () => qc.invalidateQueries({ queryKey: profileKeys.all() }),
   });
 }
 
@@ -94,7 +105,7 @@ export function useUpdateEducationMutation() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: AddEducationRequest }) =>
       updateEducation(id, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: profileKeys.me() }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: profileKeys.all() }),
   });
 }
 
@@ -102,7 +113,7 @@ export function useDeleteEducationMutation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (eduId: string) => deleteEducation(eduId),
-    onSuccess:  () => qc.invalidateQueries({ queryKey: profileKeys.me() }),
+    onSuccess:  () => qc.invalidateQueries({ queryKey: profileKeys.all() }),
   });
 }
 
@@ -110,7 +121,7 @@ export function useAddCertificationMutation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: AddCertificationRequest) => addCertification(data),
-    onSuccess:  () => qc.invalidateQueries({ queryKey: profileKeys.me() }),
+    onSuccess:  () => qc.invalidateQueries({ queryKey: profileKeys.all() }),
   });
 }
 
@@ -119,7 +130,7 @@ export function useUpdateCertificationMutation() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: AddCertificationRequest }) =>
       updateCertification(id, data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: profileKeys.me() }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: profileKeys.all() }),
   });
 }
 
@@ -127,7 +138,7 @@ export function useDeleteCertificationMutation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (certId: string) => deleteCertification(certId),
-    onSuccess:  () => qc.invalidateQueries({ queryKey: profileKeys.me() }),
+    onSuccess:  () => qc.invalidateQueries({ queryKey: profileKeys.all() }),
   });
 }
 
@@ -136,7 +147,7 @@ export function useUploadResumeMutation() {
   return useMutation({
     mutationFn: ({ file, onProgress }: { file: File; onProgress?: (pct: number) => void }) =>
       uploadResume(file, onProgress),
-    onSuccess: () => qc.invalidateQueries({ queryKey: profileKeys.me() }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: profileKeys.all() }),
   });
 }
 
@@ -145,7 +156,7 @@ export function useUploadProfilePhotoMutation() {
   return useMutation({
     mutationFn: ({ file, onProgress }: { file: File; onProgress?: (pct: number) => void }) =>
       uploadProfilePhoto(file, onProgress),
-    onSuccess: () => qc.invalidateQueries({ queryKey: profileKeys.me() }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: profileKeys.all() }),
   });
 }
 
@@ -154,7 +165,7 @@ export function useUploadCertificateFileMutation() {
   return useMutation({
     mutationFn: ({ certId, file, onProgress }: { certId: string; file: File; onProgress?: (pct: number) => void }) =>
       uploadCertificateFile(certId, file, onProgress),
-    onSuccess: () => qc.invalidateQueries({ queryKey: profileKeys.me() }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: profileKeys.all() }),
   });
 }
 
@@ -163,6 +174,6 @@ export function useUploadProfileCoverMutation() {
   return useMutation({
     mutationFn: ({ file, onProgress }: { file: File; onProgress?: (pct: number) => void }) =>
       uploadProfileCover(file, onProgress),
-    onSuccess: () => qc.invalidateQueries({ queryKey: profileKeys.me() }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: profileKeys.all() }),
   });
 }

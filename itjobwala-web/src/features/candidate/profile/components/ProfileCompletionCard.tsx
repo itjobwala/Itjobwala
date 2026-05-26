@@ -1,62 +1,30 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { getProfileCompletion } from '@/features/candidate/profile/services/profile.api';
 import Card from '@/src/components/ui/Card';
-import type { ProfileCompletionData } from '@/features/candidate/profile/types/profile.types';
-
-interface ProfileStep {
-  label: string;
-  done: boolean;
-}
+import { useProfileCompletionQuery } from '../hooks/useProfile';
 
 const FIELD_LABELS: Record<string, string> = {
-  resume: 'Upload resume',
+  resume:     'Upload resume',
   experience: 'Add work experience',
-  skills: 'Add skills',
-  photo: 'Add profile photo',
-  education: 'Add education',
-  linked_in: 'Add LinkedIn profile',
+  skills:     'Add skills',
+  photo:      'Add profile photo',
+  education:  'Add education',
+  linked_in:  'Add LinkedIn profile',
 };
 
 export default function ProfileCompletionCard() {
-  const [completion, setCompletion] = useState(0);
-  const [steps, setSteps] = useState<ProfileStep[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchCompletion = async () => {
-      try {
-        setLoading(true);
-        const data = await getProfileCompletion();
-        setCompletion(data.percentage);
-
-        const incompleteFields = Object.entries(data.breakdown)
-          .filter(([_, isDone]) => !isDone)
-          .map(([field]) => ({
-            label: FIELD_LABELS[field] || field,
-            done: false,
-          }));
-
-        setSteps(incompleteFields);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load profile completion');
-        setSteps([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCompletion();
-  }, []);
+  const { data, isLoading, isError } = useProfileCompletionQuery();
 
   const circumference = 2 * Math.PI * 40;
-  const dash = (completion / 100) * circumference;
-  const incompleteSteps = steps.slice(0, 3);
+  const completion    = data?.percentage ?? 0;
+  const dash          = (completion / 100) * circumference;
 
-  if (loading) {
+  const incompleteSteps = Object.entries(data?.breakdown ?? {})
+    .filter(([, isDone]) => !isDone)
+    .slice(0, 3)
+    .map(([field]) => FIELD_LABELS[field] ?? field);
+
+  if (isLoading) {
     return (
       <Card overflow>
         <h3 className="text-[14px] font-extrabold text-[#0f172a] mb-4">Profile strength</h3>
@@ -65,11 +33,11 @@ export default function ProfileCompletionCard() {
     );
   }
 
-  if (error) {
+  if (isError) {
     return (
       <Card overflow>
         <h3 className="text-[14px] font-extrabold text-[#0f172a] mb-4">Profile strength</h3>
-        <p className="text-[12px] text-gray-500">{error}</p>
+        <p className="text-[12px] text-gray-500">Unable to load profile strength.</p>
       </Card>
     );
   }
@@ -78,7 +46,6 @@ export default function ProfileCompletionCard() {
     <Card overflow>
       <h3 className="text-[14px] font-extrabold text-[#0f172a] mb-4">Profile strength</h3>
 
-      {/* Circular progress */}
       <div className="flex items-center gap-5 mb-5">
         <div className="relative shrink-0">
           <svg width="88" height="88" viewBox="0 0 96 96">
@@ -101,37 +68,27 @@ export default function ProfileCompletionCard() {
         </div>
         <div>
           <p className="text-[13px] font-semibold text-[#0f172a] mb-1">
-            {completion === 100
-              ? 'Perfect!'
-              : completion >= 80
-              ? 'Almost there!'
-              : completion >= 60
-              ? 'Good progress'
-              : 'Keep going'}
+            {completion === 100 ? 'Perfect!' : completion >= 80 ? 'Almost there!' : completion >= 60 ? 'Good progress' : 'Keep going'}
           </p>
           <p className="text-[12px] text-gray-500 leading-[1.6]">
             {completion === 100 ? (
-              <>Your profile is complete. You're all set to get recruiter views!</>
+              <>Your profile is complete. You&apos;re all set to get recruiter views!</>
             ) : (
-              <>
-                Complete your profile to get{' '}
-                <span className="font-semibold text-primary">3× more</span> recruiter views.
-              </>
+              <>Complete your profile to get <span className="font-semibold text-primary">3× more</span> recruiter views.</>
             )}
           </p>
         </div>
       </div>
 
-      {/* Checklist */}
       <div className="flex flex-col gap-2">
-        {incompleteSteps.map(step => (
-          <div key={step.label} className="flex items-center gap-2.5 p-2.5 bg-primary/5 rounded-xl">
+        {incompleteSteps.map(label => (
+          <div key={label} className="flex items-center gap-2.5 p-2.5 bg-primary/5 rounded-xl">
             <span className="w-4 h-4 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
               <svg width="7" height="7" viewBox="0 0 12 12" fill="none" stroke="#9ca3af" strokeWidth="2.5">
                 <path d="M6 3v6M3 6h6" />
               </svg>
             </span>
-            <span className="text-[12px] font-medium text-gray-600">{step.label}</span>
+            <span className="text-[12px] font-medium text-gray-600">{label}</span>
           </div>
         ))}
       </div>

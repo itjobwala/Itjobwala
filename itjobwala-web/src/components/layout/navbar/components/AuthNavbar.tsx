@@ -10,9 +10,10 @@ import { updateAuthProfile } from '@/src/lib/auth';
 import { useCandidateProfileQuery } from '@/features/candidate/profile';
 
 const NAV_LINKS = [
-  { label: 'Find Jobs',   href: '/candidate/jobs'    },
-  { label: 'Companies',   href: '#'        },
-  { label: 'Resources',   href: '#'        },
+  { label: 'Dashboard',  href: '/candidate/dashboard' },
+  { label: 'Find Jobs',  href: '/candidate/jobs'      },
+  { label: 'Referrals',  href: '/candidate/referrals' },
+  { label: 'Messages',   href: '/candidate/chat'      },
 ];
 
 interface Props {

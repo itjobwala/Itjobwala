@@ -35,6 +35,14 @@ export const env = {
   // prod:  https://api.itjobwala.com/api
   apiUrl: requirePublic('NEXT_PUBLIC_API_URL', process.env.NEXT_PUBLIC_API_URL),
 
+  // Socket.IO server URL — defaults to same origin as the API (strip /api suffix)
+  // local: http://localhost:4001
+  // QA:    https://api-qa.itjobwala.com
+  socketUrl: (
+    process.env.NEXT_PUBLIC_SOCKET_URL ??
+    (process.env.NEXT_PUBLIC_API_URL ?? '').replace(/\/api\/?$/, '')
+  ),
+
   // ── Feature flags ──────────────────────────────────────────────────────────
   // Disable SSR for the auth navbar. Useful when debugging hydration mismatches.
   disableAuthNavbarSsr: process.env.NEXT_PUBLIC_DISABLE_AUTH_NAVBAR_SSR === 'true',

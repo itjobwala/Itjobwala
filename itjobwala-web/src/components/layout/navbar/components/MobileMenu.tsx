@@ -6,9 +6,10 @@ import { useAuthStore } from '@/src/features/auth/session/auth.store';
 import type { NavUser } from './UserDropdown';
 
 const NAV_LINKS = [
+  { label: 'Dashboard',      href: '/candidate/dashboard' },
   { label: 'Find Jobs',      href: '/candidate/jobs' },
-  { label: 'Companies',      href: '#' },
-  { label: 'Resources',      href: '#' },
+  { label: 'Referrals',      href: '/candidate/referrals' },
+  { label: 'Messages',       href: '/candidate/chat' },
   { label: 'Saved Jobs',     href: '/candidate/saved-jobs' },
   { label: 'My Applications', href: '/candidate/applications' },
 ];

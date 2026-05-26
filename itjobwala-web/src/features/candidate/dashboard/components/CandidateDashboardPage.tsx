@@ -5,9 +5,11 @@ import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
 import { SmartNavbar } from '@/layout/navbar';
 import { ProtectedRoute } from '@/features/auth';
-import { useCandidateProfileQuery } from '@/features/candidate/profile';
+import { useCandidateProfileQuery, useProfileCompletionQuery } from '@/features/candidate/profile';
 import { fetchCandidateDashboard } from '../services/dashboard.api';
 import type { RecentApplication } from '../services/dashboard.api';
+import { useResumeInsightsQuery } from '@/features/resume';
+import ProfileCompletionCard from '@/features/candidate/profile/components/ProfileCompletionCard';
 
 // ── Profile avatar with circular SVG progress ring ───────────────────────────
 function ProfileAvatar({ photo, name, completion, openToWork }: { photo: string | null; name: string; completion: number; openToWork: boolean }) {
@@ -137,6 +139,59 @@ const Arrow = () => (
   </svg>
 );
 
+// ── ATS Mini Card ─────────────────────────────────────────────────────────────
+function ATSMiniCard() {
+  const { data: insights } = useResumeInsightsQuery();
+
+  const score  = insights?.ats_score ?? null;
+  const band   = insights?.band_label ?? null;
+
+  const scoreColor =
+    score === null ? '#6366f1'
+    : score >= 76  ? '#10b981'
+    : score >= 61  ? '#3b82f6'
+    : score >= 41  ? '#f59e0b'
+    : '#ef4444';
+
+  return (
+    <Link
+      href="/candidate/resume"
+      className="group flex items-center gap-4 bg-white rounded-2xl border border-gray-100/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] p-5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-200"
+    >
+      {/* Mini radial ring */}
+      <div className="relative w-12 h-12 flex-shrink-0">
+        <svg width="48" height="48" viewBox="0 0 48 48" className="-rotate-90">
+          <circle cx="24" cy="24" r="19" fill="none" stroke="#f1f5f9" strokeWidth="5" />
+          {score !== null && (
+            <circle
+              cx="24" cy="24" r="19"
+              fill="none"
+              stroke={scoreColor}
+              strokeWidth="5"
+              strokeLinecap="round"
+              strokeDasharray={`${(score / 100) * 2 * Math.PI * 19} ${2 * Math.PI * 19}`}
+            />
+          )}
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-[12px] font-black" style={{ color: scoreColor }}>
+            {score !== null ? score : '?'}
+          </span>
+        </div>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[14px] font-bold text-[#0f172a]">ATS Score</p>
+        <p className="text-[12px] text-gray-400 mt-0.5">
+          {score !== null ? `${band} — View full analysis` : 'Analyze your resume'}
+        </p>
+      </div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2.5" className="w-4 h-4 group-hover:translate-x-1 group-hover:stroke-primary transition-all duration-200">
+        <path d="M5 12h14m-7-7 7 7-7 7"/>
+      </svg>
+    </Link>
+  );
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function CandidateDashboardPage() {
   const { data, isLoading, isError } = useQuery({
@@ -144,12 +199,14 @@ export default function CandidateDashboardPage() {
     queryFn:  fetchCandidateDashboard,
   });
 
-  const { data: profile } = useCandidateProfileQuery();
+  const { data: profile }     = useCandidateProfileQuery();
+  const { data: completion }  = useProfileCompletionQuery();
 
-  const firstName    = data?.user.fullName.split(' ')[0] ?? '';
-  const topSkills    = profile?.skills?.slice(0, 4) ?? [];
-  const expYears     = profile?.experience_years;
-  const workStatus   = profile?.work_status;
+  const firstName     = data?.user.fullName.split(' ')[0] ?? '';
+  const candidateRole = profile?.title ?? data?.user.title ?? null;
+  const expYears      = profile?.experience_years;
+  const workStatus    = profile?.work_status;
+  const profileCompletion = completion?.percentage ?? data?.user.profileCompletion ?? 0;
 
   return (
     <ProtectedRoute>
@@ -185,16 +242,13 @@ export default function CandidateDashboardPage() {
                       <ProfileAvatar
                         photo={data.user.profilePhoto}
                         name={data.user.fullName}
-                        completion={data.user.profileCompletion}
+                        completion={profileCompletion}
                         openToWork={data.user.openToWork}
                       />
                       <div>
                         <h1 className="text-2xl sm:text-[28px] font-bold text-white tracking-tight leading-tight">
                           Welcome back, {firstName} 👋
                         </h1>
-                        {data.user.title && (
-                          <p className="text-blue-200/70 text-[14px] mt-1.5 font-medium">{data.user.title}</p>
-                        )}
                         {/* Location · Experience · Work status */}
                         <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1.5">
                           {data.user.location && (
@@ -221,23 +275,15 @@ export default function CandidateDashboardPage() {
                           )}
                         </div>
 
-                        {/* Top skills */}
-                        {topSkills.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mt-3">
-                            {topSkills.map(skill => (
-                              <span
-                                key={skill}
-                                className="px-2.5 py-0.5 rounded-full text-[11px] font-medium"
-                                style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.1)' }}
-                              >
-                                {skill}
-                              </span>
-                            ))}
-                            {(profile?.skills?.length ?? 0) > 4 && (
-                              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-medium" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.35)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                                +{(profile?.skills?.length ?? 0) - 4} more
-                              </span>
-                            )}
+                        {/* Candidate role */}
+                        {candidateRole && (
+                          <div className="mt-3">
+                            <span
+                              className="px-3 py-1 rounded-full text-[12px] font-semibold"
+                              style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.75)', border: '1px solid rgba(255,255,255,0.15)' }}
+                            >
+                              {candidateRole}
+                            </span>
                           </div>
                         )}
                       </div>
@@ -345,44 +391,11 @@ export default function CandidateDashboardPage() {
                   {/* ── Right column ── */}
                   <div className="space-y-5">
 
-                    {/* Profile completion CTA */}
-                    {data.user.profileCompletion < 100 && (
-                      <div className="relative overflow-hidden rounded-2xl p-6 border border-indigo-100"
-                        style={{ background: 'linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%)' }}>
-                        <div className="pointer-events-none absolute -top-10 -right-10 w-32 h-32 rounded-full blur-2xl opacity-40" style={{ background: 'radial-gradient(circle, #818cf8, transparent)' }} />
-                        <div className="relative">
-                          <div className="flex items-center gap-2 mb-1">
-                            <div className="w-7 h-7 rounded-lg bg-indigo-600/10 flex items-center justify-center">
-                              <svg viewBox="0 0 24 24" fill="none" stroke="#4f46e5" strokeWidth="2" className="w-4 h-4">
-                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-                              </svg>
-                            </div>
-                            <h3 className="text-[13px] font-bold text-indigo-900">Boost your visibility</h3>
-                          </div>
-                          <p className="text-[12px] text-indigo-600/70 leading-relaxed mb-4">
-                            Recruiters are {data.user.profileCompletion < 50 ? '4x' : '2x'} more likely to reach out to complete profiles.
-                          </p>
-                          <div className="mb-4">
-                            <div className="flex items-center justify-between mb-1.5">
-                              <span className="text-[11px] font-semibold text-indigo-800">{data.user.profileCompletion}% complete</span>
-                              <span className="text-[11px] text-indigo-400">{100 - data.user.profileCompletion}% left</span>
-                            </div>
-                            <div className="h-2 bg-indigo-100 rounded-full overflow-hidden">
-                              <div
-                                className="h-full rounded-full transition-all duration-700"
-                                style={{ width: `${data.user.profileCompletion}%`, background: 'linear-gradient(90deg, #6366f1, #8b5cf6)' }}
-                              />
-                            </div>
-                          </div>
-                          <Link
-                            href="/candidate/profile"
-                            className="group inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[13px] font-semibold px-4 py-2.5 rounded-xl transition-colors"
-                          >
-                            Complete Profile <Arrow />
-                          </Link>
-                        </div>
-                      </div>
-                    )}
+                    {/* Profile Strength */}
+                    <ProfileCompletionCard />
+
+                    {/* ATS Score Mini-Card */}
+                    <ATSMiniCard />
 
                     {/* Quick Actions */}
                     <div className="bg-white rounded-2xl border border-gray-100/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)] overflow-hidden">

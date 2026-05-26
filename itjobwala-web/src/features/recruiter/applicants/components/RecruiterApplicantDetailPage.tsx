@@ -16,6 +16,7 @@ import {
   useHireApplicantMutation,
   useUpdateApplicantStatusMutation,
 } from '@/features/recruiter/hooks';
+import { useGetOrCreateConversationMutation } from '@/features/chat';
 
 
 function formatDate(dateStr: string | null | undefined): string {
@@ -37,10 +38,11 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
 
   const { data: applicant, isLoading, error } = useRecruiterApplicantDetailQuery(applicantId, true);
 
-  const shortlistMutation = useShortlistApplicantMutation();
-  const rejectMutation    = useRejectApplicantMutation();
-  const hireMutation      = useHireApplicantMutation();
-  const statusMutation    = useUpdateApplicantStatusMutation();
+  const shortlistMutation  = useShortlistApplicantMutation();
+  const rejectMutation     = useRejectApplicantMutation();
+  const hireMutation       = useHireApplicantMutation();
+  const statusMutation     = useUpdateApplicantStatusMutation();
+  const messageMutation    = useGetOrCreateConversationMutation();
 
   function showSuccess(msg: string) { showToast(msg, 'success'); }
   function showError(msg: string)   { showToast(msg, 'error');   }
@@ -90,6 +92,19 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
       showError(e instanceof Error ? e.message : 'Failed to reject');
     } finally {
       setActionLoading(false);
+    }
+  }
+
+  async function handleMessage() {
+    if (!applicant) return;
+    // Strip "candidate_" prefix to get numeric user ID
+    const numericId = parseInt(applicant.candidateId.replace('candidate_', ''), 10);
+    if (!numericId) return;
+    try {
+      const { conversation_id } = await messageMutation.mutateAsync({ otherId: numericId });
+      router.push(`/recruiter/chat?conv=${conversation_id}`);
+    } catch {
+      showError('Could not open conversation');
     }
   }
 
@@ -285,6 +300,21 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
                 <StatusBadge status={applicant.status} />
               </div>
             </div>
+          </Card>
+
+          {/* Message */}
+          <Card overflow>
+            <h2 className="text-[13px] font-bold text-[#0f172a] mb-3">Contact</h2>
+            <button
+              onClick={handleMessage}
+              disabled={messageMutation.isPending}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-[13px] font-semibold bg-primary text-white rounded-xl hover:bg-primary/90 disabled:opacity-50 transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+              {messageMutation.isPending ? 'Opening…' : 'Message Candidate'}
+            </button>
           </Card>
 
           {/* Actions */}

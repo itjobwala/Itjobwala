@@ -3,6 +3,7 @@ import cors from '@fastify/cors';
 import jwtPlugin from './src/plugins/jwt.js';
 import { env } from './src/config/env.js';
 import { runCleanup } from './src/utils/cleanupJob.js';
+import { initSocketServer } from './src/socket/index.js';
 
 import multipart from '@fastify/multipart';
 import indexRoutes from './src/routes/common/indexRoutes.js';
@@ -67,6 +68,9 @@ fastify.register((await import('./src/routes/common/homeRoutes.js')).default, { 
 fastify.register((await import('./src/routes/recruiter/recruiterInterviewRoutes.js')).default, { prefix: '/api' });
 fastify.register((await import('./src/routes/common/skillRoutes.js')).default, { prefix: '/api' });
 fastify.register((await import('./src/routes/auth/authRoutes.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/referrals/index.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/chat/index.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/resume/index.js')).default, { prefix: '/api' });
 
 // Centralized Error Handler
 fastify.setErrorHandler(function (error, request, reply) {
@@ -107,6 +111,9 @@ const start = async () => {
   try {
     await fastify.listen({ port: env.port, host: '0.0.0.0' });
     fastify.log.info(`server listening on ${fastify.server.address().port}`);
+
+    // Initialize Socket.IO after HTTP server is listening
+    initSocketServer(fastify.server, fastify.log);
 
     // Run cleanup once on startup, then every 24 hours
     runCleanup(fastify.log);

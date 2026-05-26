@@ -14,7 +14,6 @@ import CertificationsSection from './CertificationsSection';
 import CareerProfileSection from './CareerProfileSection';
 import PersonalDetailsSection from './PersonalDetailsSection';
 import ResumeCard from './ResumeCard';
-import ProfileCompletionCard from './ProfileCompletionCard';
 import AppliedJobsCard from './AppliedJobsCard';
 import SavedJobsCard from './SavedJobsCard';
 import RecruiterVisibilityCard from './RecruiterVisibilityCard';
@@ -30,6 +29,8 @@ import EditCertificationSection from './EditCertificationSection';
 import EditCareerProfileSection from './EditCareerProfileSection';
 import EditPersonalDetailsSection from './EditPersonalDetailsSection';
 import ResumeUploadModal from './ResumeUploadModal';
+import { ResumeInsightsDashboard } from '@/features/resume';
+import ProfileCompletionCard from './ProfileCompletionCard';
 import ProfilePhotoUploadModal from './ProfilePhotoUploadModal';
 import CoverUploadModal from './CoverUploadModal';
 import {
@@ -217,6 +218,7 @@ export default function ProfilePageClient() {
                 {/* Right sidebar */}
                 <div className="flex flex-col gap-5 lg:sticky lg:top-24">
                   <ProfileCompletionCard />
+                  <ResumeInsightsDashboard resumeUrl={profile.resume?.url ?? null} />
                   <RecruiterVisibilityCard />
                   <AppliedJobsCard jobs={applications} />
                   <SavedJobsCard

@@ -26,7 +26,7 @@ export default function RecruiterDropdown() {
   function handleLogout() {
     logoutRecruiter();
     setOpen(false);
-    router.push('/auth/login?role=recruiter');
+    router.push('/');
   }
 
   return (

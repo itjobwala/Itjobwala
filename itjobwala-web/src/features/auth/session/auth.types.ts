@@ -9,6 +9,7 @@ export interface AuthState {
   accessToken: string | null;
   isAuthenticated: boolean;
   isHydrated: boolean;
+  isLoggingOut: boolean;
 }
 
 export interface AuthActions {

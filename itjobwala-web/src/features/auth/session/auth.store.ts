@@ -29,6 +29,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   accessToken: null,
   isAuthenticated: false,
   isHydrated: false,
+  isLoggingOut: false,
 
   // ── Derived helpers ──────────────────────────────────────────────────────
   isCandidate: () => get().role === 'candidate',
@@ -65,7 +66,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     const user = payload ? buildRecruiterUser(payload) : null;
     writeToken(RECRUITER_TOKEN_KEY, token);
     setCookie(RECRUITER_TOKEN_COOKIE, token);
-    set({ accessToken: token, user, role: 'recruiter', isAuthenticated: true });
+    set({ accessToken: token, user, role: 'recruiter', isAuthenticated: true, isLoggingOut: false });
     authLog('[AUTH]', `Recruiter login successful — ${user?.email ?? 'unknown'}`);
     dispatchAuthChanged();
   },
@@ -99,6 +100,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   logoutRecruiter: () => {
     if (get().role !== 'recruiter') return;
     authLog('[AUTH]', 'Recruiter logout');
+    set({ isLoggingOut: true });
     removeToken(RECRUITER_TOKEN_KEY);
     clearCookie(RECRUITER_TOKEN_COOKIE);
     clearQueryCache();
