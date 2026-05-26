@@ -54,6 +54,7 @@ fastify.register(userRoutes, { prefix: '/api' });
 fastify.register(recruiterRoutes, { prefix: '/api' });
 fastify.register(jobRoutes, { prefix: '/api' });
 fastify.register(candidateProfileRoutes, { prefix: '/api' });
+fastify.register((await import('./src/routes/candidate/candidateDashboardRoutes.js')).default, { prefix: '/api' });
 fastify.register(applicationRoutes, { prefix: '/api' });
 fastify.register((await import('./src/routes/jobs/savedJobRoutes.js')).default, { prefix: '/api' });
 fastify.register((await import('./src/routes/recruiter/recruiterDashboardRoutes.js')).default, { prefix: '/api' });
