@@ -101,7 +101,7 @@ const ACTIONS = [
     icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[18px] h-[18px]"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>,
   },
   {
-    href: '/candidate/profile/edit',
+    href: '/candidate/profile',
     label: 'Edit Profile',
     desc: 'Boost your visibility',
     gradient: 'from-emerald-500 to-teal-500',
@@ -375,7 +375,7 @@ export default function CandidateDashboardPage() {
                             </div>
                           </div>
                           <Link
-                            href="/candidate/profile/edit"
+                            href="/candidate/profile"
                             className="group inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[13px] font-semibold px-4 py-2.5 rounded-xl transition-colors"
                           >
                             Complete Profile <Arrow />
