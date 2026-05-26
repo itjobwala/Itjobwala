@@ -9,7 +9,7 @@ import { fetchCandidateDashboard } from '../services/dashboard.api';
 import type { RecentApplication } from '../services/dashboard.api';
 
 // ── Profile avatar with circular SVG progress ring ───────────────────────────
-function ProfileAvatar({ photo, name, completion }: { photo: string | null; name: string; completion: number }) {
+function ProfileAvatar({ photo, name, completion, openToWork }: { photo: string | null; name: string; completion: number; openToWork: boolean }) {
   const r = 52;
   const circ = 2 * Math.PI * r;
   const offset = circ - (completion / 100) * circ;
@@ -39,10 +39,17 @@ function ProfileAvatar({ photo, name, completion }: { photo: string | null; name
           <span className="text-3xl font-extrabold text-white select-none">{name.charAt(0).toUpperCase()}</span>
         )}
       </div>
-      {/* Completion badge */}
-      <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 bg-white text-[10px] font-bold text-primary px-2.5 py-0.5 rounded-full shadow-md border border-primary/10 whitespace-nowrap">
-        {completion}% done
-      </div>
+      {/* Completion / Open to Work badge */}
+      {openToWork ? (
+        <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full shadow-md whitespace-nowrap">
+          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+          Open to Work
+        </div>
+      ) : (
+        <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 bg-white text-[10px] font-bold text-primary px-2.5 py-0.5 rounded-full shadow-md border border-primary/10 whitespace-nowrap">
+          {completion}% done
+        </div>
+      )}
     </div>
   );
 }
@@ -173,14 +180,9 @@ export default function CandidateDashboardPage() {
                         photo={data.user.profilePhoto}
                         name={data.user.fullName}
                         completion={data.user.profileCompletion}
+                        openToWork={data.user.openToWork}
                       />
                       <div>
-                        {data.user.openToWork && (
-                          <span className="inline-flex items-center gap-1.5 mb-2 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-emerald-400/15 text-emerald-300 border border-emerald-400/25">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                            Open to Work
-                          </span>
-                        )}
                         <h1 className="text-2xl sm:text-[28px] font-bold text-white tracking-tight leading-tight">
                           Welcome back, {firstName} 👋
                         </h1>
@@ -194,11 +196,6 @@ export default function CandidateDashboardPage() {
                             </svg>
                             {data.user.location}
                           </p>
-                        )}
-                        {data.user.profileCompletion < 80 && (
-                          <Link href="/candidate/profile/edit" className="group inline-flex items-center gap-1.5 mt-3 text-[12px] font-semibold text-blue-300/80 hover:text-blue-200 transition-colors">
-                            Complete profile to boost recruiter visibility <Arrow />
-                          </Link>
                         )}
                       </div>
                     </div>
@@ -300,46 +297,6 @@ export default function CandidateDashboardPage() {
                       )}
                     </div>
 
-                    {/* Stat cards */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                      {[
-                        {
-                          label: 'Applied',
-                          value: data.stats.totalApplications,
-                          bg: 'bg-blue-50', iconColor: 'text-blue-600',
-                          icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[18px] h-[18px]"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>,
-                        },
-                        {
-                          label: 'Shortlisted',
-                          value: data.stats.shortlisted,
-                          bg: 'bg-violet-50', iconColor: 'text-violet-600',
-                          icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[18px] h-[18px]"><path d="M5 13l4 4L19 7"/></svg>,
-                        },
-                        {
-                          label: 'Interviews',
-                          value: data.stats.interviews,
-                          bg: 'bg-amber-50', iconColor: 'text-amber-600',
-                          icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[18px] h-[18px]"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>,
-                        },
-                        {
-                          label: 'Rejected',
-                          value: data.stats.rejected,
-                          bg: 'bg-red-50', iconColor: 'text-red-500',
-                          icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[18px] h-[18px]"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6m0-6 6 6"/></svg>,
-                        },
-                      ].map(s => (
-                        <div
-                          key={s.label}
-                          className="group bg-white rounded-2xl border border-gray-100/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] p-5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-200 cursor-default"
-                        >
-                          <div className={`w-9 h-9 rounded-xl ${s.bg} flex items-center justify-center mb-3.5 ${s.iconColor}`}>
-                            {s.icon}
-                          </div>
-                          <p className="text-[24px] font-bold text-[#0f172a] leading-none">{s.value}</p>
-                          <p className="text-[12px] text-gray-400 mt-1.5 font-medium">{s.label}</p>
-                        </div>
-                      ))}
-                    </div>
                   </div>
 
                   {/* ── Right column ── */}
