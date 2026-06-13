@@ -57,12 +57,12 @@ function ActionButtons({ applicant, loadingKey, onShortlist, onInterview, onHire
   if (finalStatuses.has(status)) return null;
 
   return (
-    <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-100">
+    <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-token">
       {status === 'applied' && (
         <button
           onClick={() => onShortlist(id)}
           disabled={anyLoading}
-          className="px-3 py-1.5 text-[12px] font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
+          className="px-3 py-1.5 text-caption font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
         >
           {isShortlisting ? 'Loading…' : 'Shortlist'}
         </button>
@@ -71,7 +71,7 @@ function ActionButtons({ applicant, loadingKey, onShortlist, onInterview, onHire
         <button
           onClick={() => onInterview(id)}
           disabled={anyLoading}
-          className="px-3 py-1.5 text-[12px] font-semibold bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 transition-colors"
+          className="px-3 py-1.5 text-caption font-semibold bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 transition-colors"
         >
           {isInterviewing ? 'Loading…' : 'Schedule Interview'}
         </button>
@@ -80,7 +80,7 @@ function ActionButtons({ applicant, loadingKey, onShortlist, onInterview, onHire
         <button
           onClick={() => onHire(id)}
           disabled={anyLoading}
-          className="px-3 py-1.5 text-[12px] font-semibold bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors"
+          className="px-3 py-1.5 text-caption font-semibold bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors"
         >
           {isHiring ? 'Loading…' : 'Hire'}
         </button>
@@ -88,7 +88,7 @@ function ActionButtons({ applicant, loadingKey, onShortlist, onInterview, onHire
       <button
         onClick={() => onReject(id)}
         disabled={anyLoading}
-        className="px-3 py-1.5 text-[12px] font-semibold bg-white text-red-600 border border-red-200 rounded-lg hover:bg-red-50 disabled:opacity-50 transition-colors"
+        className="px-3 py-1.5 text-caption font-semibold bg-surface text-danger border border-danger rounded-lg hover:bg-danger-bg disabled:opacity-50 transition-colors"
       >
         {isRejecting ? 'Loading…' : 'Reject'}
       </button>
@@ -163,12 +163,12 @@ export default function RecruiterApplicantsPage() {
   return (
     <RecruiterShell>
       {/* Page header */}
-      <div className="bg-white border-b border-gray-100">
+      <div className="bg-surface border-b border-token">
         <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
-          <h1 className="text-[28px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
+          <h1 className="text-4xl font-extrabold text-heading" style={{ letterSpacing: '-0.5px' }}>
             Applicants
           </h1>
-          <p className="text-[13px] text-gray-400 mt-1">
+          <p className="text-sm text-subtle mt-1">
             Review and manage applications for your job postings
           </p>
         </div>
@@ -182,10 +182,10 @@ export default function RecruiterApplicantsPage() {
             <button
               key={value}
               onClick={() => setFilterStatus(value)}
-              className={`px-4 py-2 rounded-lg font-medium text-[13px] transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
                 filterStatus === value
                   ? 'bg-primary text-white'
-                  : 'bg-white text-gray-600 border border-gray-200 hover:border-primary'
+                  : 'bg-surface text-body-secondary border border-token hover:border-primary'
               }`}
             >
               {label}
@@ -196,12 +196,12 @@ export default function RecruiterApplicantsPage() {
         {isLoading ? (
           <div className="text-center py-12">
             <div className="inline-block">
-              <div className="w-8 h-8 border-4 border-gray-200 border-t-primary rounded-full animate-spin" />
+              <div className="w-8 h-8 border-4 border-token border-t-primary rounded-full animate-spin" />
             </div>
-            <p className="mt-4 text-gray-500">Loading applicants...</p>
+            <p className="mt-4 text-muted">Loading applicants...</p>
           </div>
         ) : error ? (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600">
+          <div className="bg-danger-bg border border-danger rounded-xl p-4 text-danger">
             {error instanceof Error ? error.message : 'Failed to load applicants'}
           </div>
         ) : !data || data.applicants.length === 0 ? (
@@ -209,7 +209,7 @@ export default function RecruiterApplicantsPage() {
         ) : (
           <div className="space-y-3">
             {data.applicants.map((applicant) => (
-              <div key={applicant.id} className="bg-white rounded-xl border border-gray-100 p-5 hover:border-gray-200 transition-colors">
+              <div key={applicant.id} className="bg-surface rounded-xl border border-token p-5 hover:border-token-mid transition-colors">
                 <div className="flex items-start gap-4">
                   <Avatar name={applicant.candidateName} photo={applicant.profilePhoto} size="lg" />
 
@@ -219,19 +219,19 @@ export default function RecruiterApplicantsPage() {
                       <div>
                         <Link
                           href={`/recruiter/applicants/${applicant.id}`}
-                          className="text-[14px] font-semibold text-[#0f172a] hover:text-primary transition-colors"
+                          className="text-base font-semibold text-heading hover:text-primary transition-colors"
                         >
                           {applicant.candidateName}
                         </Link>
                         {applicant.profile?.title && (
-                          <p className="text-[12px] text-gray-500 mt-0.5">{applicant.profile.title}</p>
+                          <p className="text-caption text-muted mt-0.5">{applicant.profile.title}</p>
                         )}
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <StatusBadge status={applicant.status} />
                         <Link
                           href={`/recruiter/applicants/${applicant.id}`}
-                          className="text-[12px] font-semibold text-primary hover:underline"
+                          className="text-caption font-semibold text-primary hover:underline"
                         >
                           View
                         </Link>
@@ -239,25 +239,25 @@ export default function RecruiterApplicantsPage() {
                     </div>
 
                     {/* Meta row */}
-                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-gray-500">
+                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-caption text-muted">
                       <span>{applicant.candidateEmail}</span>
-                      <span>Applied for: <span className="font-medium text-gray-700">{applicant.jobTitle || 'Unknown Position'}</span></span>
+                      <span>Applied for: <span className="font-medium text-body">{applicant.jobTitle || 'Unknown Position'}</span></span>
                       {applicant.experience !== undefined && applicant.experience > 0 && (
                         <span>{applicant.experience} yr{applicant.experience !== 1 ? 's' : ''} experience</span>
                       )}
-                      <span className="text-gray-400">{formatDate(applicant.appliedDate)}</span>
+                      <span className="text-subtle">{formatDate(applicant.appliedDate)}</span>
                     </div>
 
                     {/* Skills */}
                     {applicant.skills && applicant.skills.length > 0 && (
                       <div className="mt-2.5 flex flex-wrap gap-1.5">
                         {applicant.skills.slice(0, 5).map((skill) => (
-                          <span key={skill} className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[11px] font-medium rounded-md">
+                          <span key={skill} className="px-2 py-0.5 bg-surface-hover text-body-secondary text-micro font-medium rounded-md">
                             {skill}
                           </span>
                         ))}
                         {applicant.skills.length > 5 && (
-                          <span className="px-2 py-0.5 text-gray-400 text-[11px]">+{applicant.skills.length - 5} more</span>
+                          <span className="px-2 py-0.5 text-subtle text-micro">+{applicant.skills.length - 5} more</span>
                         )}
                       </div>
                     )}
@@ -268,7 +268,7 @@ export default function RecruiterApplicantsPage() {
                         href={applicant.resume}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 mt-2 text-[12px] text-primary font-medium hover:underline"
+                        className="inline-flex items-center gap-1 mt-2 text-caption text-primary font-medium hover:underline"
                       >
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />

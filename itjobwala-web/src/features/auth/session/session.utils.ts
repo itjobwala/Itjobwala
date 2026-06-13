@@ -4,9 +4,11 @@ import type { SessionUser, AuthState } from './auth.types';
 import {
   CANDIDATE_TOKEN_KEY,
   RECRUITER_TOKEN_KEY,
+  ADMIN_TOKEN_KEY,
   AUTH_SESSION_KEY,
   TOKEN_COOKIE,
   RECRUITER_TOKEN_COOKIE,
+  ADMIN_TOKEN_COOKIE,
   COOKIE_MAX_AGE,
   AUTH_CHANGED_EVENT,
 } from './auth.constants';
@@ -56,6 +58,23 @@ export function buildCandidateUser(payload: JwtPayload, storedSession?: SessionU
     role: 'Candidate',
     userRole: 'candidate',
     avatarColorClass: 'from-primary to-blue-400',
+    profilePhoto: '',
+    unreadNotifications: 0,
+    unreadMessages: 0,
+  };
+}
+
+export function buildAdminUser(payload: JwtPayload, storedUser?: SessionUser | null): SessionUser {
+  if (storedUser?.userRole === 'admin') return storedUser;
+  const email = String(payload.email ?? '');
+  const name = payload.name ? String(payload.name) : nameFromEmail(email);
+  return {
+    email,
+    name,
+    initials: getInitials(name),
+    role: 'Admin',
+    userRole: 'admin',
+    avatarColorClass: 'from-slate-700 to-slate-500',
     profilePhoto: '',
     unreadNotifications: 0,
     unreadMessages: 0,
@@ -167,6 +186,19 @@ export function resolveSessionFromStorage(): PartialAuthState {
     authLog('[SESSION]', 'Recruiter token expired during hydration — purging');
     removeToken(RECRUITER_TOKEN_KEY);
     clearCookie(RECRUITER_TOKEN_COOKIE);
+  }
+
+  // Try admin token
+  const adminToken = readToken(ADMIN_TOKEN_KEY);
+  if (adminToken) {
+    const payload = decodeJwt(adminToken);
+    if (payload && !isTokenExpired(payload) && String(payload.role ?? '').toLowerCase() === 'admin') {
+      const user = buildAdminUser(payload);
+      return { accessToken: adminToken, user, role: 'admin', isAuthenticated: true, isLoggingOut: false };
+    }
+    authLog('[SESSION]', 'Admin token expired during hydration — purging');
+    removeToken(ADMIN_TOKEN_KEY);
+    clearCookie(ADMIN_TOKEN_COOKIE);
   }
 
   return empty;

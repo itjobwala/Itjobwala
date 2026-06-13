@@ -2,10 +2,12 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getRecruiterCompanyProfile, updateRecruiterCompanyProfile } from '@/features/recruiter/company';
-import { getRecruiterPostedJobs, getRecruiterPostedJobById, createRecruiterJob, updateRecruiterJob, deleteRecruiterJob } from '@/features/recruiter/jobs';
-import { getRecruiterApplicants, getRecruiterApplicantById, updateApplicantStatus, rejectApplicant, shortlistApplicant, hireApplicant } from '@/features/recruiter/applicants';
+import { getRecruiterPostedJobs, getRecruiterPostedJobById, createRecruiterJob, updateRecruiterJob, deleteRecruiterJob, submitRecruiterJob } from '@/features/recruiter/jobs';
+import { getRecruiterApplicants, getRecruiterApplicantById, updateApplicantStatus, rejectApplicant, shortlistApplicant, hireApplicant, getApplicantATSIntelligence, getJobPoolStats } from '@/features/recruiter/applicants';
 import { getRecruiterStats, getRecruiterNotifications, getRecruiterNotificationsPaged, markNotificationRead, markAllNotificationsRead } from '@/features/recruiter/dashboard';
-import { getRecruiterInterviews, scheduleRecruiterInterview } from '@/features/recruiter/interviews';
+import { getRecruiterInterviews, scheduleRecruiterInterview, cancelRecruiterInterview } from '@/features/recruiter/interviews';
+import { searchCandidates, getCandidateProfile } from '@/features/recruiter/candidates';
+import type { CandidateSearchFilters } from '@/features/recruiter/candidates';
 import type {
   UpdateCompanyProfileRequest,
   CreateJobPostRequest,
@@ -15,6 +17,8 @@ import type {
 } from '@/features/recruiter/types';
 
 export const recruiterKeys = {
+  atsIntelligence: (id: string) => ['recruiter', 'ats-intelligence', id] as const,
+  poolStats:       (jobId: string) => ['recruiter', 'pool-stats', jobId] as const,
   company: () => ['recruiter', 'company'] as const,
   stats: () => ['recruiter', 'stats'] as const,
   jobs: () => ['recruiter', 'jobs'] as const,
@@ -24,6 +28,8 @@ export const recruiterKeys = {
   applicantDetail: (id: string) => ['recruiter', 'applicants', 'detail', id] as const,
   interviews: () => ['recruiter', 'interviews'] as const,
   notifications: () => ['recruiter', 'notifications'] as const,
+  candidates: (filters?: CandidateSearchFilters) => ['recruiter', 'candidates', filters] as const,
+  candidateDetail: (id: string) => ['recruiter', 'candidates', 'detail', id] as const,
 };
 
 export function useRecruiterStatsQuery(enabled = true) {
@@ -107,6 +113,17 @@ export function useDeleteRecruiterJobMutation() {
     mutationFn: (jobId: string) => deleteRecruiterJob(jobId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: recruiterKeys.jobs() });
+    },
+  });
+}
+
+export function useSubmitJobMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (jobId: string) => submitRecruiterJob(jobId),
+    onSuccess: (_, jobId) => {
+      qc.invalidateQueries({ queryKey: recruiterKeys.jobs() });
+      qc.invalidateQueries({ queryKey: recruiterKeys.jobDetail(jobId) });
     },
   });
 }
@@ -195,6 +212,18 @@ export function useScheduleInterviewMutation() {
     mutationFn: (data: ScheduleInterviewRequest) => scheduleRecruiterInterview(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: recruiterKeys.interviews() });
+      qc.invalidateQueries({ queryKey: recruiterKeys.applicantsAll() });
+    },
+  });
+}
+
+export function useCancelInterviewMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (interviewId: string) => cancelRecruiterInterview(interviewId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: recruiterKeys.interviews() });
+      qc.invalidateQueries({ queryKey: recruiterKeys.applicantsAll() });
     },
   });
 }
@@ -232,6 +261,43 @@ export function useMarkAllNotificationsReadMutation() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: recruiterKeys.notifications() });
     },
+  });
+}
+
+export function useApplicantATSIntelligenceQuery(applicantId: string, enabled = true) {
+  return useQuery({
+    queryKey: recruiterKeys.atsIntelligence(applicantId),
+    queryFn:  () => getApplicantATSIntelligence(applicantId),
+    enabled:  enabled && !!applicantId,
+    retry:    false,
+    staleTime: 10 * 60 * 1000,
+  });
+}
+
+export function useJobPoolStatsQuery(jobId: string, enabled = true) {
+  return useQuery({
+    queryKey: recruiterKeys.poolStats(jobId),
+    queryFn:  () => getJobPoolStats(jobId),
+    enabled:  enabled && !!jobId,
+    retry:    false,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useCandidateSearchQuery(filters?: CandidateSearchFilters, enabled = true) {
+  return useQuery({
+    queryKey: recruiterKeys.candidates(filters),
+    queryFn:  () => searchCandidates(filters),
+    enabled,
+  });
+}
+
+export function useCandidateDetailQuery(id: string, enabled = true) {
+  return useQuery({
+    queryKey: recruiterKeys.candidateDetail(id),
+    queryFn:  () => getCandidateProfile(id),
+    enabled:  enabled && !!id,
+    staleTime: 60_000,
   });
 }
 

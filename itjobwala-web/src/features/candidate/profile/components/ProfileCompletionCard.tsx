@@ -15,7 +15,7 @@ const FIELD_LABELS: Record<string, string> = {
 export default function ProfileCompletionCard() {
   const { data, isLoading, isError } = useProfileCompletionQuery();
 
-  const circumference = 2 * Math.PI * 40;
+  const circumference = 2 * Math.PI * 37.5;
   const completion    = data?.percentage ?? 0;
   const dash          = (completion / 100) * circumference;
 
@@ -27,8 +27,8 @@ export default function ProfileCompletionCard() {
   if (isLoading) {
     return (
       <Card overflow>
-        <h3 className="text-[14px] font-extrabold text-[#0f172a] mb-4">Profile strength</h3>
-        <div className="h-20 bg-gray-100 rounded-lg animate-pulse" />
+        <h3 className="text-base font-extrabold text-heading mb-4">Profile strength</h3>
+        <div className="h-20 bg-surface-hover rounded-lg animate-pulse" />
       </Card>
     );
   }
@@ -36,41 +36,43 @@ export default function ProfileCompletionCard() {
   if (isError) {
     return (
       <Card overflow>
-        <h3 className="text-[14px] font-extrabold text-[#0f172a] mb-4">Profile strength</h3>
-        <p className="text-[12px] text-gray-500">Unable to load profile strength.</p>
+        <h3 className="text-base font-extrabold text-heading mb-4">Profile strength</h3>
+        <p className="text-caption text-muted">Unable to load profile strength.</p>
       </Card>
     );
   }
 
   return (
-    <Card overflow>
-      <h3 className="text-[14px] font-extrabold text-[#0f172a] mb-4">Profile strength</h3>
+    <Card overflow className="border-token-mid">
+      <h3 className="text-base font-extrabold text-heading mb-4">Profile strength</h3>
 
       <div className="flex items-center gap-5 mb-5">
-        <div className="relative shrink-0">
-          <svg width="88" height="88" viewBox="0 0 96 96">
-            <circle cx="48" cy="48" r="40" fill="none" stroke="#f3f4f6" strokeWidth="7" />
+        <div className="relative w-[88px] h-[88px] shrink-0">
+          <svg width="88" height="88" viewBox="0 0 88 88" className="block">
+            <circle cx="44" cy="44" r="37.5" fill="none" stroke="var(--color-surface-hover)" strokeWidth="7" />
             <circle
-              cx="48" cy="48" r="40"
+              cx="44" cy="44" r="37.5"
               fill="none"
-              stroke="#1557FF"
+              stroke="var(--color-primary)"
               strokeWidth="7"
               strokeLinecap="round"
               strokeDasharray={`${dash} ${circumference - dash}`}
               strokeDashoffset={circumference * 0.25}
-              transform="rotate(-90 48 48)"
+              transform="rotate(-90 44 44)"
             />
           </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-[20px] font-extrabold text-[#0f172a] leading-none">{completion}%</span>
-            <span className="text-[10px] text-gray-400 font-medium">complete</span>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
+            <span className="text-xl font-extrabold text-heading leading-none tracking-tight">
+              {completion}<span className="text-xs font-bold">%</span>
+            </span>
+            <span className="text-[10px] text-subtle font-medium">complete</span>
           </div>
         </div>
         <div>
-          <p className="text-[13px] font-semibold text-[#0f172a] mb-1">
+          <p className="text-sm font-semibold text-heading mb-1">
             {completion === 100 ? 'Perfect!' : completion >= 80 ? 'Almost there!' : completion >= 60 ? 'Good progress' : 'Keep going'}
           </p>
-          <p className="text-[12px] text-gray-500 leading-[1.6]">
+          <p className="text-caption text-muted leading-[1.6]">
             {completion === 100 ? (
               <>Your profile is complete. You&apos;re all set to get recruiter views!</>
             ) : (
@@ -83,12 +85,12 @@ export default function ProfileCompletionCard() {
       <div className="flex flex-col gap-2">
         {incompleteSteps.map(label => (
           <div key={label} className="flex items-center gap-2.5 p-2.5 bg-primary/5 rounded-xl">
-            <span className="w-4 h-4 rounded-full bg-gray-200 flex items-center justify-center shrink-0">
-              <svg width="7" height="7" viewBox="0 0 12 12" fill="none" stroke="#9ca3af" strokeWidth="2.5">
+            <span className="w-4 h-4 rounded-full bg-surface-mid flex items-center justify-center shrink-0">
+              <svg width="7" height="7" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-subtle">
                 <path d="M6 3v6M3 6h6" />
               </svg>
             </span>
-            <span className="text-[12px] font-medium text-gray-600">{label}</span>
+            <span className="text-caption font-medium text-body-secondary">{label}</span>
           </div>
         ))}
       </div>

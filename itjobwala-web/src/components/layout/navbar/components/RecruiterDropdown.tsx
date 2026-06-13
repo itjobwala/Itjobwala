@@ -33,7 +33,7 @@ export default function RecruiterDropdown() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-1.5 bg-white text-gray-700 border-[1.5px] border-gray-200 rounded-lg py-[9px] px-4 text-[13px] font-bold cursor-pointer transition-all duration-200 hover:border-[#1557FF] hover:text-[#1557FF]"
+        className="flex items-center gap-1.5 bg-surface text-body border-[1.5px] border-token-mid rounded-lg py-[9px] px-4 text-sm font-bold cursor-pointer transition-all duration-200 hover:border-[#1557FF] hover:text-[#1557FF]"
       >
         <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
           <path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z" />
@@ -51,15 +51,15 @@ export default function RecruiterDropdown() {
 
       {open && (
         <div
-          className="absolute top-[calc(100%+12px)] right-0 bg-white rounded-[18px] border border-[#f0f0f0] p-2 min-w-[260px] z-[300] fade-up"
+          className="absolute top-[calc(100%+12px)] right-0 bg-surface rounded-[18px] border border-token p-2 min-w-[260px] z-[300] fade-up"
           style={{ boxShadow: '0 24px 60px rgba(0,0,0,0.14)' }}
         >
           {/* Caret */}
-          <div className="absolute -top-[6px] right-5 w-3 h-3 bg-white border border-[#f0f0f0] border-b-transparent border-r-transparent rotate-45" />
+          <div className="absolute -top-[6px] right-5 w-3 h-3 bg-surface border border-token border-b-transparent border-r-transparent rotate-45" />
 
           {/* Header */}
-          <div className="px-3.5 pt-2.5 pb-2 border-b border-gray-50 mb-1.5">
-            <div className="text-[11px] font-bold text-gray-400 uppercase tracking-[1.2px]">
+          <div className="px-3.5 pt-2.5 pb-2 border-b border-token mb-1.5">
+            <div className="text-micro font-bold text-subtle uppercase tracking-[1.2px]">
               Recruiter Portal
             </div>
           </div>
@@ -81,8 +81,8 @@ export default function RecruiterDropdown() {
                   </svg>
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-[#111827]">Dashboard</div>
-                  <div className="text-xs text-gray-400">Manage jobs and applicants</div>
+                  <div className="text-sm font-bold text-heading">Dashboard</div>
+                  <div className="text-xs text-subtle">Manage jobs and applicants</div>
                 </div>
               </Link>
 
@@ -101,8 +101,8 @@ export default function RecruiterDropdown() {
                   </svg>
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-[#111827]">Post a Job</div>
-                  <div className="text-xs text-gray-400">Reach 12,000+ IT professionals</div>
+                  <div className="text-sm font-bold text-heading">Post a Job</div>
+                  <div className="text-xs text-subtle">Reach 12,000+ IT professionals</div>
                 </div>
               </Link>
 
@@ -120,7 +120,7 @@ export default function RecruiterDropdown() {
                 </div>
                 <div>
                   <div className="text-sm font-bold text-red-600">Log Out</div>
-                  <div className="text-xs text-gray-400">Sign out of recruiter portal</div>
+                  <div className="text-xs text-subtle">Sign out of recruiter portal</div>
                 </div>
               </button>
             </>
@@ -139,8 +139,8 @@ export default function RecruiterDropdown() {
                   </svg>
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-[#111827]">Recruiter Sign Up</div>
-                  <div className="text-xs text-gray-400">Create your free recruiter account</div>
+                  <div className="text-sm font-bold text-heading">Recruiter Sign Up</div>
+                  <div className="text-xs text-subtle">Create your free recruiter account</div>
                 </div>
               </Link>
 
@@ -158,8 +158,8 @@ export default function RecruiterDropdown() {
                   </svg>
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-[#111827]">Recruiter Login</div>
-                  <div className="text-xs text-gray-400">Access your hiring dashboard</div>
+                  <div className="text-sm font-bold text-heading">Recruiter Login</div>
+                  <div className="text-xs text-subtle">Access your hiring dashboard</div>
                 </div>
               </Link>
 
@@ -178,8 +178,8 @@ export default function RecruiterDropdown() {
                   </svg>
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-[#111827]">Post Jobs Free</div>
-                  <div className="text-xs text-gray-400">Reach 12,000+ IT professionals</div>
+                  <div className="text-sm font-bold text-heading">Post Jobs Free</div>
+                  <div className="text-xs text-subtle">Reach 12,000+ IT professionals</div>
                 </div>
               </Link>
 
@@ -191,10 +191,10 @@ export default function RecruiterDropdown() {
                   border: `1px solid ${PRIMARY}20`,
                 }}
               >
-                <div className="text-[12px] font-semibold" style={{ color: PRIMARY }}>
+                <div className="text-caption font-semibold" style={{ color: PRIMARY }}>
                   ⚡ 4,000+ active IT candidates
                 </div>
-                <div className="text-[11px] text-gray-500 mt-0.5">Post a job in under 2 minutes</div>
+                <div className="text-micro text-muted mt-0.5">Post a job in under 2 minutes</div>
               </div>
             </>
           )}

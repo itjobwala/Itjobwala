@@ -76,4 +76,16 @@ export const env = {
     .split(',')
     .map(s => s.trim())
     .filter(Boolean),
+
+  // ── Email / SMTP ────────────────────────────────────────────────────────────
+  // Hostinger SMTP by default. Swap host/port/secure to change provider.
+  // Reminder: SMTP mailbox + SPF/DKIM/DMARC DNS are configured outside the code.
+  email: {
+    host:   optional('EMAIL_HOST', 'smtp.hostinger.com'),
+    port:   Number(optional('EMAIL_PORT', '465')),
+    secure: optional('EMAIL_SECURE', 'true') === 'true',
+    user:   required('EMAIL_USER'),
+    pass:   required('EMAIL_PASS'),
+    from:   optional('EMAIL_FROM', `"ITJobwala" <${process.env.EMAIL_USER}>`),
+  },
 };

@@ -32,7 +32,12 @@ class Job extends Model {
         about_role: { type: ['string', 'null'] },
         job_level: { type: ['string', 'null'] },
         office_details: { type: ['string', 'null'] },
-        status: { type: 'string', default: 'active' }
+        status:            { type: 'string', default: 'draft' },
+        moderation_reason: { type: ['string', 'null'] },
+        auto_flags:        { type: ['array', 'object', 'null'] },
+        reviewed_by:       { type: ['integer', 'null'] },
+        reviewed_at:       { type: ['string', 'null'] },
+        submitted_at:      { type: ['string', 'null'] },
       }
     };
   }

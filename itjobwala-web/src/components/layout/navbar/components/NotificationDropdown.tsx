@@ -43,7 +43,7 @@ const TYPE_COLOR: Partial<Record<NotificationType, string>> & { default: string 
   interview_scheduled: 'bg-amber-50 text-amber-600',
   offer_received:      'bg-yellow-50 text-yellow-600',
   new_applicant:       'bg-green-50 text-green-600',
-  default:             'bg-gray-50 text-gray-500',
+  default:             'bg-surface-alt text-muted',
 };
 
 function relativeTime(iso: string): string {
@@ -86,7 +86,7 @@ export default function NotificationDropdown({ count }: Props) {
       <button
         onClick={() => setOpen(o => !o)}
         className={`relative flex items-center justify-center w-9 h-9 rounded-xl transition-colors ${
-          open ? 'bg-primary/10 text-primary' : 'text-gray-500 hover:bg-gray-100 hover:text-[#0f172a]'
+          open ? 'bg-primary/10 text-primary' : 'text-muted hover:bg-surface-hover hover:text-heading'
         }`}
         aria-label="Notifications"
       >
@@ -101,14 +101,14 @@ export default function NotificationDropdown({ count }: Props) {
         )}
       </button>
 
-      <div className={`absolute right-0 top-[calc(100%+8px)] w-[360px] bg-white rounded-2xl border border-gray-100 shadow-xl shadow-black/[0.08] transition-all duration-200 z-[300] ${
+      <div className={`absolute right-0 top-[calc(100%+8px)] w-[360px] bg-surface rounded-2xl border border-token shadow-xl shadow-black/[0.08] transition-all duration-200 z-[300] ${
         open ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-2 pointer-events-none'
       }`}>
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-token">
           <div className="flex items-center gap-2">
-            <span className="text-[14px] font-extrabold text-[#0f172a]">Notifications</span>
+            <span className="text-base font-extrabold text-heading">Notifications</span>
             {unread > 0 && (
-              <span className="text-[11px] font-bold bg-primary/10 text-primary rounded-full px-2 py-0.5">
+              <span className="text-micro font-bold bg-primary/10 text-primary rounded-full px-2 py-0.5">
                 {unread} new
               </span>
             )}
@@ -116,7 +116,7 @@ export default function NotificationDropdown({ count }: Props) {
           {unread > 0 && (
             <button
               onClick={() => markAllRead.mutate()}
-              className="text-[12px] font-semibold text-primary hover:text-primary/80 transition-colors"
+              className="text-caption font-semibold text-primary hover:text-primary/80 transition-colors"
             >
               Mark all read
             </button>
@@ -125,7 +125,7 @@ export default function NotificationDropdown({ count }: Props) {
 
         <div className="max-h-[380px] overflow-y-auto">
           {notifications.length === 0 ? (
-            <div className="px-4 py-8 text-center text-[13px] text-gray-400">
+            <div className="px-4 py-8 text-center text-sm text-subtle">
               No new notifications
             </div>
           ) : (
@@ -135,7 +135,7 @@ export default function NotificationDropdown({ count }: Props) {
               return (
                 <div
                   key={n.id}
-                  className={`flex items-start gap-3 px-4 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors cursor-pointer ${
+                  className={`flex items-start gap-3 px-4 py-3 border-b border-token last:border-0 hover:bg-surface-alt transition-colors cursor-pointer ${
                     !n.is_read ? 'bg-primary/[0.02]' : ''
                   }`}
                   onClick={() => !n.is_read && markRead.mutate(n.id)}
@@ -144,11 +144,11 @@ export default function NotificationDropdown({ count }: Props) {
                     {icon}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-[13px] leading-snug ${!n.is_read ? 'font-semibold text-[#0f172a]' : 'text-gray-600'}`}>
+                    <p className={`text-sm leading-snug ${!n.is_read ? 'font-semibold text-heading' : 'text-body-secondary'}`}>
                       {n.title}
                     </p>
-                    <p className="text-[11px] text-gray-400 mt-0.5 truncate">{n.message}</p>
-                    <p className="text-[11px] text-gray-400 mt-1">{relativeTime(n.created_at)}</p>
+                    <p className="text-micro text-subtle mt-0.5 truncate">{n.message}</p>
+                    <p className="text-micro text-subtle mt-1">{relativeTime(n.created_at)}</p>
                   </div>
                   {!n.is_read && <span className="w-2 h-2 rounded-full bg-primary shrink-0 mt-1" />}
                 </div>
@@ -157,10 +157,10 @@ export default function NotificationDropdown({ count }: Props) {
           )}
         </div>
 
-        <div className="px-4 py-2.5 border-t border-gray-100">
+        <div className="px-4 py-2.5 border-t border-token">
           <button
             onClick={() => setOpen(false)}
-            className="w-full text-[13px] font-semibold text-primary hover:text-primary/80 transition-colors text-center py-1"
+            className="w-full text-sm font-semibold text-primary hover:text-primary/80 transition-colors text-center py-1"
           >
             View all notifications →
           </button>

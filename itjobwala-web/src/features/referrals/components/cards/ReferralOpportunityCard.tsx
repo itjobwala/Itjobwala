@@ -15,10 +15,10 @@ function StrengthBar({ value }: { value: number }) {
   const color = value >= 80 ? 'bg-emerald-500' : value >= 50 ? 'bg-primary' : 'bg-amber-400';
   return (
     <div className="flex items-center gap-2">
-      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+      <div className="flex-1 h-1.5 bg-surface-hover rounded-full overflow-hidden">
         <div className={`h-full ${color} rounded-full transition-all duration-500`} style={{ width: `${value}%` }} />
       </div>
-      <span className="text-[10px] font-bold text-gray-500 shrink-0">{value}%</span>
+      <span className="text-[10px] font-bold text-muted shrink-0">{value}%</span>
     </div>
   );
 }
@@ -47,21 +47,21 @@ export default function ReferralOpportunityCard({ job, onApplied }: Props) {
 
   return (
     <>
-      <div className="group bg-white rounded-3xl border border-gray-100 shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 flex flex-col overflow-hidden">
+      <div className="group bg-surface rounded-3xl border border-token shadow-sm hover:shadow-lg hover:border-primary/20 transition-all duration-300 flex flex-col overflow-hidden">
         {/* Header strip */}
         <div className="h-1.5 w-full bg-gradient-to-r from-primary via-blue-400 to-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity" />
 
         <div className="p-6 flex flex-col gap-4 flex-1">
           {/* Company + Role */}
           <div className="flex items-start gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-50 border border-gray-100 flex items-center justify-center text-lg font-black text-primary shrink-0 shadow-sm">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-surface-hover to-surface-alt border border-token flex items-center justify-center text-lg font-black text-primary shrink-0 shadow-sm">
               {companyInitial}
             </div>
             <div className="min-w-0">
-              <h3 className="text-[15px] font-extrabold text-[#0f172a] leading-tight truncate" style={{ letterSpacing: '-0.2px' }}>
+              <h3 className="text-md font-extrabold text-heading leading-tight truncate" style={{ letterSpacing: '-0.2px' }}>
                 {job.job_title}
               </h3>
-              <p className="text-[12px] text-gray-500 font-medium truncate">{job.company_name}</p>
+              <p className="text-caption text-muted font-medium truncate">{job.company_name}</p>
             </div>
             {job.user_request && (
               <div className="ml-auto shrink-0">
@@ -71,7 +71,7 @@ export default function ReferralOpportunityCard({ job, onApplied }: Props) {
           </div>
 
           {/* Meta info */}
-          <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-[12px] text-gray-500">
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-caption text-muted">
             {job.location && (
               <span className="flex items-center gap-1">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
@@ -101,7 +101,7 @@ export default function ReferralOpportunityCard({ job, onApplied }: Props) {
                 </span>
               ))}
               {job.skills.length > 4 && (
-                <span className="text-[10px] font-semibold text-gray-400 px-1">+{job.skills.length - 4}</span>
+                <span className="text-[10px] font-semibold text-subtle px-1">+{job.skills.length - 4}</span>
               )}
             </div>
           )}
@@ -110,23 +110,23 @@ export default function ReferralOpportunityCard({ job, onApplied }: Props) {
           {job.referral_strength != null && (
             <div>
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Referral Strength</span>
+                <span className="text-[10px] font-bold text-muted uppercase tracking-wide">Referral Strength</span>
               </div>
               <StrengthBar value={job.referral_strength} />
             </div>
           )}
 
           {/* Referrer row */}
-          <div className="flex items-center justify-between pt-1 border-t border-gray-50">
+          <div className="flex items-center justify-between pt-1 border-t border-token">
             <div className="flex items-center gap-2">
               <Avatar name={job.owner_name} photo={job.owner_photo} size={28} />
               <div>
-                <p className="text-[11px] font-semibold text-gray-700 leading-none">{job.owner_name ?? 'Anonymous'}</p>
-                <p className="text-[10px] text-gray-400">Referrer</p>
+                <p className="text-micro font-semibold text-body leading-none">{job.owner_name ?? 'Anonymous'}</p>
+                <p className="text-[10px] text-subtle">Referrer</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 text-[10px] text-gray-400">
+            <div className="flex items-center gap-3 text-[10px] text-subtle">
               {job.average_response_time && (
                 <span className="flex items-center gap-0.5">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -148,9 +148,9 @@ export default function ReferralOpportunityCard({ job, onApplied }: Props) {
               <button
                 onClick={() => !alreadyApplied && setShowModal(true)}
                 disabled={alreadyApplied}
-                className={`flex-1 py-2.5 rounded-2xl text-[13px] font-bold transition-all ${
+                className={`flex-1 py-2.5 rounded-2xl text-sm font-bold transition-all ${
                   alreadyApplied
-                    ? 'bg-gray-100 text-gray-400 cursor-default'
+                    ? 'bg-surface-hover text-subtle cursor-default'
                     : 'bg-primary text-white hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25 active:scale-[0.98]'
                 }`}
               >

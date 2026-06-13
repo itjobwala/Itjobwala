@@ -1,37 +1,89 @@
+import { raw } from 'objection';
 import Job from '../../models/jobs/Job.js';
 import Application from '../../models/jobs/Application.js';
 import Activity from '../../models/recruiter/Activity.js';
+import ResumeInsight from '../../models/candidate/ResumeInsight.js';
+
+const AVATAR_GRADIENTS = [
+  'from-blue-500 to-indigo-600',
+  'from-purple-500 to-pink-500',
+  'from-green-500 to-teal-600',
+  'from-amber-500 to-orange-600',
+  'from-rose-500 to-red-600',
+  'from-cyan-500 to-blue-500',
+];
 
 export const getDashboardStats = async (request, reply) => {
   try {
     const recruiterId = request.user.id;
 
-    // In a real app we would compute this efficiently with DB aggregations
-    // For now we mock the shape while calculating what we can easily
-    const jobsCount = await Job.query().where({ recruiter_id: recruiterId, status: 'active' }).resultSize();
+    const sevenDaysAgo     = new Date(Date.now() - 7  * 24 * 60 * 60 * 1000);
+    const fourteenDaysAgo  = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgoISO  = sevenDaysAgo.toISOString();
+    const fourteenDaysAgoISO = fourteenDaysAgo.toISOString();
 
-    // To get total applicants, we'd join jobs and applications
-    const applications = await Application.query()
-      .join('jobs', 'applications.job_id', 'jobs.id')
-      .where('jobs.recruiter_id', recruiterId);
+    const [jobsCount, applications, jobsThisWeek, jobsLastWeek] = await Promise.all([
+      Job.query().where({ recruiter_id: recruiterId, status: 'active' }).resultSize(),
+      Application.query()
+        .join('jobs', 'applications.job_id', 'jobs.id')
+        .where('jobs.recruiter_id', recruiterId)
+        .select(
+          'applications.status',
+          'applications.applied_at',
+          'applications.updated_at',
+          'applications.timeline'
+        ),
+      Job.query().where('recruiter_id', recruiterId).where('created_at', '>=', sevenDaysAgoISO).resultSize(),
+      Job.query().where('recruiter_id', recruiterId)
+        .where('created_at', '>=', fourteenDaysAgoISO)
+        .where('created_at', '<', sevenDaysAgoISO)
+        .resultSize(),
+    ]);
 
-    const totalApplicants = applications.length;
+    // Period deltas computed from the already-fetched applications array
+    const inRange = (val, from, to) => {
+      const d = new Date(val);
+      return d >= from && (!to || d < to);
+    };
+
+    const thisWeekApps = applications.filter(a => inRange(a.applied_at, sevenDaysAgo)).length;
+    const lastWeekApps = applications.filter(a => inRange(a.applied_at, fourteenDaysAgo, sevenDaysAgo)).length;
+
+    const thisWeekInterviews = applications.filter(a => a.status === 'interview' && inRange(a.updated_at, sevenDaysAgo)).length;
+    const lastWeekInterviews = applications.filter(a => a.status === 'interview' && inRange(a.updated_at, fourteenDaysAgo, sevenDaysAgo)).length;
+
+    const thisWeekHires = applications.filter(a => a.status === 'hired' && inRange(a.updated_at, sevenDaysAgo)).length;
+    const lastWeekHires = applications.filter(a => a.status === 'hired' && inRange(a.updated_at, fourteenDaysAgo, sevenDaysAgo)).length;
+
+    // Average days from applied to hired (null when no hires yet)
+    const hiredApps = applications.filter(a => a.status === 'hired');
+    const hireTimes = hiredApps.map(app => {
+      const tl = typeof app.timeline === 'string' ? JSON.parse(app.timeline) : (app.timeline ?? []);
+      const hiredEntry = Array.isArray(tl) ? tl.find(e => e.status === 'hired') : null;
+      const hiredAt   = hiredEntry?.at ? new Date(hiredEntry.at) : new Date(app.updated_at);
+      const appliedAt = new Date(app.applied_at);
+      const days = (hiredAt - appliedAt) / (1000 * 60 * 60 * 24);
+      return days >= 0 ? days : null;
+    }).filter(v => v !== null);
+    const time_to_hire_days = hireTimes.length > 0
+      ? Math.round(hireTimes.reduce((s, v) => s + v, 0) / hireTimes.length)
+      : null;
 
     return reply.status(200).send({
       success: true,
       message: 'Dashboard stats fetched.',
       data: {
-        active_jobs: jobsCount,
-        active_jobs_change: 0, // Mock delta
-        total_applicants: totalApplicants,
-        applicants_change: 0, // Mock delta
-        interviews_scheduled: applications.filter(a => a.status === 'interview').length,
-        interviews_change: 0,
-        offers_made: applications.filter(a => a.status === 'offer').length,
-        offers_change: 0,
-        profile_views: 0, // Mock
-        profile_views_change: 0,
-        time_to_hire_days: 0 // Mock
+        active_jobs:           jobsCount,
+        active_jobs_change:    jobsThisWeek - jobsLastWeek,
+        total_applicants:      applications.length,
+        applicants_change:     thisWeekApps - lastWeekApps,
+        interviews_scheduled:  applications.filter(a => a.status === 'interview').length,
+        interviews_change:     thisWeekInterviews - lastWeekInterviews,
+        hires_made:            applications.filter(a => a.status === 'hired').length,
+        hires_change:          thisWeekHires - lastWeekHires,
+        profile_views:         null,
+        profile_views_change:  null,
+        time_to_hire_days
       }
     });
   } catch (error) {
@@ -58,31 +110,49 @@ export const getPostedJobs = async (request, reply) => {
 
     const result = await query.page(pageIndex, pageSize);
 
+    // Real per-job applicant counts via a single grouped aggregate query
+    const countMap = new Map();
+    if (result.results.length > 0) {
+      const jobIds = result.results.map(j => j.id);
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const rows = await Application.query()
+        .whereIn('job_id', jobIds)
+        .groupBy('job_id')
+        .select('job_id')
+        .select(raw('COUNT(*)::int AS total'))
+        .select(raw(`SUM(CASE WHEN status = 'shortlisted' THEN 1 ELSE 0 END)::int AS shortlisted_cnt`))
+        .select(raw(`SUM(CASE WHEN applied_at >= ? THEN 1 ELSE 0 END)::int AS new_cnt`, [sevenDaysAgo]));
+      for (const row of rows) countMap.set(row.job_id, row);
+    }
+
     return reply.status(200).send({
       success: true,
       message: 'Posted jobs fetched.',
       data: {
-        jobs: result.results.map(job => ({
-          id: `job_${job.id}`,
-          title: job.title,
-          location: job.location,
-          work_mode: job.work_mode,
-          job_type: job.job_type,
-          status: job.status,
-          applicants_count: job.applicants || 0,
-          new_applicants_count: 0,
-          shortlisted_count: 0,
-          views: 0,
-          posted_at: job.posted_at || job.created_at,
-          closes_at: job.closes_at
-        })),
+        jobs: result.results.map(job => {
+          const c = countMap.get(job.id);
+          return {
+            id: `job_${job.id}`,
+            title: job.title,
+            location: job.location,
+            work_mode: job.work_mode,
+            job_type: job.job_type,
+            status: job.status,
+            applicants_count:     c?.total          ?? 0,
+            new_applicants_count: c?.new_cnt        ?? 0,
+            shortlisted_count:    c?.shortlisted_cnt ?? 0,
+            views:     null,
+            posted_at: job.posted_at || job.created_at,
+            closes_at: job.closes_at
+          };
+        }),
         pagination: {
-          page: pageIndex + 1,
-          limit: pageSize,
-          total: result.total,
+          page:        pageIndex + 1,
+          limit:       pageSize,
+          total:       result.total,
           total_pages: Math.ceil(result.total / pageSize),
-          has_next: (pageIndex + 1) * pageSize < result.total,
-          has_prev: pageIndex > 0
+          has_next:    (pageIndex + 1) * pageSize < result.total,
+          has_prev:    pageIndex > 0
         }
       }
     });
@@ -102,7 +172,10 @@ export const getRecentApplicants = async (request, reply) => {
       .join('users', 'applications.user_id', 'users.id')
       .where('jobs.recruiter_id', recruiterId)
       .select(
-        'applications.*',
+        'applications.id',
+        'applications.status',
+        'applications.applied_at',
+        'applications.job_id',
         'jobs.id as job_id_raw',
         'jobs.title as job_title',
         'users.id as user_id_raw',
@@ -113,23 +186,30 @@ export const getRecentApplicants = async (request, reply) => {
       .orderBy('applications.applied_at', 'desc')
       .limit(limit);
 
+    // Real match scores from resume_insights
+    const userIds = [...new Set(applications.map(a => a.user_id_raw))];
+    const insights = userIds.length > 0
+      ? await ResumeInsight.query().whereIn('candidate_id', userIds).select('candidate_id', 'qa_match_score')
+      : [];
+    const insightMap = new Map(insights.map(i => [i.candidate_id, i]));
+
     return reply.status(200).send({
       success: true,
       message: 'Recent applicants fetched.',
       data: {
         applicants: applications.map(app => ({
           application_id: `app_${app.id}`,
-          candidate_id: `cand_${app.user_id_raw}`,
+          candidate_id:   `cand_${app.user_id_raw}`,
           candidate_name: app.candidate_name,
           candidate_initials: app.candidate_name ? app.candidate_name.substring(0, 2).toUpperCase() : 'NA',
-          candidate_avatar_color_class: 'from-blue-500 to-indigo-600', // Mock
-          job_id: `job_${app.job_id_raw}`,
-          job_title: app.job_title,
+          candidate_avatar_color_class: AVATAR_GRADIENTS[app.user_id_raw % AVATAR_GRADIENTS.length],
+          job_id:          `job_${app.job_id_raw}`,
+          job_title:       app.job_title,
           experience_years: app.candidate_exp,
-          location: app.candidate_location,
-          status: app.status,
-          match_score: 85, // Mock score
-          applied_at: app.applied_at
+          location:        app.candidate_location,
+          status:          app.status,
+          match_score:     insightMap.get(app.user_id_raw)?.qa_match_score ?? null,
+          applied_at:      app.applied_at
         }))
       }
     });
@@ -150,15 +230,14 @@ export const getPipeline = async (request, reply) => {
 
     if (jobId) query.where('jobs.id', jobId);
 
-    const applications = await query;
+    const applications = await query.select('applications.status');
 
     const stages = [
-      { stage: 'applied', label: 'Applied', color: 'blue' },
+      { stage: 'applied',     label: 'Applied',     color: 'blue'   },
       { stage: 'shortlisted', label: 'Shortlisted', color: 'purple' },
-      { stage: 'interview', label: 'Interview', color: 'amber' },
-      { stage: 'offer', label: 'Offer', color: 'green' },
-      { stage: 'hired', label: 'Hired', color: 'emerald' },
-      { stage: 'rejected', label: 'Rejected', color: 'red' }
+      { stage: 'interview',   label: 'Interview',   color: 'amber'  },
+      { stage: 'hired',       label: 'Hired',       color: 'emerald'},
+      { stage: 'rejected',    label: 'Rejected',    color: 'red'    },
     ];
 
     const data = stages.map(s => ({
@@ -192,12 +271,12 @@ export const getActivityFeed = async (request, reply) => {
       message: 'Activity feed fetched.',
       data: {
         activities: activities.map(act => ({
-          id: `act_${act.id}`,
-          type: act.type,
-          message: act.message,
-          entity_id: act.entity_id,
+          id:          `act_${act.id}`,
+          type:        act.type,
+          message:     act.message,
+          entity_id:   act.entity_id,
           entity_type: act.entity_type,
-          created_at: act.created_at
+          created_at:  act.created_at
         }))
       }
     });

@@ -1,8 +1,24 @@
+import { Readable } from 'stream';
 import User from '../../models/candidate/User.js';
 import Experience from '../../models/candidate/Experience.js';
 import Education from '../../models/candidate/Education.js';
 import Certification from '../../models/candidate/Certification.js';
 import cloudinary from '../../utils/cloudinary.js';
+import { bufferStream, validateUpload, DOCUMENT_TYPES, IMAGE_TYPES, UploadError } from '../../utils/upload/validateUpload.js';
+import { sanitizeText } from '../../utils/sanitize.js';
+
+/** Upload a pre-validated Buffer to Cloudinary and return the result. */
+function uploadBuffer(buffer, options) {
+  return new Promise((resolve, reject) => {
+    const cloudStream = cloudinary.uploader.upload_stream(options, (error, result) => {
+      if (error) return reject(error);
+      if (!result) return reject(new Error('Cloudinary returned no result'));
+      resolve(result);
+    });
+    cloudStream.on('error', reject);
+    Readable.from(buffer).pipe(cloudStream);
+  });
+}
 
 function formatProfile(user) {
   const career_profile = typeof user.career_profile === 'string' ? JSON.parse(user.career_profile) : (user.career_profile || {});
@@ -111,28 +127,28 @@ export const updateProfile = async (request, reply) => {
 
     const updateData = {};
     
-    if (first_name) updateData.first_name = first_name;
-    if (last_name) updateData.last_name = last_name;
+    if (first_name) updateData.first_name = sanitizeText(first_name);
+    if (last_name) updateData.last_name = sanitizeText(last_name);
     
     // Reconstruct full_name if first/last name changed
     if (first_name || last_name) {
       const user = await User.query().findById(userId).select('first_name', 'last_name', 'full_name');
-      const fName = first_name || user.first_name || '';
-      const lName = last_name || user.last_name || '';
+      const fName = sanitizeText(first_name) || user.first_name || '';
+      const lName = sanitizeText(last_name) || user.last_name || '';
       updateData.full_name = `${fName} ${lName}`.trim();
     } else if (name) {
-      updateData.full_name = name;
+      updateData.full_name = sanitizeText(name);
     }
 
     if (phone) updateData.mobile = phone;
-    if (location) updateData.location = location;
-    if (linked_in) updateData.linked_in = linked_in;
-    if (github) updateData.github = github;
-    if (about) updateData.about = about;
+    if (location) updateData.location = sanitizeText(location);
+    if (linked_in) updateData.linked_in = sanitizeText(linked_in);
+    if (github) updateData.github = sanitizeText(github);
+    if (about) updateData.about = sanitizeText(about);
     if (open_to_work !== undefined) updateData.open_to_work = open_to_work;
-    if (resume_name) updateData.resume_file_name = resume_name;
+    if (resume_name) updateData.resume_file_name = sanitizeText(resume_name);
     
-    if (title !== undefined) updateData.title = title;
+    if (title !== undefined) updateData.title = sanitizeText(title);
     if (expected_salary !== undefined) {
       updateData.expected_salary = (expected_salary === null || expected_salary === '') ? null : String(expected_salary);
     }
@@ -194,46 +210,27 @@ export const uploadResume = async (request, reply) => {
   try {
     const userId = request.user.id;
     const data = await request.file();
+    if (!data) return reply.status(400).send({ success: false, message: 'No file uploaded' });
 
-    if (!data) {
-      return reply.status(400).send({ success: false, message: 'No file uploaded' });
-    }
+    const buffer = await bufferStream(data.file, DOCUMENT_TYPES.maxBytes);
+    await validateUpload(buffer, DOCUMENT_TYPES);
 
-    const result = await new Promise((resolve, reject) => {
-      const cloudStream = cloudinary.uploader.upload_stream(
-        {
-          folder: `itjobwala/resumes/cand_${userId}`,
-          resource_type: 'auto',
-          public_id: 'current_resume',
-          overwrite: true,
-        },
-        (error, result) => {
-          if (error) return reject(error);
-          if (!result) return reject(new Error('Cloudinary returned no result'));
-          resolve(result);
-        }
-      );
-
-      cloudStream.on('error', reject);
-      data.file.on('error', (err) => { cloudStream.destroy(); reject(err); });
-      data.file.pipe(cloudStream);
+    const result = await uploadBuffer(buffer, {
+      folder: `itjobwala/resumes/cand_${userId}`,
+      resource_type: 'raw',
+      public_id: 'current_resume',
+      overwrite: true,
     });
-    const file_name = data.filename;
-    const url = result.secure_url;
+
+    const file_name  = data.filename;
+    const url        = result.secure_url;
     const uploaded_at = new Date().toISOString();
 
-    await User.query().findById(userId).patch({
-      resume_file_name: file_name,
-      resume_url: url,
-      resume_uploaded_at: uploaded_at
-    });
+    await User.query().findById(userId).patch({ resume_file_name: file_name, resume_url: url, resume_uploaded_at: uploaded_at });
 
-    return reply.status(200).send({
-      success: true,
-      message: 'Resume uploaded successfully.',
-      data: { file_name, url, uploaded_at }
-    });
+    return reply.status(200).send({ success: true, message: 'Resume uploaded successfully.', data: { file_name, url, uploaded_at } });
   } catch (error) {
+    if (error instanceof UploadError) return reply.status(400).send({ success: false, message: error.message });
     request.server.log.error(error);
     return reply.status(500).send({ success: false, message: 'Internal server error' });
   }
@@ -270,6 +267,10 @@ export const addExperience = async (request, reply) => {
 
     const expData = { ...request.body, user_id: userId };
     if (expData.end_date === '') expData.end_date = null;
+    if (expData.company) expData.company = sanitizeText(expData.company);
+    if (expData.role) expData.role = sanitizeText(expData.role);
+    if (expData.description) expData.description = sanitizeText(expData.description);
+    if (expData.location) expData.location = sanitizeText(expData.location);
 
     const exp = await Experience.query().insert(expData);
 
@@ -301,8 +302,10 @@ export const updateExperience = async (request, reply) => {
     if (!exp) return reply.status(404).send({ success: false, message: 'Experience entry not found.' });
 
     const updateData = { ...request.body };
-    if (updateData.company) updateData.company = updateData.company.trim();
-    if (updateData.role) updateData.role = updateData.role.trim();
+    if (updateData.company) updateData.company = sanitizeText(updateData.company.trim());
+    if (updateData.role) updateData.role = sanitizeText(updateData.role.trim());
+    if (updateData.description) updateData.description = sanitizeText(updateData.description);
+    if (updateData.location) updateData.location = sanitizeText(updateData.location);
     if (updateData.end_date === '' || is_current) updateData.end_date = null;
 
     await exp.$query().patch(updateData);
@@ -379,6 +382,11 @@ export const addEducation = async (request, reply) => {
 
     const eduData = { ...request.body, user_id: userId };
     if (eduData.end_date === '') eduData.end_date = null;
+    if (eduData.institution) eduData.institution = sanitizeText(eduData.institution);
+    if (eduData.degree) eduData.degree = sanitizeText(eduData.degree);
+    if (eduData.field_of_study) eduData.field_of_study = sanitizeText(eduData.field_of_study);
+    if (eduData.location) eduData.location = sanitizeText(eduData.location);
+    if (eduData.grade) eduData.grade = sanitizeText(eduData.grade);
 
     const edu = await Education.query().insert(eduData);
 
@@ -415,6 +423,11 @@ export const updateEducation = async (request, reply) => {
 
     const updateData = { ...request.body };
     if (updateData.end_date === '' || is_current) updateData.end_date = null;
+    if (updateData.institution) updateData.institution = sanitizeText(updateData.institution);
+    if (updateData.degree) updateData.degree = sanitizeText(updateData.degree);
+    if (updateData.field_of_study) updateData.field_of_study = sanitizeText(updateData.field_of_study);
+    if (updateData.location) updateData.location = sanitizeText(updateData.location);
+    if (updateData.grade) updateData.grade = sanitizeText(updateData.grade);
 
     const updatedEdu = await edu.$query().patchAndFetch(updateData);
 
@@ -483,8 +496,8 @@ export const addCertification = async (request, reply) => {
     const certData = { 
       ...request.body, 
       user_id: userId,
-      name: name.trim(),
-      issuer: issuer.trim()
+      name: sanitizeText(name.trim()),
+      issuer: sanitizeText(issuer.trim())
     };
 
     const cert = await Certification.query().insert(certData);
@@ -527,8 +540,8 @@ export const updateCertification = async (request, reply) => {
 
     const updateData = { 
       ...request.body,
-      name: name.trim(),
-      issuer: issuer.trim()
+      name: sanitizeText(name.trim()),
+      issuer: sanitizeText(issuer.trim())
     };
 
     const updatedCert = await cert.$query().patchAndFetch(updateData);
@@ -585,41 +598,23 @@ export const uploadProfilePhoto = async (request, reply) => {
   try {
     const userId = request.user.id;
     const data = await request.file();
+    if (!data) return reply.status(400).send({ success: false, message: 'No file uploaded' });
 
-    if (!data) {
-      return reply.status(400).send({ success: false, message: 'No file uploaded' });
-    }
+    const buffer = await bufferStream(data.file, IMAGE_TYPES.maxBytes);
+    await validateUpload(buffer, IMAGE_TYPES);
 
-    const result = await new Promise((resolve, reject) => {
-      const cloudStream = cloudinary.uploader.upload_stream(
-        {
-          folder: `itjobwala/profile_photos/cand_${userId}`,
-          resource_type: 'image',
-          public_id: 'profile_photo',
-          overwrite: true,
-        },
-        (error, result) => {
-          if (error) return reject(error);
-          if (!result) return reject(new Error('Cloudinary returned no result'));
-          resolve(result);
-        }
-      );
-
-      cloudStream.on('error', reject);
-      data.file.on('error', (err) => { cloudStream.destroy(); reject(err); });
-      data.file.pipe(cloudStream);
+    const result = await uploadBuffer(buffer, {
+      folder: `itjobwala/profile_photos/cand_${userId}`,
+      resource_type: 'image',
+      public_id: 'profile_photo',
+      overwrite: true,
     });
 
-    await User.query().findById(userId).patch({
-      profile_photo_url: result.secure_url
-    });
+    await User.query().findById(userId).patch({ profile_photo_url: result.secure_url });
 
-    return reply.status(200).send({
-      success: true,
-      message: 'Profile photo uploaded successfully.',
-      data: { url: result.secure_url }
-    });
+    return reply.status(200).send({ success: true, message: 'Profile photo uploaded successfully.', data: { url: result.secure_url } });
   } catch (error) {
+    if (error instanceof UploadError) return reply.status(400).send({ success: false, message: error.message });
     request.server.log.error(error);
     return reply.status(500).send({ success: false, message: 'Internal server error' });
   }
@@ -630,50 +625,30 @@ export const uploadCertificate = async (request, reply) => {
     const userId = request.user.id;
     const certId = request.params.cert_id.replace('cert_', '');
     const data = await request.file();
-    
-    if (!data) {
-      return reply.status(400).send({ success: false, message: 'No file uploaded' });
-    }
+    if (!data) return reply.status(400).send({ success: false, message: 'No file uploaded' });
 
-    // Check ownership
     const cert = await Certification.query().findOne({ id: certId, user_id: userId });
     if (!cert) return reply.status(404).send({ success: false, message: 'Certification not found.' });
 
-    const result = await new Promise((resolve, reject) => {
-      const cloudStream = cloudinary.uploader.upload_stream(
-        {
-          folder: `itjobwala/certificates/cand_${userId}`,
-          resource_type: 'auto',
-          public_id: `certificate_${certId}`,
-          overwrite: true,
-        },
-        (error, result) => {
-          if (error) return reject(error);
-          if (!result) return reject(new Error('Cloudinary returned no result'));
-          resolve(result);
-        }
-      );
+    const buffer = await bufferStream(data.file, DOCUMENT_TYPES.maxBytes);
+    await validateUpload(buffer, DOCUMENT_TYPES);
 
-      cloudStream.on('error', reject);
-      data.file.on('error', (err) => { cloudStream.destroy(); reject(err); });
-      data.file.pipe(cloudStream);
+    const result = await uploadBuffer(buffer, {
+      folder: `itjobwala/certificates/cand_${userId}`,
+      resource_type: 'raw',
+      public_id: `certificate_${certId}`,
+      overwrite: true,
     });
-    const file_name = data.filename;
-    const url = result.secure_url;
+
+    const file_name   = data.filename;
+    const url         = result.secure_url;
     const uploaded_at = new Date().toISOString();
 
-    await cert.$query().patch({
-      certificate_file_name: file_name,
-      certificate_file_url: url,
-      certificate_uploaded_at: uploaded_at
-    });
+    await cert.$query().patch({ certificate_file_name: file_name, certificate_file_url: url, certificate_uploaded_at: uploaded_at });
 
-    return reply.status(200).send({
-      success: true,
-      message: 'Certificate uploaded successfully.',
-      data: { file_name, url, uploaded_at }
-    });
+    return reply.status(200).send({ success: true, message: 'Certificate uploaded successfully.', data: { file_name, url, uploaded_at } });
   } catch (error) {
+    if (error instanceof UploadError) return reply.status(400).send({ success: false, message: error.message });
     request.server.log.error(error);
     return reply.status(500).send({ success: false, message: 'Internal server error' });
   }
@@ -683,43 +658,23 @@ export const uploadProfileCover = async (request, reply) => {
   try {
     const userId = request.user.id;
     const data = await request.file();
+    if (!data) return reply.status(400).send({ success: false, message: 'No file uploaded' });
 
-    if (!data) {
-      return reply.status(400).send({ success: false, message: 'No file uploaded' });
-    }
+    const buffer = await bufferStream(data.file, IMAGE_TYPES.maxBytes);
+    await validateUpload(buffer, IMAGE_TYPES);
 
-    const result = await new Promise((resolve, reject) => {
-      const cloudStream = cloudinary.uploader.upload_stream(
-        {
-          folder: `itjobwala/profile_covers/cand_${userId}`,
-          resource_type: 'image',
-          public_id: 'profile_cover',
-          overwrite: true,
-        },
-        (error, result) => {
-          if (error) return reject(error);
-          if (!result) return reject(new Error('Cloudinary returned no result'));
-          resolve(result);
-        }
-      );
-
-      cloudStream.on('error', reject);
-      data.file.on('error', (err) => { cloudStream.destroy(); reject(err); });
-      data.file.pipe(cloudStream);
+    const result = await uploadBuffer(buffer, {
+      folder: `itjobwala/profile_covers/cand_${userId}`,
+      resource_type: 'image',
+      public_id: 'profile_cover',
+      overwrite: true,
     });
 
-    const url = result.secure_url;
+    await User.query().findById(userId).patch({ profile_cover_url: result.secure_url });
 
-    await User.query().findById(userId).patch({
-      profile_cover_url: url
-    });
-
-    return reply.status(200).send({
-      success: true,
-      message: 'Profile cover uploaded successfully.',
-      data: { url }
-    });
+    return reply.status(200).send({ success: true, message: 'Profile cover uploaded successfully.', data: { url: result.secure_url } });
   } catch (error) {
+    if (error instanceof UploadError) return reply.status(400).send({ success: false, message: error.message });
     request.server.log.error(error);
     return reply.status(500).send({ success: false, message: 'Internal server error' });
   }

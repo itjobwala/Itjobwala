@@ -38,12 +38,12 @@ export default function RecruiterNavbar() {
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-[100] bg-white border-b border-gray-100">
+    <nav className="fixed top-0 left-0 right-0 z-[100] bg-surface border-b border-token">
       <div className="max-w-[1440px] mx-auto px-5 sm:px-8 h-[68px] flex items-center justify-between gap-6">
         {/* Logo */}
         <button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-1 shrink-0 hover:opacity-80 transition-opacity bg-transparent border-none p-0 cursor-pointer">
           <Image src="/logo.png" alt="itJobwala" width={30} height={30} />
-          <span className="font-extrabold text-xl text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
+          <span className="font-extrabold text-xl text-heading" style={{ letterSpacing: '-0.5px' }}>
             it<span className="text-primary">Jobwala</span>
           </span>
         </button>
@@ -54,10 +54,10 @@ export default function RecruiterNavbar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`px-4 py-2 rounded-lg font-medium text-[13px] transition-colors ${
+              className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
                 pathname === item.href
                   ? 'bg-primary/10 text-primary'
-                  : 'text-gray-600 hover:text-gray-900'
+                  : 'text-body-secondary hover:text-heading'
               }`}
             >
               {item.label}
@@ -69,7 +69,7 @@ export default function RecruiterNavbar() {
         <div className="ml-auto flex items-center gap-3">
           <button
             onClick={logout}
-            className="px-4 py-2 text-[13px] font-semibold text-gray-600 hover:text-gray-900 transition-colors"
+            className="px-4 py-2 text-sm font-semibold text-body-secondary hover:text-heading transition-colors"
           >
             Logout
           </button>

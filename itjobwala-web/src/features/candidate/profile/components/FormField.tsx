@@ -28,17 +28,17 @@ export function FormField({
   inputClassName = '',
 }: FormFieldProps) {
   const baseInputClasses = `
-    w-full rounded-xl border text-[13px] font-medium text-[#0f172a]
+    w-full rounded-xl border text-sm font-medium text-heading
     px-3.5 py-2.5 outline-none transition-colors
-    placeholder:text-gray-400 disabled:bg-gray-50 disabled:text-gray-500
-    ${error ? 'border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-100' : 'border-gray-200 focus:border-primary/50'}
+    placeholder:text-subtle disabled:bg-surface-alt disabled:text-muted
+    ${error ? 'border-danger focus:border-danger focus:ring-2 focus:ring-danger/10' : 'border-token focus:border-primary/50'}
     ${inputClassName}
   `;
 
   return (
     <div className={`block ${className}`}>
-      <label className="block text-[12px] font-bold text-gray-600 mb-2">
-        {label} {required && <span className="text-red-500">*</span>}
+      <label className="block text-caption font-bold text-body-secondary mb-2">
+        {label} {required && <span className="text-danger">*</span>}
       </label>
 
       {type === 'textarea' ? (
@@ -63,9 +63,9 @@ export function FormField({
         />
       )}
 
-      {error && <p className="text-[12px] text-red-500 mt-1.5">{error}</p>}
+      {error && <p className="text-caption text-danger mt-1.5">{error}</p>}
       {maxLength && type === 'textarea' && (
-        <p className="text-[11px] text-gray-400 mt-1">{String(value).length}/{maxLength}</p>
+        <p className="text-micro text-subtle mt-1">{String(value).length}/{maxLength}</p>
       )}
     </div>
   );
@@ -74,9 +74,9 @@ export function FormField({
 export function ReadOnlyField({ label, value }: { label: string; value: string }) {
   return (
     <div className="block">
-      <span className="block text-[12px] font-bold text-gray-600 mb-2">{label}</span>
-      <div className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a]">
-        {value || <span className="text-gray-400">Not provided</span>}
+      <span className="block text-caption font-bold text-body-secondary mb-2">{label}</span>
+      <div className="w-full rounded-xl border border-token bg-surface-alt px-3.5 py-2.5 text-sm font-medium text-heading">
+        {value || <span className="text-subtle">Not provided</span>}
       </div>
     </div>
   );

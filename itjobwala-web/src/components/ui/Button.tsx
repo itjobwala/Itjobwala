@@ -8,17 +8,17 @@ export type ButtonSize    = 'sm' | 'md' | 'lg';
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary:   'bg-primary text-white hover:opacity-90 active:opacity-80 transition-opacity',
-  secondary: 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 transition-colors',
-  outline:   'border border-gray-200 text-gray-600 hover:border-primary/60 hover:text-primary transition-colors',
+  secondary: 'bg-surface border border-token-mid text-body hover:bg-surface-alt transition-colors',
+  outline:   'border border-token-mid text-body-secondary hover:border-primary/60 hover:text-primary transition-colors',
   ghost:     'bg-primary/5 border border-primary/10 text-primary hover:bg-primary/10 transition-colors',
   danger:    'bg-red-600 text-white hover:bg-red-700 active:bg-red-800 transition-colors',
-  success:   'bg-green-600 text-white hover:bg-green-700 active:bg-green-800 transition-colors',
+  success:   'bg-success text-white hover:opacity-90 active:opacity-80 transition-opacity',
 };
 
 const SIZE_CLASSES: Record<ButtonSize, string> = {
-  sm: 'px-3 py-1.5 text-[12px] font-semibold',
-  md: 'px-4 py-2 text-[13px] font-semibold',
-  lg: 'px-5 py-2.5 text-[13px] font-semibold',
+  sm: 'px-3 py-1.5 text-caption font-semibold',
+  md: 'px-4 py-2 text-sm font-semibold',
+  lg: 'px-5 py-2.5 text-sm font-semibold',
 };
 
 const ICON_SIZE_CLASSES: Record<ButtonSize, string> = {

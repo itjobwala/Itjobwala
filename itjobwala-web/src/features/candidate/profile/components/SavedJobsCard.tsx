@@ -26,16 +26,16 @@ export default function SavedJobsCard({ jobs: initialJobs, total, hasMore, onUns
   return (
     <Card overflow>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-[14px] font-extrabold text-[#0f172a]">Saved jobs</h3>
-        <span className="text-[12px] text-gray-400">{total ?? visible.length} saved</span>
+        <h3 className="text-base font-extrabold text-heading">Saved jobs</h3>
+        <span className="text-caption text-subtle">{total ?? visible.length} saved</span>
       </div>
 
       {visible.length === 0 ? (
         <div className="py-6 text-center">
-          <p className="text-[13px] text-gray-400 mb-3">You haven't saved any jobs yet.</p>
+          <p className="text-sm text-subtle mb-3">You haven't saved any jobs yet.</p>
           <Link
             href="/candidate/jobs"
-            className="inline-block text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
+            className="inline-block text-sm font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
             style={{ color: '#fff' }}
           >
             Browse Jobs
@@ -48,12 +48,12 @@ export default function SavedJobsCard({ jobs: initialJobs, total, hasMore, onUns
             const logoFallback = (job.company?.[0] || '?').toUpperCase();
             const color = job.company_color_class ?? hashColor(job.company);
             return (
-              <div key={job.id} className="group flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 transition-colors">
+              <div key={job.id} className="group flex items-center gap-3 p-2.5 rounded-xl hover:bg-surface-alt transition-colors">
                 {logoUrl ? (
                   <img
                     src={logoUrl}
                     alt={job.company}
-                    className="w-8 h-8 rounded-lg object-contain bg-white border border-gray-100 shrink-0"
+                    className="w-8 h-8 rounded-lg object-contain bg-surface border border-token shrink-0"
                   />
                 ) : (
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-white font-extrabold text-sm shrink-0 ${color}`}>
@@ -61,10 +61,10 @@ export default function SavedJobsCard({ jobs: initialJobs, total, hasMore, onUns
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <Link href={`/candidate/jobs/${job.job_id}`} className="text-[12px] font-bold text-[#0f172a] truncate block hover:text-primary transition-colors">
+                  <Link href={`/candidate/jobs/${job.job_id}`} className="text-caption font-bold text-heading truncate block hover:text-primary transition-colors">
                     {job.title}
                   </Link>
-                  <p className="text-[11px] text-gray-400">
+                  <p className="text-micro text-subtle">
                     {job.company}
                     {` · ${formatSalary(job.salary_min != null ? job.salary_min / 100000 : null, job.salary_max != null ? job.salary_max / 100000 : null, true)}`}
                   </p>
@@ -72,7 +72,7 @@ export default function SavedJobsCard({ jobs: initialJobs, total, hasMore, onUns
                 <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Link
                     href={`/candidate/jobs/${job.job_id}`}
-                    className="text-[11px] font-bold text-primary bg-primary/10 rounded-lg px-2 py-1 hover:bg-primary/20 transition-colors"
+                    className="text-micro font-bold text-primary bg-primary/10 rounded-lg px-2 py-1 hover:bg-primary/20 transition-colors"
                   >
                     Apply
                   </Link>
@@ -94,7 +94,7 @@ export default function SavedJobsCard({ jobs: initialJobs, total, hasMore, onUns
       {hasMore && (
         <Link
           href="/candidate/saved-jobs"
-          className="mt-3 flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl border border-gray-100 text-[12px] font-bold text-primary hover:bg-primary/5 transition-colors"
+          className="mt-3 flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl border border-token text-caption font-bold text-primary hover:bg-primary/5 transition-colors"
         >
           View all {total} saved jobs
           <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">

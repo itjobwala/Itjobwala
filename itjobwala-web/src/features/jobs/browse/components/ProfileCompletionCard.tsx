@@ -21,13 +21,13 @@ export default function ProfileCompletionCard() {
   const { data, isLoading } = useProfileCompletionQuery(isCandidate);
 
   if (!isHydrated || authLoading) {
-    return <Card overflow><div className="h-20 bg-gray-100 rounded-lg animate-pulse" /></Card>;
+    return <Card overflow><div className="h-20 bg-surface-hover rounded-lg animate-pulse" /></Card>;
   }
 
   if (!session || session.userRole !== 'candidate') return null;
 
   if (isLoading) {
-    return <Card overflow><div className="h-20 bg-gray-100 rounded-lg animate-pulse" /></Card>;
+    return <Card overflow><div className="h-20 bg-surface-hover rounded-lg animate-pulse" /></Card>;
   }
 
   const completion = data?.percentage ?? 0;
@@ -37,12 +37,12 @@ export default function ProfileCompletionCard() {
   return (
     <Card overflow>
       <div className="flex items-start justify-between mb-1">
-        <h3 className="text-[14px] font-extrabold text-[#0f172a]">Profile strength</h3>
-        <span className="text-[13px] font-bold text-primary">{completion}%</span>
+        <h3 className="text-base font-extrabold text-heading">Profile strength</h3>
+        <span className="text-sm font-bold text-primary">{completion}%</span>
       </div>
-      <p className="text-[12px] text-gray-400 mb-3">Complete your profile to get more responses from recruiters.</p>
+      <p className="text-caption text-subtle mb-3">Complete your profile to get more responses from recruiters.</p>
 
-      <div className="h-2 bg-gray-100 rounded-full mb-5 overflow-hidden">
+      <div className="h-2 bg-surface-hover rounded-full mb-5 overflow-hidden">
         <div
           className="h-full bg-primary rounded-full transition-all duration-700"
           style={{ width: `${completion}%` }}
@@ -52,14 +52,14 @@ export default function ProfileCompletionCard() {
       <div className="flex flex-col gap-2 mb-5">
         {checklist.map(item => (
           <div key={item.label} className="flex items-center gap-2.5">
-            <span className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${item.done ? 'bg-green-500' : 'bg-gray-200'}`}>
+            <span className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${item.done ? 'bg-success' : 'bg-surface-mid'}`}>
               {item.done ? (
                 <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5"><path d="M2 6l3 3 5-5" /></svg>
               ) : (
-                <svg width="7" height="7" viewBox="0 0 12 12" fill="none" stroke="#9ca3af" strokeWidth="2.5"><path d="M6 3v6M3 6h6" /></svg>
+                <svg width="7" height="7" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-subtle"><path d="M6 3v6M3 6h6" /></svg>
               )}
             </span>
-            <span className={`text-[12px] ${item.done ? 'text-gray-400 line-through' : 'text-gray-700 font-medium'}`}>
+            <span className={`text-caption ${item.done ? 'text-subtle line-through' : 'text-body font-medium'}`}>
               {item.label}
             </span>
           </div>
@@ -68,7 +68,7 @@ export default function ProfileCompletionCard() {
 
       <Link
         href="/candidate/profile"
-        className="block text-center text-[13px] font-bold text-primary border border-primary/30 rounded-xl py-2.5 hover:bg-primary/5 transition-colors"
+        className="block text-center text-sm font-bold text-primary border border-primary/30 rounded-xl py-2.5 hover:bg-primary/5 transition-colors"
       >
         Complete profile →
       </Link>

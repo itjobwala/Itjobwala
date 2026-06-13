@@ -92,8 +92,8 @@ export interface PersonalDetails {
 export interface RecruiterVisibility {
   recruiter_visible: boolean;
   open_to_job_types: string[];
-  profile_views?: number;
-  recruiter_messages?: number;
+  profile_views?: number | null;
+  recruiter_messages?: number | null;
   last_active?: string;
 }
 
@@ -197,8 +197,8 @@ export interface UpdateRecruiterVisibilityRequest {
 export interface RecruiterVisibilityResponse {
   recruiter_visible: boolean;
   open_to_job_types: string[];
-  profile_views: number;
-  recruiter_messages: number;
+  profile_views: number | null;
+  recruiter_messages: number | null;
   last_active: string;
 }
 

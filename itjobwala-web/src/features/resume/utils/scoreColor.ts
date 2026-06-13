@@ -46,6 +46,13 @@ export const BAND_COLORS: Record<BandColor, { ring: string; text: string; bg: st
     fill: 'fill-amber-500',
     bar:  'bg-amber-500',
   },
+  orange: {
+    ring: 'stroke-orange-500',
+    text: 'text-orange-600',
+    bg:   'bg-orange-50',
+    fill: 'fill-orange-500',
+    bar:  'bg-orange-500',
+  },
   red: {
     ring: 'stroke-red-400',
     text: 'text-red-500',

@@ -2,7 +2,7 @@ import apiClient from '@/src/lib/api/client';
 import { decodeJwtPayload } from '@/src/lib/auth';
 import { getInitials } from '@/src/lib/utils/format';
 import { useAuthStore } from '@/src/features/auth/session/auth.store';
-import type { AuthTokenResponse } from '@/src/types/api';
+import type { AuthTokenResponse, SignupResponse } from '@/src/types/api';
 import type { SessionUser } from '@/src/features/auth/session';
 
 export interface CandidateSignupRequest {
@@ -34,14 +34,24 @@ function buildSessionUser(token: string, email: string): SessionUser {
   };
 }
 
-export async function registerCandidate(data: CandidateSignupRequest): Promise<{ token?: string }> {
-  const res = await apiClient.post<AuthTokenResponse>('/auth/candidate/signup', data);
-  const token = res.data.token;
+export interface CandidateSignupResult {
+  token?:                 string;
+  requiresVerification?:  boolean;
+  email:                  string;
+}
+
+export async function registerCandidate(data: CandidateSignupRequest): Promise<CandidateSignupResult> {
+  const res = await apiClient.post<SignupResponse>('/auth/candidate/signup', data);
+  const { token, data: verifyData } = res.data;
   if (token) {
     const user = buildSessionUser(token, data.email);
     useAuthStore.getState().loginCandidate(token, user);
   }
-  return { token };
+  return {
+    token,
+    requiresVerification: verifyData?.requiresVerification,
+    email:                verifyData?.email ?? data.email,
+  };
 }
 
 export interface CandidateSigninRequest {

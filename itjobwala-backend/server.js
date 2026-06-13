@@ -71,6 +71,11 @@ fastify.register((await import('./src/routes/auth/authRoutes.js')).default, { pr
 fastify.register((await import('./src/routes/referrals/index.js')).default, { prefix: '/api' });
 fastify.register((await import('./src/routes/chat/index.js')).default, { prefix: '/api' });
 fastify.register((await import('./src/routes/resume/index.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/intelligence/index.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/candidate/resumeBuilderRoutes.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/admin/adminRoutes.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/reports/reportRoutes.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/recruiter/recruiterCandidateRoutes.js')).default, { prefix: '/api' });
 
 // Centralized Error Handler
 fastify.setErrorHandler(function (error, request, reply) {

@@ -37,12 +37,12 @@ export default function RecentApplicants() {
 
   return (
     <Card padding="none" className="shadow-sm">
-      <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+      <div className="px-5 py-4 border-b border-token flex items-center justify-between">
         <div>
-          <h2 className="text-[15px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.3px' }}>
+          <h2 className="text-md font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
             Recent Applicants
           </h2>
-          <p className="text-[12px] text-gray-400 mt-0.5">Latest applications across all active jobs</p>
+          <p className="text-caption text-subtle mt-0.5">Latest applications across all active jobs</p>
         </div>
         {applicants.length > 0 && (
           <Link href="/recruiter/applicants" className="text-[12px] font-bold text-primary hover:text-primary/80 transition-colors">
@@ -52,9 +52,9 @@ export default function RecentApplicants() {
       </div>
 
       {isLoading ? (
-        <div className="px-5 py-8 text-center text-[13px] text-gray-400 animate-pulse">Loading applicants…</div>
+        <div className="px-5 py-8 text-center text-sm text-subtle animate-pulse">Loading applicants…</div>
       ) : applicants.length === 0 ? (
-        <div className="px-5 py-8 text-center text-[13px] text-gray-400">No recent applicants.</div>
+        <div className="px-5 py-8 text-center text-sm text-subtle">No recent applicants.</div>
       ) : (
         <ApplicantsTable applicants={applicants} />
       )}

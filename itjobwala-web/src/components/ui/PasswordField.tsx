@@ -10,6 +10,7 @@ type PasswordFieldProps = {
   value: string;
   onChange: (value: string) => void;
   error?: string;
+  showStrength?: boolean;
 };
 
 const EyeOpen = () => (
@@ -37,7 +38,7 @@ function getStrength(password: string): number {
   return 3;
 }
 
-export default function PasswordField({ label, id, placeholder, value, onChange, error }: PasswordFieldProps) {
+export default function PasswordField({ label, id, placeholder, value, onChange, error, showStrength = true }: PasswordFieldProps) {
   const [show, setShow] = useState(false);
   const [focused, setFocused] = useState(false);
 
@@ -45,20 +46,20 @@ export default function PasswordField({ label, id, placeholder, value, onChange,
 
   return (
     <div className="mb-5">
-      <label htmlFor={id} className="block text-[13px] font-semibold text-gray-700 mb-1.5">
+      <label htmlFor={id} className="block text-sm font-semibold text-body mb-1.5">
         {label} <span style={{ color: PRIMARY }}>*</span>
       </label>
       <div
         className={[
-          'flex items-center bg-white rounded-xl overflow-hidden transition-all duration-[180ms]',
+          'flex items-center bg-surface rounded-xl overflow-hidden transition-all duration-[180ms]',
           error
             ? 'border-[1.5px] border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.09)]'
             : focused
             ? 'border-[1.5px] border-[#1557FF] shadow-[0_0_0_3px_rgba(21,87,255,0.09)]'
-            : 'border-[1.5px] border-gray-200',
+            : 'border-[1.5px] border-token-mid',
         ].join(' ')}
       >
-        <div className={`px-3.5 shrink-0 transition-colors duration-200 ${focused ? 'text-[#1557FF]' : 'text-gray-400'}`}>
+        <div className={`px-3.5 shrink-0 transition-colors duration-200 ${focused ? 'text-[#1557FF]' : 'text-subtle'}`}>
           <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
             <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
             <path d="M7 11V7a5 5 0 0 1 10 0v4" />
@@ -72,30 +73,30 @@ export default function PasswordField({ label, id, placeholder, value, onChange,
           onChange={e => onChange(e.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          className="flex-1 border-none outline-none text-[15px] text-gray-900 bg-transparent py-3.5"
+          className="flex-1 border-none outline-none text-md text-heading bg-transparent py-3.5"
         />
         <button
           type="button"
           onClick={() => setShow(s => !s)}
-          className="flex items-center px-3.5 text-gray-400 cursor-pointer bg-transparent border-none"
+          className="flex items-center px-3.5 text-subtle cursor-pointer bg-transparent border-none"
           aria-label={show ? 'Hide password' : 'Show password'}
         >
           {show ? <EyeOpen /> : <EyeClosed />}
         </button>
       </div>
 
-      {value.length > 0 && (
+      {showStrength && value.length > 0 && (
         <div className="mt-2">
           <div className="flex gap-1 mb-1">
             {[1, 2, 3, 4].map(n => (
               <div
                 key={n}
                 className="flex-1 h-[3px] rounded-full transition-colors duration-300"
-                style={{ background: n <= strength ? STRENGTH_COLORS[strength] : '#e5e7eb' }}
+                style={{ background: n <= strength ? STRENGTH_COLORS[strength] : 'var(--color-surface-mid)' }}
               />
             ))}
           </div>
-          <span className="text-[11px] font-semibold" style={{ color: STRENGTH_COLORS[strength] }}>
+          <span className="text-micro font-semibold" style={{ color: STRENGTH_COLORS[strength] }}>
             {STRENGTH_LABELS[strength]} password
           </span>
         </div>

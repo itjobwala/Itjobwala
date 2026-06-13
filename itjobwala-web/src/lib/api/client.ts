@@ -128,7 +128,7 @@ function makeClient({ getToken, on401 }: ClientOptions = {}) {
   return client;
 }
 
-function getStoreToken(role: 'candidate' | 'recruiter'): string | null {
+function getStoreToken(role: 'candidate' | 'recruiter' | 'admin'): string | null {
   const state = useAuthStore.getState();
   return state.role === role ? state.accessToken : null;
 }
@@ -143,6 +143,24 @@ const apiClient = makeClient({
 export const recruiterClient = makeClient({
   getToken: () => getStoreToken('recruiter'),
   on401:    () => handleUnauthorized('recruiter'),
+});
+
+// ── Admin client ──────────────────────────────────────────────────────────────
+export const adminClient = makeClient({
+  getToken: () => getStoreToken('admin'),
+  on401: () => {
+    if (isHandling401) return;
+    isHandling401 = true;
+    authLog('[401]', 'Admin session expired');
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT));
+    }
+    useAuthStore.getState().logoutAdmin();
+    setTimeout(() => {
+      window.location.href = '/admin/login';
+    }, 1500);
+    setTimeout(() => { isHandling401 = false; }, 5000);
+  },
 });
 
 // ── Public client (no auth) ──────────────────────────────────────────────────

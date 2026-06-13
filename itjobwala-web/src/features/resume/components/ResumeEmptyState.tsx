@@ -6,49 +6,66 @@ interface Props {
   hasResume: boolean;
 }
 
+const QA_FEATURES = [
+  'QA Readiness Score',
+  'Automation Strength Analysis',
+  'Skill Gap Intelligence',
+  'Recruiter Visibility Score',
+];
+
 export default function ResumeEmptyState({ onAnalyze, isParsing, hasResume }: Props) {
   return (
-    <div className="flex flex-col items-center justify-center text-center py-12 gap-5">
-      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/>
-          <polyline points="10 9 9 9 8 9"/>
+    <div className="flex flex-col items-center justify-center text-center py-10 gap-5">
+
+      {/* Icon */}
+      <div
+        className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg"
+        style={{ background: 'linear-gradient(135deg, #4f46e5, #06b6d4)' }}
+      >
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
         </svg>
       </div>
 
+      {/* Headline */}
       <div>
-        <h3 className="text-[16px] font-bold text-gray-900">Resume Intelligence</h3>
-        <p className="text-[13px] text-gray-500 mt-1 max-w-xs">
+        <h3 className="text-lg font-bold text-heading">QA Career Intelligence</h3>
+        <p className="text-caption text-muted mt-1.5 max-w-xs leading-relaxed">
           {hasResume
-            ? 'Get your ATS score, skill gap analysis, and personalized suggestions to stand out to recruiters.'
-            : 'Upload your resume in your profile to unlock ATS scoring and career insights.'}
+            ? 'Analyze your resume to get a QA readiness score, skill gap report, and recruiter-grade insights.'
+            : 'Upload your resume in your profile to unlock QA hiring intelligence.'}
         </p>
       </div>
 
-      <div className="flex flex-col gap-2 text-left w-full max-w-xs">
-        {['ATS Score Analysis', 'Skill Gap Detection', 'Improvement Suggestions', 'Job Match Score'].map(f => (
-          <div key={f} className="flex items-center gap-2 text-[13px] text-gray-600">
-            <span className="w-4 h-4 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-[9px] font-bold shrink-0">✓</span>
-            {f}
+      {/* Feature list */}
+      <div className="w-full max-w-xs space-y-2 text-left">
+        {QA_FEATURES.map(f => (
+          <div key={f} className="flex items-center gap-2.5">
+            {/* Intentional indigo brand check icon */}
+            <div className="w-4 h-4 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
+              <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="3.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <span className="text-caption text-body-secondary">{f}</span>
           </div>
         ))}
       </div>
 
+      {/* CTA */}
       {hasResume ? (
         <button
           onClick={onAnalyze}
           disabled={isParsing}
-          className="px-6 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-[14px] font-semibold rounded-xl hover:from-indigo-600 hover:to-purple-700 transition-all disabled:opacity-60 shadow-sm"
+          className="px-6 py-2.5 text-white text-sm font-bold rounded-xl transition-all disabled:opacity-60 shadow-md"
+          style={{ background: 'linear-gradient(135deg, #4f46e5, #6366f1)' }}
         >
-          {isParsing ? 'Analyzing…' : 'Analyze My Resume'}
+          {isParsing ? 'Analyzing…' : 'Analyze My QA Profile'}
         </button>
       ) : (
         <a
           href="/candidate/profile"
-          className="px-6 py-2.5 bg-gray-900 text-white text-[14px] font-semibold rounded-xl hover:bg-gray-800 transition-all"
+          className="px-6 py-2.5 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-all"
         >
           Upload Resume
         </a>

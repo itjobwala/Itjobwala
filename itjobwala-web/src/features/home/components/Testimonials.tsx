@@ -18,7 +18,7 @@ export default function Testimonials() {
   const ref = useReveal();
 
   return (
-    <section ref={ref} className="bg-white py-[88px] px-5 sm:px-8 lg:px-10">
+    <section ref={ref} className="bg-surface py-[88px] px-5 sm:px-8 lg:px-10">
       <div className="max-w-[1440px] mx-auto">
 
         {/* Header */}
@@ -45,7 +45,7 @@ export default function Testimonials() {
           {TESTIMONIALS.map((t, i) => (
             <div
               key={i}
-              className={`reveal stagger-${i + 1} bg-[#fafafa] border-[1.5px] border-gray-100 rounded-[20px] p-8 flex flex-col gap-6 transition-all duration-[250ms] cursor-default`}
+              className={`reveal stagger-${i + 1} bg-surface-alt border-[1.5px] border-token rounded-[20px] p-8 flex flex-col gap-6 transition-all duration-[250ms] cursor-default`}
               onMouseEnter={(e) => {
                 const el = e.currentTarget;
                 el.style.borderColor = PRIMARY;
@@ -61,11 +61,11 @@ export default function Testimonials() {
             >
               <Stars />
 
-              <p className="text-[15px] leading-[1.7] text-[#0f172a] font-medium flex-1">
+              <p className="text-md leading-[1.7] text-heading font-medium flex-1">
                 &ldquo;{t.quote}&rdquo;
               </p>
 
-              <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+              <div className="flex items-center gap-3 pt-4 border-t border-token">
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-[15px] text-white shrink-0"
                   style={{ background: t.avatarBg }}
@@ -73,8 +73,8 @@ export default function Testimonials() {
                   {t.initial}
                 </div>
                 <div>
-                  <div className="text-sm font-bold text-[#0f172a]">{t.name}</div>
-                  <div className="text-xs text-gray-500 font-medium">{t.role}</div>
+                  <div className="text-sm font-bold text-heading">{t.name}</div>
+                  <div className="text-xs text-muted font-medium">{t.role}</div>
                 </div>
               </div>
             </div>

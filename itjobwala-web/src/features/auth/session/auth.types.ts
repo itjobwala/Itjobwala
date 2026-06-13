@@ -5,7 +5,7 @@ export type SessionUser = AuthSession;
 
 export interface AuthState {
   user: SessionUser | null;
-  role: 'candidate' | 'recruiter' | null;
+  role: 'candidate' | 'recruiter' | 'admin' | null;
   accessToken: string | null;
   isAuthenticated: boolean;
   isHydrated: boolean;
@@ -15,14 +15,17 @@ export interface AuthState {
 export interface AuthActions {
   loginCandidate: (token: string, user: SessionUser) => void;
   loginRecruiter: (token: string) => void;
+  loginAdmin: (token: string, user: SessionUser) => void;
   logout: () => void;
   logoutCandidate: () => void;
   logoutRecruiter: () => void;
+  logoutAdmin: () => void;
   hydrate: () => void;
   syncFromStorage: () => void;
   setUser: (patch: Partial<SessionUser>) => void;
   isCandidate: () => boolean;
   isRecruiter: () => boolean;
+  isAdmin: () => boolean;
 }
 
 export type AuthStore = AuthState & AuthActions;

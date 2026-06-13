@@ -4,6 +4,8 @@ import type {
   RecruiterApplicant,
   UpdateApplicantStatusRequest,
   RecruiterApplicantsResponse,
+  ApplicantATSIntelligence,
+  PoolIntelligence,
 } from '@/features/recruiter/types';
 
 export async function getRecruiterApplicants(filters?: {
@@ -49,4 +51,20 @@ export async function shortlistApplicant(applicantId: string): Promise<void> {
 
 export async function hireApplicant(applicantId: string): Promise<void> {
   await recruiterClient.post(`/recruiter/applicants/${applicantId}/hire`, {});
+}
+
+export async function getApplicantATSIntelligence(
+  applicantId: string,
+): Promise<ApplicantATSIntelligence> {
+  const res = await recruiterClient.get<ApiResponse<ApplicantATSIntelligence>>(
+    `/recruiter/applicants/${applicantId}/ats-intelligence`,
+  );
+  return res.data.data!;
+}
+
+export async function getJobPoolStats(jobId: string): Promise<PoolIntelligence> {
+  const res = await recruiterClient.get<ApiResponse<PoolIntelligence>>(
+    `/recruiter/jobs/${jobId}/pool-stats`,
+  );
+  return res.data.data!;
 }

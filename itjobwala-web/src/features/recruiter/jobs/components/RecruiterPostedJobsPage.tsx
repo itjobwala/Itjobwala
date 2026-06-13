@@ -2,20 +2,23 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRecruiterPostedJobsQuery, useUpdateRecruiterJobMutation } from '@/features/recruiter/hooks';
+import { useRecruiterPostedJobsQuery, useSubmitJobMutation } from '@/features/recruiter/hooks';
 import { RecruiterShell } from '@/layout/shell';
 import { useToast } from '@/src/hooks/useToast';
 import Toast from '@/src/components/ui/Toast';
 import StatusBadge from '@/src/components/ui/StatusBadge';
 import EmptyState from '@/src/components/ui/EmptyState';
-import { buttonVariants } from '@/src/components/ui/Button';
+import Button, { buttonVariants } from '@/src/components/ui/Button';
 import Card from '@/src/components/ui/Card';
 
 const STATUS_FILTERS = [
-  { value: '',       label: 'All' },
-  { value: 'active', label: 'Active' },
-  { value: 'draft',  label: 'Draft' },
-  { value: 'closed', label: 'Closed' },
+  { value: '',              label: 'All' },
+  { value: 'active',        label: 'Active' },
+  { value: 'draft',         label: 'Draft' },
+  { value: 'pending',       label: 'Pending Review' },
+  { value: 'needs_changes', label: 'Needs Changes' },
+  { value: 'closed',        label: 'Closed' },
+  { value: 'removed',       label: 'Removed' },
 ];
 
 function formatDate(dateStr: string | null | undefined): string {
@@ -39,7 +42,7 @@ export default function RecruiterPostedJobsPage() {
   };
 
   const { data, isLoading, error } = useRecruiterPostedJobsQuery(filters, true);
-  const updateMutation = useUpdateRecruiterJobMutation();
+  const submitMutation = useSubmitJobMutation();
 
   function handleStatusFilter(val: string) {
     setStatusFilter(val);
@@ -58,13 +61,18 @@ export default function RecruiterPostedJobsPage() {
     setPage(1);
   }
 
-  async function handlePublish(jobId: string) {
+  async function handleSubmit(jobId: string) {
     setPublishingId(jobId);
     try {
-      await updateMutation.mutateAsync({ jobId, data: { status: 'active' } });
-      showToast('Job published successfully', 'success');
+      const result = await submitMutation.mutateAsync(jobId);
+      const msg = result.status === 'active'
+        ? 'Job is now live!'
+        : result.status === 'pending'
+        ? 'Job submitted for review'
+        : 'Job needs changes before publishing';
+      showToast(msg, result.status === 'needs_changes' ? 'error' : 'success');
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Failed to publish job', 'error');
+      showToast(err instanceof Error ? err.message : 'Failed to submit job', 'error');
     } finally {
       setPublishingId(null);
     }
@@ -76,12 +84,12 @@ export default function RecruiterPostedJobsPage() {
   return (
     <RecruiterShell>
       {/* Page header */}
-      <div className="bg-white border-b border-gray-100">
+      <div className="bg-surface border-b border-token">
         <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
-          <h1 className="text-[28px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
+          <h1 className="text-4xl font-extrabold text-heading" style={{ letterSpacing: '-0.5px' }}>
             Posted Jobs
           </h1>
-          <p className="text-[13px] text-gray-400 mt-1">
+          <p className="text-sm text-subtle mt-1">
             Manage your active job listings
           </p>
         </div>
@@ -98,10 +106,10 @@ export default function RecruiterPostedJobsPage() {
               <button
                 key={value}
                 onClick={() => handleStatusFilter(value)}
-                className={`px-4 py-2 rounded-lg text-[13px] font-medium transition-colors ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   statusFilter === value
                     ? 'bg-primary text-white'
-                    : 'bg-white text-gray-600 border border-gray-200 hover:border-primary'
+                    : 'bg-surface text-body-secondary border border-token hover:border-primary'
                 }`}
               >
                 {label}
@@ -113,26 +121,26 @@ export default function RecruiterPostedJobsPage() {
           <div className="flex gap-2 sm:ml-auto items-center">
             <form onSubmit={handleSearch} className="flex gap-2 flex-1 sm:flex-none">
               <div className="relative flex-1 sm:flex-none">
-                <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-subtle" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
                 </svg>
                 <input
                   value={searchInput}
                   onChange={e => setSearchInput(e.target.value)}
                   placeholder="Search by title..."
-                  className="pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-[13px] text-gray-700 outline-none focus:border-primary transition-colors w-full sm:w-[200px]"
+                  className="pl-9 pr-4 py-2 rounded-xl border border-token text-sm text-body outline-none focus:border-primary transition-colors w-full sm:w-[200px]"
                 />
                 {searchInput && (
-                  <button type="button" onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <button type="button" onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-subtle hover:text-muted">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path d="M18 6L6 18M6 6l12 12" />
                     </svg>
                   </button>
                 )}
               </div>
-              <button type="submit" className="px-4 py-2 bg-white border border-gray-200 text-[13px] font-semibold text-gray-600 rounded-xl hover:border-primary hover:text-primary transition-colors shrink-0">
+              <Button variant="outline" type="submit" className="shrink-0">
                 Search
-              </button>
+              </Button>
             </form>
             {(!data || data.jobs.length > 0 || search || statusFilter) && (
               <Link
@@ -147,8 +155,8 @@ export default function RecruiterPostedJobsPage() {
 
         {/* Active search indicator */}
         {search && (
-          <div className="mb-4 flex items-center gap-2 text-[13px] text-gray-500">
-            Results for <span className="font-semibold text-gray-800">"{search}"</span>
+          <div className="mb-4 flex items-center gap-2 text-sm text-muted">
+            Results for <span className="font-semibold text-heading">"{search}"</span>
             <button onClick={clearSearch} className="text-primary hover:underline font-medium">Clear</button>
           </div>
         )}
@@ -156,12 +164,12 @@ export default function RecruiterPostedJobsPage() {
         {isLoading ? (
           <div className="text-center py-12">
             <div className="inline-block">
-              <div className="w-8 h-8 border-4 border-gray-200 border-t-primary rounded-full animate-spin" />
+              <div className="w-8 h-8 border-4 border-token border-t-primary rounded-full animate-spin" />
             </div>
-            <p className="mt-4 text-gray-500">Loading posted jobs...</p>
+            <p className="mt-4 text-muted">Loading posted jobs...</p>
           </div>
         ) : error ? (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600">
+          <div className="bg-danger-bg border border-danger rounded-xl p-4 text-danger">
             {error instanceof Error ? error.message : 'Failed to load posted jobs'}
           </div>
         ) : !data || data.jobs.length === 0 ? (
@@ -176,48 +184,54 @@ export default function RecruiterPostedJobsPage() {
             <Card padding="none">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 border-b border-gray-100">
+                  <thead className="bg-surface-alt border-b border-token">
                     <tr>
-                      <th className="px-6 py-4 text-left text-[12px] font-semibold text-gray-600">Job Title</th>
-                      <th className="px-6 py-4 text-left text-[12px] font-semibold text-gray-600">Location</th>
-                      <th className="px-6 py-4 text-left text-[12px] font-semibold text-gray-600">Applications</th>
-                      <th className="px-6 py-4 text-left text-[12px] font-semibold text-gray-600">Status</th>
-                      <th className="px-6 py-4 text-left text-[12px] font-semibold text-gray-600">Posted</th>
-                      <th className="px-6 py-4 text-left text-[12px] font-semibold text-gray-600">Actions</th>
+                      <th className="px-6 py-4 text-left text-caption font-semibold text-body-secondary">Job Title</th>
+                      <th className="px-6 py-4 text-left text-caption font-semibold text-body-secondary">Location</th>
+                      <th className="px-6 py-4 text-left text-caption font-semibold text-body-secondary">Applications</th>
+                      <th className="px-6 py-4 text-left text-caption font-semibold text-body-secondary">Status</th>
+                      <th className="px-6 py-4 text-left text-caption font-semibold text-body-secondary">Posted</th>
+                      <th className="px-6 py-4 text-left text-caption font-semibold text-body-secondary">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {data.jobs.map((job) => (
-                      <tr key={job.id} className="border-b border-gray-100 last:border-0 hover:bg-gray-50 transition-colors">
+                      <tr key={job.id} className="border-b border-token last:border-0 hover:bg-surface-alt transition-colors">
                         <td className="px-6 py-4">
-                          <p className="text-[13px] font-semibold text-[#0f172a]">{job.title}</p>
-                          <p className="text-[11px] text-gray-400 mt-0.5">{job.jobType} · {job.workMode}</p>
+                          <p className="text-sm font-semibold text-heading">{job.title}</p>
+                          <p className="text-micro text-subtle mt-0.5">{job.jobType} · {job.workMode}</p>
+                          {job.moderationReason && (
+                            <p className="text-micro text-amber-600 mt-1 font-medium">⚠ {job.moderationReason}</p>
+                          )}
                         </td>
-                        <td className="px-6 py-4 text-[13px] text-gray-600">{job.location}</td>
-                        <td className="px-6 py-4 text-[13px] text-gray-600">{job.applicationCount ?? 0}</td>
+                        <td className="px-6 py-4 text-sm text-body-secondary">{job.location}</td>
+                        <td className="px-6 py-4 text-sm text-body-secondary">{job.applicationCount ?? 0}</td>
                         <td className="px-6 py-4">
                           <StatusBadge status={job.status} size="md" />
                         </td>
-                        <td className="px-6 py-4 text-[13px] text-gray-600">{formatDate(job.postedDate ?? job.createdAt)}</td>
+                        <td className="px-6 py-4 text-sm text-body-secondary">{formatDate(job.postedDate ?? job.createdAt)}</td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3 flex-wrap">
-                            {job.status === 'draft' && (
-                              <button
-                                onClick={() => handlePublish(job.id)}
+                            {(job.status === 'draft' || job.status === 'needs_changes') && (
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                rounded="lg"
+                                loading={publishingId === job.id}
                                 disabled={publishingId === job.id}
-                                className="text-[13px] font-semibold text-white bg-primary hover:opacity-90 disabled:opacity-50 px-3 py-1.5 rounded-lg transition-opacity flex items-center gap-1.5"
+                                onClick={() => handleSubmit(job.id)}
                               >
-                                {publishingId === job.id
-                                  ? <><div className="w-3 h-3 border-[2px] border-white/40 border-t-white rounded-full animate-spin" /> Publishing…</>
-                                  : 'Publish'}
-                              </button>
+                                Submit for Review
+                              </Button>
                             )}
-                            <Link href={`/recruiter/posted-jobs/${job.id}`} className="text-primary text-[13px] font-semibold hover:underline">
+                            <Link href={`/recruiter/posted-jobs/${job.id}`} className="text-primary text-sm font-semibold hover:underline">
                               View
                             </Link>
-                            <Link href={`/recruiter/posted-jobs/${job.id}/edit`} className="text-gray-500 text-[13px] font-semibold hover:text-primary hover:underline transition-colors">
-                              Edit
-                            </Link>
+                            {job.status !== 'removed' && (
+                              <Link href={`/recruiter/posted-jobs/${job.id}/edit`} className="text-muted text-sm font-semibold hover:text-primary hover:underline transition-colors">
+                                Edit
+                              </Link>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -230,27 +244,31 @@ export default function RecruiterPostedJobsPage() {
             {/* Pagination */}
             {pagination && totalPages > 1 && (
               <div className="mt-6 flex items-center justify-between">
-                <p className="text-[13px] text-gray-500">
+                <p className="text-sm text-muted">
                   Showing {((page - 1) * 20) + 1}–{Math.min(page * 20, pagination.total)} of {pagination.total} jobs
                 </p>
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                  <Button
+                    variant="outline"
+                    size="md"
+                    rounded="lg"
                     disabled={page === 1}
-                    className="px-3 py-2 rounded-lg border border-gray-200 text-[13px] font-semibold text-gray-600 hover:border-primary hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
                   >
                     ← Prev
-                  </button>
-                  <span className="text-[13px] text-gray-500 px-2">
+                  </Button>
+                  <span className="text-sm text-muted px-2">
                     Page {page} of {totalPages}
                   </span>
-                  <button
-                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  <Button
+                    variant="outline"
+                    size="md"
+                    rounded="lg"
                     disabled={page === totalPages}
-                    className="px-3 py-2 rounded-lg border border-gray-200 text-[13px] font-semibold text-gray-600 hover:border-primary hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   >
                     Next →
-                  </button>
+                  </Button>
                 </div>
               </div>
             )}

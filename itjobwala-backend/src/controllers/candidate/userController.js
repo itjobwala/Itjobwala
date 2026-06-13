@@ -2,6 +2,8 @@ import bcrypt from 'bcrypt';
 import dns from 'dns';
 import User from '../../models/candidate/User.js';
 import { generateAccessToken, generateRefreshToken, storeRefreshToken } from '../../utils/tokenService.js';
+import { createAndSendOtp } from '../../services/otp/otp.service.js';
+import { sanitizeText } from '../../utils/sanitize.js';
 
 const resolveMx = dns.promises.resolveMx;
 
@@ -46,7 +48,7 @@ export const candidateRegister = async (request, reply) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const newUser = await User.query().insert({
-      full_name,
+      full_name: sanitizeText(full_name),
       email,
       mobile,
       password: hashedPassword,
@@ -54,11 +56,21 @@ export const candidateRegister = async (request, reply) => {
       terms_accepted
     }).returning('*');
 
-    delete newUser.password;
+    const { email_sent } = await createAndSendOtp({ email, role: 'candidate', name: full_name })
+      .catch((err) => {
+        request.server.log.error(err, '[otp] Failed to send verification email after candidate signup');
+        return { email_sent: false };
+      });
 
     return reply.status(201).send({
       success: true,
-      message: 'User registered successfully'
+      message: 'Registration successful. Please verify your email to continue.',
+      data: {
+        requiresVerification: true,
+        email,
+        role: 'candidate',
+        email_sent,
+      },
     });
   } catch (error) {
     request.server.log.error(error);
@@ -70,25 +82,13 @@ export const candidateSignin = async (request, reply) => {
   const { email, mobile, password } = request.body;
 
   try {
-    if (email) {
-      const domain = email.split('@')[1];
-      try {
-        const mxRecords = await resolveMx(domain);
-        if (!mxRecords || mxRecords.length === 0) {
-          return reply.status(400).send({ success: false, message: 'Invalid email domain. Please provide a valid email address.' });
-        }
-      } catch (err) {
-        return reply.status(400).send({ success: false, message: 'Invalid email domain. Please provide a valid email address.' });
-      }
-    }
-
     let query = {};
     if (email) query.email = email;
     else if (mobile) query.mobile = mobile;
 
     const user = await User.query().findOne(query);
     if (!user) {
-      return reply.status(404).send({ success: false, message: 'User not found' });
+      return reply.status(401).send({ success: false, message: 'Invalid credentials' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -96,7 +96,23 @@ export const candidateSignin = async (request, reply) => {
       return reply.status(401).send({ success: false, message: 'Invalid credentials' });
     }
 
-    // Generate short-lived access token + long-lived refresh token
+    if (user.is_active === false) {
+      return reply.status(403).send({
+        success: false,
+        message: 'Your account has been suspended. Please contact support.',
+        code:    'ACCOUNT_SUSPENDED',
+      });
+    }
+
+    if (!user.email_verified) {
+      return reply.status(403).send({
+        success: false,
+        message: 'Please verify your email before signing in.',
+        code:    'EMAIL_NOT_VERIFIED',
+        data:    { email: user.email, role: 'candidate' },
+      });
+    }
+
     const accessToken  = generateAccessToken({ sub: user.id, role: 'candidate' });
     const refreshToken = generateRefreshToken({ sub: user.id, role: 'candidate' });
 
@@ -115,7 +131,7 @@ export const candidateSignin = async (request, reply) => {
     return reply.status(200).send({
       success: true,
       message: 'Signin successful',
-      token:   accessToken,        // keep `token` field for frontend compat
+      token:   accessToken,
     });
   } catch (error) {
     request.server.log.error(error);

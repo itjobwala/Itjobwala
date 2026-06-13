@@ -74,7 +74,7 @@ export default function Modal({
         ref={panelRef}
         tabIndex={-1}
         className={cn(
-          'relative bg-white rounded-2xl shadow-2xl w-full outline-none',
+          'relative bg-surface rounded-2xl shadow-overlay w-full outline-none',
           MAX_WIDTH[size],
           scrollable && 'max-h-[90vh] flex flex-col overflow-hidden',
           className,

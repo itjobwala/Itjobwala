@@ -10,8 +10,8 @@ const JOB_TYPE_OPTIONS = ['full-time', 'contract', 'internship'];
 export default function RecruiterVisibilityCard() {
   const [visible, setVisible] = useState(true);
   const [openToJobTypes, setOpenToJobTypes] = useState<string[]>(['full-time']);
-  const [profileViews, setProfileViews] = useState(0);
-  const [recruiterMessages, setRecruiterMessages] = useState(0);
+  const [profileViews, setProfileViews] = useState<number | null>(null);
+  const [recruiterMessages, setRecruiterMessages] = useState<number | null>(null);
   const [lastActive, setLastActive] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -27,8 +27,8 @@ export default function RecruiterVisibilityCard() {
       const data = await getRecruiterVisibility();
       setVisible(data.recruiter_visible);
       setOpenToJobTypes(data.open_to_job_types ?? ['full-time']);
-      setProfileViews(data.profile_views ?? 0);
-      setRecruiterMessages(data.recruiter_messages ?? 0);
+      setProfileViews(data.profile_views ?? null);
+      setRecruiterMessages(data.recruiter_messages ?? null);
       setLastActive(data.last_active ?? 'Today');
       setError('');
     } catch (err) {
@@ -59,8 +59,8 @@ export default function RecruiterVisibilityCard() {
       });
       setVisible(data.recruiter_visible);
       setOpenToJobTypes(data.open_to_job_types ?? []);
-      setProfileViews(data.profile_views ?? 0);
-      setRecruiterMessages(data.recruiter_messages ?? 0);
+      setProfileViews(data.profile_views ?? null);
+      setRecruiterMessages(data.recruiter_messages ?? null);
       setLastActive(data.last_active ?? 'Today');
       setError('');
     } catch (err) {
@@ -94,30 +94,30 @@ export default function RecruiterVisibilityCard() {
   if (loading) {
     return (
       <Card overflow>
-        <h3 className="text-[14px] font-extrabold text-[#0f172a] mb-4">Recruiter visibility</h3>
-        <div className="h-40 bg-gray-100 rounded-lg animate-pulse" />
+        <h3 className="text-base font-extrabold text-heading mb-4">Recruiter visibility</h3>
+        <div className="h-40 bg-surface-hover rounded-lg animate-pulse" />
       </Card>
     );
   }
 
   return (
     <Card overflow>
-      <h3 className="text-[14px] font-extrabold text-[#0f172a] mb-4">Recruiter visibility</h3>
+      <h3 className="text-base font-extrabold text-heading mb-4">Recruiter visibility</h3>
 
       {/* Visibility toggle */}
-      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl mb-4">
+      <div className="flex items-center justify-between p-3 bg-surface-alt rounded-xl mb-4">
         <div>
-          <p className="text-[13px] font-semibold text-[#0f172a]">
+          <p className="text-sm font-semibold text-heading">
             {visible ? 'Visible to recruiters' : 'Hidden from recruiters'}
           </p>
-          <p className="text-[11px] text-gray-400 mt-0.5">
+          <p className="text-micro text-subtle mt-0.5">
             {visible ? 'Recruiters can find your profile' : 'Your profile is private'}
           </p>
         </div>
         <button
           onClick={toggleVisibility}
           disabled={saving}
-          className={`relative inline-flex items-center w-11 h-6 rounded-full transition-colors shrink-0 ${visible ? 'bg-primary' : 'bg-gray-300'} ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`relative inline-flex items-center w-11 h-6 rounded-full transition-colors shrink-0 ${visible ? 'bg-primary' : 'bg-surface-mid'} ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
           aria-label="Toggle visibility"
         >
           <span className={`inline-block w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${visible ? 'translate-x-5' : 'translate-x-0.5'}`} />
@@ -125,28 +125,28 @@ export default function RecruiterVisibilityCard() {
       </div>
 
       {/* Status */}
-      <div className="flex items-center gap-2.5 mb-4 p-3 bg-green-50 rounded-xl border border-green-100">
-        <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
+      <div className="flex items-center gap-2.5 mb-4 p-3 bg-success-bg rounded-xl border border-success">
+        <span className="w-2 h-2 rounded-full bg-success shrink-0" />
         <div>
-          <p className="text-[12px] font-semibold text-green-800">Actively looking</p>
-          <p className="text-[11px] text-green-600">Last active: {lastActive}</p>
+          <p className="text-caption font-semibold text-success">Actively looking</p>
+          <p className="text-micro text-success">Last active: {lastActive}</p>
         </div>
       </div>
 
       {/* Job type preference */}
       {visible && (
         <div className="mb-4">
-          <p className="text-[12px] font-semibold text-gray-500 mb-2">Open to</p>
+          <p className="text-caption font-semibold text-muted mb-2">Open to</p>
           <div className="flex gap-2">
             {JOB_TYPE_OPTIONS.map(t => (
               <button
                 key={t}
                 onClick={() => toggleJobType(t)}
                 disabled={saving}
-                className={`flex-1 text-[11px] font-semibold rounded-lg py-2 transition-colors capitalize ${
+                className={`flex-1 text-micro font-semibold rounded-lg py-2 transition-colors capitalize ${
                   openToJobTypes.includes(t)
                     ? 'bg-primary text-white'
-                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                    : 'bg-surface-hover text-muted hover:bg-surface-mid'
                 } ${saving ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 {t}
@@ -158,22 +158,28 @@ export default function RecruiterVisibilityCard() {
 
       {/* Error message */}
       {error && (
-        <div className="mb-4 p-3 bg-red-50 rounded-xl border border-red-100">
-          <p className="text-[12px] font-semibold text-red-600">{error}</p>
+        <div className="mb-4 p-3 bg-danger-bg rounded-xl border border-danger">
+          <p className="text-caption font-semibold text-danger">{error}</p>
         </div>
       )}
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 gap-2">
-        <div className="bg-gray-50 rounded-xl p-3 text-center">
-          <p className="text-[18px] font-extrabold text-primary">{profileViews}</p>
-          <p className="text-[11px] text-gray-400">Profile views</p>
+      {/* Stats — only rendered when the API returns a real value */}
+      {(profileViews !== null || recruiterMessages !== null) && (
+        <div className="grid grid-cols-2 gap-2">
+          {profileViews !== null && (
+            <div className="bg-surface-alt rounded-xl p-3 text-center">
+              <p className="text-xl font-extrabold text-primary">{profileViews}</p>
+              <p className="text-micro text-subtle">Profile views</p>
+            </div>
+          )}
+          {recruiterMessages !== null && (
+            <div className="bg-surface-alt rounded-xl p-3 text-center">
+              <p className="text-xl font-extrabold text-heading">{recruiterMessages}</p>
+              <p className="text-micro text-subtle">Recruiter msgs</p>
+            </div>
+          )}
         </div>
-        <div className="bg-gray-50 rounded-xl p-3 text-center">
-          <p className="text-[18px] font-extrabold text-[#0f172a]">{recruiterMessages}</p>
-          <p className="text-[11px] text-gray-400">Recruiter msgs</p>
-        </div>
-      </div>
+      )}
     </Card>
   );
 }

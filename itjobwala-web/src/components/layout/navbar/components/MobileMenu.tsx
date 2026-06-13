@@ -24,16 +24,6 @@ const PROFILE_LINKS = [
       </svg>
     ),
   },
-  {
-    href: '/settings',
-    label: 'Account Settings',
-    icon: (
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-        <circle cx="12" cy="12" r="3" />
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-      </svg>
-    ),
-  },
 ];
 
 interface Props {
@@ -47,13 +37,13 @@ export default function MobileMenu({ isOpen, onClose, user }: Props) {
 
   return (
     <div
-      className={`sm:hidden border-t border-gray-100 bg-white overflow-hidden transition-all duration-300 ease-in-out ${
+      className={`sm:hidden border-t border-token bg-surface overflow-hidden transition-all duration-300 ease-in-out ${
         isOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
       }`}
     >
       <div className="px-5 pt-4 pb-5 flex flex-col gap-1">
         {/* User profile card */}
-        <div className="flex items-center gap-3 bg-gray-50 rounded-2xl p-3.5 mb-3 border border-gray-100">
+        <div className="flex items-center gap-3 bg-surface-alt rounded-2xl p-3.5 mb-3 border border-token">
           {user.profilePhoto ? (
             <img
               src={user.profilePhoto}
@@ -66,11 +56,11 @@ export default function MobileMenu({ isOpen, onClose, user }: Props) {
             </div>
           )}
           <div className="flex-1 min-w-0">
-            <p className="text-[14px] font-bold text-[#0f172a] truncate">{user.name}</p>
-            <p className="text-[12px] text-gray-400 truncate">{user.designation || 'Update profile'}</p>
+            <p className="text-base font-bold text-heading truncate">{user.name}</p>
+            <p className="text-caption text-subtle truncate">{user.designation || 'Update profile'}</p>
           </div>
           {user.unreadNotifications > 0 && (
-            <span className="text-[11px] font-bold bg-red-500 text-white rounded-full px-2 py-0.5 shrink-0">
+            <span className="text-micro font-bold bg-red-500 text-white rounded-full px-2 py-0.5 shrink-0">
               {user.unreadNotifications}
             </span>
           )}
@@ -84,10 +74,10 @@ export default function MobileMenu({ isOpen, onClose, user }: Props) {
               key={link.label}
               href={link.href}
               onClick={onClose}
-              className={`py-3 px-3 text-sm font-semibold rounded-xl transition-colors border-b border-gray-50 last:border-0 ${
+              className={`py-3 px-3 text-sm font-semibold rounded-xl transition-colors border-b border-token last:border-0 ${
                 active
                   ? 'text-primary bg-primary/5'
-                  : 'text-[#374151] hover:text-primary hover:bg-gray-50'
+                  : 'text-body hover:text-primary hover:bg-surface-alt'
               }`}
             >
               {link.label}
@@ -96,15 +86,15 @@ export default function MobileMenu({ isOpen, onClose, user }: Props) {
         })}
 
         {/* Profile / settings links */}
-        <div className="border-t border-gray-100 mt-2 pt-3 flex flex-col gap-1">
+        <div className="border-t border-token mt-2 pt-3 flex flex-col gap-1">
           {PROFILE_LINKS.map(link => (
             <Link
               key={link.href}
               href={link.href}
               onClick={onClose}
-              className="flex items-center gap-3 py-2.5 px-3 text-sm font-semibold text-[#374151] hover:text-primary hover:bg-gray-50 rounded-xl transition-colors"
+              className="flex items-center gap-3 py-2.5 px-3 text-sm font-semibold text-body hover:text-primary hover:bg-surface-alt rounded-xl transition-colors"
             >
-              <span className="text-gray-400">{link.icon}</span>
+              <span className="text-subtle">{link.icon}</span>
               {link.label}
             </Link>
           ))}

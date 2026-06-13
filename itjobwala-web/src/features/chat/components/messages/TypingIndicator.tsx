@@ -1,8 +1,8 @@
 export default function TypingIndicator() {
   return (
     <div className="flex items-end gap-2.5">
-      <div className="w-8 h-8 rounded-full bg-gray-100" />
-      <div className="bg-white border border-gray-100 shadow-sm rounded-[20px] rounded-bl-[4px] px-4 py-3 flex items-center gap-1">
+      <div className="w-8 h-8 rounded-full bg-surface-hover" />
+      <div className="bg-surface border border-token shadow-sm rounded-[20px] rounded-bl-[4px] px-4 py-3 flex items-center gap-1">
         {[0, 1, 2].map(i => (
           <span
             key={i}

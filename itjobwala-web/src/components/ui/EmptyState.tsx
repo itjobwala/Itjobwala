@@ -22,17 +22,17 @@ export default function EmptyState({ icon, emoji, title, description, cta, class
   return (
     <div className={cn('text-center py-12', className)}>
       {icon ? (
-        <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-5">
+        <div className="w-16 h-16 rounded-2xl bg-surface-hover flex items-center justify-center mx-auto mb-5">
           {icon}
         </div>
       ) : emoji ? (
         <div className="text-[40px] mb-4 leading-none">{emoji}</div>
       ) : null}
 
-      <h3 className="text-[16px] font-bold text-[#0f172a] mb-2">{title}</h3>
+      <h3 className="text-lg font-bold text-heading mb-2">{title}</h3>
 
       {description && (
-        <p className="text-[13px] text-gray-500 max-w-xs mx-auto">{description}</p>
+        <p className="text-sm text-muted max-w-xs mx-auto">{description}</p>
       )}
 
       {cta && (
@@ -40,7 +40,7 @@ export default function EmptyState({ icon, emoji, title, description, cta, class
           {cta.href ? (
             <Link
               href={cta.href}
-              className="inline-block px-5 py-2.5 bg-primary text-white text-[13px] font-semibold rounded-xl hover:opacity-90 transition-opacity"
+              className="inline-block px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
               style={{ color: '#fff' }}
             >
               {cta.label}
@@ -48,7 +48,7 @@ export default function EmptyState({ icon, emoji, title, description, cta, class
           ) : (
             <button
               onClick={cta.onClick}
-              className="px-5 py-2.5 bg-primary text-white text-[13px] font-semibold rounded-xl hover:opacity-90 transition-opacity"
+              className="px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
             >
               {cta.label}
             </button>

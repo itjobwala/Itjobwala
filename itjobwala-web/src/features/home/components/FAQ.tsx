@@ -62,7 +62,7 @@ export default function FAQ() {
               </button>
 
               {openIndex === i && (
-                <div className="px-6 pb-[22px] text-sm text-slate-500 leading-[1.7]">
+                <div className="px-6 pb-[22px] text-sm text-muted leading-[1.7]">
                   {f.a}
                 </div>
               )}
@@ -71,11 +71,11 @@ export default function FAQ() {
         </div>
 
         {/* Footer nudge */}
-        <div className="reveal text-center mt-10 py-6 px-6 bg-white rounded-[14px] border border-gray-200">
-          <span className="text-sm text-gray-500">Still have questions? </span>
-          <Link href="#" className="text-sm font-bold" style={{ color: PRIMARY }}>
+        <div className="reveal text-center mt-10 py-6 px-6 bg-surface rounded-[14px] border border-token">
+          <span className="text-sm text-muted">Still have questions? </span>
+          <a href="mailto:support@itjobwala.com" className="text-sm font-bold" style={{ color: PRIMARY }}>
             Contact our team →
-          </Link>
+          </a>
         </div>
 
       </div>

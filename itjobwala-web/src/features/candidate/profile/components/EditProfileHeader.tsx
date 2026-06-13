@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
+import { ProfileValidator } from '../schemas/profile.schema';
 
 export interface EditableProfile {
   fullName: string;
@@ -34,6 +35,8 @@ function Field({
   placeholder,
   error,
   required,
+  min,
+  max,
 }: {
   label: string;
   value: string;
@@ -42,31 +45,57 @@ function Field({
   placeholder?: string;
   error?: string;
   required?: boolean;
+  min?: string;
+  max?: string;
 }) {
   return (
     <label className="block">
-      <span className="block text-[12px] font-bold text-gray-500 mb-1.5">
-        {label}{required && <span className="text-red-500 ml-0.5">*</span>}
+      <span className="block text-caption font-bold text-muted mb-1.5">
+        {label}{required && <span className="text-danger ml-0.5">*</span>}
       </span>
       <input
         type={type}
         value={value || ''}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none transition-colors placeholder:text-gray-400 ${
+        min={min}
+        max={max}
+        className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-subtle ${
           type === 'date' ? 'max-w-xs' : ''
         } ${
-          error ? 'border-red-300 focus:border-red-400' : 'border-gray-200 focus:border-primary/50'
+          error ? 'border-danger focus:border-danger' : 'border-token focus:border-primary/50'
         }`}
       />
-      {error && <span className="mt-1 block text-[11px] font-semibold text-red-500">{error}</span>}
+      {error && <span className="mt-1 block text-micro font-semibold text-danger">{error}</span>}
     </label>
   );
 }
 
 export default function EditProfileHeader({ profile, onChange, profilePhotoUrl }: Props) {
   const avatarRef = useRef<HTMLInputElement>(null);
-  
+
+  const nameErr     = profile.fullName
+    ? (ProfileValidator.validateName(profile.fullName, 'Full name')?.message ?? '') : '';
+  const phoneErr    = profile.phone
+    ? (ProfileValidator.validatePhone(profile.phone)?.message ?? '') : '';
+  const emailErr    = profile.email
+    ? (ProfileValidator.validateEmail(profile.email)?.message ?? '') : '';
+  const linkedInErr = profile.linkedIn
+    ? (ProfileValidator.validateUrl(profile.linkedIn, 'linkedin.com')?.message ?? '') : '';
+  const githubErr   = profile.github
+    ? (ProfileValidator.validateUrl(profile.github, 'github.com')?.message ?? '') : '';
+  const expErr      = profile.experienceYears != null && profile.experienceYears !== ''
+    ? (Number(profile.experienceYears) < 0 || Number(profile.experienceYears) > 60 ? 'Must be between 0 and 60' : '') : '';
+  const titleErr    = profile.title?.trim() && profile.title.trim().length > 100
+    ? 'Max 100 characters.' : '';
+  const locationErr = profile.location?.trim()
+    ? (!/[a-zA-Z]/.test(profile.location.trim())
+        ? 'Must contain letters (e.g. Bangalore, Remote).'
+        : profile.location.trim().length > 100
+          ? 'Max 100 characters.'
+          : '')
+    : '';
+
   const initials = (profile.fullName || profile.name || profile.email || 'US')
     .trim()
     .split(' ')
@@ -112,7 +141,7 @@ export default function EditProfileHeader({ profile, onChange, profilePhotoUrl }
             </button>
             <input ref={avatarRef} type="file" accept="image/*" className="hidden" />
             {profile.openToWork && (
-              <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-green-500 text-white text-[10px] font-bold rounded-full px-2 py-0.5 whitespace-nowrap border-2 border-white">
+              <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-success text-white text-[10px] font-bold rounded-full px-2 py-0.5 whitespace-nowrap border-2 border-white">
                 Open to work
               </span>
             )}
@@ -121,36 +150,36 @@ export default function EditProfileHeader({ profile, onChange, profilePhotoUrl }
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          <Field label="Full name" value={profile.fullName} onChange={value => update('fullName', value)} />
-          <Field label="Current role / title" value={profile.title} onChange={value => update('title', value)} />
-          <Field label="Experience (Years)" value={profile.experienceYears} onChange={value => update('experienceYears', value)} type="number" />
-          <Field label="Location" value={profile.location} onChange={value => update('location', value)} />
+          <Field label="Full name" value={profile.fullName} onChange={value => update('fullName', value)} required error={nameErr} />
+          <Field label="Current role / title" value={profile.title} onChange={value => update('title', value)} placeholder="e.g. Senior Software Engineer" error={titleErr} />
+          <Field label="Experience (Years)" value={profile.experienceYears} onChange={value => update('experienceYears', value)} type="number" min="0" max="60" error={expErr} />
+          <Field label="Location" value={profile.location} onChange={value => update('location', value)} placeholder="e.g. Bangalore, Remote" error={locationErr} />
           <label className="block">
-            <span className="block text-[12px] font-bold text-gray-500 mb-1.5">Current Salary</span>
+            <span className="block text-caption font-bold text-muted mb-1.5">Current Salary</span>
             <input
               type="number"
               min="1"
               value={profile.currentSalary || ''}
               onChange={e => update('currentSalary', e.target.value)}
               placeholder="e.g. 80000"
-              className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none transition-colors placeholder:text-gray-400 ${
+              className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-subtle ${
                 profile.currentSalary !== '' && profile.currentSalary != null && Number(profile.currentSalary) <= 0
-                  ? 'border-red-300 focus:border-red-400'
-                  : 'border-gray-200 focus:border-primary/50'
+                  ? 'border-danger focus:border-danger'
+                  : 'border-token focus:border-primary/50'
               }`}
             />
             {profile.currentSalary !== '' && profile.currentSalary != null && Number(profile.currentSalary) <= 0 && (
-              <span className="mt-1 block text-[11px] font-semibold text-red-500">Current salary must be greater than 0</span>
+              <span className="mt-1 block text-micro font-semibold text-danger">Current salary must be greater than 0</span>
             )}
           </label>
           <Field label="Available to join" value={profile.availabilityToJoin || ''} onChange={value => update('availabilityToJoin', value)} type="date" />
-          <Field label="Email" value={profile.email} onChange={value => update('email', value)} type="email" required error={profile.email && !profile.email.includes('@') ? 'Enter a valid email' : ''} />
-          <Field label="Phone" value={profile.phone} onChange={value => update('phone', value)} type="tel" required />
-          <Field label="LinkedIn Profile" value={profile.linkedIn} onChange={value => update('linkedIn', value)} placeholder="e.g. linkedin.com/in/username" />
-          <Field label="GitHub Profile" value={profile.github} onChange={value => update('github', value)} placeholder="e.g. github.com/username" />
+          <Field label="Email" value={profile.email} onChange={value => update('email', value)} type="email" required error={emailErr} />
+          <Field label="Phone" value={profile.phone} onChange={value => update('phone', value)} type="tel" required error={phoneErr} placeholder="+919876543210" />
+          <Field label="LinkedIn Profile" value={profile.linkedIn} onChange={value => update('linkedIn', value)} placeholder="https://linkedin.com/in/username" error={linkedInErr} />
+          <Field label="GitHub Profile" value={profile.github} onChange={value => update('github', value)} placeholder="https://github.com/username" error={githubErr} />
         </div>
 
-        <div className="mt-5 border-t border-gray-100 pt-5">
+        <div className="mt-5 border-t border-token pt-5">
           <label className="flex items-center gap-3 cursor-pointer w-fit">
             <div className="relative flex items-center">
               <input
@@ -159,11 +188,11 @@ export default function EditProfileHeader({ profile, onChange, profilePhotoUrl }
                 onChange={e => update('openToWork', e.target.checked)}
                 className="peer sr-only"
               />
-              <div className="h-6 w-11 rounded-full bg-gray-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-green-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-green-500/30"></div>
+              <div className="h-6 w-11 rounded-full bg-surface-mid after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-token after:bg-white after:transition-all after:content-[''] peer-checked:bg-success peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-success/30"></div>
             </div>
             <div>
-              <span className="block text-[13px] font-bold text-[#0f172a]">Open to work</span>
-              <span className="block text-[12px] text-gray-500 mt-0.5">Show recruiters you are actively looking for jobs</span>
+              <span className="block text-sm font-bold text-heading">Open to work</span>
+              <span className="block text-caption text-muted mt-0.5">Show recruiters you are actively looking for jobs</span>
             </div>
           </label>
         </div>

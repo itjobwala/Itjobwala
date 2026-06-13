@@ -1,5 +1,7 @@
 import RecruiterVisibility from '../../models/recruiter/RecruiterVisibility.js';
 import User from '../../models/candidate/User.js';
+import Conversation from '../../models/chat/Conversation.js';
+import ProfileView from '../../models/recruiter/ProfileView.js';
 
 export const getRecruiterVisibility = async (request, reply) => {
   try {
@@ -8,7 +10,6 @@ export const getRecruiterVisibility = async (request, reply) => {
     let visibility = await RecruiterVisibility.query().findOne({ user_id: userId });
 
     if (!visibility) {
-      // Create default if not exists
       visibility = await RecruiterVisibility.query().insert({
         user_id: userId,
         recruiter_visible: true,
@@ -16,23 +17,23 @@ export const getRecruiterVisibility = async (request, reply) => {
       });
     }
 
-    const user = await User.query().findById(userId).select('updated_at');
-
-    // MOCK STATS for now as tables don't exist yet
-    // In production, these would be queries to profile_views and messages tables
-    const stats = {
-      profile_views: Math.floor(Math.random() * 50) + 10,
-      recruiter_messages: Math.floor(Math.random() * 10) + 2,
-      last_active: user.updated_at ? user.updated_at.toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
-    };
+    const [user, profileViews, recruiterMessages] = await Promise.all([
+      User.query().findById(userId).select('updated_at'),
+      ProfileView.query().where('candidate_user_id', userId).resultSize(),
+      Conversation.query().where('candidate_id', userId).resultSize(),
+    ]);
 
     return reply.status(200).send({
       success: true,
       message: 'Visibility settings fetched successfully.',
       data: {
-        recruiter_visible: visibility.recruiter_visible,
-        open_to_job_types: visibility.open_to_job_types || [],
-        ...stats
+        recruiter_visible:  visibility.recruiter_visible,
+        open_to_job_types:  visibility.open_to_job_types || [],
+        profile_views:      profileViews,
+        recruiter_messages: recruiterMessages,
+        last_active: user?.updated_at
+          ? new Date(user.updated_at).toISOString().split('T')[0]
+          : new Date().toISOString().split('T')[0]
       }
     });
   } catch (error) {
@@ -46,7 +47,6 @@ export const updateRecruiterVisibility = async (request, reply) => {
     const userId = request.user.id;
     const { recruiter_visible, open_to_job_types } = request.body;
 
-    // Validation
     if (typeof recruiter_visible !== 'boolean') {
       return reply.status(400).send({ success: false, message: 'recruiter_visible must be a boolean.' });
     }
@@ -74,21 +74,23 @@ export const updateRecruiterVisibility = async (request, reply) => {
       });
     }
 
-    const user = await User.query().findById(userId).select('updated_at');
-
-    const stats = {
-      profile_views: 24, // Consistent mock for testing
-      recruiter_messages: 6,
-      last_active: user.updated_at ? user.updated_at.toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
-    };
+    const [user, profileViews, recruiterMessages] = await Promise.all([
+      User.query().findById(userId).select('updated_at'),
+      ProfileView.query().where('candidate_user_id', userId).resultSize(),
+      Conversation.query().where('candidate_id', userId).resultSize(),
+    ]);
 
     return reply.status(200).send({
       success: true,
       message: 'Visibility settings updated successfully.',
       data: {
-        recruiter_visible: visibility.recruiter_visible,
-        open_to_job_types: visibility.open_to_job_types || [],
-        ...stats
+        recruiter_visible:  visibility.recruiter_visible,
+        open_to_job_types:  visibility.open_to_job_types || [],
+        profile_views:      profileViews,
+        recruiter_messages: recruiterMessages,
+        last_active: user?.updated_at
+          ? new Date(user.updated_at).toISOString().split('T')[0]
+          : new Date().toISOString().split('T')[0]
       }
     });
   } catch (error) {

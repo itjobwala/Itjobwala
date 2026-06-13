@@ -63,21 +63,6 @@ const MENU_ITEMS = [
       },
     ],
   },
-  {
-    group: 'settings',
-    items: [
-      {
-        href: '/settings',
-        label: 'Account Settings',
-        icon: (
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-          </svg>
-        ),
-      },
-    ],
-  },
 ];
 
 export default function UserDropdown({ user }: Props) {
@@ -99,7 +84,7 @@ export default function UserDropdown({ user }: Props) {
       <button
         onClick={() => setOpen(o => !o)}
         className={`flex items-center gap-2 pl-1 pr-2 py-1 rounded-xl transition-colors ${
-          open ? 'bg-primary/10' : 'hover:bg-gray-100'
+          open ? 'bg-primary/10' : 'hover:bg-surface-hover'
         }`}
       >
         {user.profilePhoto ? (
@@ -114,11 +99,11 @@ export default function UserDropdown({ user }: Props) {
           </div>
         )}
         <div className="hidden lg:block text-left min-w-0">
-          <p className="text-[13px] font-bold text-[#0f172a] leading-none truncate max-w-[100px]">{user.name}</p>
-          <p className="text-[11px] text-gray-400 mt-0.5 truncate max-w-[100px]">{user.designation || 'Update profile'}</p>
+          <p className="text-sm font-bold text-heading leading-none truncate max-w-[100px]">{user.name}</p>
+          <p className="text-micro text-subtle mt-0.5 truncate max-w-[100px]">{user.designation || 'Update profile'}</p>
         </div>
         <svg
-          width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5"
+          width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--color-subtle)" strokeWidth="2.5"
           className={`hidden lg:block shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
         >
           <path d="m6 9 6 6 6-6" />
@@ -126,11 +111,11 @@ export default function UserDropdown({ user }: Props) {
       </button>
 
       {/* Dropdown */}
-      <div className={`absolute right-0 top-[calc(100%+8px)] w-[240px] bg-white rounded-2xl border border-gray-100 shadow-xl shadow-black/[0.08] transition-all duration-200 z-[300] ${
+      <div className={`absolute right-0 top-[calc(100%+8px)] w-[240px] bg-surface rounded-2xl border border-token shadow-xl shadow-black/[0.08] transition-all duration-200 z-[300] ${
         open ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-2 pointer-events-none'
       }`}>
         {/* User header */}
-        <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-100">
+        <div className="flex items-center gap-3 px-4 py-4 border-b border-token">
           {user.profilePhoto ? (
             <img
               src={user.profilePhoto}
@@ -143,15 +128,15 @@ export default function UserDropdown({ user }: Props) {
             </div>
           )}
           <div className="min-w-0">
-            <p className="text-[14px] font-bold text-[#0f172a] truncate">{user.name}</p>
-            <p className="text-[12px] text-gray-400 truncate">{user.designation || 'Update profile'}</p>
+            <p className="text-base font-bold text-heading truncate">{user.name}</p>
+            <p className="text-caption text-subtle truncate">{user.designation || 'Update profile'}</p>
           </div>
         </div>
 
         {/* Menu groups */}
         {MENU_ITEMS.map((group, gi) => (
           <div key={group.group}>
-            {gi > 0 && <div className="h-px bg-gray-100 mx-3" />}
+            {gi > 0 && <div className="h-px bg-surface-hover mx-3" />}
             <div className="py-1.5">
               {group.items.map(item => {
                 const active = pathname === item.href || pathname.startsWith(item.href.split('#')[0] + '/');
@@ -160,13 +145,13 @@ export default function UserDropdown({ user }: Props) {
                     key={item.href}
                     href={item.href}
                     onClick={() => setOpen(false)}
-                    className={`flex items-center gap-3 mx-2 px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-colors ${
+                    className={`flex items-center gap-3 mx-2 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
                       active
                         ? 'bg-primary/10 text-primary'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-[#0f172a]'
+                        : 'text-body-secondary hover:bg-surface-alt hover:text-heading'
                     }`}
                   >
-                    <span className={active ? 'text-primary' : 'text-gray-400'}>{item.icon}</span>
+                    <span className={active ? 'text-primary' : 'text-subtle'}>{item.icon}</span>
                     {item.label}
                   </Link>
                 );
@@ -176,10 +161,10 @@ export default function UserDropdown({ user }: Props) {
         ))}
 
         {/* Logout */}
-        <div className="border-t border-gray-100 py-1.5">
+        <div className="border-t border-token py-1.5">
           <button
             onClick={() => { useAuthStore.getState().logout(); window.location.href = '/'; }}
-            className="w-full flex items-center gap-3 mx-2 px-3 py-2.5 rounded-xl text-[13px] font-semibold text-red-500 hover:bg-red-50 transition-colors"
+            className="w-full flex items-center gap-3 mx-2 px-3 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors"
             style={{ width: 'calc(100% - 16px)' }}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">

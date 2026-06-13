@@ -1,8 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useRecruiterNotificationsQuery } from '@/features/recruiter/hooks';
 import Card from '@/src/components/ui/Card';
+
+const PREVIEW = 5;
 
 const TYPE_CONFIG: Record<string, { dotColor: string; icon: React.ReactNode }> = {
   application: {
@@ -73,36 +76,38 @@ function relativeTime(iso: string): string {
 }
 
 export default function ActivityFeed() {
+  const [showAll, setShowAll] = useState(false);
   const { data: notifications, isLoading } = useRecruiterNotificationsQuery(10);
+  const visible = showAll ? notifications : notifications?.slice(0, PREVIEW);
 
   return (
     <Card className="shadow-sm" overflow>
       <div className="mb-5">
-        <h2 className="text-[15px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.3px' }}>
+        <h2 className="text-md font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
           Activity Feed
         </h2>
-        <p className="text-[12px] text-gray-400 mt-0.5">Your recent recruiting activity</p>
+        <p className="text-caption text-subtle mt-0.5">Your recent recruiting activity</p>
       </div>
 
       {isLoading ? (
         <div className="space-y-4 animate-pulse">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex gap-4">
-              <div className="w-[30px] h-[30px] rounded-xl bg-gray-100 shrink-0" />
+              <div className="w-[30px] h-[30px] rounded-xl bg-surface-hover shrink-0" />
               <div className="flex-1 space-y-1.5 pb-4 border-b border-gray-50">
-                <div className="h-3 bg-gray-100 rounded w-3/4" />
-                <div className="h-2.5 bg-gray-50 rounded w-1/4" />
+                <div className="h-3 bg-surface-hover rounded w-3/4" />
+                <div className="h-2.5 bg-surface-alt rounded w-1/4" />
               </div>
             </div>
           ))}
         </div>
       ) : !notifications || notifications.length === 0 ? (
-        <p className="text-[13px] text-gray-400 text-center py-4">No recent activity.</p>
+        <p className="text-sm text-subtle text-center py-4">No recent activity.</p>
       ) : (
         <div className="relative">
-          <div className="absolute left-[15px] top-2 bottom-2 w-px bg-gray-100" />
+          <div className="absolute left-[15px] top-2 bottom-2 w-px bg-token" />
           <div className="space-y-4">
-            {notifications.map(item => {
+            {visible!.map(item => {
               const cfg = TYPE_CONFIG[item.type] ?? TYPE_CONFIG.default;
               const inner = (
                 <>
@@ -112,10 +117,10 @@ export default function ActivityFeed() {
                     </div>
                   </div>
                   <div className="flex-1 min-w-0 pb-4 border-b border-gray-50 last:border-0 last:pb-0">
-                    <p className={`text-[13px] font-semibold leading-snug transition-colors ${!item.is_read ? 'text-[#0f172a]' : 'text-gray-500'} group-hover:text-primary`}>
+                    <p className={`text-sm font-semibold leading-snug transition-colors ${!item.is_read ? 'text-heading' : 'text-muted'} group-hover:text-primary`}>
                       {item.message}
                     </p>
-                    <p className="text-[11px] text-gray-400 mt-1 font-medium">{relativeTime(item.created_at)}</p>
+                    <p className="text-micro text-subtle mt-1 font-medium">{relativeTime(item.created_at)}</p>
                   </div>
                 </>
               );
@@ -133,13 +138,37 @@ export default function ActivityFeed() {
       )}
 
       {notifications && notifications.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <Link
-            href="/recruiter/activity"
-            className="block w-full text-[12px] font-bold text-primary hover:text-primary/80 transition-colors text-center"
-          >
-            View all activity →
-          </Link>
+        <div className="mt-4 pt-4 border-t border-token flex items-center justify-center gap-4">
+          {!showAll && notifications.length > PREVIEW ? (
+            <button
+              onClick={() => setShowAll(true)}
+              className="text-caption font-bold text-primary hover:text-primary/80 transition-colors"
+            >
+              View all activity ({notifications.length}) →
+            </button>
+          ) : showAll ? (
+            <>
+              <button
+                onClick={() => setShowAll(false)}
+                className="text-caption font-bold text-subtle hover:text-muted transition-colors"
+              >
+                Show less
+              </button>
+              <Link
+                href="/recruiter/activity"
+                className="text-caption font-bold text-primary hover:text-primary/80 transition-colors"
+              >
+                Open activity page →
+              </Link>
+            </>
+          ) : (
+            <Link
+              href="/recruiter/activity"
+              className="text-caption font-bold text-primary hover:text-primary/80 transition-colors"
+            >
+              View all activity →
+            </Link>
+          )}
         </div>
       )}
     </Card>

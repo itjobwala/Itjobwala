@@ -24,7 +24,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="relative w-full">
         {leftIcon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-subtle pointer-events-none">
             {leftIcon}
           </div>
         )}
@@ -34,15 +34,15 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           disabled={disabled || loading}
           aria-invalid={error ? 'true' : 'false'}
           className={cn(
-            'w-full rounded-xl border bg-white',
+            'w-full rounded-xl border bg-surface',
             SIZE_CLASSES[inputSize],
-            'text-[13px] font-medium text-[#0f172a]',
+            'text-sm font-medium text-heading',
             'outline-none transition-colors',
-            'placeholder:text-gray-400',
-            'disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed',
+            'placeholder:text-subtle',
+            'disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed',
             error
-              ? 'border-red-400 bg-red-50 focus:border-red-400'
-              : 'border-gray-200 focus:border-primary',
+              ? 'border-danger bg-danger-bg focus:border-danger'
+              : 'border-token-mid focus:border-primary',
             hasLeft  && 'pl-9',
             hasRight && 'pr-9',
             className,
@@ -51,7 +51,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         />
 
         {hasRight && (
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-subtle pointer-events-none">
             {loading ? (
               <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />

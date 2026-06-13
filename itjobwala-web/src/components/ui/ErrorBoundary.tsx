@@ -51,13 +51,13 @@ function DefaultFallback({ error, onReset }: { error: Error; onReset: () => void
           <line x1="12" y1="16" x2="12.01" y2="16" />
         </svg>
       </div>
-      <h3 className="text-[16px] font-bold text-[#0f172a] mb-1">Something went wrong</h3>
-      <p className="text-[13px] text-gray-500 max-w-xs mb-5">
+      <h3 className="text-lg font-bold text-heading mb-1">Something went wrong</h3>
+      <p className="text-sm text-muted max-w-xs mb-5">
         {error.message || 'An unexpected error occurred. Please try again.'}
       </p>
       <button
         onClick={onReset}
-        className="px-5 py-2.5 bg-primary text-white text-[13px] font-semibold rounded-xl hover:opacity-90 transition-opacity"
+        className="px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
       >
         Try again
       </button>

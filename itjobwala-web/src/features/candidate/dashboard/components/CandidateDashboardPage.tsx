@@ -72,60 +72,29 @@ const STATUS_MAP: Record<string, { label: string; cls: string }> = {
 function StatusPill({ status }: { status: string }) {
   const s = STATUS_MAP[status] ?? STATUS_MAP.withdrawn;
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${s.cls}`}>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-micro font-semibold border ${s.cls}`}>
       <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70" />
       {s.label}
     </span>
   );
 }
 
-// ── Quick actions config ───────────────────────────────────────────────────────
-const ACTIONS = [
-  {
-    href: '/candidate/jobs',
-    label: 'Browse Jobs',
-    desc: 'Find your next role',
-    gradient: 'from-blue-500 to-blue-600',
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[18px] h-[18px]"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>,
-  },
-  {
-    href: '/candidate/applications',
-    label: 'Applications',
-    desc: 'Track your progress',
-    gradient: 'from-violet-500 to-violet-600',
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[18px] h-[18px]"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>,
-  },
-  {
-    href: '/candidate/saved-jobs',
-    label: 'Saved Jobs',
-    desc: 'Review your wishlist',
-    gradient: 'from-orange-400 to-orange-500',
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[18px] h-[18px]"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>,
-  },
-  {
-    href: '/candidate/profile',
-    label: 'Edit Profile',
-    desc: 'Boost your visibility',
-    gradient: 'from-emerald-500 to-teal-500',
-    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-[18px] h-[18px]"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
-  },
-];
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 function DashboardSkeleton() {
   return (
     <div className="space-y-5 animate-pulse">
-      <div className="h-56 bg-[#e2e8f0] rounded-3xl" />
+      <div className="h-56 bg-surface-mid rounded-3xl" />
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5">
         <div className="space-y-5">
-          <div className="h-72 bg-white rounded-2xl border border-gray-100" />
+          <div className="h-72 bg-surface rounded-2xl border border-token" />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {[...Array(4)].map((_, i) => <div key={i} className="h-24 bg-white rounded-2xl border border-gray-100" />)}
+            {[...Array(4)].map((_, i) => <div key={i} className="h-24 bg-surface rounded-2xl border border-token" />)}
           </div>
         </div>
         <div className="space-y-5">
-          <div className="h-40 bg-white rounded-2xl border border-gray-100" />
-          <div className="h-56 bg-white rounded-2xl border border-gray-100" />
+          <div className="h-40 bg-surface rounded-2xl border border-token" />
+          <div className="h-56 bg-surface rounded-2xl border border-token" />
         </div>
       </div>
     </div>
@@ -156,32 +125,32 @@ function ATSMiniCard() {
   return (
     <Link
       href="/candidate/resume"
-      className="group flex items-center gap-4 bg-white rounded-2xl border border-gray-100/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] p-5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-200"
+      className="group flex items-center gap-4 bg-surface rounded-2xl border border-token-mid shadow-[0_2px_8px_rgba(0,0,0,0.03)] p-5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-200"
     >
       {/* Mini radial ring */}
-      <div className="relative w-12 h-12 flex-shrink-0">
-        <svg width="48" height="48" viewBox="0 0 48 48" className="-rotate-90">
-          <circle cx="24" cy="24" r="19" fill="none" stroke="#f1f5f9" strokeWidth="5" />
+      <div className="relative w-14 h-14 flex-shrink-0">
+        <svg width="56" height="56" viewBox="0 0 56 56" className="-rotate-90">
+          <circle cx="28" cy="28" r="22" fill="none" stroke="var(--color-surface-hover)" strokeWidth="6" />
           {score !== null && (
             <circle
-              cx="24" cy="24" r="19"
+              cx="28" cy="28" r="22"
               fill="none"
               stroke={scoreColor}
-              strokeWidth="5"
+              strokeWidth="6"
               strokeLinecap="round"
-              strokeDasharray={`${(score / 100) * 2 * Math.PI * 19} ${2 * Math.PI * 19}`}
+              strokeDasharray={`${(score / 100) * 2 * Math.PI * 22} ${2 * Math.PI * 22}`}
             />
           )}
         </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-[12px] font-black" style={{ color: scoreColor }}>
-            {score !== null ? score : '?'}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-0">
+          <span className="text-[11px] font-black leading-none" style={{ color: scoreColor }}>
+            {score !== null ? `${score}%` : '?'}
           </span>
         </div>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[14px] font-bold text-[#0f172a]">ATS Score</p>
-        <p className="text-[12px] text-gray-400 mt-0.5">
+        <p className="text-base font-bold text-heading">ATS Score</p>
+        <p className="text-caption text-subtle mt-0.5">
           {score !== null ? `${band} — View full analysis` : 'Analyze your resume'}
         </p>
       </div>
@@ -214,12 +183,12 @@ export default function CandidateDashboardPage() {
       <div className="min-h-screen" style={{ background: 'radial-gradient(ellipse at 60% 0%, #e0e7ff 0%, #f1f5f9 40%, #f8fafc 100%)' }}>
         <SmartNavbar />
         <div className="pt-[68px]">
-          <div className="max-w-[1160px] mx-auto px-4 sm:px-8 py-8 space-y-5">
+          <div className="max-w-[1160px] mx-auto px-5 sm:px-8 py-8 space-y-5">
 
             {isLoading && <DashboardSkeleton />}
 
             {isError && (
-              <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center text-red-600 text-[14px] font-medium">
+              <div className="bg-danger-bg border border-danger rounded-2xl p-6 text-center text-danger text-base font-medium">
                 Failed to load dashboard. Please refresh.
               </div>
             )}
@@ -252,7 +221,7 @@ export default function CandidateDashboardPage() {
                         {/* Location · Experience · Work status */}
                         <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1.5">
                           {data.user.location && (
-                            <span className="flex items-center gap-1 text-white/35 text-[12px]">
+                            <span className="flex items-center gap-1 text-white/35 text-caption">
                               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5 flex-shrink-0">
                                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                               </svg>
@@ -261,16 +230,16 @@ export default function CandidateDashboardPage() {
                           )}
                           {expYears != null && (
                             <>
-                              <span className="text-white/20 text-[12px]">·</span>
-                              <span className="text-white/35 text-[12px]">
+                              <span className="text-white/20 text-caption">·</span>
+                              <span className="text-white/35 text-caption">
                                 {expYears === 0 ? 'Fresher' : `${expYears} yr${expYears !== 1 ? 's' : ''} exp`}
                               </span>
                             </>
                           )}
                           {workStatus && expYears == null && (
                             <>
-                              <span className="text-white/20 text-[12px]">·</span>
-                              <span className="text-white/35 text-[12px] capitalize">{workStatus}</span>
+                              <span className="text-white/20 text-caption">·</span>
+                              <span className="text-white/35 text-caption capitalize">{workStatus}</span>
                             </>
                           )}
                         </div>
@@ -279,7 +248,7 @@ export default function CandidateDashboardPage() {
                         {candidateRole && (
                           <div className="mt-3">
                             <span
-                              className="px-3 py-1 rounded-full text-[12px] font-semibold"
+                              className="px-3 py-1 rounded-full text-caption font-semibold"
                               style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.75)', border: '1px solid rgba(255,255,255,0.15)' }}
                             >
                               {candidateRole}
@@ -298,8 +267,8 @@ export default function CandidateDashboardPage() {
                         { label: 'Offers',      value: data.stats.offers,             color: 'text-emerald-300' },
                       ].map(s => (
                         <div key={s.label} className="backdrop-blur-sm rounded-2xl px-4 py-3 text-center" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                          <p className={`text-[22px] font-bold ${s.color}`}>{s.value}</p>
-                          <p className="text-white/40 text-[11px] font-medium mt-0.5">{s.label}</p>
+                          <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
+                          <p className="text-white/40 text-micro font-medium mt-0.5">{s.label}</p>
                         </div>
                       ))}
                     </div>
@@ -313,13 +282,13 @@ export default function CandidateDashboardPage() {
                   <div className="space-y-5">
 
                     {/* Recent Applications */}
-                    <div className="bg-white rounded-2xl border border-gray-100/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)] overflow-hidden">
-                      <div className="flex items-center justify-between px-6 py-5 border-b border-gray-50">
+                    <div className="bg-surface rounded-2xl border border-token-mid shadow-[0_2px_12px_rgba(0,0,0,0.04)] overflow-hidden">
+                      <div className="flex items-center justify-between px-6 py-5 border-b border-token">
                         <div>
-                          <h2 className="text-[15px] font-bold text-[#0f172a]">Recent Applications</h2>
-                          <p className="text-[12px] text-gray-400 mt-0.5">{data.stats.totalApplications} total · sorted by latest</p>
+                          <h2 className="text-md font-bold text-heading">Recent Applications</h2>
+                          <p className="text-caption text-subtle mt-0.5">{data.stats.totalApplications} total · sorted by latest</p>
                         </div>
-                        <Link href="/candidate/applications" className="group inline-flex items-center gap-1 text-[13px] font-semibold text-primary hover:text-primary/80 transition-colors">
+                        <Link href="/candidate/applications" className="group inline-flex items-center gap-1 text-sm font-semibold text-primary hover:text-primary/80 transition-colors">
                           View all <Arrow />
                         </Link>
                       </div>
@@ -331,11 +300,11 @@ export default function CandidateDashboardPage() {
                               <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
                             </svg>
                           </div>
-                          <p className="text-[15px] font-bold text-[#0f172a]">No applications yet</p>
-                          <p className="text-[13px] text-gray-400 text-center max-w-xs leading-relaxed">
+                          <p className="text-md font-bold text-heading">No applications yet</p>
+                          <p className="text-sm text-subtle text-center max-w-xs leading-relaxed">
                             Start applying to roles that match your skills and experience.
                           </p>
-                          <Link href="/candidate/jobs" className="mt-1 inline-flex items-center gap-2 bg-primary text-white text-[13px] font-semibold px-5 py-2.5 rounded-xl hover:bg-primary/90 transition-colors">
+                          <Link href="/candidate/jobs" className="mt-1 inline-flex items-center gap-2 bg-primary text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-primary/90 transition-colors">
                             Browse Jobs
                           </Link>
                         </div>
@@ -344,31 +313,31 @@ export default function CandidateDashboardPage() {
                           {data.recentApplications.map((app: RecentApplication, idx) => (
                             <li
                               key={app.id}
-                              className={`group flex items-center gap-4 px-6 py-4 hover:bg-[#fafbff] transition-colors duration-150 ${idx < data.recentApplications.length - 1 ? 'border-b border-gray-50' : ''}`}
+                              className={`group flex items-center gap-4 px-6 py-4 hover:bg-[#fafbff] transition-colors duration-150 ${idx < data.recentApplications.length - 1 ? 'border-b border-token' : ''}`}
                             >
                               {/* Company logo */}
-                              <div className="w-[42px] h-[42px] rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                              <div className="w-[42px] h-[42px] rounded-xl bg-surface-alt border border-token flex items-center justify-center overflow-hidden flex-shrink-0">
                                 {app.companyLogo ? (
                                   <Image src={app.companyLogo} alt={app.company} width={42} height={42} className="w-full h-full object-contain p-1" />
                                 ) : (
-                                  <span className="text-[15px] font-extrabold text-gray-300">{app.company.charAt(0)}</span>
+                                  <span className="text-md font-extrabold text-gray-300">{app.company.charAt(0)}</span>
                                 )}
                               </div>
 
                               <div className="flex-1 min-w-0">
-                                <p className="text-[14px] font-semibold text-[#0f172a] truncate group-hover:text-primary transition-colors">{app.jobTitle}</p>
+                                <p className="text-base font-semibold text-heading truncate group-hover:text-primary transition-colors">{app.jobTitle}</p>
                                 <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                                  <span className="text-[12px] text-gray-500 font-medium">{app.company}</span>
+                                  <span className="text-caption text-muted font-medium">{app.company}</span>
                                   {app.location && (
                                     <>
-                                      <span className="text-gray-200">·</span>
-                                      <span className="text-[12px] text-gray-400">{app.location}</span>
+                                      <span className="text-subtle">·</span>
+                                      <span className="text-caption text-subtle">{app.location}</span>
                                     </>
                                   )}
                                   {app.workMode && (
                                     <>
-                                      <span className="text-gray-200">·</span>
-                                      <span className="text-[11px] text-gray-400 capitalize">{app.workMode.replace('_', ' ')}</span>
+                                      <span className="text-subtle">·</span>
+                                      <span className="text-micro text-subtle capitalize">{app.workMode.replace('_', ' ')}</span>
                                     </>
                                   )}
                                 </div>
@@ -376,7 +345,7 @@ export default function CandidateDashboardPage() {
 
                               <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                                 <StatusPill status={app.status} />
-                                <span className="text-[11px] text-gray-400">
+                                <span className="text-micro text-subtle">
                                   {new Date(app.appliedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                                 </span>
                               </div>
@@ -397,36 +366,12 @@ export default function CandidateDashboardPage() {
                     {/* ATS Score Mini-Card */}
                     <ATSMiniCard />
 
-                    {/* Quick Actions */}
-                    <div className="bg-white rounded-2xl border border-gray-100/80 shadow-[0_2px_12px_rgba(0,0,0,0.04)] overflow-hidden">
-                      <div className="px-5 py-4 border-b border-gray-50">
-                        <h2 className="text-[14px] font-bold text-[#0f172a]">Quick Actions</h2>
-                        <p className="text-[11px] text-gray-400 mt-0.5">Jump to what matters</p>
-                      </div>
-                      <div className="p-3 grid grid-cols-2 gap-2">
-                        {ACTIONS.map(a => (
-                          <Link
-                            key={a.href}
-                            href={a.href}
-                            className="group flex flex-col gap-3 p-3.5 rounded-xl hover:bg-gray-50 transition-all duration-150 border border-transparent hover:border-gray-100/80"
-                          >
-                            <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${a.gradient} flex items-center justify-center text-white shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200`}>
-                              {a.icon}
-                            </div>
-                            <div>
-                              <p className="text-[13px] font-semibold text-[#0f172a] group-hover:text-primary transition-colors leading-tight">{a.label}</p>
-                              <p className="text-[11px] text-gray-400 mt-0.5 leading-tight">{a.desc}</p>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
 
                     {/* Saved Jobs summary */}
                     {data.stats.savedJobs > 0 && (
                       <Link
                         href="/candidate/saved-jobs"
-                        className="group flex items-center gap-4 bg-white rounded-2xl border border-gray-100/80 shadow-[0_2px_8px_rgba(0,0,0,0.03)] p-5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-200"
+                        className="group flex items-center gap-4 bg-surface rounded-2xl border border-token-mid shadow-[0_2px_8px_rgba(0,0,0,0.03)] p-5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-200"
                       >
                         <div className="w-11 h-11 rounded-xl bg-orange-50 flex items-center justify-center flex-shrink-0">
                           <svg viewBox="0 0 24 24" fill="none" stroke="#f97316" strokeWidth="2" className="w-5 h-5">
@@ -434,8 +379,8 @@ export default function CandidateDashboardPage() {
                           </svg>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-[14px] font-bold text-[#0f172a]">{data.stats.savedJobs} Saved Jobs</p>
-                          <p className="text-[12px] text-gray-400 mt-0.5">Ready when you are</p>
+                          <p className="text-base font-bold text-heading">{data.stats.savedJobs} Saved Jobs</p>
+                          <p className="text-caption text-subtle mt-0.5">Ready when you are</p>
                         </div>
                         <svg viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2.5" className="w-4 h-4 group-hover:translate-x-1 group-hover:stroke-primary transition-all duration-200">
                           <path d="M5 12h14m-7-7 7 7-7 7"/>

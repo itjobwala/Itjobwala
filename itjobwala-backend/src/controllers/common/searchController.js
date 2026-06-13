@@ -100,7 +100,6 @@ export const searchCompanies = async (request, reply) => {
           logo: company.logo,
           industry: company.industry,
           location: company.headquarters, // We stored HQ as location
-          rating: 4.5, // Mock rating
           active_jobs_count: parseInt(company.active_jobs_count, 10) || 0
         })),
         pagination: {

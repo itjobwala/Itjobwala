@@ -4,13 +4,14 @@ import { useState } from 'react';
 import Link from 'next/link';
 import CompanyLogo from '@/src/components/ui/CompanyLogo';
 import Card from '@/src/components/ui/Card';
+import VerifiedBadge from '@/src/components/ui/VerifiedBadge';
 import type { JobDetail } from '../../shared/types';
 import { salaryLabel, hashColor } from '@/src/lib/utils/format';
 
 const WORK_MODE_CLASS: Record<JobDetail['workMode'], string> = {
-  remote: 'bg-green-50 text-green-700',
+  remote: 'bg-success-bg text-success',
   hybrid: 'bg-blue-50 text-blue-700',
-  onsite: 'bg-gray-100 text-gray-600',
+  onsite: 'bg-surface-hover text-body-secondary',
 };
 const WORK_MODE_LABEL: Record<JobDetail['workMode'], string> = {
   remote: 'Remote',
@@ -85,7 +86,7 @@ export default function JobDetailsHeader({ job, onApply, applied, saved, onSave,
       {/* Back */}
       <Link
         href="/candidate/jobs"
-        className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-gray-400 hover:text-primary transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-sm font-semibold text-subtle hover:text-primary transition-colors mb-6"
       >
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
           <path d="M19 12H5M12 5l-7 7 7 7" />
@@ -107,47 +108,49 @@ export default function JobDetailsHeader({ job, onApply, applied, saved, onSave,
         <div className="flex-1 min-w-0">
           {/* Badges */}
           <div className="flex items-center gap-2 mb-2 flex-wrap">
-            {job.isNew && <span className="text-[11px] font-bold rounded-full py-[2px] px-2.5 bg-green-50 text-green-700">New</span>}
-            {job.isHot && <span className="text-[11px] font-bold rounded-full py-[2px] px-2.5 bg-red-50 text-red-500">Hot</span>}
+            {job.isNew && <span className="text-micro font-bold rounded-full py-[2px] px-2.5 bg-success-bg text-success">New</span>}
+            {job.isHot && <span className="text-micro font-bold rounded-full py-[2px] px-2.5 bg-danger-bg text-danger">Hot</span>}
           </div>
 
-          <h1 className="text-[22px] sm:text-[26px] font-extrabold text-[#0f172a] leading-snug mb-1" style={{ letterSpacing: '-0.5px' }}>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-heading leading-snug mb-1" style={{ letterSpacing: '-0.5px' }}>
             {job.title}
           </h1>
 
-          <p className="text-[15px] font-semibold text-gray-500 mb-4">
-            {job.company} &middot; {job.location}
+          <p className="text-md font-semibold text-muted mb-4 flex items-center gap-2 flex-wrap">
+            <span>{job.company}</span>
+            {job.companyVerified && <VerifiedBadge />}
+            <span>&middot; {job.location}</span>
           </p>
 
           {/* Meta chips */}
           <div className="flex flex-wrap gap-2 mb-4">
             {WORK_MODE_LABEL[job.workMode] && (
-              <span className={`text-[12px] font-semibold rounded-full py-1 px-3 ${WORK_MODE_CLASS[job.workMode] ?? 'bg-gray-100 text-gray-600'}`}>
+              <span className={`text-caption font-semibold rounded-full py-1 px-3 ${WORK_MODE_CLASS[job.workMode] ?? 'bg-surface-hover text-body-secondary'}`}>
                 {WORK_MODE_LABEL[job.workMode]}
               </span>
             )}
             {JOB_TYPE_LABEL[job.jobType] && (
-              <span className="text-[12px] font-semibold rounded-full py-1 px-3 bg-gray-100 text-gray-600">
+              <span className="text-caption font-semibold rounded-full py-1 px-3 bg-surface-hover text-body-secondary">
                 {JOB_TYPE_LABEL[job.jobType]}
               </span>
             )}
-            <span className="text-[12px] font-semibold rounded-full py-1 px-3 bg-primary/10 text-primary">
+            <span className="text-caption font-semibold rounded-full py-1 px-3 bg-primary/10 text-primary">
               {job.experienceMin === 0 && job.experienceMax === 0
                 ? '0 yrs'
                 : `${job.experienceMin}–${job.experienceMax} yrs`}
             </span>
-            <span className="text-[12px] font-semibold rounded-full py-1 px-3 bg-emerald-50 text-emerald-700">
+            <span className="text-caption font-semibold rounded-full py-1 px-3 bg-emerald-50 text-emerald-700">
               ₹{salaryLabel(job.salaryLpaMin, job.salaryLpaMax)}
             </span>
             {job.jobLevel && (
-              <span className="text-[12px] font-semibold rounded-full py-1 px-3 bg-purple-50 text-purple-600">
+              <span className="text-caption font-semibold rounded-full py-1 px-3 bg-purple-50 text-purple-600">
                 {job.jobLevel}
               </span>
             )}
           </div>
 
           {/* Secondary meta */}
-          <div className="flex flex-wrap items-center gap-4 text-[13px] text-gray-400 mb-6">
+          <div className="flex flex-wrap items-center gap-4 text-sm text-subtle mb-6">
             <span className="flex items-center gap-1.5">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
@@ -186,12 +189,12 @@ export default function JobDetailsHeader({ job, onApply, applied, saved, onSave,
             <button
               onClick={handleApplyClick}
               disabled={applied || applyingState}
-              className={`flex items-center gap-2 font-bold text-[14px] rounded-xl px-6 py-3 transition-all ${
+              className={`flex items-center gap-2 font-bold text-base rounded-xl px-6 py-3 transition-all ${
                 applied
                   ? 'bg-green-500 text-white cursor-default'
                   : applyingState
-                  ? 'bg-primary/70 text-white'
-                  : 'bg-primary text-white hover:brightness-110'
+                  ? 'bg-primary/70 text-white cursor-wait'
+                  : 'bg-primary text-white hover:brightness-110 cursor-pointer'
               }`}
             >
               {applied ? (
@@ -216,10 +219,14 @@ export default function JobDetailsHeader({ job, onApply, applied, saved, onSave,
             <button
               onClick={handleSaveToggle}
               disabled={savingState}
-              className={`flex items-center gap-2 text-[14px] font-semibold rounded-xl px-4 py-3 border transition-colors ${
+              className={`flex items-center gap-2 text-base font-semibold rounded-xl px-4 py-3 border transition-all ${
+                savingState
+                  ? 'cursor-wait'
+                  : 'cursor-pointer'
+              } ${
                 saved
                   ? 'bg-primary/10 border-primary text-primary'
-                  : 'border-gray-200 text-gray-600 hover:border-primary/40 hover:text-primary'
+                  : 'border-token text-body-secondary hover:border-primary/40 hover:text-primary'
               }`}
             >
               <svg

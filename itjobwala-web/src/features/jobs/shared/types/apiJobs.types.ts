@@ -28,6 +28,8 @@ export interface Job {
   posted_at:           string;
   is_saved?:           boolean;
   has_applied?:        boolean;
+  company_verified?:   boolean;
+  status?:             string;
 }
 
 export interface JobDetail extends Job {

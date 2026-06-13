@@ -21,19 +21,19 @@ export default function ReferralOpportunities() {
       {/* Toolbar */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
-          <h2 className="text-[20px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.3px' }}>
+          <h2 className="text-2xl font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
             Referral Opportunities
           </h2>
-          <p className="text-[13px] text-gray-500 mt-0.5">Get referred by someone who works there</p>
+          <p className="text-sm text-muted mt-0.5">Get referred by someone who works there</p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center bg-gray-100 rounded-xl p-1">
+          <div className="flex items-center bg-surface-hover rounded-xl p-1">
             {(['newest', 'popular'] as const).map(s => (
               <button
                 key={s}
                 onClick={() => setSort(s)}
-                className={`px-3 py-1.5 rounded-lg text-[12px] font-bold transition-all ${
-                  sort === s ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                className={`px-3 py-1.5 rounded-lg text-caption font-bold transition-all ${
+                  sort === s ? 'bg-surface text-primary shadow-sm' : 'text-muted hover:text-body'
                 }`}
               >
                 {s === 'newest' ? 'Latest' : 'Popular'}
@@ -42,7 +42,7 @@ export default function ReferralOpportunities() {
           </div>
           <button
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 bg-primary text-white text-[13px] font-bold px-4 py-2.5 rounded-2xl hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25 transition-all active:scale-[0.98]"
+            className="flex items-center gap-2 bg-primary text-white text-sm font-bold px-4 py-2.5 rounded-2xl hover:bg-primary/90 hover:shadow-md hover:shadow-primary/25 transition-all active:scale-[0.98]"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
             Post Referral
@@ -59,7 +59,7 @@ export default function ReferralOpportunities() {
           description="Be the first to post a referral opportunity and help someone get their dream job."
           action={
             <button onClick={() => setShowCreate(true)}
-              className="bg-primary text-white text-[13px] font-bold px-5 py-2.5 rounded-2xl hover:bg-primary/90 transition-colors">
+              className="bg-primary text-white text-sm font-bold px-5 py-2.5 rounded-2xl hover:bg-primary/90 transition-colors">
               Post First Referral
             </button>
           }
@@ -77,7 +77,7 @@ export default function ReferralOpportunities() {
               <button
                 onClick={() => fetchNextPage()}
                 disabled={isFetchingNextPage}
-                className="px-8 py-3 text-[13px] font-bold text-primary bg-primary/8 rounded-2xl hover:bg-primary/15 transition-colors disabled:opacity-60"
+                className="px-8 py-3 text-sm font-bold text-primary bg-primary/8 rounded-2xl hover:bg-primary/15 transition-colors disabled:opacity-60"
               >
                 {isFetchingNextPage ? 'Loading...' : 'Load More'}
               </button>

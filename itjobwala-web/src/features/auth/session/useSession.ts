@@ -5,7 +5,7 @@ import type { SessionUser } from './auth.types';
 
 export interface UseSessionReturn {
   user: SessionUser | null;
-  role: 'candidate' | 'recruiter' | null;
+  role: 'candidate' | 'recruiter' | 'admin' | null;
   isAuthenticated: boolean;
   isHydrated: boolean;
   isCandidate: boolean;

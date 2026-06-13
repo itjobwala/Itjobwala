@@ -45,7 +45,7 @@ interface Props {
 function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-3">{title}</p>
+      <p className="text-caption font-bold text-subtle uppercase tracking-wider mb-3">{title}</p>
       <div className="flex flex-col gap-2">{children}</div>
     </div>
   );
@@ -64,7 +64,7 @@ function Checkbox({
     <label className="flex items-center gap-2.5 cursor-pointer group" onClick={onChange}>
       <span
         className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
-          checked ? 'bg-primary border-primary' : 'border-gray-300 group-hover:border-primary/50'
+          checked ? 'bg-primary border-primary' : 'border-token group-hover:border-primary/50'
         }`}
       >
         {checked && (
@@ -73,7 +73,7 @@ function Checkbox({
           </svg>
         )}
       </span>
-      <span className={`text-[13px] transition-colors ${checked ? 'text-[#0f172a] font-semibold' : 'text-gray-600 group-hover:text-[#0f172a]'}`}>
+      <span className={`text-sm transition-colors ${checked ? 'text-heading font-semibold' : 'text-body-secondary group-hover:text-heading'}`}>
         {label}
       </span>
     </label>
@@ -114,11 +114,11 @@ export default function JobFilterSidebar({ filters, onChange, onReset, activeCou
     <Card as="aside" overflow>
       {/* Header */}
       <div className="flex items-center justify-between mb-5">
-        <span className="font-bold text-[15px] text-[#0f172a]">Filters</span>
+        <span className="font-bold text-md text-heading">Filters</span>
         {activeCount > 0 && (
           <button
             onClick={onReset}
-            className="text-[12px] font-semibold text-primary hover:underline"
+            className="text-caption font-semibold text-primary hover:underline"
           >
             Reset ({activeCount})
           </button>
@@ -138,7 +138,7 @@ export default function JobFilterSidebar({ filters, onChange, onReset, activeCou
           ))}
         </FilterGroup>
 
-        <div className="h-px bg-gray-100" />
+        <div className="h-px bg-token" />
 
         {/* Work Mode */}
         <FilterGroup title="Work Mode">
@@ -152,7 +152,7 @@ export default function JobFilterSidebar({ filters, onChange, onReset, activeCou
           ))}
         </FilterGroup>
 
-        <div className="h-px bg-gray-100" />
+        <div className="h-px bg-token" />
 
         {/* Experience */}
         <FilterGroup title="Experience">
@@ -166,7 +166,7 @@ export default function JobFilterSidebar({ filters, onChange, onReset, activeCou
           ))}
         </FilterGroup>
 
-        <div className="h-px bg-gray-100" />
+        <div className="h-px bg-token" />
 
         {/* Company Type */}
         <FilterGroup title="Company Type">
@@ -180,7 +180,7 @@ export default function JobFilterSidebar({ filters, onChange, onReset, activeCou
           ))}
         </FilterGroup>
 
-        <div className="h-px bg-gray-100" />
+        <div className="h-px bg-token" />
 
         {/* Salary Range */}
         <FilterGroup title="Salary Range">
@@ -195,7 +195,7 @@ export default function JobFilterSidebar({ filters, onChange, onReset, activeCou
           />
         </FilterGroup>
 
-        <div className="h-px bg-gray-100" />
+        <div className="h-px bg-token" />
 
         {/* Skills */}
         <FilterGroup title="Skills">
@@ -205,15 +205,15 @@ export default function JobFilterSidebar({ filters, onChange, onReset, activeCou
             placeholder="Type to search skills…"
             onChange={e => { setSkillInput(e.target.value); setSkillError(''); }}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkillFromFilter(); } }}
-            className={`w-full px-2.5 py-2 text-[12px] border rounded-lg focus:outline-none ${skillError ? 'border-red-400' : 'border-gray-200 focus:border-primary'}`}
+            className={`w-full px-2.5 py-2 text-caption border rounded-lg focus:outline-none ${skillError ? 'border-danger' : 'border-token focus:border-primary'}`}
           />
-          {skillError && <p className="text-[11px] text-red-500 mt-1">{skillError}</p>}
+          {skillError && <p className="text-micro text-danger mt-1">{skillError}</p>}
           {skillSuggestions.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-1.5">
               {skillSuggestions.map(s => (
                 <button key={s} type="button"
                   onClick={() => addSkillFromFilter(s, true)}
-                  className="px-2 py-1 rounded-md text-[11px] font-semibold bg-gray-100 text-gray-500 hover:bg-primary/10 hover:text-primary transition-colors">
+                  className="px-2 py-1 rounded-md text-micro font-semibold bg-surface-hover text-muted hover:bg-primary/10 hover:text-primary transition-colors">
                   + {s}
                 </button>
               ))}
@@ -224,7 +224,7 @@ export default function JobFilterSidebar({ filters, onChange, onReset, activeCou
               {filters.skills.map((skill) => (
                 <div
                   key={skill}
-                  className="flex items-center gap-1.5 bg-primary/10 border border-primary/20 rounded-full px-2.5 py-1.5 text-[11px] font-semibold text-primary"
+                  className="flex items-center gap-1.5 bg-primary/10 border border-primary/20 rounded-full px-2.5 py-1.5 text-micro font-semibold text-primary"
                 >
                   {skill}
                   <button

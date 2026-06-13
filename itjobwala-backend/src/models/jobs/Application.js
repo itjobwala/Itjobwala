@@ -16,7 +16,7 @@ class Application extends Model {
         job_id: { type: 'integer' },
         user_id: { type: 'integer' },
         resume_url: { type: ['string', 'null'], maxLength: 255 },
-        status: { type: 'string', enum: ['applied', 'shortlisted', 'interview', 'rejected', 'selected', 'withdrawn', 'offer', 'hired'] },
+        status: { type: 'string', enum: ['applied', 'shortlisted', 'interview', 'rejected', 'withdrawn', 'hired'] },
         cover_letter: { type: ['string', 'null'] },
         expected_salary: { type: ['integer', 'null'] },
         notice_period_days: { type: ['integer', 'null'] },
@@ -24,6 +24,11 @@ class Application extends Model {
         timeline: { type: ['array', 'object', 'null'] }
       }
     };
+  }
+
+  // Auto-update updated_at on every patch/update
+  $beforeUpdate() {
+    this.updated_at = new Date().toISOString();
   }
 
   // Relations to User and Job

@@ -15,6 +15,7 @@ import type { JobFilters } from '@/features/jobs/shared';
 import { useToast } from '@/src/hooks/useToast';
 import QueryErrorState from '@/src/components/ui/QueryErrorState';
 import Toast from '@/src/components/ui/Toast';
+import Button from '@/src/components/ui/Button';
 
 const SORT_OPTIONS = [
   { value: 'newest',             label: 'Newest first' },
@@ -178,21 +179,27 @@ export default function JobsPageClient() {
   const total      = pagination?.total ?? 0;
 
   return (
-    <div className="min-h-screen bg-[#f9fafb]">
+    <div className="min-h-screen bg-surface-alt">
       <SmartNavbar />
 
       <div className="pt-[68px]">
         {/* Hero bar */}
-        <div className="bg-white border-b border-gray-100">
-          <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
+        <div className="bg-surface border-b border-token">
+          <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-6">
             <h1
-              className="text-[26px] sm:text-[32px] font-extrabold text-[#0f172a] mb-1"
+              className="text-xl sm:text-2xl font-extrabold text-heading mb-1"
               style={{ letterSpacing: '-0.5px' }}
             >
               Browse IT Jobs
             </h1>
-            <p className="text-[14px] text-gray-500 mb-6">
-              {isLoading ? 'Loading roles…' : `${total} curated roles — updated daily`}
+            <p className="text-base text-muted mb-4">
+              {isLoading ? (
+                'Loading roles…'
+              ) : (
+                <>
+                  <span className="font-semibold text-heading">{total} curated roles</span> · Updated daily
+                </>
+              )}
             </p>
             <JobSearchBar
               search={search}
@@ -209,7 +216,7 @@ export default function JobsPageClient() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setShowFilters(v => !v)}
-                className="lg:hidden flex items-center gap-2 text-[13px] font-semibold text-gray-600 bg-white border border-gray-200 rounded-xl px-4 py-2.5 hover:border-primary/40 transition-colors"
+                className="lg:hidden flex items-center gap-2 text-sm font-semibold text-body-secondary bg-surface border border-token rounded-xl px-4 py-2.5 hover:border-primary/40 transition-colors"
               >
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                   <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
@@ -222,8 +229,8 @@ export default function JobsPageClient() {
                 )}
               </button>
 
-              <p className="text-[14px] text-gray-500">
-                <span className="font-bold text-[#0f172a]">
+              <p className="text-base text-muted">
+                <span className="font-bold text-heading">
                   {isLoading || isError ? '–' : total}
                 </span>{' '}
                 jobs found
@@ -231,12 +238,12 @@ export default function JobsPageClient() {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-[13px] text-gray-400 hidden sm:inline">Sort:</span>
+              <span className="text-sm text-subtle hidden sm:inline">Sort:</span>
               <div className="relative">
                 <select
                   value={sort}
                   onChange={e => { setSort(e.target.value); setPage(1); }}
-                  className="appearance-none text-[13px] font-semibold text-[#0f172a] bg-white border border-gray-200 rounded-xl pl-3.5 pr-8 py-2 outline-none hover:border-primary/40 cursor-pointer transition-colors"
+                  className="appearance-none text-sm font-semibold text-heading bg-surface border border-token rounded-xl pl-3.5 pr-8 py-2 outline-none hover:border-primary/40 cursor-pointer transition-colors"
                 >
                   {SORT_OPTIONS.map(o => (
                     <option key={o.value} value={o.value}>{o.label}</option>
@@ -282,23 +289,25 @@ export default function JobsPageClient() {
               {/* Pagination */}
               {!isLoading && pagination && pagination.total_pages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-8">
-                  <button
+                  <Button
+                    variant="outline"
+                    size="md"
                     disabled={!pagination.has_prev}
                     onClick={() => setPage(p => p - 1)}
-                    className="px-4 py-2 text-[13px] font-semibold rounded-xl border border-gray-200 disabled:opacity-40 hover:border-primary/40 transition-colors"
                   >
                     ← Prev
-                  </button>
-                  <span className="text-[13px] text-gray-500 px-2">
+                  </Button>
+                  <span className="text-sm text-muted px-2">
                     Page {pagination.page} of {pagination.total_pages}
                   </span>
-                  <button
+                  <Button
+                    variant="outline"
+                    size="md"
                     disabled={!pagination.has_next}
                     onClick={() => setPage(p => p + 1)}
-                    className="px-4 py-2 text-[13px] font-semibold rounded-xl border border-gray-200 disabled:opacity-40 hover:border-primary/40 transition-colors"
                   >
                     Next →
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>

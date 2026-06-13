@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { formatDateForInput } from '../utils/profileDate';
 
 export interface EditableCertificate {
@@ -24,21 +24,60 @@ interface Props {
   onDelete?: (id: string | number) => void;
 }
 
+/* ── Constraints ──────────────────────────────────────────────── */
+const MAX = { name: 150, issuer: 100 } as const;
+
+function validateCertField(key: string, value: string, cert?: EditableCertification): string {
+  switch (key) {
+    case 'name': {
+      const v = value?.trim() ?? '';
+      if (!v) return 'Certification name is required.';
+      if (!/[a-zA-Z]/.test(v)) return 'Name must contain letters (e.g. AWS Certified Solutions Architect).';
+      if (v.length > MAX.name) return `Max ${MAX.name} characters.`;
+      return '';
+    }
+    case 'issuer': {
+      const v = value?.trim() ?? '';
+      if (!v) return 'Issuing organization is required.';
+      if (!/[a-zA-Z]/.test(v)) return 'Must contain letters (e.g. Amazon Web Services).';
+      if (v.length > MAX.issuer) return `Max ${MAX.issuer} characters.`;
+      return '';
+    }
+    case 'issue_date': {
+      if (!value) return 'Issue date is required.';
+      if (new Date(value) > new Date()) return 'Issue date cannot be in the future.';
+      return '';
+    }
+    default:
+      return '';
+  }
+}
+
 function emptyCertification(): EditableCertification {
   return { id: `cert-${Date.now()}`, name: '', issuer: '', issue_date: '' };
 }
 
-function TextField({ label, value, onChange, type = 'text', placeholder = '' }: { label: string; value: string; onChange: (value: string) => void; type?: string; placeholder?: string }) {
+function TextField({ label, value, onChange, onBlur, type = 'text', placeholder = '', required, error, maxLength, max }: {
+  label: string; value: string; onChange: (value: string) => void; onBlur?: () => void;
+  type?: string; placeholder?: string; required?: boolean; error?: string; maxLength?: number; max?: string;
+}) {
   return (
     <label className="block">
-      <span className="block text-[12px] font-bold text-gray-500 mb-1.5">{label}</span>
+      <span className="block text-caption font-bold text-muted mb-1.5">
+        {label}{required && <span className="text-danger ml-0.5">*</span>}
+      </span>
       <input
         type={type}
         value={value}
         onChange={e => onChange(e.target.value)}
+        onBlur={onBlur}
         placeholder={placeholder}
-        className="w-full rounded-xl border border-gray-200 bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none transition-colors focus:border-primary/50 placeholder:text-gray-400"
+        maxLength={maxLength}
+        max={max}
+        aria-invalid={!!error}
+        className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors focus:border-primary/50 placeholder:text-subtle ${error ? 'border-danger focus:border-danger' : 'border-token'}`}
       />
+      {error && <p className="mt-1 text-micro font-semibold text-danger">{error}</p>}
     </label>
   );
 }
@@ -54,7 +93,7 @@ export default function EditCertificationSection({ certifications, onChange, onD
         <button
           type="button"
           onClick={() => onChange([...certifications, emptyCertification()])}
-          className="flex items-center gap-1.5 text-[12px] font-semibold text-gray-400 hover:text-primary transition-colors"
+          className="flex items-center gap-1.5 text-caption font-semibold text-subtle hover:text-primary transition-colors"
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <circle cx="12" cy="12" r="10" /><path d="M12 8v8M8 12h8" />
@@ -87,6 +126,24 @@ function CertificationCard({
   onRemove: () => void;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [errors, setErrors]   = useState<Record<string, string>>({});
+  const [touched, setTouched] = useState<Set<string>>(new Set());
+
+  function handleChange(key: keyof EditableCertification, value: string) {
+    onUpdate({ [key]: value });
+    if (touched.has(key)) {
+      const msg = validateCertField(key, value, { ...cert, [key]: value });
+      setErrors(prev => msg ? { ...prev, [key]: msg } : (({ [key]: _, ...rest }) => rest)(prev));
+    } else if (errors[key]) {
+      setErrors(prev => (({ [key]: _, ...rest }) => rest)(prev));
+    }
+  }
+
+  function handleBlur(key: string) {
+    setTouched(prev => new Set(prev).add(key));
+    const msg = validateCertField(key, String((cert as any)[key] ?? ''), cert);
+    setErrors(prev => msg ? { ...prev, [key]: msg } : (({ [key]: _, ...rest }) => rest)(prev));
+  }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -96,37 +153,51 @@ function CertificationCard({
   };
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-gray-50 p-4 hover:border-primary/20 transition-colors">
+    <div className="rounded-2xl border border-token bg-surface-alt p-4 hover:border-primary/20 transition-colors">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
         <TextField
           label="Certification name"
           value={cert.name || ''}
-          onChange={value => onUpdate({ name: value })}
+          onChange={value => handleChange('name', value)}
+          onBlur={() => handleBlur('name')}
           placeholder="e.g. AWS Certified Solutions Architect"
+          maxLength={MAX.name}
+          required
+          error={errors.name}
         />
         <TextField
           label="Issuing organization"
           value={cert.issuer || ''}
-          onChange={value => onUpdate({ issuer: value })}
+          onChange={value => handleChange('issuer', value)}
+          onBlur={() => handleBlur('issuer')}
           placeholder="e.g. Amazon Web Services"
+          maxLength={MAX.issuer}
+          required
+          error={errors.issuer}
         />
-        <TextField
-          label="Issue date"
-          value={formatDateForInput(cert.issue_date)}
-          onChange={value => onUpdate({ issue_date: value })}
-          type="date"
-        />
+        <div>
+          <TextField
+            label="Issue date"
+            value={formatDateForInput(cert.issue_date)}
+            onChange={value => handleChange('issue_date', value)}
+            onBlur={() => handleBlur('issue_date')}
+            type="date"
+            max={new Date().toISOString().split('T')[0]}
+            required
+            error={errors.issue_date}
+          />
+        </div>
       </div>
 
       <div className="mt-4">
         <label className="block">
-          <span className="block text-[12px] font-bold text-gray-500 mb-1.5">
-            Certificate file <span className="text-red-500">*</span>
+          <span className="block text-caption font-bold text-muted mb-1.5">
+            Certificate file <span className="text-danger">*</span>
           </span>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="w-full rounded-xl border-2 border-dashed border-gray-200 bg-white px-3.5 py-2.5 text-[13px] font-medium text-gray-600 hover:border-primary/40 hover:text-primary transition-colors"
+            className="w-full rounded-xl border-2 border-dashed border-token bg-surface px-3.5 py-2.5 text-sm font-medium text-body-secondary hover:border-primary/40 hover:text-primary transition-colors"
           >
             {cert.selectedFile ? (
               <div className="flex items-center gap-2 justify-center">
@@ -169,7 +240,7 @@ function CertificationCard({
         <button
           type="button"
           onClick={onRemove}
-          className="text-[12px] font-semibold text-red-500 hover:text-red-600 transition-colors"
+          className="text-caption font-semibold text-danger hover:text-danger transition-colors"
         >
           Remove certification
         </button>

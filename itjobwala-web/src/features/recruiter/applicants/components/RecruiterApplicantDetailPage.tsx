@@ -3,20 +3,25 @@
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useState } from 'react';
+import Button from '@/src/components/ui/Button';
 import { useToast } from '@/src/hooks/useToast';
 import Toast from '@/src/components/ui/Toast';
 import StatusBadge from '@/src/components/ui/StatusBadge';
 import Avatar from '@/src/components/ui/Avatar';
 import PageHeader from '@/src/components/ui/PageHeader';
 import Card from '@/src/components/ui/Card';
+import ConfirmationDialog from '@/src/components/common/ConfirmationDialog';
 import {
   useRecruiterApplicantDetailQuery,
   useShortlistApplicantMutation,
   useRejectApplicantMutation,
   useHireApplicantMutation,
   useUpdateApplicantStatusMutation,
+  useCancelInterviewMutation,
 } from '@/features/recruiter/hooks';
 import { useGetOrCreateConversationMutation } from '@/features/chat';
+import RecruiterIntelligencePanel from './RecruiterIntelligencePanel';
+import ScheduleInterviewModal from '@/features/recruiter/interviews/components/ScheduleInterviewModal';
 
 
 function formatDate(dateStr: string | null | undefined): string {
@@ -34,6 +39,9 @@ interface Props {
 export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
   const router = useRouter();
   const [actionLoading, setActionLoading] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const { toast, show: showToast } = useToast();
 
   const { data: applicant, isLoading, error } = useRecruiterApplicantDetailQuery(applicantId, true);
@@ -42,6 +50,7 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
   const rejectMutation     = useRejectApplicantMutation();
   const hireMutation       = useHireApplicantMutation();
   const statusMutation     = useUpdateApplicantStatusMutation();
+  const cancelMutation     = useCancelInterviewMutation();
   const messageMutation    = useGetOrCreateConversationMutation();
 
   function showSuccess(msg: string) { showToast(msg, 'success'); }
@@ -59,15 +68,29 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
     }
   }
 
-  async function handleInterview() {
+  async function handleMoveToInterview() {
     setActionLoading(true);
     try {
       await statusMutation.mutateAsync({ applicantId, data: { status: 'interview' } });
       showSuccess('Moved to interview stage');
     } catch (e) {
-      showError(e instanceof Error ? e.message : 'Failed to schedule interview');
+      showError(e instanceof Error ? e.message : 'Failed to update status');
     } finally {
       setActionLoading(false);
+    }
+  }
+
+  async function handleConfirmCancelInterview() {
+    if (!applicant?.interview?.id) return;
+    setCancelling(true);
+    try {
+      await cancelMutation.mutateAsync(applicant.interview.id);
+      showSuccess('Interview cancelled');
+    } catch (e) {
+      showError(e instanceof Error ? e.message : 'Failed to cancel interview');
+    } finally {
+      setCancelling(false);
+      setCancelConfirmOpen(false);
     }
   }
 
@@ -111,8 +134,8 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
   if (isLoading) {
     return (
       <div className="max-w-[860px] mx-auto px-5 sm:px-8 py-12 text-center">
-        <div className="w-8 h-8 border-4 border-gray-200 border-t-primary rounded-full animate-spin mx-auto" />
-        <p className="mt-4 text-gray-500">Loading applicant details...</p>
+        <div className="w-8 h-8 border-4 border-token border-t-primary rounded-full animate-spin mx-auto" />
+        <p className="mt-4 text-muted">Loading applicant details...</p>
       </div>
     );
   }
@@ -120,17 +143,17 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
   if (error || !applicant) {
     return (
       <div className="max-w-[860px] mx-auto px-5 sm:px-8 py-8">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600">
+        <div className="bg-danger-bg border border-danger rounded-xl p-4 text-danger">
           {error instanceof Error ? error.message : 'Applicant not found'}
         </div>
-        <button onClick={() => router.back()} className="mt-4 text-primary font-semibold hover:underline text-[13px]">
+        <button onClick={() => router.back()} className="mt-4 text-primary font-semibold hover:underline text-sm">
           ← Back to Applicants
         </button>
       </div>
     );
   }
 
-  const finalStatuses = new Set(['hired', 'rejected', 'withdrawn', 'selected']);
+  const finalStatuses = new Set(['hired', 'rejected', 'withdrawn']);
   const isFinal = finalStatuses.has(applicant.status);
 
   return (
@@ -145,14 +168,14 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
           <div className="flex-1 min-w-0">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div>
-                <h1 className="text-[22px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.4px' }}>
+                <h1 className="text-3xl font-extrabold text-heading" style={{ letterSpacing: '-0.4px' }}>
                   {applicant.candidateName}
                 </h1>
                 {applicant.profile?.title && (
-                  <p className="text-[13px] text-gray-500 mt-0.5">{applicant.profile.title}</p>
+                  <p className="text-sm text-muted mt-0.5">{applicant.profile.title}</p>
                 )}
                 {applicant.profile?.location && (
-                  <p className="text-[12px] text-gray-400 mt-0.5 flex items-center gap-1">
+                  <p className="text-caption text-subtle mt-0.5 flex items-center gap-1">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                       <circle cx="12" cy="10" r="3" />
@@ -165,7 +188,7 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
             </div>
 
             {/* Contact row */}
-            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-[12px] text-gray-500">
+            <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-caption text-muted">
               <span className="flex items-center gap-1.5">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
@@ -235,8 +258,8 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
           {/* About */}
           {applicant.profile?.about && (
             <Card padding="lg" overflow>
-              <h2 className="text-[14px] font-bold text-[#0f172a] mb-3">About</h2>
-              <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">
+              <h2 className="text-base font-bold text-heading mb-3">About</h2>
+              <p className="text-sm text-body leading-relaxed whitespace-pre-wrap">
                 {applicant.profile.about}
               </p>
             </Card>
@@ -245,8 +268,8 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
           {/* Cover letter */}
           {applicant.coverLetter && (
             <Card padding="lg" overflow>
-              <h2 className="text-[14px] font-bold text-[#0f172a] mb-3">Cover Letter</h2>
-              <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-wrap">
+              <h2 className="text-base font-bold text-heading mb-3">Cover Letter</h2>
+              <p className="text-sm text-body leading-relaxed whitespace-pre-wrap">
                 {applicant.coverLetter}
               </p>
             </Card>
@@ -255,16 +278,22 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
           {/* Skills */}
           {applicant.skills && applicant.skills.length > 0 && (
             <Card padding="lg" overflow>
-              <h2 className="text-[14px] font-bold text-[#0f172a] mb-3">Skills</h2>
+              <h2 className="text-base font-bold text-heading mb-3">Skills</h2>
               <div className="flex flex-wrap gap-2">
                 {applicant.skills.map((skill) => (
-                  <span key={skill} className="px-3 py-1 bg-gray-100 text-gray-700 text-[12px] font-medium rounded-lg">
+                  <span key={skill} className="px-3 py-1 bg-surface-hover text-body text-caption font-medium rounded-lg">
                     {skill}
                   </span>
                 ))}
               </div>
             </Card>
           )}
+
+          {/* Phase 8: ATS Intelligence Panel */}
+          <RecruiterIntelligencePanel
+            applicantId={applicantId}
+            jobId={applicant.jobId}
+          />
         </div>
 
         {/* Right column: meta + actions */}
@@ -272,31 +301,31 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
 
           {/* Application info */}
           <Card overflow>
-            <h2 className="text-[13px] font-bold text-[#0f172a] mb-4">Application Info</h2>
+            <h2 className="text-sm font-bold text-heading mb-4">Application Info</h2>
             <div className="space-y-3">
               <div>
-                <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wide mb-0.5">Applied For</p>
+                <p className="text-micro text-subtle font-medium uppercase tracking-wide mb-0.5">Applied For</p>
                 <Link
                   href={`/recruiter/posted-jobs/${applicant.jobId}`}
-                  className="text-[13px] font-semibold text-primary hover:underline"
+                  className="text-sm font-semibold text-primary hover:underline"
                 >
                   {applicant.jobTitle}
                 </Link>
               </div>
               <div>
-                <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wide mb-0.5">Applied On</p>
-                <p className="text-[13px] text-gray-700">{formatDate(applicant.appliedDate)}</p>
+                <p className="text-micro text-subtle font-medium uppercase tracking-wide mb-0.5">Applied On</p>
+                <p className="text-sm text-body">{formatDate(applicant.appliedDate)}</p>
               </div>
               {(applicant.experience ?? 0) > 0 && (
                 <div>
-                  <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wide mb-0.5">Experience</p>
-                  <p className="text-[13px] text-gray-700">
+                  <p className="text-micro text-subtle font-medium uppercase tracking-wide mb-0.5">Experience</p>
+                  <p className="text-sm text-body">
                     {applicant.experience} yr{applicant.experience !== 1 ? 's' : ''}
                   </p>
                 </div>
               )}
               <div>
-                <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wide mb-0.5">Status</p>
+                <p className="text-micro text-subtle font-medium uppercase tracking-wide mb-0.5">Status</p>
                 <StatusBadge status={applicant.status} />
               </div>
             </div>
@@ -304,55 +333,76 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
 
           {/* Message */}
           <Card overflow>
-            <h2 className="text-[13px] font-bold text-[#0f172a] mb-3">Contact</h2>
-            <button
-              onClick={handleMessage}
+            <h2 className="text-sm font-bold text-heading mb-3">Contact</h2>
+            <Button
+              variant="primary"
+              fullWidth
+              rounded="xl"
               disabled={messageMutation.isPending}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-[13px] font-semibold bg-primary text-white rounded-xl hover:bg-primary/90 disabled:opacity-50 transition-colors"
+              loading={messageMutation.isPending}
+              leftIcon={
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+              }
+              onClick={handleMessage}
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-              </svg>
-              {messageMutation.isPending ? 'Opening…' : 'Message Candidate'}
-            </button>
+              Message Candidate
+            </Button>
           </Card>
 
           {/* Actions */}
           {!isFinal && (
             <Card overflow>
-              <h2 className="text-[13px] font-bold text-[#0f172a] mb-4">Actions</h2>
+              <h2 className="text-sm font-bold text-heading mb-4">Actions</h2>
               <div className="flex flex-col gap-2">
                 {applicant.status === 'applied' && (
                   <button
                     onClick={handleShortlist}
                     disabled={actionLoading}
-                    className="w-full px-4 py-2.5 text-[13px] font-semibold bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 transition-colors"
+                    className="w-full px-4 py-2.5 text-sm font-semibold bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 transition-colors"
                   >
                     {actionLoading ? 'Loading…' : 'Shortlist'}
                   </button>
                 )}
                 {applicant.status === 'shortlisted' && (
                   <button
-                    onClick={handleInterview}
+                    onClick={handleMoveToInterview}
                     disabled={actionLoading}
-                    className="w-full px-4 py-2.5 text-[13px] font-semibold bg-amber-500 text-white rounded-xl hover:bg-amber-600 disabled:opacity-50 transition-colors"
+                    className="w-full px-4 py-2.5 text-sm font-semibold bg-amber-500 text-white rounded-xl hover:bg-amber-600 disabled:opacity-50 transition-colors"
                   >
-                    {actionLoading ? 'Loading…' : 'Schedule Interview'}
+                    {actionLoading ? 'Loading…' : 'Move to Interview Stage'}
                   </button>
                 )}
                 {applicant.status === 'interview' && (
-                  <button
-                    onClick={handleHire}
-                    disabled={actionLoading}
-                    className="w-full px-4 py-2.5 text-[13px] font-semibold bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50 transition-colors"
-                  >
-                    {actionLoading ? 'Loading…' : 'Hire'}
-                  </button>
+                  <>
+                    <button
+                      onClick={() => setScheduleOpen(true)}
+                      className="w-full px-4 py-2.5 text-sm font-semibold bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+                    >
+                      {applicant.interview?.scheduled_at ? 'Reschedule Interview' : 'Schedule Interview'}
+                    </button>
+                    {applicant.interview?.id && (
+                      <button
+                        onClick={() => setCancelConfirmOpen(true)}
+                        className="w-full px-4 py-2.5 text-sm font-semibold bg-surface text-orange-600 border border-orange-200 rounded-xl hover:bg-orange-50 transition-colors"
+                      >
+                        Cancel Interview
+                      </button>
+                    )}
+                    <button
+                      onClick={handleHire}
+                      disabled={actionLoading}
+                      className="w-full px-4 py-2.5 text-sm font-semibold bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50 transition-colors"
+                    >
+                      {actionLoading ? 'Loading…' : 'Hire'}
+                    </button>
+                  </>
                 )}
                 <button
                   onClick={handleReject}
                   disabled={actionLoading}
-                  className="w-full px-4 py-2.5 text-[13px] font-semibold bg-white text-red-600 border border-red-200 rounded-xl hover:bg-red-50 disabled:opacity-50 transition-colors"
+                  className="w-full px-4 py-2.5 text-sm font-semibold bg-surface text-danger border border-danger rounded-xl hover:bg-danger-bg disabled:opacity-50 transition-colors"
                 >
                   {actionLoading ? 'Loading…' : 'Reject'}
                 </button>
@@ -363,6 +413,37 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
       </div>
 
       <Toast message={toast.message} variant={toast.variant} visible={toast.visible} />
+
+      {scheduleOpen && applicant && (
+        <ScheduleInterviewModal
+          applicationId={applicantId}
+          candidateName={applicant.candidateName}
+          jobTitle={applicant.jobTitle}
+          initialValues={applicant.interview ? {
+            interviewType:   applicant.interview.type,
+            scheduledAt:     applicant.interview.scheduled_at,
+            durationMinutes: applicant.interview.duration_minutes,
+            meetingLink:     applicant.interview.meeting_link,
+            location:        applicant.interview.location,
+            notes:           applicant.interview.notes,
+          } : null}
+          onClose={() => setScheduleOpen(false)}
+          onSuccess={msg => { showSuccess(msg); setScheduleOpen(false); }}
+          onError={msg => showError(msg)}
+        />
+      )}
+
+      <ConfirmationDialog
+        isOpen={cancelConfirmOpen}
+        title="Cancel Interview"
+        message="Cancel this scheduled interview? The candidate will be notified by email."
+        confirmText="Cancel Interview"
+        cancelText="Keep It"
+        isDangerous
+        isLoading={cancelling}
+        onConfirm={handleConfirmCancelInterview}
+        onCancel={() => setCancelConfirmOpen(false)}
+      />
     </div>
   );
 }

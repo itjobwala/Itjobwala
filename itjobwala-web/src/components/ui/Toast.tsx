@@ -59,7 +59,7 @@ export default function Toast({ message, variant = 'success', visible, onDismiss
         visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
       )}
     >
-      <div className={cn('flex items-center gap-3 text-white text-[13px] font-semibold rounded-2xl px-5 py-3.5 shadow-2xl', OUTER_BG[variant])}>
+      <div className={cn('flex items-center gap-3 text-white text-sm font-semibold rounded-2xl px-5 py-3.5 shadow-2xl', OUTER_BG[variant])}>
         <span className={cn('w-5 h-5 rounded-full flex items-center justify-center shrink-0', ICON_WRAP[variant])}>
           {ICONS[variant]}
         </span>

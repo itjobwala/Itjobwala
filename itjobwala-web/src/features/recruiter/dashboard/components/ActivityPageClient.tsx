@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { RecruiterShell } from '@/layout/shell';
 import Card from '@/src/components/ui/Card';
+import Button from '@/src/components/ui/Button';
 import {
   useRecruiterNotificationsPagedQuery,
   useMarkNotificationReadMutation,
@@ -92,10 +93,10 @@ function relativeTime(iso: string): string {
 function SkeletonRow() {
   return (
     <div className="flex gap-4 px-5 py-4 animate-pulse">
-      <div className="w-9 h-9 rounded-xl bg-gray-100 shrink-0" />
+      <div className="w-9 h-9 rounded-xl bg-surface-hover shrink-0" />
       <div className="flex-1 space-y-2 py-0.5">
-        <div className="h-3 bg-gray-100 rounded w-3/4" />
-        <div className="h-2.5 bg-gray-50 rounded w-1/4" />
+        <div className="h-3 bg-surface-hover rounded w-3/4" />
+        <div className="h-2.5 bg-surface-alt rounded w-1/4" />
       </div>
     </div>
   );
@@ -114,7 +115,7 @@ function NotificationRow({
     <div
       className={`flex gap-4 px-5 py-4 border-b border-gray-50 last:border-0 transition-colors group ${
         !item.is_read ? 'bg-primary/[0.02]' : ''
-      } hover:bg-gray-50`}
+      } hover:bg-surface-alt`}
       onClick={() => !item.is_read && onMarkRead(item.id)}
     >
       <div className={`w-9 h-9 rounded-xl ${cfg.dotColor} flex items-center justify-center text-white shrink-0 mt-0.5`}>
@@ -122,7 +123,7 @@ function NotificationRow({
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-3">
-          <p className={`text-[13px] font-semibold leading-snug ${!item.is_read ? 'text-[#0f172a]' : 'text-gray-500'} group-hover:text-primary transition-colors`}>
+          <p className={`text-sm font-semibold leading-snug ${!item.is_read ? 'text-heading' : 'text-muted'} group-hover:text-primary transition-colors`}>
             {item.message}
           </p>
           {!item.is_read && (
@@ -130,10 +131,10 @@ function NotificationRow({
           )}
         </div>
         <div className="flex items-center gap-2 mt-1">
-          <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-md ${cfg.dotColor} text-white opacity-80`}>
+          <span className={`text-micro font-semibold px-1.5 py-0.5 rounded-md ${cfg.dotColor} text-white opacity-80`}>
             {cfg.label}
           </span>
-          <span className="text-[11px] text-gray-400 font-medium">{relativeTime(item.created_at)}</span>
+          <span className="text-micro text-subtle font-medium">{relativeTime(item.created_at)}</span>
         </div>
       </div>
     </div>
@@ -166,7 +167,7 @@ export default function ActivityPageClient() {
 
   return (
     <RecruiterShell>
-      <div className="max-w-[860px] mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-5">
+      <div className="max-w-[860px] mx-auto px-5 sm:px-8 py-8 space-y-5">
 
         {/* Header */}
         <div className="flex items-center justify-between gap-4">
@@ -174,33 +175,35 @@ export default function ActivityPageClient() {
             <div className="flex items-center gap-2.5">
               <Link
                 href="/recruiter/dashboard"
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-subtle hover:text-muted transition-colors"
                 aria-label="Back to dashboard"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M19 12H5M12 19l-7-7 7-7" />
                 </svg>
               </Link>
-              <h1 className="text-[20px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.4px' }}>
+              <h1 className="text-2xl font-extrabold text-heading" style={{ letterSpacing: '-0.4px' }}>
                 Activity Feed
               </h1>
               {unreadCount > 0 && (
-                <span className="text-[11px] font-bold text-white bg-primary rounded-full px-2 py-0.5">
+                <span className="text-micro font-bold text-white bg-primary rounded-full px-2 py-0.5">
                   {unreadCount} unread
                 </span>
               )}
             </div>
-            <p className="text-[13px] text-gray-400 mt-0.5 ml-7">Your complete recruiting activity history</p>
+            <p className="text-sm text-subtle mt-0.5 ml-7">Your complete recruiting activity history</p>
           </div>
 
           {unreadCount > 0 && (
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
+              loading={markAllMutation.isPending}
               onClick={() => markAllMutation.mutate()}
-              disabled={markAllMutation.isPending}
-              className="text-[12px] font-bold text-primary hover:text-primary/80 disabled:opacity-50 transition-colors shrink-0"
+              className="shrink-0"
             >
-              {markAllMutation.isPending ? 'Marking...' : 'Mark all as read'}
-            </button>
+              Mark all as read
+            </Button>
           )}
         </div>
 
@@ -210,10 +213,10 @@ export default function ActivityPageClient() {
             <button
               key={type}
               onClick={() => { setFilter(type); setPage(1); }}
-              className={`text-[12px] font-semibold px-3 py-1.5 rounded-lg transition-colors capitalize ${
+              className={`text-caption font-semibold px-3 py-1.5 rounded-lg transition-colors capitalize ${
                 filter === type
                   ? 'bg-primary text-white'
-                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  : 'bg-surface-hover text-muted hover:bg-surface-mid'
               }`}
             >
               {type === 'all' ? 'All' : (TYPE_CONFIG[type]?.label ?? type)}
@@ -233,8 +236,8 @@ export default function ActivityPageClient() {
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
-              <p className="text-[14px] font-semibold text-gray-400">No activity found</p>
-              <p className="text-[12px] text-gray-300 mt-1">
+              <p className="text-base font-semibold text-subtle">No activity found</p>
+              <p className="text-caption text-gray-300 mt-1">
                 {filter === 'all' ? 'Your activity will appear here as you recruit.' : `No ${TYPE_CONFIG[filter]?.label ?? filter} activity yet.`}
               </p>
             </div>
@@ -254,21 +257,21 @@ export default function ActivityPageClient() {
         {/* Pagination */}
         {pagination && pagination.total_pages > 1 && (
           <div className="flex items-center justify-between pt-1">
-            <p className="text-[12px] text-gray-400">
+            <p className="text-caption text-subtle">
               Page {pagination.page} of {pagination.total_pages} &middot; {pagination.total} total
             </p>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setPage(p => p - 1)}
                 disabled={!pagination.has_prev}
-                className="text-[12px] font-semibold px-3 py-1.5 rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="text-caption font-semibold px-3 py-1.5 rounded-lg bg-surface-hover text-muted hover:bg-surface-mid disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 ← Previous
               </button>
               <button
                 onClick={() => setPage(p => p + 1)}
                 disabled={!pagination.has_next}
-                className="text-[12px] font-semibold px-3 py-1.5 rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="text-caption font-semibold px-3 py-1.5 rounded-lg bg-surface-hover text-muted hover:bg-surface-mid disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 Next →
               </button>

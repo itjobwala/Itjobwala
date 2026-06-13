@@ -29,8 +29,8 @@ import EditCertificationSection from './EditCertificationSection';
 import EditCareerProfileSection from './EditCareerProfileSection';
 import EditPersonalDetailsSection from './EditPersonalDetailsSection';
 import ResumeUploadModal from './ResumeUploadModal';
-import { ResumeInsightsDashboard } from '@/features/resume';
 import ProfileCompletionCard from './ProfileCompletionCard';
+import Link from 'next/link';
 import ProfilePhotoUploadModal from './ProfilePhotoUploadModal';
 import CoverUploadModal from './CoverUploadModal';
 import {
@@ -129,15 +129,15 @@ export default function ProfilePageClient() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-[#f9fafb]">
+      <div className="min-h-screen bg-surface-alt">
         <SmartNavbar />
 
         <div className="pt-[68px]">
-          <div className="bg-white border-b border-gray-100">
+          <div className="bg-surface border-b border-token">
             <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-5 flex items-center justify-between">
               <div>
-                <h1 className="text-[18px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.3px' }}>My Profile</h1>
-                <p className="text-[13px] text-gray-400 mt-0.5">Manage your profile and track job activity</p>
+                <h1 className="text-xl font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>My Profile</h1>
+                <p className="text-sm text-subtle mt-0.5">Manage your profile and track job activity</p>
               </div>
             </div>
           </div>
@@ -170,18 +170,18 @@ export default function ProfilePageClient() {
                     />
                   ) : (
                     <Card padding="none" className="p-6 sm:p-8" overflow>
-                      <h2 className="text-[16px] font-extrabold text-[#0f172a] mb-4" style={{ letterSpacing: '-0.3px' }}>Resume</h2>
+                      <h2 className="text-lg font-extrabold text-heading mb-4" style={{ letterSpacing: '-0.3px' }}>Resume</h2>
                       <button
                         onClick={() => openEditModal('resume-upload')}
-                        className="w-full flex flex-col items-center justify-center py-8 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 hover:border-primary/40 hover:text-primary transition-colors"
+                        className="w-full flex flex-col items-center justify-center py-8 border-2 border-dashed border-token rounded-xl text-subtle hover:border-primary/40 hover:text-primary transition-colors"
                       >
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mb-2">
                           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                           <polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
                         </svg>
-                        <span className="text-[13px] font-semibold">Upload your resume</span>
+                        <span className="text-sm font-semibold">Upload your resume</span>
                       </button>
-                      <p className="text-[12px] text-gray-400 mt-3 text-center">Accepted formats: PDF, DOC, DOCX • Max 5 MB</p>
+                      <p className="text-caption text-subtle mt-3 text-center">Accepted formats: PDF, DOC, DOCX • Max 5 MB</p>
                     </Card>
                   )}
 
@@ -218,7 +218,31 @@ export default function ProfilePageClient() {
                 {/* Right sidebar */}
                 <div className="flex flex-col gap-5 lg:sticky lg:top-24">
                   <ProfileCompletionCard />
-                  <ResumeInsightsDashboard resumeUrl={profile.resume?.url ?? null} />
+                  {/* Resume Intelligence banner — intentional dark violet */}
+                  <Link
+                    href="/candidate/resume"
+                    className="flex items-center justify-between rounded-2xl px-4 py-3.5 transition-all hover:opacity-90 active:scale-[0.98]"
+                    style={{
+                      background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
+                      border: '1px solid rgba(139,92,246,0.25)',
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(139,92,246,0.2)' }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.2">
+                          <circle cx="12" cy="12" r="10"/>
+                          <path d="M12 8v4l3 3"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-white leading-tight">Resume Intelligence</p>
+                        <p className="text-micro text-violet-300 mt-0.5">ATS score · trajectory · risk analysis</p>
+                      </div>
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5">
+                      <polyline points="9 18 15 12 9 6"/>
+                    </svg>
+                  </Link>
                   <RecruiterVisibilityCard />
                   <AppliedJobsCard jobs={applications} />
                   <SavedJobsCard

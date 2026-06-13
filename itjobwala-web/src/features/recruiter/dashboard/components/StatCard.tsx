@@ -27,10 +27,10 @@ export default function StatCard({ label, value, trend, trendUp, icon, iconBg, i
           </span>
         )}
       </div>
-      <p className="text-[28px] font-extrabold text-[#0f172a] leading-none" style={{ letterSpacing: '-1px' }}>
+      <p className="text-4xl font-extrabold text-heading leading-none" style={{ letterSpacing: '-1px' }}>
         {value}
       </p>
-      <p className="text-[13px] text-gray-500 mt-1.5 font-medium">{label}</p>
+      <p className="text-sm text-muted mt-1.5 font-medium">{label}</p>
     </Card>
   );
 }

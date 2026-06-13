@@ -3,6 +3,10 @@ import Activity from '../../models/recruiter/Activity.js';
 import Application from '../../models/jobs/Application.js';
 import Recruiter from '../../models/recruiter/Recruiter.js';
 import { incrementSkillUsage } from '../common/skillController.js';
+import { checkJobContent } from '../../services/moderation/contentSafety.js';
+import { notifyRecruiter } from '../../utils/notifyHelper.js';
+import { sendJobModerationEmail } from '../../services/email/mailer.service.js';
+import { sanitizeText } from '../../utils/sanitize.js';
 
 export const getJobs = async (request, reply) => {
   try {
@@ -57,8 +61,11 @@ export const getJobs = async (request, reply) => {
         requiredSkills: Array.isArray(job.skills) ? job.skills : [],
         experienceLevel: `${job.experience_min || 0}-${job.experience_max || '5+'} years`,
         applicationCount: appCount,
-        postedDate: job.status === 'active' ? job.created_at : null,
-        status: job.status,
+        postedDate:       job.status === 'active' ? job.created_at : null,
+        status:           job.status,
+        moderationReason: job.moderation_reason || null,
+        autoFlags:        Array.isArray(job.auto_flags) ? job.auto_flags : [],
+        submittedAt:      job.submitted_at || null,
         companyId: `company_${job.recruiter_id}`,
         createdAt: job.created_at,
         updatedAt: job.updated_at
@@ -127,7 +134,10 @@ export const getJobById = async (request, reply) => {
         jobLevel: job.job_level || null,
         applicationCount: appCount,
         postedDate: job.status === 'active' ? job.created_at : null,
-        status: job.status,
+        status:           job.status,
+        moderationReason: job.moderation_reason || null,
+        autoFlags:        Array.isArray(job.auto_flags) ? job.auto_flags : [],
+        submittedAt:      job.submitted_at || null,
         companyId: `company_${job.recruiter_id}`,
         createdAt: job.created_at,
         updatedAt: job.updated_at
@@ -190,11 +200,11 @@ export const postJob = async (request, reply) => {
     const companyName = recruiter?.company_name ?? 'Unknown Company';
 
     const newJob = await Job.query().insert({
-      title,
+      title: sanitizeText(title),
       company_name: companyName,
-      description: description || '',
-      about_role: description || '',
-      location,
+      description: sanitizeText(description || ''),
+      about_role: sanitizeText(description || ''),
+      location: sanitizeText(location),
       job_type: jobType?.toLowerCase(),
       work_mode: workMode,
       salary_min: salaryMin,
@@ -294,8 +304,10 @@ export const updateJob = async (request, reply) => {
         details.closesAt = 'Application deadline must be a future date';
       }
     }
-    if (updateData.status != null && !['active', 'closed', 'draft'].includes(updateData.status)) {
-      details.status = 'Invalid status value';
+    // Recruiters may not directly set status to 'active' — use /submit endpoint instead.
+    // 'pending' and 'needs_changes' are system-only statuses.
+    if (updateData.status != null && !['closed', 'draft'].includes(updateData.status)) {
+      details.status = "Use the 'Submit for review' action to publish a job. Allowed direct values: closed, draft.";
     }
 
     if (Object.keys(details).length > 0) {
@@ -323,9 +335,9 @@ export const updateJob = async (request, reply) => {
     }
 
     const mappedUpdate = {};
-    if (updateData.title != null)       mappedUpdate.title = updateData.title.trim();
-    if (updateData.description != null) { mappedUpdate.description = updateData.description.trim(); mappedUpdate.about_role = updateData.description.trim(); }
-    if (updateData.location != null)    mappedUpdate.location = updateData.location.trim();
+    if (updateData.title != null)       mappedUpdate.title = sanitizeText(updateData.title.trim());
+    if (updateData.description != null) { mappedUpdate.description = sanitizeText(updateData.description.trim()); mappedUpdate.about_role = sanitizeText(updateData.description.trim()); }
+    if (updateData.location != null)    mappedUpdate.location = sanitizeText(updateData.location.trim());
     if (updateData.jobType != null)     mappedUpdate.job_type = updateData.jobType?.toLowerCase();
     if (updateData.workMode != null)    mappedUpdate.work_mode = updateData.workMode;
     if (updateData.salaryMin != null)   mappedUpdate.salary_min = Number(updateData.salaryMin) || null;
@@ -382,8 +394,11 @@ export const updateJob = async (request, reply) => {
         closesAt: updatedJob.closes_at || null,
         jobLevel: updatedJob.job_level || null,
         applicationCount: appCount,
-        postedDate: updatedJob.status === 'active' ? updatedJob.created_at : null,
-        status: updatedJob.status,
+        postedDate:       updatedJob.status === 'active' ? updatedJob.created_at : null,
+        status:           updatedJob.status,
+        moderationReason: updatedJob.moderation_reason || null,
+        autoFlags:        Array.isArray(updatedJob.auto_flags) ? updatedJob.auto_flags : [],
+        submittedAt:      updatedJob.submitted_at || null,
         companyId: `company_${recruiterId}`,
         createdAt: updatedJob.created_at,
         updatedAt: updatedJob.updated_at,
@@ -462,6 +477,107 @@ export const getRecruiterStats = async (request, reply) => {
         interviewsScheduled: byStatus['interview'] ?? 0,
         hired: byStatus['hired'] ?? 0,
         byStatus,
+      },
+    });
+  } catch (error) {
+    request.server.log.error(error);
+    return reply.status(500).send({ success: false, message: 'Internal server error' });
+  }
+};
+
+// ── POST /recruiter/jobs/:jobId/submit ────────────────────────────────────────
+// The publication gate. Runs content-safety checks, then routes based on
+// recruiter verification status. All transition decisions happen here.
+export const submitJob = async (request, reply) => {
+  try {
+    const recruiterId = request.user.id;
+    const rawId = request.params.jobId.replace('job_', '');
+
+    const job = await Job.query().findOne({ id: rawId, recruiter_id: recruiterId });
+    if (!job) {
+      return reply.status(404).send({ success: false, message: 'Job not found', error: 'NOT_FOUND' });
+    }
+
+    // Only draft or needs_changes jobs may be (re)submitted
+    if (!['draft', 'needs_changes'].includes(job.status)) {
+      return reply.status(409).send({
+        success: false,
+        message: `Cannot submit a job with status '${job.status}'. Only draft or needs_changes jobs can be submitted.`,
+        error: 'INVALID_STATUS',
+      });
+    }
+
+    const { passed, flags } = checkJobContent(job);
+
+    const recruiter = await Recruiter.query().findById(recruiterId).select('is_verified', 'email', 'full_name', 'company_name');
+    const isVerified = recruiter?.is_verified === true;
+
+    let newStatus;
+    let moderationReason = null;
+
+    if (!passed) {
+      // Any block flag → needs_changes regardless of verification
+      const blockFlags = flags.filter(f => f.severity === 'block');
+      moderationReason = blockFlags.map(f => f.message).join(' | ');
+      newStatus = 'needs_changes';
+    } else if (isVerified) {
+      // Verified + clean → auto-approve
+      newStatus = 'active';
+    } else {
+      // Unverified → queue for admin review
+      newStatus = 'pending';
+    }
+
+    await Job.query().patchAndFetchById(rawId, {
+      status:            newStatus,
+      auto_flags:        flags,
+      submitted_at:      new Date().toISOString(),
+      moderation_reason: moderationReason,
+      // Clear previous review metadata on re-submit
+      reviewed_by:  null,
+      reviewed_at:  null,
+    });
+
+    // Notify recruiter of the outcome
+    if (newStatus === 'active') {
+      notifyRecruiter(recruiterId, {
+        type:      'job_published',
+        title:     'Job is now live',
+        message:   `Your job "${job.title}" has been published and is now visible to candidates.`,
+        actionUrl: `/recruiter/posted-jobs/job_${rawId}`,
+      });
+    } else if (newStatus === 'needs_changes') {
+      notifyRecruiter(recruiterId, {
+        type:      'job_needs_changes',
+        title:     'Job needs changes before publishing',
+        message:   `Your job "${job.title}" could not be published. Please review the flagged issues and resubmit.`,
+        actionUrl: `/recruiter/posted-jobs/job_${rawId}`,
+      });
+
+      // Email notification (soft-fail)
+      if (recruiter?.email) {
+        sendJobModerationEmail({
+          to:          recruiter.email,
+          name:        recruiter.full_name || null,
+          jobTitle:    job.title,
+          decision:    'needs_changes',
+          reason:      moderationReason,
+          jobUrl:      `/recruiter/posted-jobs/job_${rawId}`,
+        }).catch(() => {});
+      }
+    }
+
+    return reply.status(200).send({
+      success: true,
+      message: newStatus === 'active'
+        ? 'Job published successfully.'
+        : newStatus === 'pending'
+          ? 'Job submitted for admin review. It will be visible once approved.'
+          : 'Job submission blocked. Please fix the flagged issues and resubmit.',
+      data: {
+        status: newStatus,
+        flags,
+        moderationReason,
       },
     });
   } catch (error) {

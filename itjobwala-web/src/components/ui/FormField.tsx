@@ -25,7 +25,7 @@ export default function FormField({
       {label && (
         <label
           htmlFor={htmlFor}
-          className="block text-[13px] font-semibold text-gray-700"
+          className="block text-sm font-semibold text-body"
         >
           {label}
           {required && <span className="text-red-500 ml-0.5" aria-hidden="true">*</span>}
@@ -35,12 +35,12 @@ export default function FormField({
       {children}
 
       {error && (
-        <p className="text-[12px] text-red-500" role="alert">
+        <p className="text-caption text-red-500" role="alert">
           {error}
         </p>
       )}
       {!error && helper && (
-        <p className="text-[12px] text-gray-400">{helper}</p>
+        <p className="text-caption text-subtle">{helper}</p>
       )}
     </div>
   );

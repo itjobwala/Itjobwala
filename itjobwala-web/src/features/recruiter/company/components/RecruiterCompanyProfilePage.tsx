@@ -58,17 +58,32 @@ function validate(data: Partial<RecruiterCompanyProfile>): FormErrors {
     e.companyName = 'Company name is required';
   } else if (data.companyName.trim().length < 2 || data.companyName.trim().length > 100) {
     e.companyName = 'Company name must be 2–100 characters';
+  } else if (!/[a-zA-Z]/.test(data.companyName.trim())) {
+    e.companyName = 'Company name must contain letters';
   }
   if (!data.industry?.trim()) {
     e.industry = 'Industry is required';
   } else if (data.industry.trim().length < 2 || data.industry.trim().length > 50) {
     e.industry = 'Industry must be 2–50 characters';
+  } else if (!/[a-zA-Z]/.test(data.industry.trim())) {
+    e.industry = 'Industry must contain letters (e.g. IT / Software)';
   }
   if (data.website && data.website.trim() && !/^https?:\/\/.+/.test(data.website.trim())) {
     e.website = 'Must start with http:// or https://';
   }
-  if (data.description && data.description.trim() && data.description.trim().length < 10) {
-    e.description = 'Description must be at least 10 characters';
+  if (data.location?.trim()) {
+    if (!/[a-zA-Z]/.test(data.location.trim())) {
+      e.location = 'Location must contain letters (e.g. Bengaluru, Remote)';
+    } else if (data.location.trim().length > 100) {
+      e.location = 'Max 100 characters';
+    }
+  }
+  if (data.description?.trim()) {
+    if (data.description.trim().length < 10) {
+      e.description = 'Description must be at least 10 characters';
+    } else if (data.description.trim().length > 2000) {
+      e.description = 'Description must be under 2000 characters';
+    }
   }
   if (data.foundedYear != null) {
     const yr = Number(data.foundedYear);
@@ -164,12 +179,12 @@ export default function RecruiterCompanyProfilePage() {
   return (
     <RecruiterShell>
         {/* Page header */}
-        <div className="bg-white border-b border-gray-100">
+        <div className="bg-surface border-b border-token">
           <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
-            <h1 className="text-[28px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
+            <h1 className="text-4xl font-extrabold text-heading" style={{ letterSpacing: '-0.5px' }}>
               Company Profile
             </h1>
-            <p className="text-[13px] text-gray-400 mt-1">
+            <p className="text-sm text-subtle mt-1">
               Manage your company information
             </p>
           </div>
@@ -180,12 +195,12 @@ export default function RecruiterCompanyProfilePage() {
           {isLoading ? (
             <div className="text-center py-12">
               <div className="inline-block">
-                <div className="w-8 h-8 border-4 border-gray-200 border-t-primary rounded-full animate-spin" />
+                <div className="w-8 h-8 border-4 border-token border-t-primary rounded-full animate-spin" />
               </div>
-              <p className="mt-4 text-gray-500">Loading company profile...</p>
+              <p className="mt-4 text-muted">Loading company profile...</p>
             </div>
           ) : error ? (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600">
+            <div className="bg-danger-bg border border-danger rounded-xl p-4 text-danger">
               {error instanceof Error ? error.message : 'Failed to load company profile'}
             </div>
           ) : profile ? (
@@ -193,14 +208,14 @@ export default function RecruiterCompanyProfilePage() {
               <input ref={logoInputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={handleLogoChange} />
 
               {/* Logo + name header — shared by both modes */}
-              <div className="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100 justify-between">
+              <div className="flex items-center gap-4 mb-6 pb-6 border-b border-token justify-between">
                 {/* Logo */}
                 {editing ? (
                   <div className="relative group shrink-0 cursor-pointer" onClick={() => !logoUploading && logoInputRef.current?.click()}>
                     {logoPreview ? (
-                      <img src={logoPreview} alt="Company logo" className="w-16 h-16 rounded-2xl object-cover border border-gray-200" />
+                      <img src={logoPreview} alt="Company logo" className="w-16 h-16 rounded-2xl object-cover border border-token" />
                     ) : (
-                      <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-300">
+                      <div className="w-16 h-16 rounded-2xl bg-surface-hover flex items-center justify-center text-gray-300">
                         <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                           <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="12.01"/><path d="M8 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/>
                         </svg>
@@ -216,9 +231,9 @@ export default function RecruiterCompanyProfilePage() {
                 ) : (
                   <div className="shrink-0">
                     {logoPreview ? (
-                      <img src={logoPreview} alt="Company logo" className="w-16 h-16 rounded-2xl object-cover border border-gray-200" />
+                      <img src={logoPreview} alt="Company logo" className="w-16 h-16 rounded-2xl object-cover border border-token" />
                     ) : (
-                      <div className="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center text-gray-300">
+                      <div className="w-16 h-16 rounded-2xl bg-surface-hover flex items-center justify-center text-gray-300">
                         <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                           <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="12.01"/><path d="M8 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01"/>
                         </svg>
@@ -241,19 +256,19 @@ export default function RecruiterCompanyProfilePage() {
                       />
                     </FormField>
                     {logoUploading && (
-                      <p className="text-[11px] text-gray-400 mt-1">Uploading logo…</p>
+                      <p className="text-micro text-subtle mt-1">Uploading logo…</p>
                     )}
                     {!logoUploading && (
-                      <p className="text-[11px] text-gray-400 mt-1">Click logo to change · PNG or JPG, max 2MB</p>
+                      <p className="text-micro text-subtle mt-1">Click logo to change · PNG or JPG, max 2MB</p>
                     )}
                   </div>
                 ) : (
                   <div className="min-w-0 flex-1">
-                    <p className="text-[20px] font-extrabold text-[#0f172a] leading-tight truncate" style={{ letterSpacing: '-0.3px' }}>
+                    <p className="text-2xl font-extrabold text-heading leading-tight truncate" style={{ letterSpacing: '-0.3px' }}>
                       {profile?.companyName}
                     </p>
                     {profile?.industry && (
-                      <p className="text-[13px] text-gray-500 mt-0.5">{profile.industry}</p>
+                      <p className="text-sm text-muted mt-0.5">{profile.industry}</p>
                     )}
                   </div>
                 )}
@@ -346,9 +361,9 @@ export default function RecruiterCompanyProfilePage() {
                     />
                     <div className="flex items-center justify-between">
                       {errors.description
-                        ? <p className="text-[12px] text-red-500" role="alert">{errors.description}</p>
+                        ? <p className="text-caption text-danger" role="alert">{errors.description}</p>
                         : <span />}
-                      <span className="text-[11px] text-gray-400">{(formData.description || '').length} / 2000</span>
+                      <span className="text-micro text-subtle">{(formData.description || '').length} / 2000</span>
                     </div>
                   </FormField>
 
@@ -373,16 +388,16 @@ export default function RecruiterCompanyProfilePage() {
                 <div className="space-y-6">
                   <div className="grid grid-cols-2 gap-6">
                     <div>
-                      <p className="text-[12px] text-gray-500 mb-1">Industry</p>
-                      <p className="text-[14px] text-[#0f172a]">{profile?.industry || 'Not specified'}</p>
+                      <p className="text-caption text-muted mb-1">Industry</p>
+                      <p className="text-base text-heading">{profile?.industry || 'Not specified'}</p>
                     </div>
                     <div>
-                      <p className="text-[12px] text-gray-500 mb-1">Location</p>
-                      <p className="text-[14px] text-[#0f172a]">{profile?.location || 'Not specified'}</p>
+                      <p className="text-caption text-muted mb-1">Location</p>
+                      <p className="text-base text-heading">{profile?.location || 'Not specified'}</p>
                     </div>
                     <div>
-                      <p className="text-[12px] text-gray-500 mb-1">Website</p>
-                      <p className="text-[14px] text-[#0f172a]">
+                      <p className="text-caption text-muted mb-1">Website</p>
+                      <p className="text-base text-heading">
                         {profile?.website ? (
                           <a href={profile.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                             {profile.website}
@@ -393,18 +408,18 @@ export default function RecruiterCompanyProfilePage() {
                       </p>
                     </div>
                     <div>
-                      <p className="text-[12px] text-gray-500 mb-1">Company Size</p>
-                      <p className="text-[14px] text-[#0f172a]">{profile?.companySize || 'Not specified'}</p>
+                      <p className="text-caption text-muted mb-1">Company Size</p>
+                      <p className="text-base text-heading">{profile?.companySize || 'Not specified'}</p>
                     </div>
                     <div>
-                      <p className="text-[12px] text-gray-500 mb-1">Founded Year</p>
-                      <p className="text-[14px] text-[#0f172a]">{profile?.foundedYear || 'Not specified'}</p>
+                      <p className="text-caption text-muted mb-1">Founded Year</p>
+                      <p className="text-base text-heading">{profile?.foundedYear || 'Not specified'}</p>
                     </div>
                   </div>
                   {profile?.description && (
                     <div>
-                      <p className="text-[12px] text-gray-500 mb-1">About Company</p>
-                      <p className="text-[14px] text-gray-600 leading-relaxed">{profile.description}</p>
+                      <p className="text-caption text-muted mb-1">About Company</p>
+                      <p className="text-base text-body-secondary leading-relaxed">{profile.description}</p>
                     </div>
                   )}
                 </div>
@@ -413,8 +428,8 @@ export default function RecruiterCompanyProfilePage() {
           ) : (
             <div className="text-center py-12">
               <div className="text-[40px] mb-4">🏢</div>
-              <h3 className="text-[18px] font-semibold text-[#0f172a] mb-2">No company profile</h3>
-              <p className="text-gray-500">Set up your company profile to get started</p>
+              <h3 className="text-xl font-semibold text-heading mb-2">No company profile</h3>
+              <p className="text-muted">Set up your company profile to get started</p>
             </div>
           )}
         </div>

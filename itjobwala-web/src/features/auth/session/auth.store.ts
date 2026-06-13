@@ -3,8 +3,10 @@ import { clearQueryCache } from '@/src/lib/queryClient';
 import {
   CANDIDATE_TOKEN_KEY,
   RECRUITER_TOKEN_KEY,
+  ADMIN_TOKEN_KEY,
   TOKEN_COOKIE,
   RECRUITER_TOKEN_COOKIE,
+  ADMIN_TOKEN_COOKIE,
 } from './auth.constants';
 import { authLog } from './auth.logger';
 import type { AuthStore, SessionUser } from './auth.types';
@@ -12,6 +14,7 @@ import { clearRefreshState } from './refresh';
 import {
   decodeJwt,
   buildRecruiterUser,
+  buildAdminUser,
   writeSession,
   removeSession,
   writeToken,
@@ -34,6 +37,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   // ── Derived helpers ──────────────────────────────────────────────────────
   isCandidate: () => get().role === 'candidate',
   isRecruiter: () => get().role === 'recruiter',
+  isAdmin: () => get().role === 'admin',
 
   // ── Hydration (call once on app mount) ──────────────────────────────────
   hydrate: () => {
@@ -71,14 +75,24 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     dispatchAuthChanged();
   },
 
+  loginAdmin: (token: string, user: SessionUser) => {
+    writeToken(ADMIN_TOKEN_KEY, token);
+    setCookie(ADMIN_TOKEN_COOKIE, token);
+    set({ accessToken: token, user, role: 'admin', isAuthenticated: true, isLoggingOut: false });
+    authLog('[AUTH]', `Admin login successful — ${user.email}`);
+    dispatchAuthChanged();
+  },
+
   // ── Logout actions ───────────────────────────────────────────────────────
   logout: () => {
     authLog('[AUTH]', 'Logout (all roles)');
     removeToken(CANDIDATE_TOKEN_KEY);
     removeToken(RECRUITER_TOKEN_KEY);
+    removeToken(ADMIN_TOKEN_KEY);
     removeSession();
     clearCookie(TOKEN_COOKIE);
     clearCookie(RECRUITER_TOKEN_COOKIE);
+    clearCookie(ADMIN_TOKEN_COOKIE);
     clearQueryCache();
     clearRefreshState();
     set({ user: null, role: null, accessToken: null, isAuthenticated: false });
@@ -103,6 +117,17 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     set({ isLoggingOut: true });
     removeToken(RECRUITER_TOKEN_KEY);
     clearCookie(RECRUITER_TOKEN_COOKIE);
+    clearQueryCache();
+    clearRefreshState();
+    set({ user: null, role: null, accessToken: null, isAuthenticated: false });
+    dispatchAuthChanged();
+  },
+
+  logoutAdmin: () => {
+    if (get().role !== 'admin') return;
+    authLog('[AUTH]', 'Admin logout');
+    removeToken(ADMIN_TOKEN_KEY);
+    clearCookie(ADMIN_TOKEN_COOKIE);
     clearQueryCache();
     clearRefreshState();
     set({ user: null, role: null, accessToken: null, isAuthenticated: false });

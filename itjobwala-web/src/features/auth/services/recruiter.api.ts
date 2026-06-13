@@ -1,6 +1,6 @@
 import apiClient from '@/src/lib/api/client';
 import { useAuthStore } from '@/src/features/auth/session/auth.store';
-import type { AuthTokenResponse } from '@/src/types/api';
+import type { AuthTokenResponse, SignupResponse } from '@/src/types/api';
 
 export interface RecruiterSignupRequest {
   full_name:       string;
@@ -11,13 +11,23 @@ export interface RecruiterSignupRequest {
   terms_accepted:  boolean;
 }
 
-export async function signupRecruiter(data: RecruiterSignupRequest): Promise<{ token?: string }> {
-  const res = await apiClient.post<AuthTokenResponse>('/auth/recruiter/signup', data);
-  const token = res.data.token;
+export interface RecruiterSignupResult {
+  token?:                string;
+  requiresVerification?: boolean;
+  email:                 string;
+}
+
+export async function signupRecruiter(data: RecruiterSignupRequest): Promise<RecruiterSignupResult> {
+  const res = await apiClient.post<SignupResponse>('/auth/recruiter/signup', data);
+  const { token, data: verifyData } = res.data;
   if (token) {
     useAuthStore.getState().loginRecruiter(token);
   }
-  return { token };
+  return {
+    token,
+    requiresVerification: verifyData?.requiresVerification,
+    email:                verifyData?.email ?? data.email,
+  };
 }
 
 export interface RecruiterSigninRequest {

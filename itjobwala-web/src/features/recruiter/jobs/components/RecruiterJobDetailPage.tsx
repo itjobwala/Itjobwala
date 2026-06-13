@@ -5,6 +5,7 @@ import Link from 'next/link';
 import {
   useRecruiterPostedJobDetailQuery,
   useUpdateRecruiterJobMutation,
+  useSubmitJobMutation,
   useRecruiterApplicantsQuery,
 } from '@/features/recruiter/hooks';
 import StatusBadge from '@/src/components/ui/StatusBadge';
@@ -30,7 +31,7 @@ function BulletList({ items }: { items: string[] }) {
   return (
     <ul className="space-y-1.5 mt-2">
       {items.map((item, i) => (
-        <li key={i} className="flex gap-2 text-[13px] text-gray-700 leading-snug">
+        <li key={i} className="flex gap-2 text-sm text-body leading-snug">
           <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
           {item}
         </li>
@@ -42,7 +43,7 @@ function BulletList({ items }: { items: string[] }) {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="text-[14px] font-bold text-[#0f172a] mb-1">{title}</h3>
+      <h3 className="text-base font-bold text-heading mb-1">{title}</h3>
       {children}
     </div>
   );
@@ -58,10 +59,11 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
   const { data: job, isLoading, error } = useRecruiterPostedJobDetailQuery(jobId, true);
   const { data: applicantsData } = useRecruiterApplicantsQuery({ jobId }, true);
   const updateMutation = useUpdateRecruiterJobMutation();
+  const submitMutation = useSubmitJobMutation();
 
-  async function handlePublish() {
+  async function handleSubmit() {
     if (!job) return;
-    await updateMutation.mutateAsync({ jobId: job.id, data: { status: 'active' } });
+    await submitMutation.mutateAsync(job.id);
   }
 
   async function handleClose() {
@@ -72,8 +74,8 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
   if (isLoading) {
     return (
       <div className="max-w-[900px] mx-auto px-5 sm:px-8 py-12 text-center">
-        <div className="w-8 h-8 border-4 border-gray-200 border-t-primary rounded-full animate-spin mx-auto" />
-        <p className="mt-4 text-gray-500">Loading job details...</p>
+        <div className="w-8 h-8 border-4 border-token border-t-primary rounded-full animate-spin mx-auto" />
+        <p className="mt-4 text-muted">Loading job details...</p>
       </div>
     );
   }
@@ -81,10 +83,10 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
   if (error || !job) {
     return (
       <div className="max-w-[900px] mx-auto px-5 sm:px-8 py-8">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-600">
+        <div className="bg-danger-bg border border-danger rounded-xl p-4 text-danger">
           {error instanceof Error ? error.message : 'Job not found'}
         </div>
-        <button onClick={() => router.back()} className="mt-4 text-primary font-semibold hover:underline text-[13px]">
+        <button onClick={() => router.back()} className="mt-4 text-primary font-semibold hover:underline text-sm">
           ← Back to Posted Jobs
         </button>
       </div>
@@ -102,21 +104,21 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-[24px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
+              <h1 className="text-[24px] font-extrabold text-heading" style={{ letterSpacing: '-0.5px' }}>
                 {job.title}
               </h1>
               <StatusBadge status={job.status} size="md" />
             </div>
-            <p className="text-[13px] text-gray-500 mt-1">
+            <p className="text-sm text-muted mt-1">
               {job.location} · {job.jobType} · {job.workMode}
             </p>
           </div>
 
           {/* Action buttons */}
           <div className="flex gap-2 shrink-0">
-            {job.status === 'draft' && (
-              <Button onClick={handlePublish} loading={updateMutation.isPending}>
-                Publish
+            {(job.status === 'draft' || job.status === 'needs_changes') && (
+              <Button onClick={handleSubmit} loading={submitMutation.isPending}>
+                Submit for Review
               </Button>
             )}
             {job.status === 'active' && (
@@ -148,37 +150,64 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
           { label: 'Vacancies', value: job.vacancies ?? 1 },
           { label: 'Closes', value: formatDate(job.closesAt) },
         ].map(({ label, value }) => (
-          <div key={label} className="bg-white rounded-xl border border-gray-100 p-4">
-            <p className="text-[11px] text-gray-400 font-medium">{label}</p>
-            <p className="text-[18px] font-extrabold text-[#0f172a] mt-0.5" style={{ letterSpacing: '-0.5px' }}>
+          <div key={label} className="bg-surface rounded-xl border border-token p-4">
+            <p className="text-micro text-subtle font-medium">{label}</p>
+            <p className="text-xl font-extrabold text-heading mt-0.5" style={{ letterSpacing: '-0.5px' }}>
               {value}
             </p>
           </div>
         ))}
       </div>
 
+      {/* Moderation banner */}
+      {job.status === 'needs_changes' && job.moderationReason && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <p className="text-sm font-bold text-amber-800 mb-1">Action required: changes needed</p>
+          <p className="text-sm text-amber-700">{job.moderationReason}</p>
+          {job.autoFlags && job.autoFlags.length > 0 && (
+            <ul className="mt-2 space-y-1">
+              {job.autoFlags.map((f, i) => (
+                <li key={i} className="text-caption text-amber-600">• [{f.field}] {f.message}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+      {job.status === 'pending' && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <p className="text-sm font-bold text-blue-800">Under review</p>
+          <p className="text-sm text-blue-600 mt-0.5">Your job listing is awaiting review by our team. We'll notify you once it's approved.</p>
+        </div>
+      )}
+      {job.status === 'removed' && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+          <p className="text-sm font-bold text-red-800">Listing removed</p>
+          {job.moderationReason && <p className="text-sm text-red-600 mt-0.5">{job.moderationReason}</p>}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
         {/* Left: job content */}
         <div className="space-y-6">
           {/* Meta */}
           <Card overflow>
-            <h2 className="text-[15px] font-extrabold text-[#0f172a] mb-4">Job Details</h2>
-            <div className="grid grid-cols-2 gap-4 text-[13px]">
-              <div><span className="text-gray-400">Location</span><p className="font-semibold text-[#0f172a] mt-0.5">{job.location || '—'}</p></div>
-              <div><span className="text-gray-400">Work Mode</span><p className="font-semibold text-[#0f172a] mt-0.5">{job.workMode || '—'}</p></div>
-              <div><span className="text-gray-400">Experience</span><p className="font-semibold text-[#0f172a] mt-0.5">{job.experienceLevel}</p></div>
-              <div><span className="text-gray-400">Level</span><p className="font-semibold text-[#0f172a] mt-0.5">{job.jobLevel || '—'}</p></div>
-              <div><span className="text-gray-400">Posted</span><p className="font-semibold text-[#0f172a] mt-0.5">{formatDate(job.postedDate ?? job.createdAt)}</p></div>
-              <div><span className="text-gray-400">Last Updated</span><p className="font-semibold text-[#0f172a] mt-0.5">{formatDate(job.updatedAt)}</p></div>
+            <h2 className="text-md font-extrabold text-heading mb-4">Job Details</h2>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div><span className="text-muted">Location</span><p className="font-semibold text-heading mt-0.5">{job.location || '—'}</p></div>
+              <div><span className="text-muted">Work Mode</span><p className="font-semibold text-heading mt-0.5">{job.workMode || '—'}</p></div>
+              <div><span className="text-muted">Experience</span><p className="font-semibold text-heading mt-0.5">{job.experienceLevel}</p></div>
+              <div><span className="text-muted">Level</span><p className="font-semibold text-heading mt-0.5">{job.jobLevel || '—'}</p></div>
+              <div><span className="text-muted">Posted</span><p className="font-semibold text-heading mt-0.5">{formatDate(job.postedDate ?? job.createdAt)}</p></div>
+              <div><span className="text-muted">Last Updated</span><p className="font-semibold text-heading mt-0.5">{formatDate(job.updatedAt)}</p></div>
             </div>
 
             {/* Skills */}
             {job.requiredSkills && job.requiredSkills.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-gray-100">
-                <p className="text-[12px] text-gray-400 font-medium mb-2">Required Skills</p>
+              <div className="mt-4 pt-4 border-t border-token">
+                <p className="text-caption text-subtle font-medium mb-2">Required Skills</p>
                 <div className="flex flex-wrap gap-1.5">
                   {job.requiredSkills.map((skill) => (
-                    <span key={skill} className="px-2.5 py-1 bg-primary/5 text-primary text-[12px] font-semibold rounded-lg">
+                    <span key={skill} className="px-2.5 py-1 bg-primary/5 text-primary text-caption font-semibold rounded-lg">
                       {skill}
                     </span>
                   ))}
@@ -189,10 +218,10 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
 
           {/* Description */}
           <Card className="space-y-5" overflow>
-            <h2 className="text-[15px] font-extrabold text-[#0f172a]">About the Role</h2>
+            <h2 className="text-md font-extrabold text-heading">About the Role</h2>
 
             {job.description && (
-              <p className="text-[13px] text-gray-700 leading-relaxed whitespace-pre-line">{job.description}</p>
+              <p className="text-sm text-body leading-relaxed whitespace-pre-line">{job.description}</p>
             )}
 
             {job.responsibilities && job.responsibilities.length > 0 && (
@@ -225,16 +254,16 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
         <div className="space-y-4">
           <Card overflow>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-[15px] font-extrabold text-[#0f172a]">
+              <h2 className="text-md font-extrabold text-heading">
                 Applicants
                 {applicants.length > 0 && (
-                  <span className="ml-2 text-[12px] font-semibold text-gray-400">({job.applicationCount ?? applicants.length})</span>
+                  <span className="ml-2 text-caption font-semibold text-subtle">({job.applicationCount ?? applicants.length})</span>
                 )}
               </h2>
               {applicants.length > 0 && (
                 <Link
                   href={`/recruiter/applicants?jobId=${job.id}`}
-                  className="text-[12px] font-bold text-primary hover:underline"
+                  className="text-caption font-bold text-primary hover:underline"
                 >
                   View all →
                 </Link>
@@ -244,7 +273,7 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
             {applicants.length === 0 ? (
               <div className="text-center py-6">
                 <div className="text-[28px] mb-2">📨</div>
-                <p className="text-[12px] text-gray-400">No applications yet</p>
+                <p className="text-caption text-subtle">No applications yet</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -252,12 +281,12 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
                   <Link
                     key={applicant.id}
                     href={`/recruiter/applicants/${applicant.id}`}
-                    className="flex items-center gap-3 hover:bg-gray-50 -mx-2 px-2 py-1 rounded-lg transition-colors"
+                    className="flex items-center gap-3 hover:bg-surface-alt -mx-2 px-2 py-1 rounded-lg transition-colors"
                   >
                     <Avatar name={applicant.candidateName} photo={applicant.profilePhoto} size="sm" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-semibold text-[#0f172a] truncate">{applicant.candidateName}</p>
-                      <p className="text-[11px] text-gray-400 truncate">{applicant.candidateEmail}</p>
+                      <p className="text-sm font-semibold text-heading truncate">{applicant.candidateName}</p>
+                      <p className="text-micro text-subtle truncate">{applicant.candidateEmail}</p>
                     </div>
                     <StatusBadge status={applicant.status} size="sm" className="shrink-0" />
                   </Link>

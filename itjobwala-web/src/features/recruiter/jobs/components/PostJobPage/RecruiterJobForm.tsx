@@ -2,8 +2,8 @@
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { PRIMARY } from '@/src/lib/constants';
 import { RecruiterShell } from '@/layout/shell';
+import Button from '@/src/components/ui/Button';
 import { useSkillSuggestions } from '@/src/hooks/useSkillSuggestions';
 import { validateSkill } from '@/src/lib/skillValidation';
 import { validateSkillsRemote } from '@/features/jobs/shared';
@@ -111,20 +111,20 @@ export default function RecruiterJobForm() {
       <div className="max-w-[680px] mx-auto px-5 py-10 sm:py-14">
         <div className="mb-8">
           <button type="button" onClick={() => router.back()}
-            className="flex items-center gap-1.5 text-[13px] font-semibold text-gray-500 hover:text-gray-800 transition-colors mb-4">
+            className="flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-body transition-colors mb-4">
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
               <polyline points="15 18 9 12 15 6" />
             </svg>
             Back
           </button>
-          <h1 className="font-extrabold text-[#0f172a] text-2xl sm:text-[28px] mb-1" style={{ letterSpacing: -0.8 }}>
+          <h1 className="font-extrabold text-heading text-2xl sm:text-4xl mb-1" style={{ letterSpacing: -0.8 }}>
             Post a new job
           </h1>
-          <p className="text-sm text-gray-500">Fill in the details below. You can edit the job after posting.</p>
+          <p className="text-sm text-muted">Fill in the details below. You can edit the job after posting.</p>
         </div>
 
         <form onSubmit={handleSubmit}
-          className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8 flex flex-col gap-5"
+          className="bg-surface rounded-2xl border border-token p-6 sm:p-8 flex flex-col gap-5"
           style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
           <JobFieldsBasic form={form} errors={errors} setField={set} />
           <JobFieldsDetail
@@ -136,21 +136,23 @@ export default function RecruiterJobForm() {
           />
 
           {error && (
-            <div className="rounded-xl px-4 py-3 text-sm font-medium text-red-600 bg-red-50 border border-red-200">
+            <div className="rounded-xl px-4 py-3 text-sm font-medium text-danger bg-danger-bg border border-danger">
               {error}
             </div>
           )}
 
           <div>
-            <button type="submit" disabled={loading}
-              className="w-full flex items-center justify-center gap-2 text-white font-bold text-[15px] rounded-xl py-3.5 transition-all"
-              style={{ background: loading ? '#93aef5' : PRIMARY, cursor: loading ? 'not-allowed' : 'pointer' }}>
-              {loading
-                ? <><div className="w-4 h-4 border-[2.5px] border-white/40 border-t-white rounded-full animate-spin" /> Saving…</>
-                : 'Save as Draft →'
-              }
-            </button>
-            <p className="text-center text-[12px] text-gray-400 mt-2">
+            <Button
+              type="submit"
+              variant="primary"
+              fullWidth
+              rounded="xl"
+              loading={loading}
+              className="py-3.5"
+            >
+              Save as Draft →
+            </Button>
+            <p className="text-center text-caption text-subtle mt-2">
               Saved as draft — you can review and publish from the next screen.
             </p>
           </div>

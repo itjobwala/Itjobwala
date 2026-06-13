@@ -12,7 +12,7 @@ class RefreshToken extends Model {
       properties: {
         id:           { type: 'integer' },
         user_id:      { type: 'integer' },
-        role:         { type: 'string', enum: ['candidate', 'recruiter'] },
+        role:         { type: 'string', enum: ['candidate', 'recruiter', 'admin'] },
         token_hash:   { type: 'string', maxLength: 64 },
         expires_at:   { type: 'string' },
         created_at:   { type: 'string' },

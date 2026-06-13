@@ -18,18 +18,18 @@ export default function RecruiterDashboardPage() {
   return (
     <ErrorBoundary>
     <RecruiterShell>
-      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+      <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8 space-y-6">
 
         {/* ── Welcome Header ── */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <h1
-              className="text-[22px] sm:text-[26px] font-extrabold text-[#0f172a] leading-tight"
+              className="text-3xl sm:text-4xl font-extrabold text-heading leading-tight"
               style={{ letterSpacing: '-0.6px' }}
             >
               Welcome back, {firstName} 👋
             </h1>
-            <p className="text-[14px] text-gray-500 mt-1">
+            <p className="text-base text-muted mt-1">
               {companyName} &middot; Here&apos;s what&apos;s happening today.
             </p>
           </div>
@@ -53,7 +53,7 @@ export default function RecruiterDashboardPage() {
         <PostedJobs />
 
         {/* Pipeline + activity */}
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6 items-start">
           <HiringPipeline />
           <ActivityFeed />
         </div>

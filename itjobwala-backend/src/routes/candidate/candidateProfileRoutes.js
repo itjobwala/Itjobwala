@@ -116,10 +116,11 @@ export default async function candidateProfileRoutes(fastify, options) {
     }
   }, updateProfile);
 
-  fastify.post('/candidate/profile/resume', authOpts, uploadResume);
-  fastify.post('/candidate/profile/photo', authOpts, uploadProfilePhoto);
-  fastify.post('/candidate/profile/cover', authOpts, uploadProfileCover);
-  fastify.post('/candidate/profile/certifications/:cert_id/upload', authOpts, uploadCertificate);
+  const uploadOpts = { ...authOpts, config: { rateLimit: { max: 10, timeWindow: '1 minute' } } };
+  fastify.post('/candidate/profile/resume', uploadOpts, uploadResume);
+  fastify.post('/candidate/profile/photo', uploadOpts, uploadProfilePhoto);
+  fastify.post('/candidate/profile/cover', uploadOpts, uploadProfileCover);
+  fastify.post('/candidate/profile/certifications/:cert_id/upload', uploadOpts, uploadCertificate);
 
   fastify.put('/candidate/profile/skills', {
     ...authOpts,

@@ -1,0 +1,135 @@
+// English + QA-neutral stop words — filtered before semantic analysis
+export const STOP_WORDS = new Set([
+  'a','an','the','and','or','but','in','on','at','to','for','of','with',
+  'by','from','is','are','was','were','be','been','being','have','has',
+  'had','do','does','did','will','would','could','should','may','might',
+  'shall','can','must','it','its','this','that','these','those','we','our',
+  'you','your','they','their','he','his','she','her','i','my','me','us',
+  'not','no','so','if','as','up','out','about','into','over','after',
+  'between','through','during','than','same','also','well','just','more',
+  'very','most','both','each','other','such','when','where','while',
+  'using','used','use','uses','work','working','worked','experience',
+  'years','year','role','roles','team','position','company','good',
+  'strong','ability','knowledge','understanding','required','preferred',
+  'plus','bonus','looking','seeking','candidate','candidates','ideal',
+  'minimum','maximum','least','responsible','responsibilities','tasks',
+  'duties','day','daily','basis','etc','including','within','across',
+  'new','existing','large','small','high','low','key','core','main',
+  'ensure','maintain','support','provide','develop','manage','build',
+  'design','create','implement','write','review','test','testing',
+]);
+
+// QA-domain synonym map: canonical term → array of equivalent expressions
+// Used to surface "hidden matches" — resume says A, job says B, but they mean the same thing
+export const QA_SYNONYMS = {
+  'selenium':           ['selenium webdriver', 'webdriver', 'selenium grid', 'selenide', 'selenium ide'],
+  'playwright':         ['microsoft playwright', 'pw browser'],
+  'cypress':            ['cypress io', 'cypress testing'],
+  'appium':             ['mobile automation', 'appium framework'],
+  'testng':             ['test ng', 'testng framework'],
+  'junit':              ['junit4', 'junit5', 'junit framework'],
+  'rest assured':       ['restassured', 'rest-assured', 'rest api testing library'],
+  'postman':            ['postman api', 'postman collections', 'api client tool'],
+  'jmeter':             ['apache jmeter', 'jmeter scripts', 'jmeter tests'],
+  'gatling':            ['gatling load', 'scala load testing'],
+  'k6':                 ['k6 load', 'grafana k6'],
+  'jenkins':            ['jenkins pipeline', 'jenkins ci', 'hudson', 'ci server', 'build server'],
+  'github actions':     ['gh actions', 'github ci', 'github workflows', 'workflow yaml'],
+  'gitlab ci':          ['gitlab pipelines', 'gitlab runner'],
+  'docker':             ['containerization', 'dockerfile', 'docker compose', 'containers'],
+  'kubernetes':         ['k8s', 'container orchestration', 'kubectl', 'helm'],
+  'api testing':        ['rest api', 'api automation', 'endpoint testing', 'web services testing',
+                         'microservices testing', 'http testing', 'api validation'],
+  'performance testing':['load testing', 'stress testing', 'scalability testing', 'volume testing',
+                         'soak testing', 'spike testing', 'endurance testing'],
+  'automation':         ['automated testing', 'test automation', 'automation framework',
+                         'automated tests', 'scripted tests', 'auto tests'],
+  'manual testing':     ['manual qa', 'exploratory testing', 'functional testing', 'ad hoc testing',
+                         'black box testing', 'user acceptance', 'uat'],
+  'regression':         ['regression testing', 'regression suite', 'regression cycle',
+                         'full regression', 'smoke regression'],
+  'bdd':                ['behavior driven', 'behaviour driven', 'cucumber', 'gherkin',
+                         'feature files', 'specflow', 'behave'],
+  'agile':              ['scrum', 'sprint', 'kanban', 'agile methodology', 'agile process'],
+  'git':                ['version control', 'source control', 'github', 'gitlab', 'bitbucket', 'svn'],
+  'sql':                ['database', 'mysql', 'postgres', 'postgresql', 'oracle db', 'db testing',
+                         'database testing', 'query', 'queries'],
+  'mobile':             ['android', 'ios', 'mobile app', 'native app', 'hybrid app'],
+  'defect':             ['bug', 'issue', 'defect tracking', 'bug reporting', 'defect life cycle',
+                         'bug lifecycle'],
+  'jira':               ['bug tracking', 'issue tracker', 'project management tool', 'confluence',
+                         'atlassian'],
+  'test plan':          ['test strategy', 'test planning', 'test approach', 'test documentation'],
+  'test cases':         ['test scripts', 'test scenarios', 'test suite', 'test conditions'],
+  'ci cd':              ['continuous delivery', 'continuous deployment', 'continuous integration',
+                         'devops pipeline', 'deployment pipeline', 'release pipeline'],
+  'framework':          ['test framework', 'testing framework', 'automation framework', 'harness'],
+  'java':               ['core java', 'java selenium', 'java testng'],
+  'python':             ['python selenium', 'python pytest', 'pytest'],
+  'javascript':         ['js testing', 'typescript testing', 'node testing', 'ts'],
+};
+
+// QA semantic themes — each with id, display label, and associated terms
+export const QA_THEMES = [
+  {
+    id:    'automation',
+    label: 'Test Automation',
+    terms: new Set([
+      'selenium','playwright','cypress','appium','automation','automated','framework',
+      'testng','junit','script','scripting','robot','webdriver','locator','xpath',
+      'css selector','page object','pom','data driven','keyword driven',
+    ]),
+  },
+  {
+    id:    'api',
+    label: 'API Testing',
+    terms: new Set([
+      'api','rest','restassured','postman','endpoint','http','request','response',
+      'swagger','microservice','soap','web service','graphql','json','xml',
+      'authentication','oauth','token','headers','status code',
+    ]),
+  },
+  {
+    id:    'performance',
+    label: 'Performance Testing',
+    terms: new Set([
+      'performance','load','stress','jmeter','gatling','k6','scalability',
+      'throughput','latency','benchmark','response time','tps','concurrent users',
+      'ramp up','think time','bottleneck',
+    ]),
+  },
+  {
+    id:    'mobile',
+    label: 'Mobile Testing',
+    terms: new Set([
+      'mobile','android','ios','appium','device','emulator','simulator',
+      'responsive','native','hybrid','react native','flutter','xcode','adb',
+    ]),
+  },
+  {
+    id:    'cicd',
+    label: 'CI/CD & DevOps',
+    terms: new Set([
+      'jenkins','github','actions','docker','kubernetes','pipeline','ci','cd',
+      'devops','container','deploy','build','release','artifact','sonar',
+      'codecoverage','coverage','gitlab','github actions','circleci',
+    ]),
+  },
+  {
+    id:    'manual',
+    label: 'Manual & Functional QA',
+    terms: new Set([
+      'manual','exploratory','functional','regression','smoke','sanity','test case',
+      'test plan','requirement','defect','bug','uat','black box','white box',
+      'boundary','equivalence','test coverage','traceability',
+    ]),
+  },
+  {
+    id:    'agile',
+    label: 'Agile & Process',
+    terms: new Set([
+      'agile','scrum','sprint','kanban','jira','standup','backlog','iteration',
+      'story','epic','retrospective','velocity','estimation','planning','review',
+    ]),
+  },
+];

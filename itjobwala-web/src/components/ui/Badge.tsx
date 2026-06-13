@@ -7,7 +7,7 @@ export type BadgeVariant =
 export type BadgeSize = 'sm' | 'md' | 'lg';
 
 const VARIANT_STYLES: Record<BadgeVariant, string> = {
-  default:  'bg-gray-100 text-gray-600',
+  default:  'bg-surface-mid text-body-secondary',
   primary:  'bg-blue-50 text-blue-700',
   success:  'bg-green-50 text-green-700',
   warning:  'bg-amber-50 text-amber-700',
@@ -21,9 +21,9 @@ const VARIANT_STYLES: Record<BadgeVariant, string> = {
 };
 
 const SIZE_STYLES: Record<BadgeSize, string> = {
-  sm: 'px-2 py-0.5 text-[11px]',
-  md: 'px-2.5 py-1 text-[12px]',
-  lg: 'px-3 py-1.5 text-[12px]',
+  sm: 'px-2 py-0.5 text-micro',
+  md: 'px-2.5 py-1 text-caption',
+  lg: 'px-3 py-1.5 text-caption',
 };
 
 interface BadgeProps {

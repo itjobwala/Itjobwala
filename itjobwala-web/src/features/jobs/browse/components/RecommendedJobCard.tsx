@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import CompanyLogo from '@/src/components/ui/CompanyLogo';
+import VerifiedBadge from '@/src/components/ui/VerifiedBadge';
 import type { Job } from '../../shared/types';
 
 export default function RecommendedJobCard({ job }: { job: Job }) {
   return (
     <Link
       href={`/candidate/jobs/${job.id}`}
-      className="group flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100"
+      className="group flex items-center gap-3 p-3 rounded-xl hover:bg-surface-alt transition-colors border border-transparent hover:border-token"
     >
       <CompanyLogo
         name={job.company}
@@ -16,13 +17,15 @@ export default function RecommendedJobCard({ job }: { job: Job }) {
         textClassName="text-sm"
       />
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-bold text-[#0f172a] truncate group-hover:text-primary transition-colors">
+        <p className="text-sm font-bold text-heading truncate group-hover:text-primary transition-colors">
           {job.title}
         </p>
-        <p className="text-[12px] text-gray-400 truncate">
-          {job.company} &middot; {job.location}
+        <p className="text-caption text-subtle flex items-center gap-1 flex-wrap">
+          <span className="truncate">{job.company}</span>
+          {job.companyVerified && <VerifiedBadge />}
+          <span>&middot; {job.location}</span>
         </p>
-        <p className="text-[11px] text-gray-400 mt-0.5">
+        <p className="text-micro text-subtle mt-0.5">
           {job.experienceMin === job.experienceMax
             ? `${job.experienceMin} yrs`
             : `${job.experienceMin}–${job.experienceMax} yrs`}

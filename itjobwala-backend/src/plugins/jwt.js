@@ -54,14 +54,31 @@ export default fp(async function (fastify, opts) {
   });
 
   // ── Middleware: candidate-only routes ─────────────────────────────────────
+  // Explicitly require role === 'candidate' so admin/recruiter tokens are rejected.
   fastify.decorate('requireCandidate', async function (request, reply) {
     try {
       await request.jwtVerify();
       if (request.user.type && request.user.type !== 'access') {
         return reply.status(401).send({ success: false, message: 'Invalid token type' });
       }
-      if (request.user.role === 'recruiter') {
-        return reply.status(403).send({ success: false, message: 'Forbidden: Recruiters cannot apply for jobs' });
+      if (request.user.role !== 'candidate') {
+        return reply.status(403).send({ success: false, message: 'Forbidden: Candidates only' });
+      }
+      normalizeUser(request);
+    } catch (err) {
+      reply.status(401).send({ success: false, message: 'Unauthorized access', error: err.message });
+    }
+  });
+
+  // ── Middleware: admin-only routes ─────────────────────────────────────────
+  fastify.decorate('requireAdmin', async function (request, reply) {
+    try {
+      await request.jwtVerify();
+      if (request.user.type && request.user.type !== 'access') {
+        return reply.status(401).send({ success: false, message: 'Invalid token type' });
+      }
+      if (request.user.role !== 'admin') {
+        return reply.status(403).send({ success: false, message: 'Forbidden: Admin access required' });
       }
       normalizeUser(request);
     } catch (err) {

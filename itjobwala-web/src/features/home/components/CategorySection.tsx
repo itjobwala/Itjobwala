@@ -69,14 +69,14 @@ export default function CategorySection() {
   return (
     <section
       ref={ref}
-      className="bg-white py-[88px] px-5 sm:px-8 lg:px-10"
+      className="bg-surface pt-14 pb-20 px-5 sm:px-8 lg:px-10"
     >
       <div className="max-w-[1440px] mx-auto">
         {/* Header */}
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] items-end mb-12 gap-4">
           <div className="reveal-left">
             <div
-              className="text-[12px] font-bold uppercase mb-3"
+              className="text-caption font-bold uppercase mb-3"
               style={{ color: PRIMARY, letterSpacing: 2 }}
             >
               Browse by type
@@ -108,7 +108,7 @@ export default function CategorySection() {
             Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
-                className={`reveal stagger-${(i % 4) + 1} h-[180px] rounded-2xl bg-gray-100 animate-pulse`}
+                className={`reveal stagger-${(i % 4) + 1} h-[180px] rounded-2xl bg-surface-hover animate-pulse`}
               />
             ))
           ) : isError ? (
@@ -116,8 +116,8 @@ export default function CategorySection() {
               Unable to load categories right now.
             </div>
           ) : categoriesData.length === 0 ? (
-            <div className="col-span-full py-16 flex flex-col items-center justify-center bg-gray-50 border border-gray-100 rounded-2xl">
-              <span className="text-[14px] text-gray-400 font-medium">No categories available right now.</span>
+            <div className="col-span-full py-16 flex flex-col items-center justify-center bg-surface-alt border border-token rounded-2xl">
+              <span className="text-base text-subtle font-medium">No categories available right now.</span>
             </div>
           ) : (
             categoriesData.map((cat, i) => {
@@ -128,9 +128,8 @@ export default function CategorySection() {
                 <Link
                   href={getCategoryHref(cat)}
                   key={`${cat.category_type}-${cat.key}-${i}`}
-                  className={`reveal stagger-${(i % 4) + 1} block rounded-2xl relative overflow-hidden transition-all duration-300 no-underline`}
+                  className={`reveal stagger-${(i % 4) + 1} block rounded-2xl p-4 md:p-6 relative overflow-hidden transition-all duration-300 no-underline focus:outline-none focus:ring-4 focus:ring-primary/20`}
                   style={{
-                    padding: '22px 22px 20px',
                     background: highlighted ? theme.bgHover : theme.bg,
                     border: `1.5px solid ${highlighted ? theme.borderHover : theme.border}`,
                     transform: highlighted ? 'translateY(-6px)' : 'none',
@@ -179,7 +178,7 @@ export default function CategorySection() {
                     className="font-black leading-none mb-1 transition-colors duration-300"
                     style={{
                       fontSize: 40,
-                      color: highlighted ? theme.textAccent : '#0f172a',
+                      color: highlighted ? theme.textAccent : 'var(--color-heading)',
                       letterSpacing: '-2px',
                     }}
                   >
@@ -187,7 +186,7 @@ export default function CategorySection() {
                   </div>
                   <div
                     className="text-[12px] font-semibold mb-4"
-                    style={{ color: highlighted ? theme.accent : '#9ca3af' }}
+                    style={{ color: highlighted ? theme.accent : 'var(--color-subtle)' }}
                   >
                     open positions
                   </div>
@@ -198,7 +197,7 @@ export default function CategorySection() {
                       className="font-bold capitalize leading-tight"
                       style={{
                         fontSize: 14,
-                        color: highlighted ? theme.textAccent : '#374151',
+                        color: highlighted ? theme.textAccent : 'var(--color-body)',
                         maxWidth: '70%',
                       }}
                     >

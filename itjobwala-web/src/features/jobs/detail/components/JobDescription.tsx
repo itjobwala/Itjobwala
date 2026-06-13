@@ -5,7 +5,7 @@ import { hashColor } from '@/src/lib/utils/format';
 
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-[16px] font-extrabold text-[#0f172a] mb-3" style={{ letterSpacing: '-0.3px' }}>
+    <h2 className="text-base font-extrabold text-heading mb-3" style={{ letterSpacing: '-0.3px' }}>
       {children}
     </h2>
   );
@@ -13,8 +13,8 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 
 function BulletItem({ text }: { text: string }) {
   return (
-    <li className="flex items-start gap-3 text-[14px] text-gray-600 leading-[1.65]">
-      <span className="mt-[6px] w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+    <li className="flex items-start gap-3 text-sm text-body-secondary leading-[1.65]">
+      <span className="mt-[6.5px] w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
       {text}
     </li>
   );
@@ -34,9 +34,9 @@ export default function JobDescription({ job }: Props) {
         <>
           <section>
             <SectionHeading>Overview</SectionHeading>
-            <p className="text-[14px] text-gray-600 leading-[1.75]">{job.description}</p>
+            <p className="text-sm text-body-secondary leading-[1.75]">{job.description}</p>
           </section>
-          <div className="h-px bg-gray-100" />
+          <div className="h-px bg-token" />
         </>
       )}
 
@@ -52,14 +52,14 @@ export default function JobDescription({ job }: Props) {
             textClassName="text-base"
           />
           <div>
-            <p className="text-[13px] font-bold text-[#0f172a]">{job.company}</p>
-            <p className="text-[12px] text-gray-400">{job.companyIndustry} &middot; {job.companySize} &middot; Est. {job.companyFounded}</p>
+            <p className="text-sm font-bold text-heading">{job.company}</p>
+            <p className="text-caption text-subtle">{job.companyIndustry} &middot; {job.companySize} &middot; Est. {job.companyFounded}</p>
           </div>
         </div>
-        <p className="text-[14px] text-gray-600 leading-[1.75]">{job.aboutCompany}</p>
+        <p className="text-sm text-body-secondary leading-[1.75]">{job.aboutCompany}</p>
       </section>
 
-      <div className="h-px bg-gray-100" />
+      <div className="h-px bg-token" />
 
       {/* Responsibilities */}
       <section>
@@ -69,7 +69,7 @@ export default function JobDescription({ job }: Props) {
         </ul>
       </section>
 
-      <div className="h-px bg-gray-100" />
+      <div className="h-px bg-token" />
 
       {/* Requirements */}
       <section>
@@ -81,13 +81,13 @@ export default function JobDescription({ job }: Props) {
 
       {job.niceToHave.length > 0 && (
         <>
-          <div className="h-px bg-gray-100" />
+          <div className="h-px bg-token" />
           <section>
             <SectionHeading>Nice to have</SectionHeading>
             <ul className="flex flex-col gap-2.5">
               {job.niceToHave.map((r, i) => (
-                <li key={i} className="flex items-start gap-3 text-[14px] text-gray-500 leading-[1.65]">
-                  <span className="mt-[6px] w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0" />
+                <li key={i} className="flex items-start gap-3 text-sm text-muted leading-[1.65]">
+                  <span className="mt-[6.5px] w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0" />
                   {r}
                 </li>
               ))}
@@ -98,28 +98,28 @@ export default function JobDescription({ job }: Props) {
 
       {job.officeDetails && (
         <>
-          <div className="h-px bg-gray-100" />
+          <div className="h-px bg-token" />
           <section>
             <SectionHeading>Office setup</SectionHeading>
             <div className="bg-blue-50 rounded-xl px-4 py-3.5 border border-blue-100">
-              <p className="text-[14px] text-blue-700 font-semibold">{job.officeDetails}</p>
+              <p className="text-sm text-blue-700 font-semibold">{job.officeDetails}</p>
             </div>
           </section>
         </>
       )}
 
-      <div className="h-px bg-gray-100" />
+      <div className="h-px bg-token" />
 
       {/* Benefits */}
       <section>
         <SectionHeading>Perks &amp; benefits</SectionHeading>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
           {job.benefits.map((b, i) => (
-            <div key={i} className="flex items-center gap-2.5 bg-gray-50 rounded-xl px-3.5 py-3 border border-gray-100">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" className="shrink-0">
+            <div key={i} className="flex items-center gap-2.5 bg-surface-alt rounded-xl px-3.5 py-3 border border-token">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="shrink-0 text-success">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              <span className="text-[13px] font-semibold text-gray-700">{b}</span>
+              <span className="text-sm font-semibold text-body">{b}</span>
             </div>
           ))}
         </div>

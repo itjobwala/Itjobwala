@@ -43,12 +43,16 @@ export const env = {
     (process.env.NEXT_PUBLIC_API_URL ?? '').replace(/\/api\/?$/, '')
   ),
 
+  // Canonical site origin — used for sitemap, JSON-LD, and OG tags.
+  // Set NEXT_PUBLIC_SITE_URL in production; falls back to itjobwala.com.
+  siteUrl: (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://itjobwala.com').replace(/\/$/, ''),
+
   // ── Feature flags ──────────────────────────────────────────────────────────
   // Disable SSR for the auth navbar. Useful when debugging hydration mismatches.
   disableAuthNavbarSsr: process.env.NEXT_PUBLIC_DISABLE_AUTH_NAVBAR_SSR === 'true',
 
   // ── Runtime ────────────────────────────────────────────────────────────────
   nodeEnv: (process.env.NODE_ENV ?? 'development') as 'development' | 'test' | 'production',
-  isDev:   process.env.NODE_ENV !== 'production',
-  isProd:  process.env.NODE_ENV === 'production',
+  isDev: process.env.NODE_ENV !== 'production',
+  isProd: process.env.NODE_ENV === 'production',
 } as const;

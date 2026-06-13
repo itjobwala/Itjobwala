@@ -2,10 +2,10 @@ import { cn } from '@/src/lib/utils/cn';
 import { getInitials } from '@/src/lib/utils/format';
 
 const SIZE_MAP = {
-  sm: { outer: 'w-8 h-8',   text: 'text-[11px]', rounded: 'rounded-lg'  },
-  md: { outer: 'w-10 h-10', text: 'text-[12px]', rounded: 'rounded-xl'  },
-  lg: { outer: 'w-11 h-11', text: 'text-[13px]', rounded: 'rounded-xl'  },
-  xl: { outer: 'w-20 h-20', text: 'text-[22px]', rounded: 'rounded-2xl' },
+  sm: { outer: 'w-8 h-8',   text: 'text-micro',   rounded: 'rounded-lg'  },
+  md: { outer: 'w-10 h-10', text: 'text-caption',  rounded: 'rounded-xl'  },
+  lg: { outer: 'w-11 h-11', text: 'text-sm',       rounded: 'rounded-xl'  },
+  xl: { outer: 'w-20 h-20', text: 'text-3xl',      rounded: 'rounded-2xl' },
 } as const;
 
 type AvatarSize = keyof typeof SIZE_MAP;

@@ -2,7 +2,19 @@ import Application from '../../models/jobs/Application.js';
 import Job from '../../models/jobs/Job.js';
 import Activity from '../../models/recruiter/Activity.js';
 import User from '../../models/candidate/User.js';
+import Interview from '../../models/recruiter/Interview.js';
+import ProfileView from '../../models/recruiter/ProfileView.js';
+import Recruiter from '../../models/recruiter/Recruiter.js';
 import { notifyCandidate, notifyRecruiter } from '../../utils/notifyHelper.js';
+import { saveFeedbackSignal, saveFeedbackNote } from '../../services/resume/feedbackSignal.service.js';
+import { sendApplicationStatusEmail } from '../../services/email/mailer.service.js';
+
+// Flip to true to also email candidates when they advance to the interview stage.
+// Off by default because the interview-scheduling email already covers that moment.
+const SEND_INTERVIEW_ADVANCE_EMAIL = false;
+
+const EMAIL_ON_STATUS = new Set(['shortlisted', 'hired', 'rejected']);
+if (SEND_INTERVIEW_ADVANCE_EMAIL) EMAIL_ON_STATUS.add('interview');
 
 function formatApplicant(app) {
   const candidate = app.applicant;
@@ -111,7 +123,30 @@ export const getApplicantById = async (request, reply) => {
       return reply.status(404).send({ success: false, message: 'Applicant not found', error: 'NOT_FOUND' });
     }
 
+    // Fire-and-forget: track this recruiter viewing the candidate's profile (dedup per day)
+    ProfileView.knex().raw(
+      `INSERT INTO profile_views (candidate_user_id, recruiter_id, viewed_date) VALUES (?, ?, ?) ON CONFLICT (candidate_user_id, recruiter_id, viewed_date) DO NOTHING`,
+      [application.user_id, recruiterId, new Date().toISOString().split('T')[0]]
+    ).catch(() => {});
+
     const candidate = application.applicant;
+
+    const interviewRecord = await Interview.query()
+      .where({ application_id: application.id })
+      .first();
+
+    const interview = interviewRecord ? {
+      id:               `interview_${interviewRecord.id}`,
+      type:             interviewRecord.interview_type,
+      scheduled_at:     interviewRecord.scheduled_at,
+      duration_minutes: interviewRecord.duration_minutes ?? null,
+      meeting_link:     interviewRecord.meeting_link ?? null,
+      location:         interviewRecord.location ?? null,
+      notes:            interviewRecord.note ?? null,
+      status: interviewRecord.scheduled_at
+        ? (new Date(interviewRecord.scheduled_at) > new Date() ? 'scheduled' : 'past')
+        : 'not_scheduled',
+    } : null;
 
     return reply.status(200).send({
       success: true,
@@ -127,6 +162,7 @@ export const getApplicantById = async (request, reply) => {
           github: candidate.github || null,
         },
         coverLetter: application.cover_letter || null,
+        interview,
       },
     });
   } catch (error) {
@@ -135,15 +171,12 @@ export const getApplicantById = async (request, reply) => {
   }
 };
 
-// Valid status values from DB enum
 const VALID_TRANSITIONS = {
   applied:     ['shortlisted', 'rejected'],
   shortlisted: ['interview', 'rejected'],
   interview:   ['hired', 'rejected'],
   rejected:    [],
   hired:       [],
-  selected:    ['hired', 'rejected'],
-  offer:       ['hired', 'rejected'],
   withdrawn:   [],
 };
 
@@ -179,7 +212,12 @@ export const updateStatus = async (request, reply) => {
       });
     }
 
-    const updated = await application.$query().patchAndFetch({ status });
+    // Append the transition to the application's timeline
+    let timeline = application.timeline || [];
+    if (typeof timeline === 'string') timeline = JSON.parse(timeline);
+    timeline.push({ status, at: new Date().toISOString(), note: notes || null });
+
+    const updated = await application.$query().patchAndFetch({ status, timeline });
 
     // Fire notifications (non-blocking)
     const candidateId = application.user_id;
@@ -208,6 +246,37 @@ export const updateStatus = async (request, reply) => {
     if (RECRUITER_MESSAGES[status]) {
       notifyRecruiter(recruiterId, { ...RECRUITER_MESSAGES[status], actionUrl: appRecruiterUrl });
     }
+
+    // Fire-and-forget: email the candidate on meaningful status transitions
+    if (status !== application.status && EMAIL_ON_STATUS.has(status)) {
+      const candidateEmail = application.applicant?.email;
+      if (candidateEmail) {
+        Recruiter.query()
+          .findById(recruiterId)
+          .select('company_name')
+          .then(recruiter =>
+            sendApplicationStatusEmail({
+              to:             candidateEmail,
+              name:           application.applicant?.full_name || null,
+              jobTitle,
+              companyName:    recruiter?.company_name || null,
+              newStatus:      status,
+              applicationUrl: appUrl,
+            })
+          )
+          .catch(() => {}); // recruiter-lookup failure absorbed; SMTP failure absorbed inside sendApplicationStatusEmail
+      }
+    }
+
+    // Phase 5: Capture feedback signal (fire-and-forget)
+    saveFeedbackSignal({
+      candidateId,
+      jobId:         application.job_id,
+      recruiterId,
+      applicationId: application.id,
+      outcome:       status,
+      log:           request.log,
+    });
 
     return reply.status(200).send({
       success: true,
@@ -241,4 +310,27 @@ export const hireApplicant = async (request, reply) => {
   }
   request.body = { ...request.body, status: 'hired' };
   return updateStatus(request, reply);
+};
+
+/**
+ * Phase 5: POST /recruiter/applicants/:applicantId/feedback-note
+ * Recruiter adds an optional constructive note for the candidate.
+ */
+export const submitFeedbackNote = async (request, reply) => {
+  try {
+    const recruiterId   = request.user.id;
+    const applicationId = parseInt(request.params.applicantId.replace('applicant_', ''), 10);
+    const note          = (request.body?.note ?? '').trim();
+
+    if (!note) {
+      return reply.status(400).send({ success: false, message: 'Note cannot be empty.' });
+    }
+
+    await saveFeedbackNote({ applicationId, recruiterId, note });
+
+    return reply.send({ success: true, message: 'Feedback note saved.' });
+  } catch (err) {
+    request.log.error({ err }, 'submitFeedbackNote failed');
+    return reply.status(500).send({ success: false, message: 'Internal server error' });
+  }
 };

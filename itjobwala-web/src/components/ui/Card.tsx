@@ -31,7 +31,7 @@ export default function Card({
   return (
     <Tag
       className={cn(
-        'bg-white rounded-2xl border border-gray-100',
+        'bg-surface rounded-2xl border border-token',
         !overflow && 'overflow-hidden',
         hover && 'transition-shadow hover:shadow-md',
         PADDING[padding],

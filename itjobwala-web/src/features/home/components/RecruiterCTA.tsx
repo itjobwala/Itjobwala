@@ -35,7 +35,7 @@ export default function RecruiterCTA() {
 
           {/* Left content */}
           <div className="relative">
-            <div className="inline-block bg-white/15 rounded-full py-[6px] px-4 text-[13px] font-semibold text-white mb-5">
+            <div className="inline-block bg-white/15 rounded-full py-[6px] px-4 text-sm font-semibold text-white mb-5">
               For companies
             </div>
             <h2
@@ -44,7 +44,7 @@ export default function RecruiterCTA() {
             >
               Hiring tech talent?
             </h2>
-            <p className="text-[16px] text-white/75 leading-[1.7] max-w-[440px] mb-7">
+            <p className="text-lg text-white/75 leading-[1.7] max-w-[440px] mb-7">
               Post your job and connect with skilled IT professionals instantly.
               No spam, only quality candidates.
             </p>
@@ -56,7 +56,7 @@ export default function RecruiterCTA() {
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   </div>
-                  <span className="text-[14px] text-white/90 font-medium">{f}</span>
+                  <span className="text-base text-white/90 font-medium">{f}</span>
                 </div>
               ))}
             </div>
@@ -66,12 +66,10 @@ export default function RecruiterCTA() {
           <div className="flex flex-col gap-3.5 items-start lg:items-center relative">
             <Link
               href="/recruiter/post-job"
-              className="bg-white rounded-[14px] py-4 lg:py-5 px-10 lg:px-12 text-[17px] font-extrabold transition-transform duration-200 hover:scale-[1.04] w-full lg:w-auto text-center"
+              className="bg-white rounded-[14px] py-2.5 px-6 text-base font-bold transition-transform duration-200 hover:scale-[1.04] focus:outline-none focus:ring-4 focus:ring-white/40 focus:ring-offset-2 w-full lg:w-auto text-center"
               style={{ color: PRIMARY, boxShadow: '0 8px 32px rgba(0,0,0,0.2)', textDecoration: 'none', display: 'block' }}
-            >
-              Post a job →
-            </Link>
-            <span className="text-[12px] text-white/55">
+            >Post a job →</Link>
+            <span className="text-caption text-white/55">
               Trusted by 800+ companies
             </span>
           </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import CompanyLogo from '@/src/components/ui/CompanyLogo';
+import VerifiedBadge from '@/src/components/ui/VerifiedBadge';
 import type { Job } from '../../shared/types';
 import { salaryLabel } from '@/src/lib/utils/format';
 
@@ -56,9 +57,9 @@ const WORK_MODE_LABEL: Record<Job['workMode'], string> = {
 };
 
 const WORK_MODE_CLASS: Record<Job['workMode'], string> = {
-  remote: 'bg-green-50 text-green-700',
+  remote: 'bg-success-bg text-success',
   hybrid: 'bg-blue-50 text-blue-700',
-  onsite: 'bg-gray-100 text-gray-600',
+  onsite: 'bg-surface-hover text-body-secondary',
 };
 
 const JOB_TYPE_LABEL: Record<Job['jobType'], string> = {
@@ -101,7 +102,7 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false }:
   };
 
   return (
-    <div onClick={() => router.push(`/candidate/jobs/${job.id}`)} className="group bg-white rounded-2xl border border-gray-100 hover:border-primary/40 hover:shadow-lg transition-all duration-200 cursor-pointer p-5 sm:p-6">
+    <div onClick={() => router.push(`/candidate/jobs/${job.id}`)} className="group bg-white rounded-2xl border border-token hover:border-primary/40 hover:shadow-lg transition-all duration-200 cursor-pointer p-5 sm:p-6">
       <div className="flex items-start gap-4">
         {/* Company logo */}
         <CompanyLogo name={job.company} logo={job.companyLogo} colorClass={job.companyColorClass} />
@@ -113,30 +114,33 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false }:
               {/* Badges */}
               <div className="flex items-center gap-2 mb-1 flex-wrap">
                 {job.hasApplied && (
-                  <span className="text-[11px] font-bold rounded-full py-[2px] px-2 bg-green-50 text-green-700 flex items-center gap-1">
+                  <span className="text-micro font-bold rounded-full py-[2px] px-2 bg-success-bg text-success flex items-center gap-1">
                     <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
                     Applied
                   </span>
                 )}
                 {job.isNew && !job.hasApplied && (
-                  <span className="text-[11px] font-bold rounded-full py-[2px] px-2 bg-green-50 text-green-700">New</span>
+                  <span className="text-micro font-bold rounded-full py-[2px] px-2 bg-success-bg text-success">New</span>
                 )}
                 {job.isHot && (
-                  <span className="text-[11px] font-bold rounded-full py-[2px] px-2 bg-red-50 text-red-500">Hot</span>
+                  <span className="text-micro font-bold rounded-full py-[2px] px-2 bg-danger-bg text-danger">Hot</span>
                 )}
               </div>
               {/* Title */}
-              <h3 className="font-bold text-[15px] text-[#0f172a] leading-snug group-hover:text-primary transition-colors">
+              <h3 className="font-bold text-md text-heading leading-snug group-hover:text-primary transition-colors">
                 {job.title}
               </h3>
-              <p className="text-sm text-gray-500 mt-0.5">{job.company}</p>
+              <p className="text-sm text-muted mt-0.5 flex items-center gap-1.5 flex-wrap">
+                {job.company}
+                {job.companyVerified && <VerifiedBadge />}
+              </p>
             </div>
 
             {/* Save button */}
             <button
               onClick={handleSaveClick}
               disabled={saving}
-              className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors disabled:opacity-50 ${saved ? 'bg-primary/10 text-primary' : 'bg-gray-50 text-gray-400 hover:bg-primary/10 hover:text-primary'}`}
+              className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors disabled:opacity-50 ${saved ? 'bg-primary/10 text-primary' : 'bg-surface-alt text-subtle hover:bg-primary/10 hover:text-primary'}`}
               aria-label={saved ? 'Unsave job' : 'Save job'}
             >
               {saving ? (
@@ -153,7 +157,7 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false }:
           </div>
 
           {/* Meta row */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 text-[13px] text-gray-500">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 text-sm text-muted">
             <span className="flex items-center gap-1.5">
               <MapPinIcon /> {job.location}
             </span>
@@ -174,30 +178,30 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false }:
           {/* Tags row */}
           <div className="flex flex-wrap items-center gap-2 mt-3">
             {WORK_MODE_LABEL[job.workMode] && (
-              <span className={`text-[12px] font-semibold rounded-full py-[3px] px-3 ${WORK_MODE_CLASS[job.workMode] ?? 'bg-gray-100 text-gray-600'}`}>
+              <span className={`text-caption font-semibold rounded-full py-[3px] px-3 ${WORK_MODE_CLASS[job.workMode] ?? 'bg-surface-hover text-body-secondary'}`}>
                 {WORK_MODE_LABEL[job.workMode]}
               </span>
             )}
             {JOB_TYPE_LABEL[job.jobType] && (
-              <span className="text-[12px] font-semibold rounded-full py-[3px] px-3 bg-gray-100 text-gray-600">
+              <span className="text-caption font-semibold rounded-full py-[3px] px-3 bg-surface-hover text-body-secondary">
                 {JOB_TYPE_LABEL[job.jobType]}
               </span>
             )}
             {job.skills.slice(0, 3).map(skill => (
-              <span key={skill} className="text-[12px] font-medium rounded-full py-[3px] px-3 bg-gray-50 text-gray-500 border border-gray-100">
+              <span key={skill} className="text-caption font-medium rounded-full py-[3px] px-3 bg-surface-alt text-muted border border-token">
                 {skill}
               </span>
             ))}
             {job.skills.length > 3 && (
-              <span className="text-[12px] text-gray-400">+{job.skills.length - 3} more</span>
+              <span className="text-caption text-subtle">+{job.skills.length - 3} more</span>
             )}
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-50">
-        <span className="text-[12px] text-gray-400">{job.applicants} applicants</span>
+      <div className="flex items-center justify-between mt-4 pt-4 border-t border-token">
+        <span className="text-caption text-subtle">{job.applicants} applicants</span>
         <span className="text-[13px] font-bold text-primary hover:bg-primary/10 rounded-lg px-4 py-2 transition-colors">
           View job →
         </span>

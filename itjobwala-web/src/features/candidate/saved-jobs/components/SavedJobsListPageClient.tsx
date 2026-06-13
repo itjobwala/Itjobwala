@@ -6,6 +6,7 @@ import { SmartNavbar } from '@/layout/navbar';
 import { ProtectedRoute } from '@/features/auth';
 import ConfirmationDialog from '@/src/components/common/ConfirmationDialog';
 import { useSavedJobsInfiniteQuery, useUnsaveJobMutation } from '@/features/candidate/applications/hooks';
+import VerifiedBadge from '@/src/components/ui/VerifiedBadge';
 import { useAuthHydration } from '@/src/hooks/useAuthHydration';
 import { useToast } from '@/src/hooks/useToast';
 import Toast from '@/src/components/ui/Toast';
@@ -90,25 +91,25 @@ export default function SavedJobsListPageClient() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-[#f9fafb]">
+      <div className="min-h-screen bg-surface-alt">
         <SmartNavbar />
 
         <div className="pt-[68px]">
           {/* Header bar */}
-          <div className="bg-white border-b border-gray-100">
+          <div className="bg-surface border-b border-token">
             <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-[22px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.3px' }}>
+                  <h1 className="text-3xl font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
                     Saved Jobs
                   </h1>
-                  <p className="text-[13px] text-gray-400 mt-0.5">
+                  <p className="text-sm text-subtle mt-0.5">
                     Browse and manage your saved job listings
                   </p>
                 </div>
                 <Link
                   href="/candidate/jobs"
-                  className="text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
+                  className="text-sm font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
                   style={{ color: '#fff' }}
                 >
                   Find More Jobs
@@ -121,7 +122,7 @@ export default function SavedJobsListPageClient() {
             {/* Sort Filter */}
             <Card padding="lg" className="mb-6" overflow>
               <div className="w-full sm:w-64">
-                <label htmlFor="saved-sort-order" className="block text-[12px] font-bold text-gray-500 mb-2">
+                <label htmlFor="saved-sort-order" className="block text-caption font-bold text-muted mb-2">
                   Sort By
                 </label>
                 <div className="relative">
@@ -129,12 +130,12 @@ export default function SavedJobsListPageClient() {
                     id="saved-sort-order"
                     value={sortOrder}
                     onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
-                    className="appearance-none w-full rounded-xl border border-gray-200 bg-white pl-3.5 pr-9 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none focus:border-primary/50 transition-colors cursor-pointer"
+                    className="appearance-none w-full rounded-xl border border-token bg-surface pl-3.5 pr-9 py-2.5 text-sm font-medium text-heading outline-none focus:border-primary/50 transition-colors cursor-pointer"
                   >
                     <option value="newest">Recently Saved</option>
                     <option value="oldest">Oldest First</option>
                   </select>
-                  <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-subtle" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
                 </div>
@@ -144,7 +145,7 @@ export default function SavedJobsListPageClient() {
             {/* Saved Jobs List */}
             {isLoading ? (
               <div className="text-center py-12">
-                <p className="text-[13px] text-gray-400">Loading saved jobs...</p>
+                <p className="text-sm text-subtle">Loading saved jobs...</p>
               </div>
             ) : savedJobs.length === 0 ? (
               <Card padding="none" className="p-12 text-center" overflow>
@@ -159,13 +160,13 @@ export default function SavedJobsListPageClient() {
                 >
                   <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
                 </svg>
-                <p className="text-[14px] font-semibold text-gray-500 mb-1">No saved jobs yet</p>
-                <p className="text-[13px] text-gray-400 mb-4">
+                <p className="text-base font-semibold text-muted mb-1">No saved jobs yet</p>
+                <p className="text-sm text-subtle mb-4">
                   Save jobs to revisit them later
                 </p>
                 <Link
                   href="/candidate/jobs"
-                  className="inline-block text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
+                  className="inline-block text-sm font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
                   style={{ color: '#fff' }}
                 >
                   Browse Jobs
@@ -190,7 +191,7 @@ export default function SavedJobsListPageClient() {
                           <img
                             src={logoUrl}
                             alt={job.company}
-                            className="w-12 h-12 rounded-xl object-contain bg-white border border-gray-100 shrink-0"
+                            className="w-12 h-12 rounded-xl object-contain bg-surface border border-token shrink-0"
                           />
                         ) : (
                           <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shrink-0 ${color}`}>
@@ -204,18 +205,20 @@ export default function SavedJobsListPageClient() {
                             <div>
                               <Link
                                 href={`/candidate/jobs/${job.job_id}`}
-                                className="text-[15px] font-bold text-[#0f172a] hover:text-primary transition-colors block"
+                                className="text-md font-bold text-heading hover:text-primary transition-colors block"
                               >
                                 {job.title}
                               </Link>
-                              <p className="text-[13px] text-gray-500 mt-1">
-                                {job.company} {job.location && `· ${job.location}`}
+                              <p className="text-sm text-muted mt-1 flex items-center gap-1.5 flex-wrap">
+                                <span>{job.company}</span>
+                                {job.company_verified && <VerifiedBadge />}
+                                {job.location && <span>· {job.location}</span>}
                               </p>
                             </div>
                           </div>
 
                           {/* Details */}
-                          <div className="flex items-center gap-3 flex-wrap text-[12px] text-gray-400 mb-2">
+                          <div className="flex items-center gap-3 flex-wrap text-caption text-subtle mb-2">
                             {job.salary_min && job.salary_max && (
                               <span>₹{Math.floor(job.salary_min / 100000)}–{Math.floor(job.salary_max / 100000)} LPA</span>
                             )}
@@ -226,7 +229,7 @@ export default function SavedJobsListPageClient() {
                           </div>
 
                           {/* Meta */}
-                          <p className="text-[12px] text-gray-400">
+                          <p className="text-caption text-subtle">
                             Saved {relativeDate(job.saved_at)}
                           </p>
                         </div>
@@ -235,14 +238,14 @@ export default function SavedJobsListPageClient() {
                         <div className="flex items-center gap-2 shrink-0">
                           <Link
                             href={`/candidate/jobs/${job.job_id}`}
-                            className="text-[12px] font-semibold text-primary bg-primary/10 rounded-lg px-3 py-2 hover:bg-primary/20 transition-colors"
+                            className="text-caption font-semibold text-primary bg-primary/10 rounded-lg px-3 py-2 hover:bg-primary/20 transition-colors"
                           >
                             View & Apply
                           </Link>
                           <button
                             onClick={() => handleUnsaveClick(job.job_id)}
                             disabled={unsavingId === job.job_id}
-                            className="text-[12px] font-semibold text-gray-600 border border-gray-200 rounded-lg px-3 py-2 hover:border-red-200 hover:text-red-600 disabled:opacity-50 transition-colors"
+                            className="text-caption font-semibold text-body-secondary border border-token rounded-lg px-3 py-2 hover:border-danger hover:text-danger disabled:opacity-50 transition-colors"
                           >
                             {unsavingId === job.job_id ? 'Removing...' : 'Remove'}
                           </button>
@@ -260,9 +263,9 @@ export default function SavedJobsListPageClient() {
                 {isFetchingNextPage && (
                   <div className="text-center">
                     <div className="inline-block">
-                      <div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-primary animate-spin" />
+                      <div className="w-8 h-8 rounded-full border-2 border-token border-t-primary animate-spin" />
                     </div>
-                    <p className="text-[13px] text-gray-400 mt-3">Loading more jobs...</p>
+                    <p className="text-sm text-subtle mt-3">Loading more jobs...</p>
                   </div>
                 )}
               </div>

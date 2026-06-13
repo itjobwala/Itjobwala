@@ -1,10 +1,10 @@
 'use client';
 
 const STEPS = [
-  { label: 'Downloading resume…',   delay: 0 },
-  { label: 'Extracting text…',      delay: 800 },
-  { label: 'Parsing sections…',     delay: 1800 },
-  { label: 'Detecting skills…',     delay: 2600 },
+  { label: 'Downloading resume…',    delay: 0    },
+  { label: 'Extracting text…',       delay: 800  },
+  { label: 'Parsing sections…',      delay: 1800 },
+  { label: 'Detecting skills…',      delay: 2600 },
   { label: 'Calculating ATS score…', delay: 3400 },
 ];
 
@@ -30,13 +30,12 @@ export default function ResumeParsingLoader() {
             <path d="M9 21h6M10 17v4M14 17v4"/>
           </svg>
         </div>
-        {/* Pulse ring */}
         <div className="absolute inset-0 rounded-2xl bg-blue-400/30 animate-ping" />
       </div>
 
       <div className="text-center">
-        <p className="text-[15px] font-semibold text-gray-800">Analyzing Your Resume</p>
-        <p className="text-[13px] text-gray-500 mt-1">AI-powered analysis in progress…</p>
+        <p className="text-md font-semibold text-heading">Analyzing Your Resume</p>
+        <p className="text-sm text-muted mt-1">Smart analysis in progress…</p>
       </div>
 
       {/* Steps */}
@@ -44,14 +43,14 @@ export default function ResumeParsingLoader() {
         {STEPS.map((s, i) => (
           <div
             key={i}
-            className={`flex items-center gap-2.5 text-[13px] transition-all duration-300 ${
-              i <= step ? 'text-gray-800' : 'text-gray-300'
+            className={`flex items-center gap-2.5 text-sm transition-all duration-300 ${
+              i <= step ? 'text-heading' : 'text-gray-300'
             }`}
           >
             <span className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold transition-all duration-300 ${
-              i < step  ? 'bg-emerald-500 text-white' :
+              i < step   ? 'bg-emerald-500 text-white' :
               i === step ? 'bg-blue-500 text-white animate-pulse' :
-              'bg-gray-100 text-gray-300'
+              'bg-surface-hover text-subtle'
             }`}>
               {i < step ? '✓' : i + 1}
             </span>

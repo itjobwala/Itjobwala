@@ -39,14 +39,14 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           aria-invalid={error ? 'true' : 'false'}
           className={cn(
-            'w-full appearance-none rounded-xl border bg-white',
+            'w-full appearance-none rounded-xl border bg-surface',
             SIZE_CLASSES[inputSize],
-            'text-[13px] text-[#0f172a]',
+            'text-sm text-heading',
             'outline-none transition-colors cursor-pointer',
-            'disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed',
+            'disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed',
             error
-              ? 'border-red-400 bg-red-50 focus:border-red-400'
-              : 'border-gray-200 focus:border-primary',
+              ? 'border-danger bg-danger-bg focus:border-danger'
+              : 'border-token-mid focus:border-primary',
             className,
           )}
           {...props}
@@ -77,7 +77,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
           {children}
         </select>
 
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" aria-hidden="true">
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-subtle" aria-hidden="true">
           <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
             <polyline points="6 9 12 15 18 9" />
           </svg>

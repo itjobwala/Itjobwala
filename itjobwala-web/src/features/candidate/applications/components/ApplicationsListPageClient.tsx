@@ -6,6 +6,7 @@ import { SmartNavbar } from '@/layout/navbar';
 import { ProtectedRoute } from '@/features/auth';
 import ConfirmationDialog from '@/src/components/common/ConfirmationDialog';
 import { useMyApplicationsInfiniteQuery, useWithdrawApplicationMutation } from '@/features/candidate/applications/hooks';
+import VerifiedBadge from '@/src/components/ui/VerifiedBadge';
 import { useAuthHydration } from '@/src/hooks/useAuthHydration';
 import { useToast } from '@/src/hooks/useToast';
 import Toast from '@/src/components/ui/Toast';
@@ -92,25 +93,25 @@ export default function ApplicationsListPageClient() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-[#f9fafb]">
+      <div className="min-h-screen bg-surface-alt">
         <SmartNavbar />
 
         <div className="pt-[68px]">
           {/* Header bar */}
-          <div className="bg-white border-b border-gray-100">
+          <div className="bg-surface border-b border-token">
             <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-[22px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.3px' }}>
+                  <h1 className="text-3xl font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
                     My Applications
                   </h1>
-                  <p className="text-[13px] text-gray-400 mt-0.5">
+                  <p className="text-sm text-subtle mt-0.5">
                     Track and manage your job applications
                   </p>
                 </div>
                 <Link
                   href="/candidate/jobs"
-                  className="text-[13px] font-semibold text-white bg-primary rounded-xl px-4 py-2 hover:opacity-90 active:opacity-80 transition-opacity"
+                  className="text-sm font-semibold text-white bg-primary rounded-xl px-4 py-2 hover:opacity-90 active:opacity-80 transition-opacity"
                   style={{ color: '#fff' }}
                 >
                   Find More Jobs
@@ -121,11 +122,10 @@ export default function ApplicationsListPageClient() {
 
           <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
             {/* Filters */}
-            <Card padding="lg" className="mb-6" overflow>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="mb-6 flex items-end gap-4 flex-wrap">
                 {/* Status Filter */}
                 <div>
-                  <label htmlFor="app-filter-status" className="block text-[12px] font-bold text-gray-500 mb-2">
+                  <label htmlFor="app-filter-status" className="block text-caption font-bold text-muted mb-2">
                     Filter by Status
                   </label>
                   <div className="relative">
@@ -133,14 +133,14 @@ export default function ApplicationsListPageClient() {
                       id="app-filter-status"
                       value={statusFilter}
                       onChange={(e) => setStatusFilter(e.target.value)}
-                      className="appearance-none w-full rounded-xl border border-gray-200 bg-white pl-3.5 pr-9 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none focus:border-primary/50 transition-colors cursor-pointer"
+                      className="appearance-none w-[180px] rounded-xl border border-token bg-surface pl-3.5 pr-9 py-2.5 text-sm font-medium text-heading outline-none focus:border-primary/50 transition-colors cursor-pointer"
                     >
                       <option value="">All Status</option>
-                      {(['applied','shortlisted','interview','offer','hired','rejected','withdrawn'] as const).map(s => (
+                      {(['applied','shortlisted','interview','hired','rejected','withdrawn'] as const).map(s => (
                         <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
                       ))}
                     </select>
-                    <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-subtle" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <polyline points="6 9 12 15 18 9" />
                     </svg>
                   </div>
@@ -148,7 +148,7 @@ export default function ApplicationsListPageClient() {
 
                 {/* Sort Order */}
                 <div>
-                  <label htmlFor="app-sort-order" className="block text-[12px] font-bold text-gray-500 mb-2">
+                  <label htmlFor="app-sort-order" className="block text-caption font-bold text-muted mb-2">
                     Sort By
                   </label>
                   <div className="relative">
@@ -156,23 +156,22 @@ export default function ApplicationsListPageClient() {
                       id="app-sort-order"
                       value={sortOrder}
                       onChange={(e) => setSortOrder(e.target.value as 'newest' | 'oldest')}
-                      className="appearance-none w-full rounded-xl border border-gray-200 bg-white pl-3.5 pr-9 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none focus:border-primary/50 transition-colors cursor-pointer"
+                      className="appearance-none w-[180px] rounded-xl border border-token bg-surface pl-3.5 pr-9 py-2.5 text-sm font-medium text-heading outline-none focus:border-primary/50 transition-colors cursor-pointer"
                     >
                       <option value="newest">Newest First</option>
                       <option value="oldest">Oldest First</option>
                     </select>
-                    <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-subtle" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <polyline points="6 9 12 15 18 9" />
                     </svg>
                   </div>
                 </div>
-              </div>
-            </Card>
+            </div>
 
             {/* Applications List */}
             {isLoading ? (
               <div className="text-center py-12">
-                <p className="text-[13px] text-gray-400">Loading applications...</p>
+                <p className="text-sm text-subtle">Loading applications...</p>
               </div>
             ) : applications.length === 0 ? (
               <Card padding="none" className="p-12 text-center" overflow>
@@ -189,13 +188,13 @@ export default function ApplicationsListPageClient() {
                   <path d="M2 17l10 5 10-5" />
                   <path d="M2 12l10 5 10-5" />
                 </svg>
-                <p className="text-[14px] font-semibold text-gray-500 mb-1">No applications yet</p>
-                <p className="text-[13px] text-gray-400 mb-4">
+                <p className="text-base font-semibold text-muted mb-1">No applications yet</p>
+                <p className="text-sm text-subtle mb-4">
                   {statusFilter ? 'No applications with this status' : 'You haven\'t applied to any jobs yet'}
                 </p>
                 <Link
                   href="/candidate/jobs"
-                  className="inline-block text-[13px] font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
+                  className="inline-block text-sm font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
                   style={{ color: '#fff' }}
                 >
                   Browse Jobs
@@ -220,7 +219,7 @@ export default function ApplicationsListPageClient() {
                           <img
                             src={logoUrl}
                             alt={app.company}
-                            className="w-12 h-12 rounded-xl object-contain bg-white border border-gray-100 shrink-0"
+                            className="w-12 h-12 rounded-xl object-contain bg-surface border border-token shrink-0"
                           />
                         ) : (
                           <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shrink-0 ${color}`}>
@@ -232,15 +231,17 @@ export default function ApplicationsListPageClient() {
                         <div className="flex-1 min-w-0">
                           <Link
                             href={`/candidate/jobs/${app.job_id}`}
-                            className="text-[15px] font-bold text-[#0f172a] hover:text-primary transition-colors block mb-0.5"
+                            className="text-md font-bold text-heading hover:text-primary transition-colors block mb-0.5"
                           >
                             {app.title}
                           </Link>
-                          <p className="text-[13px] text-gray-500 mb-2">
-                            {app.company} {app.location && `· ${app.location}`}
+                          <p className="text-sm text-muted mb-2 flex items-center gap-1.5 flex-wrap">
+                            <span>{app.company}</span>
+                            {app.company_verified && <VerifiedBadge />}
+                            {app.location && <span>· {app.location}</span>}
                           </p>
                           {/* Meta */}
-                          <p className="text-[12px] text-gray-400">
+                          <p className="text-caption text-subtle">
                             Applied {relativeDate(app.applied_at)}
                             {app.updated_at && app.updated_at !== app.applied_at && (
                               <> • Updated {relativeDate(app.updated_at)}</>
@@ -252,8 +253,14 @@ export default function ApplicationsListPageClient() {
                         <div className="flex items-center gap-2 shrink-0">
                           <StatusBadge status={app.status} size="md" className="shrink-0" />
                           <Link
+                            href={`/candidate/applications/${app.id}`}
+                            className="text-caption font-semibold text-body-secondary border border-token rounded-xl px-3 py-2 hover:border-primary/40 hover:text-primary transition-colors"
+                          >
+                            View Details
+                          </Link>
+                          <Link
                             href={`/candidate/jobs/${app.job_id}`}
-                            className="text-[12px] font-semibold text-gray-600 border border-gray-200 rounded-xl px-3 py-2 hover:border-primary/40 hover:text-primary transition-colors"
+                            className="text-caption font-semibold text-body-secondary border border-token rounded-xl px-3 py-2 hover:border-primary/40 hover:text-primary transition-colors"
                           >
                             View Job
                           </Link>
@@ -261,7 +268,7 @@ export default function ApplicationsListPageClient() {
                             <button
                               onClick={() => handleWithdrawClick(app.id)}
                               disabled={withdrawingId === app.id}
-                              className="text-[12px] font-semibold text-red-600 border border-red-200 rounded-xl px-3 py-2 hover:bg-red-50 disabled:opacity-50 transition-colors"
+                              className="text-caption font-semibold text-danger border border-danger rounded-xl px-3 py-2 hover:bg-danger-bg disabled:opacity-50 transition-colors"
                             >
                               {withdrawingId === app.id ? 'Withdrawing...' : 'Withdraw'}
                             </button>
@@ -280,9 +287,9 @@ export default function ApplicationsListPageClient() {
                 {isFetchingNextPage && (
                   <div className="text-center">
                     <div className="inline-block">
-                      <div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-primary animate-spin" />
+                      <div className="w-8 h-8 rounded-full border-2 border-token border-t-primary animate-spin" />
                     </div>
-                    <p className="text-[13px] text-gray-400 mt-3">Loading more applications...</p>
+                    <p className="text-sm text-subtle mt-3">Loading more applications...</p>
                   </div>
                 )}
               </div>

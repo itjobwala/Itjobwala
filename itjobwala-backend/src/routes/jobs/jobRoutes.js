@@ -1,4 +1,4 @@
-import { getJobs, getJobDetails, getRecommendedJobs, getSimilarJobs, getFeaturedJobs, createJob, getJobCategories, getSimilarCompanies } from '../../controllers/jobs/jobController.js';
+import { getJobs, getJobDetails, getRecommendedJobs, getSimilarJobs, getFeaturedJobs, createJob, getJobCategories, getSimilarCompanies, getSitemapJobs } from '../../controllers/jobs/jobController.js';
 
 export default async function jobRoutes(fastify, options) {
   
@@ -17,6 +17,8 @@ export default async function jobRoutes(fastify, options) {
   fastify.get('/jobs/categories', getJobCategories);
   fastify.get('/jobs/recommended', getRecommendedJobs);
   fastify.get('/jobs/featured', getFeaturedJobs);
+  // Static literal route must be registered before /:job_id (belt-and-suspenders for find-my-way)
+  fastify.get('/jobs/sitemap', getSitemapJobs);
   fastify.get('/jobs/:job_id/similar', { schema: paramSchema }, getSimilarJobs);
   fastify.get('/jobs/:job_id/similar-companies', { schema: paramSchema }, getSimilarCompanies);
   fastify.get('/jobs/:job_id', { schema: paramSchema }, getJobDetails);

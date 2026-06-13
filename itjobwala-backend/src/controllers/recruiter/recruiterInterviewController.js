@@ -1,6 +1,8 @@
 import Application from '../../models/jobs/Application.js';
 import Interview from '../../models/recruiter/Interview.js';
+import User from '../../models/candidate/User.js';
 import { notifyCandidate, notifyRecruiter } from '../../utils/notifyHelper.js';
+import { sendInterviewEmail, sendInterviewCancelEmail } from '../../services/email/mailer.service.js';
 
 function deriveStatus(scheduledAt) {
   if (!scheduledAt) return 'not_scheduled';
@@ -153,11 +155,79 @@ export const scheduleInterview = async (request, reply) => {
       actionUrl: `/recruiter/interviews`,
     });
 
+    // Send invite email to candidate (soft-fail, fire-and-forget)
+    if (application.applicant?.email) {
+      sendInterviewEmail({
+        to:          application.applicant.email,
+        name:        application.applicant.full_name || null,
+        jobTitle,
+        scheduledAt,
+        type:        interviewType,
+        meetingLink: meetingLink || null,
+        location:    location || null,
+        note:        note || null,
+        isReschedule,
+      });
+    }
+
     return reply.status(200).send({
       success: true,
       message: 'Interview scheduled successfully',
       data: formatInterview(application, interview),
     });
+  } catch (error) {
+    request.server.log.error(error);
+    return reply.status(500).send({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const cancelInterview = async (request, reply) => {
+  try {
+    const recruiterId = request.user.id;
+    const numericId   = parseInt(String(request.params.interviewId).replace('interview_', ''), 10);
+
+    if (!numericId) {
+      return reply.status(400).send({ success: false, message: 'Invalid interview ID' });
+    }
+
+    // Verify ownership: the interview must belong to an application under a job owned by this recruiter
+    const interview = await Interview.query()
+      .join('applications', 'interviews.application_id', 'applications.id')
+      .join('jobs', 'applications.job_id', 'jobs.id')
+      .where('interviews.id', numericId)
+      .where('jobs.recruiter_id', recruiterId)
+      .select(
+        'interviews.id',
+        'interviews.scheduled_at',
+        'applications.user_id as candidate_id',
+        'jobs.title as job_title',
+      )
+      .first();
+
+    if (!interview) {
+      return reply.status(404).send({ success: false, message: 'Interview not found', error: 'NOT_FOUND' });
+    }
+
+    await Interview.query().deleteById(numericId);
+
+    // Notify candidate + send cancellation email (fire-and-forget)
+    User.query().findById(interview.candidate_id).select('email', 'full_name').then(user => {
+      if (!user) return;
+      notifyCandidate(interview.candidate_id, {
+        type:      'interview',
+        title:     'Interview Cancelled',
+        message:   `Your interview for "${interview.job_title}" has been cancelled by the recruiter.`,
+        actionUrl: `/candidate/applications`,
+      });
+      sendInterviewCancelEmail({
+        to:          user.email,
+        name:        user.full_name || null,
+        jobTitle:    interview.job_title,
+        scheduledAt: interview.scheduled_at,
+      });
+    }).catch(() => {});
+
+    return reply.status(200).send({ success: true, message: 'Interview cancelled successfully', data: {} });
   } catch (error) {
     request.server.log.error(error);
     return reply.status(500).send({ success: false, message: 'Internal server error' });

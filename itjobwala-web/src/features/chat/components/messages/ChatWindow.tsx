@@ -62,8 +62,8 @@ export default function ChatWindow({ conversation, myId, isTyping }: Props) {
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
           </div>
-          <p className="text-[14px] font-bold text-[#0f172a]">Start the conversation</p>
-          <p className="text-[12px] text-gray-500 mt-0.5">Say hello to {conversation.other_party?.name ?? 'them'}!</p>
+          <p className="text-base font-bold text-heading">Start the conversation</p>
+          <p className="text-caption text-muted mt-0.5">Say hello to {conversation.other_party?.name ?? 'them'}!</p>
         </div>
       </div>
     );
@@ -73,7 +73,7 @@ export default function ChatWindow({ conversation, myId, isTyping }: Props) {
     <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 flex flex-col gap-3 scroll-smooth">
       {isFetchingPreviousPage && (
         <div className="text-center py-2">
-          <span className="text-[11px] text-gray-400">Loading older messages...</span>
+          <span className="text-micro text-subtle">Loading older messages...</span>
         </div>
       )}
 

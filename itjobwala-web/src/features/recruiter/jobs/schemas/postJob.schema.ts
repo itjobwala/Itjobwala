@@ -67,8 +67,20 @@ export function parseBullets(text: string): string[] {
 
 export function validateAccount(account: AccountForm): AccountErrors {
   const e: AccountErrors = {};
-  if (!account.fullName.trim()) e.fullName = 'Full name is required';
-  if (!account.companyName.trim()) e.companyName = 'Company name is required';
+  if (!account.fullName.trim()) {
+    e.fullName = 'Full name is required';
+  } else if (!/^[a-zA-Z\s'\-]+$/.test(account.fullName.trim())) {
+    e.fullName = 'Full name must contain only letters, spaces, hyphens, or apostrophes';
+  } else if (account.fullName.trim().length > 100) {
+    e.fullName = 'Full name must be under 100 characters';
+  }
+  if (!account.companyName.trim()) {
+    e.companyName = 'Company name is required';
+  } else if (account.companyName.trim().length < 2) {
+    e.companyName = 'Company name must be at least 2 characters';
+  } else if (account.companyName.trim().length > 100) {
+    e.companyName = 'Company name must be under 100 characters';
+  }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(account.email)) e.email = 'Enter a valid work email';
   if (!account.password || account.password.length < 8) e.password = 'Password must be at least 8 characters';
   if (!account.terms) e.terms = 'You must accept the Terms & Conditions';
@@ -77,16 +89,24 @@ export function validateAccount(account: AccountForm): AccountErrors {
 
 export function validateJobBasic(job: JobForm): JobErrors {
   const e: JobErrors = {};
-  if (!job.title.trim() || job.title.length < 5) e.title = 'Title must be at least 5 characters';
-  if (job.title.trim().length > 150) e.title = 'Title must be under 150 characters';
+  const title = job.title.trim();
+  if (!title || title.length < 5) e.title = 'Title must be at least 5 characters';
+  else if (title.length > 150) e.title = 'Title must be under 150 characters';
+  else if (!/[a-zA-Z]/.test(title)) e.title = 'Title must contain at least one letter';
   if (!job.description.trim() || job.description.length < 50) e.description = 'Description must be at least 50 characters';
-  if (!job.location.trim()) e.location = 'Location is required';
+  const location = job.location.trim();
+  if (!location) e.location = 'Location is required';
+  else if (!/[a-zA-Z]/.test(location)) e.location = 'Location must contain at least one letter';
   return e;
 }
 
 export function validateJobDetail(job: JobForm): JobErrors {
   const e: JobErrors = {};
   if (job.requiredSkills.length === 0) e.requiredSkills = 'Add at least one required skill';
+  if (job.vacancies) {
+    const n = Number(job.vacancies);
+    if (!Number.isInteger(n) || n < 1) e.vacancies = 'Vacancies must be a positive whole number (e.g. 1, 2, 5)';
+  }
   if (job.closesAt && new Date(job.closesAt) <= new Date()) e.closesAt = 'Deadline must be a future date';
   if (!job.responsibilities.trim()) e.responsibilities = 'At least one responsibility is required';
   if (!job.requirements.trim()) e.requirements = 'At least one requirement is required';

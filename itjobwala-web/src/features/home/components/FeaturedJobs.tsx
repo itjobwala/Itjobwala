@@ -38,15 +38,15 @@ export default function
   return (
     <section
       ref={ref}
-      className="bg-[#f9fafb] py-[88px] px-5 sm:px-8 lg:px-10"
+      className="bg-surface-alt py-20 px-5 sm:px-8 lg:px-10"
     >
       <div className="max-w-[1440px] mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-10 lg:gap-16 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 lg:gap-12 items-start">
 
           {/* Left Content */}
           <div className="reveal-left lg:pt-2">
             <div
-              className="text-[12px] font-bold uppercase mb-3"
+              className="text-caption font-bold uppercase mb-3"
               style={{ color: PRIMARY, letterSpacing: 2 }}
             >
               Opportunities
@@ -56,18 +56,16 @@ export default function
               className="text-[36px] md:text-[42px] font-extrabold text-[#0f172a] leading-[1.1] mb-5"
               style={{ letterSpacing: '-1.5px' }}
             >
-              Featured
-              <br />
-              jobs
+              Featured jobs
             </h2>
 
-            <p className="text-[15px] text-gray-500 leading-[1.7] mb-8">
+            <p className="text-md text-muted leading-[1.7] mb-8">
               Hand-picked roles from the best companies in India&apos;s tech ecosystem.
             </p>
 
             <Link
               href="/candidate/jobs"
-              className="inline-flex items-center gap-2 text-sm font-bold text-white rounded-[10px] py-[13px] px-6 transition-[filter] hover:brightness-110"
+              className="inline-flex items-center gap-2 text-sm font-bold text-white rounded-[10px] py-[13px] px-6 transition-[filter] hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2"
               style={{ background: PRIMARY, color: '#fff' }}
             >
               Browse all jobs
@@ -93,21 +91,21 @@ export default function
               [...Array(5)].map((_, i) => (
                 <div
                   key={i}
-                  className="h-[88px] bg-white rounded-2xl border border-gray-100 animate-pulse"
+                  className="h-[88px] bg-surface rounded-2xl border border-token animate-pulse"
                 />
               ))
             ) : normalizationError ? (
               <div className="py-12 text-center text-[14px] text-red-500">
                 <div className="font-semibold mb-2">Error processing featured jobs</div>
-                <div className="text-xs text-gray-500">{String(normalizationError)}</div>
+                <div className="text-xs text-muted">{String(normalizationError)}</div>
               </div>
             ) : isError ? (
               <div className="py-12 text-center text-[14px] text-red-400">
                 Unable to load featured jobs.
               </div>
             ) : jobs.length === 0 ? (
-              <div className="w-full py-16 flex flex-col items-center justify-center bg-white border border-gray-100 rounded-2xl">
-                <span className="text-[14px] text-gray-400 font-medium">No featured jobs available right now.</span>
+              <div className="w-full py-16 flex flex-col items-center justify-center bg-surface border border-token rounded-2xl">
+                <span className="text-base text-subtle font-medium">No featured jobs available right now.</span>
               </div>
             ) : (
               jobs.map((job: any, i: number) => {
@@ -132,7 +130,7 @@ export default function
                   <Link
                     href={`/candidate/jobs/${job?.id}`}
                     key={job?.id}
-                    className={`reveal stagger-${i + 1} bg-white rounded-2xl py-5 px-5 sm:px-6 flex flex-col sm:flex-row sm:items-center gap-4 cursor-pointer transition-all duration-[250ms]`}
+                    className={`reveal stagger-${i + 1} bg-white rounded-2xl py-5 px-5 sm:px-6 flex flex-col sm:flex-row sm:items-center gap-4 cursor-pointer transition-all duration-[250ms] focus:outline-none focus:ring-4 focus:ring-primary/20`}
                     style={{
                       border: `1.5px solid ${
                         hovered === i ? PRIMARY : '#f0f0f0'
@@ -148,12 +146,12 @@ export default function
                     onMouseLeave={() => setHovered(null)}
                   >
                     <div className="flex items-center gap-4 flex-1 min-w-0">
-
+ 
                       {logoUrl ? (
                         <img
                           src={logoUrl}
                           alt={job?.company}
-                          className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-contain bg-white border border-gray-100 shrink-0"
+                          className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-contain bg-surface border border-token shrink-0"
                         />
                       ) : (
                         <div
@@ -162,14 +160,14 @@ export default function
                           {logoFallback}
                         </div>
                       )}
-
+ 
                       <div className="min-w-0">
-
+ 
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className="font-bold text-[15px] text-[#0f172a]">
+                          <span className="font-bold text-md text-heading">
                             {job?.title}
                           </span>
-
+ 
                           {badge && (
                             <span
                               className="text-[11px] font-bold rounded-full py-[2px] px-2"
@@ -182,8 +180,8 @@ export default function
                             </span>
                           )}
                         </div>
-
-                        <div className="text-[13px] text-gray-400 flex gap-2 flex-wrap">
+ 
+                        <div className="text-sm text-subtle flex gap-2 flex-wrap">
                           <span>{job?.company}</span>
                           <span>·</span>
                           <span>{job?.location}</span>
@@ -193,12 +191,16 @@ export default function
                               ? '0 yrs'
                               : `${job?.experienceMin}–${job?.experienceMax} yrs`}
                           </span>
+                          <span>·</span>
+                          <span>
+                            ₹{job?.salaryLpaMin}–{job?.salaryLpaMax} LPA
+                          </span>
                         </div>
                       </div>
                     </div>
-
+ 
                     <span
-                      className="py-[9px] px-5 rounded-lg text-[13px] font-bold border-[1.5px] transition-all duration-200 whitespace-nowrap self-start sm:self-auto"
+                      className="py-[9px] px-5 rounded-lg text-sm font-bold border-[1.5px] transition-all duration-200 whitespace-nowrap self-start sm:self-auto"
                       style={{
                         background:
                           hovered === i ? PRIMARY : 'transparent',

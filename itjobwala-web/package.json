@@ -6,10 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check-tokens": "node scripts/check-tokens.js"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.91.1",
+"@react-pdf/renderer": "^4.5.1",
     "@tanstack/react-query": "^5.100.9",
     "axios": "^1.16.0",
     "clsx": "^2.1.1",

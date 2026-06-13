@@ -51,7 +51,7 @@ export default function StatsStrip() {
           <div
             key={i}
             className={[
-              `reveal stagger-${i + 1} text-center px-6 py-4 border-gray-100`,
+              `reveal stagger-${i + 1} text-center px-6 py-4 border-token`,
               i % 2 === 0 ? 'border-r' : 'md:border-r',
               i < 2 ? 'border-b md:border-b-0' : '',
               i === 3 ? 'md:border-r-0' : '',
@@ -63,8 +63,8 @@ export default function StatsStrip() {
             >
               {s.value}
             </div>
-            <div className="text-sm font-semibold text-[#0f172a] mb-1">{s.label}</div>
-            <div className="text-xs text-gray-400 font-medium">{s.sub}</div>
+            <div className="text-sm font-semibold text-heading mb-1">{s.label}</div>
+            <div className="text-xs text-subtle font-medium">{s.sub}</div>
           </div>
         ))}
       </div>

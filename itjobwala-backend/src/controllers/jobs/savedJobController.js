@@ -26,6 +26,7 @@ export const getSavedJobs = async (request, reply) => {
           company: save.job?.recruiter?.company_name || save.job?.company_name || 'Unknown Company',
           company_logo: save.job?.recruiter?.logo || null,
           company_color_class: save.job?.recruiter?.color_class || null,
+          company_verified: save.job?.recruiter?.is_verified === true,
           location: save.job?.location || 'Not Specified',
           salary_min: save.job?.salary_min || 0,
           salary_max: save.job?.salary_max || 0,

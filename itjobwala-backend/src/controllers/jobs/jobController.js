@@ -1,6 +1,7 @@
 import Job from '../../models/jobs/Job.js';
 import Recruiter from '../../models/recruiter/Recruiter.js';
 import Application from '../../models/jobs/Application.js';
+import SavedJob from '../../models/jobs/SavedJob.js';
 import { ref, raw } from 'objection';
 
 // Resolve candidate user ID from request JWT without throwing (optional auth)
@@ -15,7 +16,7 @@ const getCandidateId = async (request) => {
 };
 
 // Helper to map DB result to contract shape
-const formatJob = (job, hasApplied = false) => {
+const formatJob = (job, hasApplied = false, isSaved = false) => {
   return {
     id: `job_${job.id}`,
     title: job.title,
@@ -63,7 +64,9 @@ const formatJob = (job, hasApplied = false) => {
       shortlisted: parseInt(job.shortlisted_count || 0, 10),
       interviews: parseInt(job.interview_count || 0, 10)
     },
-    is_saved: false, // mock
+    company_verified: job.recruiter?.is_verified === true,
+    status:      job.status,
+    is_saved: isSaved,
     has_applied: hasApplied,
   };
 };
@@ -165,20 +168,22 @@ export const getJobs = async (request, reply) => {
     const result = await query.page(pageIndex, pageSize);
 
     let appliedJobIds = new Set();
+    let savedJobIds   = new Set();
     if (candidateId && result.results.length > 0) {
       const jobIds = result.results.map(j => j.id);
-      const applications = await Application.query()
-        .whereIn('job_id', jobIds)
-        .where('user_id', candidateId)
-        .select('job_id');
+      const [applications, savedJobs] = await Promise.all([
+        Application.query().whereIn('job_id', jobIds).where('user_id', candidateId).select('job_id'),
+        SavedJob.query().whereIn('job_id', jobIds).where('user_id', candidateId).select('job_id'),
+      ]);
       appliedJobIds = new Set(applications.map(a => a.job_id));
+      savedJobIds   = new Set(savedJobs.map(s => s.job_id));
     }
 
     return reply.status(200).send({
       success: true,
       message: 'Jobs fetched successfully.',
       data: {
-        jobs: result.results.map(j => formatJob(j, appliedJobIds.has(j.id))),
+        jobs: result.results.map(j => formatJob(j, appliedJobIds.has(j.id), savedJobIds.has(j.id))),
         pagination: {
           page: pageIndex + 1,
           limit: pageSize,
@@ -200,7 +205,7 @@ export const getJobDetails = async (request, reply) => {
     const jobId = request.params.job_id.replace('job_', '');
     const candidateId = await getCandidateId(request);
 
-    const [job, existingApplication] = await Promise.all([
+    const [job, existingApplication, savedJob] = await Promise.all([
       Job.query()
         .findById(jobId)
         .withGraphFetched('recruiter')
@@ -227,16 +232,21 @@ export const getJobDetails = async (request, reply) => {
             .findOne({ job_id: jobId, user_id: candidateId })
             .select('id')
         : Promise.resolve(null),
+      candidateId
+        ? SavedJob.query()
+            .findOne({ job_id: jobId, user_id: candidateId })
+            .select('id')
+        : Promise.resolve(null),
     ]);
 
-    if (!job) {
+    if (!job || job.status !== 'active') {
       return reply.status(404).send({ success: false, message: 'Job not found or has been removed.' });
     }
 
     return reply.status(200).send({
       success: true,
       message: 'Job details fetched successfully.',
-      data: formatJob(job, !!existingApplication),
+      data: formatJob(job, !!existingApplication, !!savedJob),
     });
   } catch (error) {
     request.server.log.error(error);
@@ -253,36 +263,29 @@ export const getRecommendedJobs = async (request, reply) => {
     const query = Job.query()
       .withGraphFetched('recruiter')
       .select('jobs.*')
-      .select(
-        Job.relatedQuery('applications')
-          .count()
-          .as('applicant_count')
-      )
-      .select(
-        Job.relatedQuery('applications')
-          .where('status', 'shortlisted')
-          .count()
-          .as('shortlisted_count')
-      )
-      .select(
-        Job.relatedQuery('applications')
-          .where('status', 'interview')
-          .count()
-          .as('interview_count')
-      )
+      .select(Job.relatedQuery('applications').count().as('applicant_count'))
+      .select(Job.relatedQuery('applications').where('status', 'shortlisted').count().as('shortlisted_count'))
+      .select(Job.relatedQuery('applications').where('status', 'interview').count().as('interview_count'))
       .where('status', 'active')
       .orderBy('created_at', 'desc')
       .limit(limit);
 
     if (excludeId) query.whereNot('id', excludeId);
 
+    const candidateId = await getCandidateId(request);
     const jobs = await query;
+
+    let savedJobIds = new Set();
+    if (candidateId && jobs.length > 0) {
+      const rows = await SavedJob.query().whereIn('job_id', jobs.map(j => j.id)).where('user_id', candidateId).select('job_id');
+      savedJobIds = new Set(rows.map(r => r.job_id));
+    }
 
     return reply.status(200).send({
       success: true,
       message: 'Recommended jobs fetched.',
       data: {
-        jobs: jobs.map(formatJob)
+        jobs: jobs.map(j => formatJob(j, false, savedJobIds.has(j.id)))
       }
     });
   } catch (error) {
@@ -295,37 +298,30 @@ export const getSimilarJobs = async (request, reply) => {
   try {
     const jobId = request.params.job_id.replace('job_', '');
     const limit = parseInt(request.query.limit, 10) || 5;
-    // Mocking similar jobs by fetching newest jobs except current
+
+    const candidateId = await getCandidateId(request);
     const jobs = await Job.query()
       .withGraphFetched('recruiter')
       .select('jobs.*')
-      .select(
-        Job.relatedQuery('applications')
-          .count()
-          .as('applicant_count')
-      )
-      .select(
-        Job.relatedQuery('applications')
-          .where('status', 'shortlisted')
-          .count()
-          .as('shortlisted_count')
-      )
-      .select(
-        Job.relatedQuery('applications')
-          .where('status', 'interview')
-          .count()
-          .as('interview_count')
-      )
+      .select(Job.relatedQuery('applications').count().as('applicant_count'))
+      .select(Job.relatedQuery('applications').where('status', 'shortlisted').count().as('shortlisted_count'))
+      .select(Job.relatedQuery('applications').where('status', 'interview').count().as('interview_count'))
       .whereNot('id', jobId)
       .where('status', 'active')
       .orderBy('created_at', 'desc')
       .limit(limit);
 
+    let savedJobIds = new Set();
+    if (candidateId && jobs.length > 0) {
+      const rows = await SavedJob.query().whereIn('job_id', jobs.map(j => j.id)).where('user_id', candidateId).select('job_id');
+      savedJobIds = new Set(rows.map(r => r.job_id));
+    }
+
     return reply.status(200).send({
       success: true,
       message: 'Similar jobs fetched.',
       data: {
-        jobs: jobs.map(formatJob)
+        jobs: jobs.map(j => formatJob(j, false, savedJobIds.has(j.id)))
       }
     });
   } catch (error) {
@@ -336,37 +332,29 @@ export const getSimilarJobs = async (request, reply) => {
 
 export const getFeaturedJobs = async (request, reply) => {
   try {
-    // Mocking featured by fetching jobs where is_hot = true or newest
+    const candidateId = await getCandidateId(request);
     const jobs = await Job.query()
       .withGraphFetched('recruiter')
       .select('jobs.*')
-      .select(
-        Job.relatedQuery('applications')
-          .count()
-          .as('applicant_count')
-      )
-      .select(
-        Job.relatedQuery('applications')
-          .where('status', 'shortlisted')
-          .count()
-          .as('shortlisted_count')
-      )
-      .select(
-        Job.relatedQuery('applications')
-          .where('status', 'interview')
-          .count()
-          .as('interview_count')
-      )
+      .select(Job.relatedQuery('applications').count().as('applicant_count'))
+      .select(Job.relatedQuery('applications').where('status', 'shortlisted').count().as('shortlisted_count'))
+      .select(Job.relatedQuery('applications').where('status', 'interview').count().as('interview_count'))
       .where('status', 'active')
       .orderBy('is_hot', 'desc')
       .orderBy('created_at', 'desc')
       .limit(6);
 
+    let savedJobIds = new Set();
+    if (candidateId && jobs.length > 0) {
+      const rows = await SavedJob.query().whereIn('job_id', jobs.map(j => j.id)).where('user_id', candidateId).select('job_id');
+      savedJobIds = new Set(rows.map(r => r.job_id));
+    }
+
     return reply.status(200).send({
       success: true,
       message: 'Featured jobs fetched.',
       data: {
-        jobs: jobs.map(formatJob)
+        jobs: jobs.map(j => formatJob(j, false, savedJobIds.has(j.id)))
       }
     });
   } catch (error) {
@@ -528,5 +516,24 @@ export const getSimilarCompanies = async (request, reply) => {
   } catch (error) {
     request.server.log.error(error);
     return reply.status(500).send({ success: false, error: 'Internal server error' });
+  }
+};
+
+// ── GET /jobs/sitemap — public, lightweight, used by Next.js sitemap.ts ──────
+export const getSitemapJobs = async (request, reply) => {
+  try {
+    const jobs = await Job.query()
+      .where('status', 'active')
+      .select('id', 'updated_at')
+      .orderBy('id', 'asc');
+
+    return reply.status(200).send({
+      success: true,
+      message: 'OK',
+      data: jobs.map(j => ({ id: `job_${j.id}`, updated_at: j.updated_at })),
+    });
+  } catch (error) {
+    request.server.log.error(error);
+    return reply.status(500).send({ success: false, message: 'Internal server error' });
   }
 };

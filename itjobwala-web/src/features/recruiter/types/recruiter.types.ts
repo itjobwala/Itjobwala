@@ -45,7 +45,10 @@ export interface RecruiterPostedJob {
   jobLevel?: string | null;
   applicationCount: number;
   postedDate: string | null;
-  status: 'active' | 'closed' | 'draft';
+  status: 'active' | 'closed' | 'draft' | 'pending' | 'needs_changes' | 'removed';
+  moderationReason: string | null;
+  autoFlags: Array<{ code: string; severity: 'block' | 'warn'; message: string; field: string }>;
+  submittedAt: string | null;
   companyId: string;
   createdAt: string;
   updatedAt: string;
@@ -82,7 +85,7 @@ export interface UpdateJobPostRequest {
   requiredSkills?: string[];
   experienceMin?: number;
   experienceMax?: number;
-  status?: 'active' | 'closed' | 'draft';
+  status?: 'closed' | 'draft';
   responsibilities?: string[];
   requirements?: string[];
   niceToHave?: string[];
@@ -90,6 +93,17 @@ export interface UpdateJobPostRequest {
   vacancies?: number;
   closesAt?: string | null;
   jobLevel?: string | null;
+}
+
+export interface RecruiterApplicantInterview {
+  id: string;
+  type: 'video' | 'phone' | 'in_person' | null;
+  scheduled_at: string | null;
+  duration_minutes: number | null;
+  meeting_link: string | null;
+  location: string | null;
+  notes: string | null;
+  status: 'scheduled' | 'past' | 'not_scheduled';
 }
 
 // Recruiter Applicant
@@ -101,7 +115,7 @@ export interface RecruiterApplicant {
   jobTitle: string;
   jobId: string;
   appliedDate: string;
-  status: 'applied' | 'shortlisted' | 'interview' | 'rejected' | 'hired' | 'selected' | 'withdrawn' | 'offer';
+  status: 'applied' | 'shortlisted' | 'interview' | 'rejected' | 'hired' | 'withdrawn';
   profilePhoto?: string;
   resume?: string;
   skills?: string[];
@@ -115,10 +129,11 @@ export interface RecruiterApplicant {
     github?: string | null;
   };
   coverLetter?: string;
+  interview?: RecruiterApplicantInterview | null;
 }
 
 export interface UpdateApplicantStatusRequest {
-  status: 'applied' | 'shortlisted' | 'interview' | 'rejected' | 'hired' | 'selected' | 'withdrawn' | 'offer';
+  status: 'applied' | 'shortlisted' | 'interview' | 'rejected' | 'hired' | 'withdrawn';
 }
 
 // Recruiter Interview
@@ -153,6 +168,54 @@ export interface RecruiterInterviewsResponse {
   success: boolean;
   message: string;
   data: { interviews: RecruiterInterview[] };
+}
+
+// Phase 8: ATS Intelligence Types
+
+export interface ApplicantATSIntelligence {
+  has_data: boolean;
+  qa_match_score: number | null;
+  qa_specialization: string | null;
+  qa_seniority: string | null;
+  qa_hiring_label: string | null;
+  recruiter_confidence: string | null;
+  specialization_confidence: number | null;
+  shortlist_probability: number | null;
+  recruiter_visibility: string | null;
+  market_readiness: string | null;
+  best_fit_roles: string[];
+  recruiter_tip: string | null;
+  concerns: string[];
+  extracted_skills: string[];
+  missing_skills: string[];
+  strengths: string[];
+  weaknesses: string[];
+}
+
+export interface PoolScoreBucket {
+  label: string;
+  min: number;
+  max: number;
+  count: number;
+}
+
+export interface PoolTopCandidate {
+  applicant_id: string;
+  qa_match_score: number | null;
+  qa_specialization: string | null;
+  qa_seniority: string | null;
+  qa_hiring_label: string | null;
+  recruiter_confidence: string | null;
+  status: string;
+}
+
+export interface PoolIntelligence {
+  total_applicants: number;
+  applicants_with_data: number;
+  avg_score: number | null;
+  score_distribution: PoolScoreBucket[];
+  specialization_breakdown: Record<string, number>;
+  top_candidates: PoolTopCandidate[];
 }
 
 // API Response Types

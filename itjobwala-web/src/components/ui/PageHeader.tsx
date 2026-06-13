@@ -24,7 +24,7 @@ export default function PageHeader({
         <button
           type="button"
           onClick={onBack}
-          className="text-[13px] text-gray-500 hover:text-primary font-medium transition-colors flex items-center gap-1"
+          className="text-sm text-muted hover:text-primary font-medium transition-colors flex items-center gap-1"
         >
           <svg
             width="14"
@@ -45,13 +45,13 @@ export default function PageHeader({
           {title && (
             <div>
               <h1
-                className="text-[24px] font-extrabold text-[#0f172a]"
+                className="text-4xl font-extrabold text-heading"
                 style={{ letterSpacing: '-0.5px' }}
               >
                 {title}
               </h1>
               {subtitle && (
-                <p className="text-[13px] text-gray-500 mt-1">{subtitle}</p>
+                <p className="text-sm text-muted mt-1">{subtitle}</p>
               )}
             </div>
           )}

@@ -53,7 +53,7 @@ export default function Footer() {
   const [email, setEmail] = useState('');
 
   return (
-    <footer className="bg-[#f8faff] text-[#0f172a] pt-[72px] pb-9 border-t border-gray-200">
+    <footer className="bg-[#f8faff] text-[#0f172a] pt-[72px] pb-9 border-t border-token">
       <div className="max-w-[1440px] mx-auto px-5 lg:px-10">
 
         {/* Top grid */}
@@ -81,7 +81,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={s.label}
-                  className="w-9 h-9 rounded-lg bg-[#f3f4f6] border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-primary hover:text-white hover:border-primary transition-colors"
+                  className="w-9 h-9 rounded-lg bg-surface-hover border border-token flex items-center justify-center text-muted hover:bg-primary hover:text-white hover:border-primary transition-colors"
                 >
                   {s.icon}
                 </a>
@@ -93,7 +93,7 @@ export default function Footer() {
           {FOOTER_COLS.map((col) => (
             <div key={col.title}>
               <div
-                className="font-bold text-[12px] text-[#475569] mb-4 uppercase"
+                className="font-bold text-caption text-[#475569] mb-4 uppercase"
                 style={{ letterSpacing: 1.5 }}
               >
                 {col.title}
@@ -118,7 +118,7 @@ export default function Footer() {
           {/* Newsletter */}
           <div className="col-span-2 md:col-span-1">
             <div
-              className="font-bold text-[12px] text-[#475569] mb-4 uppercase"
+              className="font-bold text-caption text-[#475569] mb-4 uppercase"
               style={{ letterSpacing: 1.5 }}
             >
               Top jobs, weekly
@@ -130,22 +130,25 @@ export default function Footer() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@email.com"
-              className="w-full bg-[#f9fafb] border border-gray-200 rounded-[10px] py-3 px-3.5 text-sm text-[#111827] outline-none mb-2.5 focus:border-[#1557FF] transition-colors"
+              disabled
+              className="w-full bg-surface-alt border border-token rounded-[10px] py-3 px-3.5 text-sm text-heading outline-none mb-2.5 opacity-50 cursor-not-allowed"
             />
             <button
-              className="w-full text-white border-none rounded-[10px] py-3 text-sm font-bold cursor-pointer hover:brightness-110 transition-[filter]"
+              disabled
+              className="w-full text-white border-none rounded-[10px] py-3 text-sm font-bold cursor-not-allowed opacity-50"
               style={{ background: PRIMARY }}
             >
-              Get Monday picks
+              Coming soon
             </button>
+            <p className="text-[11px] text-[#9ca3af] mt-1.5">Email sign-ups are not yet active.</p>
           </div>
 
         </div>
 
         {/* Bottom bar */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-7 border-t border-gray-200">
-          <span className="text-[13px] text-[#334155]">© 2026 itJobwala. All rights reserved.</span>
-          <span className="text-[13px] text-[#334155]">Built for IT professionals in India</span>
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-7 border-t border-token">
+          <span className="text-sm text-[#334155]">© 2026 itJobwala. All rights reserved.</span>
+          <span className="text-sm text-[#334155]">Built for IT professionals in India</span>
         </div>
 
       </div>

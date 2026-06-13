@@ -36,22 +36,22 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           maxLength={maxLength}
           aria-invalid={hasError ? 'true' : 'false'}
           className={cn(
-            'w-full rounded-xl border bg-white',
+            'w-full rounded-xl border bg-surface',
             SIZE_CLASSES[inputSize],
-            'text-[13px] font-medium text-[#0f172a]',
+            'text-sm font-medium text-heading',
             'outline-none transition-colors leading-relaxed',
-            'placeholder:text-gray-400',
-            'disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed',
+            'placeholder:text-subtle',
+            'disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed',
             hasError
-              ? 'border-red-400 bg-red-50 focus:border-red-400'
-              : 'border-gray-200 focus:border-primary',
+              ? 'border-danger bg-danger-bg focus:border-danger'
+              : 'border-token-mid focus:border-primary',
             RESIZE_CLASSES[resize],
             className,
           )}
           {...props}
         />
         {showCount && maxLength !== undefined && (
-          <p className={cn('text-[11px] mt-1 text-right', isOver ? 'text-red-500' : 'text-gray-400')}>
+          <p className={cn('text-micro mt-1 text-right', isOver ? 'text-danger' : 'text-subtle')}>
             {charCount} / {maxLength}
           </p>
         )}

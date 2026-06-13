@@ -13,24 +13,24 @@ export default function PostJobSuccessScreen({ jobId }: { jobId: string }) {
             <polyline points="20 6 9 17 4 12" />
           </svg>
         </div>
-        <h2 className="font-extrabold text-[#0f172a] mb-2" style={{ fontSize: 26, letterSpacing: -0.8 }}>
+        <h2 className="font-extrabold text-heading mb-2" style={{ fontSize: 26, letterSpacing: -0.8 }}>
           Account created &amp; job posted!
         </h2>
-        <p className="text-sm text-gray-500 mb-2 leading-relaxed">
+        <p className="text-sm text-muted mb-2 leading-relaxed">
           Your recruiter account at <strong style={{ color: PRIMARY }}>itJobwala</strong> is ready and your job is live as a draft.
         </p>
-        <p className="text-[13px] text-gray-400 mb-8">
+        <p className="text-sm text-subtle mb-8">
           Review and publish your job from the dashboard to start receiving applications.
         </p>
         <Link href={`/recruiter/posted-jobs/${jobId}`}
-          className="block text-white rounded-xl font-bold text-[15px] text-center mb-3 py-3.5 transition-all"
+          className="block text-white rounded-xl font-bold text-md text-center mb-3 py-3.5 transition-all"
           style={{ background: PRIMARY, textDecoration: 'none' }}
           onMouseEnter={e => { e.currentTarget.style.background = '#0d3fd4'; }}
           onMouseLeave={e => { e.currentTarget.style.background = PRIMARY; }}>
           View &amp; publish your job →
         </Link>
         <Link href="/recruiter/dashboard"
-          className="block text-[13px] font-semibold"
+          className="block text-sm font-semibold"
           style={{ color: PRIMARY, textDecoration: 'none' }}>
           Go to dashboard
         </Link>

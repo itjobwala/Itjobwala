@@ -62,7 +62,7 @@ const ACTIONS = [
 export default function QuickActions() {
   return (
     <Card className="shadow-sm" overflow>
-      <h2 className="text-[15px] font-extrabold text-[#0f172a] mb-4" style={{ letterSpacing: '-0.3px' }}>
+      <h2 className="text-md font-extrabold text-heading mb-4" style={{ letterSpacing: '-0.3px' }}>
         Quick Actions
       </h2>
       <div className="grid grid-cols-2 gap-2.5">
@@ -74,8 +74,8 @@ export default function QuickActions() {
           >
             <span className={`${a.icon}`}>{a.iconEl}</span>
             <div>
-              <p className="text-[13px] font-bold text-[#0f172a] leading-tight">{a.label}</p>
-              <p className="text-[11px] text-gray-500 mt-0.5">{a.desc}</p>
+              <p className="text-sm font-bold text-heading leading-tight">{a.label}</p>
+              <p className="text-micro text-muted mt-0.5">{a.desc}</p>
             </div>
           </Link>
         ))}

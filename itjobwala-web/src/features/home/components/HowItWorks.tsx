@@ -10,13 +10,13 @@ export default function HowItWorks() {
   return (
     <section
       ref={ref}
-      className="bg-white py-[88px] px-5 sm:px-8 lg:px-10"
+      className="bg-white py-20 px-5 sm:px-8 lg:px-10"
     >
       <div className="max-w-[1440px] mx-auto">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-12">
           <div
-            className="reveal text-[12px] font-bold uppercase mb-3"
+            className="reveal text-caption font-bold uppercase mb-3"
             style={{ color: PRIMARY, letterSpacing: 2 }}
           >
             Simple by design
@@ -33,8 +33,8 @@ export default function HowItWorks() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-2 relative">
           {/* Dashed connector — only visible on md+ */}
           <div
-            className="hidden md:block absolute h-px border-t-2 border-dashed border-gray-200 z-0"
-            style={{ top: 36, left: 'calc(16.6% + 24px)', right: 'calc(16.6% + 24px)' }}
+            className="hidden md:block absolute h-px border-t-2 border-dashed border-token z-0"
+            style={{ top: 36, left: 'calc(16.6% + 36px)', right: 'calc(16.6% + 36px)' }}
           />
 
           {HOW_STEPS.map((s, i) => (
@@ -45,20 +45,20 @@ export default function HowItWorks() {
               <div
                 className="w-[72px] h-[72px] rounded-full mx-auto mb-7 flex items-center justify-center transition-transform duration-300"
                 style={{
-                  background: i === 1 ? PRIMARY : '#fff',
-                  border: i === 1 ? 'none' : '2px solid #e5e7eb',
-                  boxShadow: i === 1 ? `0 12px 32px ${PRIMARY}44` : 'none',
+                  background: 'rgba(21, 87, 255, 0.08)',
+                  border: 'none',
+                  boxShadow: 'none',
                 }}
               >
                 <span
                   className="text-xl font-extrabold"
-                  style={{ color: i === 1 ? '#fff' : '#9ca3af' }}
+                  style={{ color: PRIMARY }}
                 >
                   {s.n}
                 </span>
               </div>
               <h3 className="text-xl font-bold text-[#0f172a] mb-3">{s.title}</h3>
-              <p className="text-[15px] text-gray-500 leading-[1.7]">{s.desc}</p>
+              <p className="text-md text-muted leading-[1.7]">{s.desc}</p>
             </div>
           ))}
         </div>

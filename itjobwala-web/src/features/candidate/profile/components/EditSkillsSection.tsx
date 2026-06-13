@@ -38,7 +38,7 @@ export default function EditSkillsSection({ skills, onChange }: Props) {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-end">
-        <span className="text-[12px] font-semibold text-gray-400">{skills.length} skills</span>
+        <span className="text-caption font-semibold text-subtle">{skills.length} skills</span>
       </div>
 
       {/* Selected skills */}
@@ -46,7 +46,7 @@ export default function EditSkillsSection({ skills, onChange }: Props) {
         <div className="flex flex-wrap gap-2">
           {skills.map(skill => (
             <span key={skill} className="flex items-center gap-1.5 bg-primary/10 text-primary rounded-xl px-3.5 py-2 border border-primary/20">
-              <span className="text-[13px] font-semibold">{skill}</span>
+              <span className="text-sm font-semibold">{skill}</span>
               <button
                 type="button"
                 onClick={() => onChange(skills.filter(item => item !== skill))}
@@ -71,11 +71,11 @@ export default function EditSkillsSection({ skills, onChange }: Props) {
           if (e.key === 'Enter') { e.preventDefault(); addSkill(input); }
         }}
         placeholder="Type to search skills (e.g. React, Python, Docker)"
-        className={`w-full rounded-xl border bg-white px-3.5 py-2.5 text-[13px] font-medium text-[#0f172a] outline-none transition-colors placeholder:text-gray-400 ${skillError ? 'border-red-400' : 'border-gray-200 focus:border-primary/50'}`}
+        className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-subtle ${skillError ? 'border-danger' : 'border-token focus:border-primary/50'}`}
       />
 
       {skillError && (
-        <p className="text-[11px] text-red-500 -mt-1">{skillError}</p>
+        <p className="text-micro text-danger -mt-1">{skillError}</p>
       )}
 
       {/* Inline suggestions */}
@@ -86,7 +86,7 @@ export default function EditSkillsSection({ skills, onChange }: Props) {
               key={s}
               type="button"
               onClick={() => addSkill(s, true)}
-              className="px-2.5 py-1 rounded-lg text-[12px] font-semibold bg-gray-100 text-gray-500 hover:bg-primary/10 hover:text-primary transition-colors"
+              className="px-2.5 py-1 rounded-lg text-caption font-semibold bg-surface-hover text-muted hover:bg-primary/10 hover:text-primary transition-colors"
             >
               + {s}
             </button>

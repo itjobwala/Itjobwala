@@ -44,3 +44,10 @@ export async function updateRecruiterJob(
 export async function deleteRecruiterJob(jobId: string): Promise<void> {
   await recruiterClient.delete(`/recruiter/jobs/${jobId}`);
 }
+
+export async function submitRecruiterJob(jobId: string): Promise<RecruiterPostedJob> {
+  const res = await recruiterClient.post<RecruiterJobDetailResponse>(
+    `/recruiter/jobs/${jobId}/submit`,
+  );
+  return res.data.data;
+}

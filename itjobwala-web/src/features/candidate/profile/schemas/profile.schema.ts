@@ -6,24 +6,35 @@ export interface ValidationError {
 export class ProfileValidator {
   static validateEmail(email: string): ValidationError | null {
     if (!email?.trim()) return { field: 'email', message: 'Email is required' };
-    if (!email.includes('@') || !email.includes('.')) return { field: 'email', message: 'Please enter a valid email' };
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
+      return { field: 'email', message: 'Please enter a valid email address' };
     return null;
   }
 
   static validatePhone(phone: string): ValidationError | null {
     if (!phone?.trim()) return null;
-    if (!/^[\d+\-\s()]{10,}$/.test(phone)) return { field: 'phone', message: 'Please enter a valid phone number' };
+    if (!/^\+91\d{10}$/.test(phone.trim()))
+      return { field: 'phone', message: 'Enter +91 followed by 10 digits (e.g. +919876543210)' };
     return null;
   }
 
-  static validateUrl(url: string): ValidationError | null {
+  static validateUrl(url: string, domain?: string): ValidationError | null {
     if (!url?.trim()) return null;
     try {
-      new URL(url);
+      const parsed = new URL(url);
+      if (domain && !parsed.hostname.endsWith(domain))
+        return { field: 'url', message: `Must be a ${domain} URL` };
       return null;
     } catch {
-      return { field: 'url', message: 'Please enter a valid URL' };
+      return { field: 'url', message: 'Enter a valid URL including https://' };
     }
+  }
+
+  static validateName(name: string, field: string): ValidationError | null {
+    if (!name?.trim()) return { field, message: `${field} is required` };
+    if (!/^[a-zA-Z\s'\-]+$/.test(name.trim()))
+      return { field, message: `${field} must contain only letters, spaces, hyphens, or apostrophes` };
+    return null;
   }
 
   static validateRequired(value: string | undefined, field: string): ValidationError | null {
@@ -77,15 +88,39 @@ export class ProfileValidator {
   }
 
   static validatePersonalInfo(data: any): ValidationError | null {
-    const firstNameError = this.validateRequired(data.fullName, 'Full name');
-    if (firstNameError) return firstNameError;
+    const nameError = this.validateName(data.fullName, 'Full name');
+    if (nameError) return nameError;
 
     if (data.currentSalary !== '' && data.currentSalary != null) {
       const val = Number(data.currentSalary);
       if (isNaN(val) || val <= 0) return { field: 'currentSalary', message: 'Current salary must be greater than 0' };
     }
 
-    return this.validateEmail(data.email);
+    const emailError = this.validateEmail(data.email);
+    if (emailError) return emailError;
+
+    if (data.phone) {
+      const phoneError = this.validatePhone(data.phone);
+      if (phoneError) return phoneError;
+    }
+
+    if (data.linkedIn) {
+      const err = this.validateUrl(data.linkedIn, 'linkedin.com');
+      if (err) return { ...err, field: 'linkedIn' };
+    }
+
+    if (data.github) {
+      const err = this.validateUrl(data.github, 'github.com');
+      if (err) return { ...err, field: 'github' };
+    }
+
+    if (data.experienceYears != null && data.experienceYears !== '') {
+      const yrs = Number(data.experienceYears);
+      if (isNaN(yrs) || yrs < 0 || yrs > 60)
+        return { field: 'experienceYears', message: 'Experience must be between 0 and 60 years' };
+    }
+
+    return null;
   }
 
   static validateAbout(about: string): ValidationError | null {

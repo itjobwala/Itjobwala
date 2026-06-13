@@ -37,12 +37,12 @@ export default function ReferralInbox() {
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
-        <h2 className="text-[20px] font-extrabold text-[#0f172a]" style={{ letterSpacing: '-0.3px' }}>
+        <h2 className="text-2xl font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
           Referral Inbox
         </h2>
 
         {/* Tabs */}
-        <div className="flex items-center bg-gray-100 rounded-xl p-1">
+        <div className="flex items-center bg-surface-hover rounded-xl p-1">
           {([
             { key: 'sent',     label: 'Sent' },
             { key: 'received', label: 'Received' },
@@ -51,8 +51,8 @@ export default function ReferralInbox() {
             <button
               key={key}
               onClick={() => setTab(key)}
-              className={`px-4 py-1.5 rounded-lg text-[12px] font-bold transition-all ${
-                tab === key ? 'bg-white text-primary shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              className={`px-4 py-1.5 rounded-lg text-caption font-bold transition-all ${
+                tab === key ? 'bg-surface text-primary shadow-sm' : 'text-muted hover:text-body'
               }`}
             >
               {label}
@@ -78,10 +78,10 @@ export default function ReferralInbox() {
             <button
               key={f.value}
               onClick={() => setStatus(f.value)}
-              className={`text-[11px] font-bold px-3 py-1.5 rounded-full border transition-all ${
+              className={`text-micro font-bold px-3 py-1.5 rounded-full border transition-all ${
                 status === f.value
                   ? 'bg-primary text-white border-primary'
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-primary/40 hover:text-primary'
+                  : 'bg-surface text-body-secondary border-token hover:border-primary/40 hover:text-primary'
               }`}
             >
               {f.label}
@@ -95,7 +95,7 @@ export default function ReferralInbox() {
         loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
             {[1, 2, 3].map(i => (
-              <div key={i} className="bg-white rounded-3xl border border-gray-100 p-6 animate-pulse h-64" />
+              <div key={i} className="bg-surface rounded-3xl border border-token p-6 animate-pulse h-64" />
             ))}
           </div>
         ) : myPosts.length === 0 ? (
@@ -113,15 +113,15 @@ export default function ReferralInbox() {
       ) : loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-100 p-5 animate-pulse">
+            <div key={i} className="bg-surface rounded-2xl border border-token p-5 animate-pulse">
               <div className="flex gap-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-gray-100" />
+                <div className="w-10 h-10 rounded-full bg-surface-hover" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-100 rounded-full w-3/4" />
-                  <div className="h-3 bg-gray-100 rounded-full w-1/2" />
+                  <div className="h-4 bg-surface-hover rounded-full w-3/4" />
+                  <div className="h-3 bg-surface-hover rounded-full w-1/2" />
                 </div>
               </div>
-              <div className="h-8 bg-gray-100 rounded-xl" />
+              <div className="h-8 bg-surface-hover rounded-xl" />
             </div>
           ))}
         </div>

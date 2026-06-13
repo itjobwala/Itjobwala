@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { PRIMARY } from '@/src/lib/constants';
 
 type FieldProps = {
   label: string;
@@ -25,28 +24,28 @@ export default function Field({
   return (
     <div className="mb-5">
       <div className="flex justify-between items-baseline mb-1.5">
-        <label htmlFor={id} className="text-[13px] font-semibold text-gray-700">
-          {label} <span style={{ color: PRIMARY }}>*</span>
+        <label htmlFor={id} className="text-sm font-semibold text-body">
+          {label} <span className="text-primary">*</span>
         </label>
         {hint}
       </div>
       <div
         className={[
-          'flex items-center bg-white rounded-xl overflow-hidden transition-all duration-[180ms]',
+          'flex items-center bg-surface rounded-xl overflow-hidden transition-all duration-[180ms]',
           error
-            ? 'border-[1.5px] border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.09)]'
+            ? 'border-[1.5px] border-danger shadow-[0_0_0_3px_rgba(239,68,68,0.09)]'
             : focused
-            ? 'border-[1.5px] border-[#1557FF] shadow-[0_0_0_3px_rgba(21,87,255,0.09)]'
-            : 'border-[1.5px] border-gray-200',
+            ? 'border-[1.5px] border-primary shadow-[0_0_0_3px_rgba(21,87,255,0.09)]'
+            : 'border-[1.5px] border-token-mid',
         ].join(' ')}
       >
         {icon && (
-          <div className={`px-3.5 shrink-0 transition-colors duration-200 ${focused ? 'text-[#1557FF]' : 'text-gray-400'}`}>
+          <div className={`px-3.5 shrink-0 transition-colors duration-200 ${focused ? 'text-primary' : 'text-subtle'}`}>
             {icon}
           </div>
         )}
         {prefix && (
-          <div className="shrink-0 text-[14px] font-semibold text-gray-500 pr-1 border-r border-gray-200 mr-2 pl-0">
+          <div className="shrink-0 text-base font-semibold text-muted pr-1 border-r border-token-mid mr-2 pl-0">
             {prefix}
           </div>
         )}
@@ -58,11 +57,11 @@ export default function Field({
           onChange={e => onChange(e.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          className={`flex-1 border-none outline-none text-[15px] text-gray-900 bg-transparent ${icon ? 'py-3.5 pr-3.5 pl-0' : 'py-3.5 px-4'}`}
+          className={`flex-1 border-none outline-none text-md text-heading bg-transparent placeholder:text-subtle ${icon ? 'py-3.5 pr-3.5 pl-0' : 'py-3.5 px-4'}`}
         />
         {suffix && <div className="px-3.5 shrink-0">{suffix}</div>}
       </div>
-      {error && <p className="text-xs text-red-500 mt-1.5 font-medium">{error}</p>}
+      {error && <p className="text-xs text-danger mt-1.5 font-medium">{error}</p>}
     </div>
   );
 }

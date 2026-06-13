@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { JobDetailPageClient, normalizeJobDetail } from '@/features/jobs/detail';
 import { getJobById } from '@/features/jobs/shared';
+import { env } from '@/src/env';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -16,6 +17,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
       title: `${job.title} at ${job.company} – itJobwala`,
       description: `${job.title} at ${job.company} in ${job.location}.`,
+      alternates: { canonical: `${env.siteUrl}/jobs/${id}` },
     };
   } catch {
     return { title: 'Job Not Found – itJobwala' };

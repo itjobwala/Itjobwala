@@ -18,15 +18,15 @@ export default function SalaryRangeSlider({ minLpa, maxLpa, onChange, error, min
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <span className="text-[13px] font-bold text-gray-600">Salary range</span>
-        <span className="text-[13px] font-bold text-primary">
+        <span className="text-sm font-bold text-body-secondary">Salary range</span>
+        <span className="text-sm font-bold text-primary">
           ₹{minLpa}L – ₹{maxLpa}L / yr
         </span>
       </div>
 
       <div className="relative h-5 flex items-center">
         {/* Track background */}
-        <div className="absolute inset-x-0 h-1.5 rounded-full bg-gray-200 pointer-events-none" />
+        <div className="absolute inset-x-0 h-1.5 rounded-full bg-surface-mid pointer-events-none" />
 
         {/* Filled portion */}
         <div
@@ -61,7 +61,7 @@ export default function SalaryRangeSlider({ minLpa, maxLpa, onChange, error, min
         />
       </div>
 
-      <div className="flex justify-between mt-2 text-[11px] text-gray-400 select-none">
+      <div className="flex justify-between mt-2 text-micro text-subtle select-none">
         <span>{minAllowed > 0 ? `₹${minAllowed}L` : '₹0'}</span>
         <span>₹12L</span>
         <span>₹25L</span>

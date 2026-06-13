@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
-const PRIMARY = '#1557FF';
 const NAV_LINKS = [
   { label: 'Find Jobs', href: '/candidate/jobs' },
   { label: 'Companies', href: '#' },
@@ -38,21 +37,20 @@ export default function Navbar() {
           className="flex items-center gap-1 shrink-0 hover:opacity-80 transition-opacity"
         >
           <Image src="/logo.png" alt="itJobwala" width={32} height={32} />
-          <span className="font-extrabold text-xl text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
+          <span className="font-extrabold text-xl text-heading" style={{ letterSpacing: '-0.5px' }}>
             it<span className="text-primary">Jobwala</span>
           </span>
         </Link>
 
         {/* Nav links — desktop */}
-        <div className="hidden md:flex items-center gap-6 flex-1">
+        <div className="hidden md:flex items-center gap-6">
           {NAV_LINKS.map((l) => (
             <Link
               key={l.label}
               href={l.href}
-              className="text-sm font-medium"
-              style={{ color: '#374151', textDecoration: 'none' }}
-              onMouseEnter={e => { e.currentTarget.style.color = PRIMARY; }}
-              onMouseLeave={e => { e.currentTarget.style.color = '#374151'; }}
+              className="text-sm font-medium text-body focus:outline-none focus-visible:text-primary focus-visible:ring-2 focus-visible:ring-primary/20 rounded-md px-2 py-1 transition-colors"
+              onMouseEnter={e => { e.currentTarget.style.color = 'var(--color-primary)'; }}
+              onMouseLeave={e => { e.currentTarget.style.color = 'var(--color-body)'; }}
             >
               {l.label}
             </Link>
@@ -60,33 +58,27 @@ export default function Navbar() {
         </div>
 
         {/* Right controls */}
-        <div className="flex gap-2 items-center ml-auto">
+        <div className="flex gap-4 items-center ml-auto">
           {/* Log in — desktop */}
           <Link
             href="/auth/login"
-            className="hidden sm:block text-sm font-semibold px-3.5 py-2 rounded-lg transition-colors"
-            style={{ color: '#374151', textDecoration: 'none' }}
-            onMouseEnter={e => { e.currentTarget.style.color = PRIMARY; }}
-            onMouseLeave={e => { e.currentTarget.style.color = '#374151'; }}
-          >
-            Log in
-          </Link>
+            className="hidden sm:block text-sm font-semibold text-body px-3.5 py-2 rounded-lg transition-colors focus:outline-none focus-visible:text-primary focus-visible:ring-2 focus-visible:ring-primary/20"
+            onMouseEnter={e => { e.currentTarget.style.color = 'var(--color-primary)'; }}
+            onMouseLeave={e => { e.currentTarget.style.color = 'var(--color-body)'; }}
+          >Log in</Link>
 
           {/* Sign up — desktop */}
           <Link
             href="/auth/signup"
-            className="hidden sm:block text-sm font-semibold px-3.5 py-2 rounded-lg transition-all"
-            style={{ background: PRIMARY, color: '#fff', textDecoration: 'none', boxShadow: `0 4px 16px ${PRIMARY}44` }}
+            className="hidden sm:block bg-primary text-white text-sm font-semibold px-3.5 py-2 rounded-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 shadow-[0_4px_16px_rgba(21,87,255,0.27)]"
             onMouseEnter={e => { e.currentTarget.style.background = '#0d3fd4'; }}
-            onMouseLeave={e => { e.currentTarget.style.background = PRIMARY; }}
-          >
-            Sign up
-          </Link>
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-primary)'; }}
+          >Sign up</Link>
 
           {/* Hamburger — mobile */}
           <button
             onClick={() => setMenuOpen((o) => !o)}
-            className="sm:hidden flex flex-col justify-center items-center w-9 h-9 rounded-lg gap-[5px] transition-colors hover:bg-gray-100"
+            className="sm:hidden flex flex-col justify-center items-center w-9 h-9 rounded-lg gap-[5px] transition-colors hover:bg-surface-hover"
             aria-label="Toggle menu"
           >
             <span
@@ -107,14 +99,13 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="sm:hidden border-t border-gray-100 bg-white px-5 py-4 flex flex-col">
+        <div className="sm:hidden border-t border-token bg-surface px-5 py-4 flex flex-col">
           {NAV_LINKS.map((l) => (
             <Link
               key={l.label}
               href={l.href}
               onClick={() => setMenuOpen(false)}
-              className="py-3 text-sm font-semibold border-b border-gray-50 last:border-0"
-              style={{ color: '#374151', textDecoration: 'none' }}
+              className="py-3 text-sm font-semibold text-body border-b border-token last:border-0"
             >
               {l.label}
             </Link>
@@ -123,16 +114,14 @@ export default function Navbar() {
             <Link
               href="/auth/login"
               onClick={() => setMenuOpen(false)}
-              className="text-sm font-semibold py-2.5 text-center border-[1.5px] rounded-lg"
-              style={{ color: '#374151', borderColor: '#e5e7eb', textDecoration: 'none' }}
+              className="text-sm font-semibold text-body py-2.5 text-center border-[1.5px] border-token-mid rounded-lg"
             >
               Log in
             </Link>
             <Link
               href="/auth/signup"
               onClick={() => setMenuOpen(false)}
-              className="text-sm font-bold py-2.5 text-center rounded-lg"
-              style={{ background: PRIMARY, color: '#fff', textDecoration: 'none' }}
+              className="bg-primary text-white text-sm font-bold py-2.5 text-center rounded-lg"
             >
               Sign up free
             </Link>

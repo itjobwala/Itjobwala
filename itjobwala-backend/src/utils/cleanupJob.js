@@ -9,6 +9,7 @@
  */
 import { cleanExpiredTokens } from './tokenService.js';
 import RefreshToken from '../models/auth/RefreshToken.js';
+import { cleanExpiredOtps } from '../services/otp/otp.service.js';
 
 export async function runCleanup(log) {
   const logger = log ?? console;
@@ -23,10 +24,13 @@ export async function runCleanup(log) {
       .where('revoked_at', '<', cutoff)
       .delete();
 
-    logger.info?.(`[cleanup] Removed ${expired} expired + ${revoked} old revoked refresh tokens`);
-    return { expired, revoked };
+    // Delete expired OTP rows
+    const expiredOtps = await cleanExpiredOtps();
+
+    logger.info?.(`[cleanup] Removed ${expired} expired + ${revoked} old revoked refresh tokens + ${expiredOtps} expired OTPs`);
+    return { expired, revoked, expiredOtps };
   } catch (err) {
-    logger.error?.({ err }, '[cleanup] Refresh token cleanup failed');
-    return { expired: 0, revoked: 0 };
+    logger.error?.({ err }, '[cleanup] Cleanup failed');
+    return { expired: 0, revoked: 0, expiredOtps: 0 };
   }
 }

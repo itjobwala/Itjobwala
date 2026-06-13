@@ -40,7 +40,7 @@ export const getCompanyProfile = async (request, reply) => {
           linkedin: company.linkedin,
           twitter: company.twitter
         },
-        rating: 4.5, // Mock rating
+        is_verified: company.is_verified === true,
         active_jobs_count: parseInt(company.active_jobs_count, 10) || 0
       }
     });
@@ -87,6 +87,7 @@ export const getCompanyJobs = async (request, reply) => {
           company_type: job.recruiter?.company_type,
           is_new: job.is_new || false,
           is_hot: job.is_hot || false,
+          company_verified: job.recruiter?.is_verified === true,
           applicants: job.applicants || 0,
           is_actively_hiring: job.is_actively_hiring,
           posted_at: job.posted_at || job.created_at

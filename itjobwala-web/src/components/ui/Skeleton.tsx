@@ -20,7 +20,7 @@ export default function Skeleton({ className, rounded = 'md' }: Props) {
   return (
     <div
       aria-hidden="true"
-      className={cn('bg-gray-200 animate-pulse', ROUNDED[rounded], className)}
+      className={cn('bg-surface-mid animate-pulse', ROUNDED[rounded], className)}
     />
   );
 }

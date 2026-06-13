@@ -68,7 +68,7 @@ export default function AuthNavbar({ user }: Props) {
     <nav
       suppressHydrationWarning
       className={`fixed top-0 left-0 right-0 z-[200] border-b border-black/[0.06] transition-all duration-[350ms] backdrop-blur-[14px] ${
-        scrolled || menuOpen ? 'bg-white/[0.97]' : 'bg-white/[0.85]'
+        scrolled || menuOpen ? 'bg-surface/[0.97]' : 'bg-surface/[0.85]'
       }`}>
       <div suppressHydrationWarning className="max-w-[1440px] mx-auto px-5 lg:px-10 flex items-center h-[68px] gap-6 lg:gap-9">
 
@@ -79,14 +79,14 @@ export default function AuthNavbar({ user }: Props) {
             className="flex items-center gap-1 shrink-0 hover:opacity-80 transition-opacity bg-transparent border-none p-0 cursor-pointer"
           >
             <Image src="/logo.png" alt="itJobwala" width={30} height={30} />
-            <span className="font-extrabold text-xl text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
+            <span className="font-extrabold text-xl text-heading" style={{ letterSpacing: '-0.5px' }}>
               it<span className="text-primary">Jobwala</span>
             </span>
           </button>
         ) : (
           <Link href="/candidate/dashboard" className="flex items-center gap-1 shrink-0 hover:opacity-80 transition-opacity">
             <Image src="/logo.png" alt="itJobwala" width={30} height={30} />
-            <span className="font-extrabold text-xl text-[#0f172a]" style={{ letterSpacing: '-0.5px' }}>
+            <span className="font-extrabold text-xl text-heading" style={{ letterSpacing: '-0.5px' }}>
               it<span className="text-primary">Jobwala</span>
             </span>
           </Link>
@@ -101,7 +101,7 @@ export default function AuthNavbar({ user }: Props) {
                 key={link.label}
                 href={link.href}
                 className={`text-sm font-medium transition-colors relative group ${
-                  active ? 'text-primary font-semibold' : 'text-[#374151] hover:text-primary'
+                  active ? 'text-primary font-semibold' : 'text-body hover:text-primary'
                 }`}
               >
                 {link.label}
@@ -126,7 +126,7 @@ export default function AuthNavbar({ user }: Props) {
           {/* Hamburger — mobile */}
           <button
             onClick={() => setMenuOpen(o => !o)}
-            className="sm:hidden flex flex-col justify-center items-center w-9 h-9 rounded-lg gap-[5px] transition-colors hover:bg-gray-100"
+            className="sm:hidden flex flex-col justify-center items-center w-9 h-9 rounded-lg gap-[5px] transition-colors hover:bg-surface-hover"
             aria-label="Toggle menu"
           >
             <span

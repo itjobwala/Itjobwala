@@ -16,6 +16,9 @@ import { getSavedJobs } from '@/features/candidate/saved-jobs';
 import { safeLocalStorageGetItem } from '@/src/lib/hydration-safe';
 import { normalizeJob } from '../../shared/types';
 import type { JobDetail } from '../../shared/types';
+import JobFitIntelligencePanel  from '@/src/features/resume/components/job-fit/JobFitIntelligencePanel';
+import SemanticMatchPanel       from '@/src/features/resume/components/semantic/SemanticMatchPanel';
+import { ReportModal }          from '@/src/features/reports';
 
 interface Props {
   job: JobDetail;
@@ -28,6 +31,7 @@ export default function JobDetailPageClient({ job }: Props) {
   const [applied, setApplied] = useState(job.hasApplied ?? false);
   const [saved, setSaved] = useState(job.isSaved ?? false);
   const [showAppliedToast, setShowAppliedToast] = useState(false);
+  const [showReportModal, setShowReportModal]   = useState(false);
 
   const { data: recommendedJobs = [] } = useRecommendedJobsQuery(String(job.id));
   const { data: companies = [] } = useSimilarCompaniesQuery(job.id, 5);
@@ -65,6 +69,11 @@ export default function JobDetailPageClient({ job }: Props) {
   }, [job.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleApply() {
+    const token = safeLocalStorageGetItem('token');
+    if (!token) {
+      window.location.href = `/auth/login?next=${encodeURIComponent(`/candidate/jobs/${job.id}`)}&role=candidate`;
+      return;
+    }
     if (applied) return;
     try {
       await applyToJob(String(job.id));
@@ -82,6 +91,11 @@ export default function JobDetailPageClient({ job }: Props) {
   }
 
   async function handleSave() {
+    const token = safeLocalStorageGetItem('token');
+    if (!token) {
+      window.location.href = `/auth/login?next=${encodeURIComponent(`/candidate/jobs/${job.id}`)}&role=candidate`;
+      return;
+    }
     await saveJobMutation.mutateAsync(String(job.id));
     setSaved(true);
   }
@@ -92,7 +106,7 @@ export default function JobDetailPageClient({ job }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-[#f9fafb]">
+    <div className="min-h-screen bg-surface-alt">
       <SmartNavbar />
 
       <div className="pt-[68px]">
@@ -113,6 +127,22 @@ export default function JobDetailPageClient({ job }: Props) {
                 />
                 <JobDescription job={job} />
                 <SkillsTags skills={job.skills} />
+                <JobFitIntelligencePanel jobId={Number(job.id)} />
+                <SemanticMatchPanel jobId={Number(job.id)} />
+
+                {/* Report this job */}
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setShowReportModal(true)}
+                    className="flex items-center gap-1.5 text-caption text-subtle hover:text-danger transition-colors"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                      <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                    </svg>
+                    Report this job
+                  </button>
+                </div>
               </div>
 
               {/* ── Right sidebar ── */}
@@ -125,6 +155,14 @@ export default function JobDetailPageClient({ job }: Props) {
           )}
         </div>
       </div>
+
+      <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        targetType="job"
+        targetId={Number(job.id)}
+        targetLabel={job.title}
+      />
 
       {/* Applied toast */}
       <div

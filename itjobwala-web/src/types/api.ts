@@ -11,6 +11,20 @@ export interface AuthTokenResponse {
   token?:  string;
 }
 
+export interface SignupVerifyData {
+  requiresVerification: boolean;
+  email: string;
+  role:  'candidate' | 'recruiter';
+  email_sent: boolean;
+}
+
+export interface SignupResponse {
+  success: boolean;
+  message: string;
+  token?:  string;
+  data?:   SignupVerifyData;
+}
+
 export interface Pagination {
   page:        number;
   limit:       number;

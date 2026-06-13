@@ -46,29 +46,29 @@ export default function ProfileModal({ isOpen, onClose, title, children, onSave,
       />
 
       {/* Modal content */}
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-[800px] max-h-[90vh] flex flex-col overflow-hidden">
+      <div className="relative bg-surface rounded-2xl shadow-2xl w-full max-w-[800px] max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-white">
-          <h2 id="profile-modal-title" className="text-[18px] font-extrabold text-[#0f172a] tracking-[-0.3px]">{title}</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-token bg-surface">
+          <h2 id="profile-modal-title" className="text-xl font-extrabold text-heading tracking-[-0.3px]">{title}</h2>
           <button
             onClick={onClose}
             aria-label="Close"
-            className="text-gray-400 hover:text-gray-600 transition-colors bg-gray-50 hover:bg-gray-100 rounded-full p-1.5"
+            className="text-subtle hover:text-muted transition-colors bg-surface-alt hover:bg-surface-hover rounded-full p-1.5"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M18 6L6 18M6 6l12 12" />
             </svg>
           </button>
         </div>
-        
+
         {/* Body */}
-        <div className="flex-1 overflow-y-auto p-6 bg-[#f9fafb]">
+        <div className="flex-1 overflow-y-auto p-6 bg-surface-alt">
           {children}
         </div>
-        
+
         {/* Footer */}
         {onSave && (
-          <div className="p-4 border-t border-gray-100 bg-white flex justify-end gap-3">
+          <div className="p-4 border-t border-token bg-surface flex justify-end gap-3">
             <Button variant="secondary" onClick={onClose}>
               Cancel
             </Button>

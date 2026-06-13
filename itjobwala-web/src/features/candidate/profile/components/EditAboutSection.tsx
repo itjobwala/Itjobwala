@@ -13,7 +13,7 @@ export default function EditAboutSection({ value, onChange }: Props) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-end">
-        <span className={`text-[12px] font-semibold ${remaining < 0 ? 'text-red-500' : 'text-gray-400'}`}>
+        <span className={`text-caption font-semibold ${remaining < 0 ? 'text-danger' : 'text-subtle'}`}>
           {value.length}/{MAX_LENGTH}
         </span>
       </div>
@@ -24,14 +24,14 @@ export default function EditAboutSection({ value, onChange }: Props) {
         rows={7}
         maxLength={MAX_LENGTH + 80}
         placeholder="Write a concise professional summary..."
-        className={`w-full resize-none rounded-xl border px-4 py-3 text-[14px] leading-[1.75] text-gray-700 outline-none transition-colors placeholder:text-gray-400 ${
-          remaining < 0 ? 'border-red-300 focus:border-red-400' : 'border-gray-200 focus:border-primary/50'
+        className={`w-full resize-none rounded-xl border px-4 py-3 text-base leading-[1.75] text-body outline-none transition-colors placeholder:text-subtle ${
+          remaining < 0 ? 'border-danger focus:border-danger' : 'border-token focus:border-primary/50'
         }`}
       />
 
       <div className="mt-2 flex items-center justify-between">
-        <p className="text-[12px] text-gray-400">Keep it focused on role, strengths, and impact.</p>
-        {remaining < 0 && <p className="text-[12px] font-semibold text-red-500">Too long by {Math.abs(remaining)} characters</p>}
+        <p className="text-caption text-subtle">Keep it focused on role, strengths, and impact.</p>
+        {remaining < 0 && <p className="text-caption font-semibold text-danger">Too long by {Math.abs(remaining)} characters</p>}
       </div>
     </div>
   );

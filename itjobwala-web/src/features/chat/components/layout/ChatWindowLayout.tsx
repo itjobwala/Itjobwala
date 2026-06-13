@@ -22,7 +22,7 @@ function ConnectionStatus() {
   if (isConnected) return null;
 
   return (
-    <div className={`flex items-center justify-center gap-2 px-4 py-1.5 text-[11px] font-semibold shrink-0 ${
+    <div className={`flex items-center justify-center gap-2 px-4 py-1.5 text-micro font-semibold shrink-0 ${
       reconnecting ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-600'
     }`}>
       <span className={`w-1.5 h-1.5 rounded-full ${reconnecting ? 'bg-amber-400 animate-pulse' : 'bg-red-400'}`} />
@@ -39,7 +39,7 @@ function TypingBanner({ conversationId, myId }: { conversationId: number; myId: 
   if (othersTyping.length === 0) return null;
 
   return (
-    <div className="px-5 py-1.5 text-[11px] text-gray-500 font-medium flex items-center gap-1.5 shrink-0">
+    <div className="px-5 py-1.5 text-micro text-muted font-medium flex items-center gap-1.5 shrink-0">
       <span className="flex gap-0.5">
         {[0, 1, 2].map(i => (
           <span key={i} className="w-1 h-1 rounded-full bg-gray-400"
@@ -67,11 +67,11 @@ export default function ChatWindowLayout({ conversation, myId, onOpenSidebar }: 
   if (!conversation) {
     return (
       <div className="flex-1 flex flex-col">
-        <div className="sm:hidden flex items-center gap-3 px-4 py-3 border-b border-gray-100 bg-white shrink-0">
-          <button onClick={onOpenSidebar} className="p-2 rounded-xl hover:bg-gray-100 transition-colors">
+        <div className="sm:hidden flex items-center gap-3 px-4 py-3 border-b border-token bg-surface shrink-0">
+          <button onClick={onOpenSidebar} className="p-2 rounded-xl hover:bg-surface-hover transition-colors">
             <HamburgerIcon />
           </button>
-          <span className="text-[15px] font-bold text-[#0f172a]">Messages</span>
+          <span className="text-md font-bold text-heading">Messages</span>
         </div>
         <ConnectionStatus />
         <ChatEmptyState />
@@ -83,19 +83,19 @@ export default function ChatWindowLayout({ conversation, myId, onOpenSidebar }: 
   const isOtherOnline = party ? onlineUsers.has(party.id) : false;
 
   return (
-    <div className="flex-1 flex flex-col min-h-0 bg-[#f8fafc]">
+    <div className="flex-1 flex flex-col min-h-0 bg-surface-alt">
       {/* Chat header */}
-      <div className="flex items-center gap-3 px-5 py-4 bg-white border-b border-gray-100 shrink-0">
+      <div className="flex items-center gap-3 px-5 py-4 bg-surface border-b border-token shrink-0">
         <button onClick={onOpenSidebar}
-          className="sm:hidden p-2 rounded-xl hover:bg-gray-100 transition-colors -ml-1">
+          className="sm:hidden p-2 rounded-xl hover:bg-surface-hover transition-colors -ml-1">
           <HamburgerIcon />
         </button>
 
         <ChatAvatar name={party?.name ?? null} photo={party?.photo} size={40} online={isOtherOnline} />
 
         <div className="flex-1 min-w-0">
-          <p className="text-[14px] font-bold text-[#0f172a] truncate">{party?.name ?? '—'}</p>
-          <p className="text-[11px] text-gray-400 truncate">
+          <p className="text-base font-bold text-heading truncate">{party?.name ?? '—'}</p>
+          <p className="text-micro text-subtle truncate">
             {isOtherOnline ? (
               <span className="text-emerald-600 font-medium">● Online</span>
             ) : (

@@ -15,7 +15,9 @@ class Recruiter extends Model {
         full_name: { type: 'string', minLength: 2, maxLength: 255 },
         company_name: { type: 'string', minLength: 2, maxLength: 255 },
         email: { type: 'string', minLength: 1, maxLength: 255 },
-        password: { type: 'string', minLength: 6, maxLength: 255 },
+        password:    { type: 'string', minLength: 6, maxLength: 255 },
+        is_active:   { type: 'boolean', default: true },
+        is_verified: { type: 'boolean', default: false },
       }
     };
   }

@@ -6,19 +6,33 @@
   --font-sans: var(--font-sora);
 
   /* ── Semantic colors ── */
-  --color-heading:      #0f172a;
-  --color-body:         #374151;
-  --color-muted:        #6b7280;
-  --color-subtle:       #9ca3af;
-  --color-disabled:     #d1d5db;
-  --color-border:       #f1f5f9;
-  --color-border-mid:   #e2e8f0;
-  --color-surface:      #ffffff;
-  --color-surface-alt:  #f8fafc;
-  --color-surface-hover:#f1f5f9;
-  --color-overlay:      rgba(0, 0, 0, 0.40);
+  --color-heading:        #0f172a;
+  --color-body:           #374151;
+  --color-body-secondary: #4b5563;
+  --color-muted:          #6b7280;
+  --color-subtle:         #9ca3af;
+  --color-disabled:       #d1d5db;
+  --color-border:         #f1f5f9;
+  --color-border-mid:     #e2e8f0;
+  --color-surface:        #ffffff;
+  --color-surface-alt:    #f8fafc;
+  --color-surface-hover:  #f1f5f9;
+  --color-surface-mid:    #e5e7eb;
+  --color-overlay:        rgba(0, 0, 0, 0.40);
+
+  /* ── State colors ── */
+  --color-success:     #16a34a;
+  --color-success-bg:  #f0fdf4;
+  --color-danger:      #ef4444;
+  --color-danger-bg:   #fef2f2;
+  --color-warning:     #d97706;
+  --color-warning-bg:  #fffbeb;
+  --color-info:        #2563eb;
+  --color-info-bg:     #eff6ff;
 
   /* ── Typography scale ── */
+  --font-size-nano:     9px;
+  --font-size-tiny:     10px;
   --font-size-micro:    11px;
   --font-size-caption:  12px;
   --font-size-sm:       13px;
@@ -63,11 +77,12 @@
 .tracking-tightest { letter-spacing: -0.8px; }
 
 /* ── Semantic text color utilities ───────────────────────────────────────── */
-.text-heading  { color: var(--color-heading);  }
-.text-body     { color: var(--color-body);     }
-.text-muted    { color: var(--color-muted);    }
-.text-subtle   { color: var(--color-subtle);   }
-.text-disabled { color: var(--color-disabled); }
+.text-heading        { color: var(--color-heading);        }
+.text-body           { color: var(--color-body);           }
+.text-body-secondary { color: var(--color-body-secondary); }
+.text-muted          { color: var(--color-muted);          }
+.text-subtle         { color: var(--color-subtle);         }
+.text-disabled       { color: var(--color-disabled);       }
 
 /* ── Semantic border utilities ────────────────────────────────────────────── */
 .border-token     { border-color: var(--color-border);     }
@@ -77,6 +92,7 @@
 .bg-surface       { background-color: var(--color-surface);       }
 .bg-surface-alt   { background-color: var(--color-surface-alt);   }
 .bg-surface-hover { background-color: var(--color-surface-hover); }
+.bg-surface-mid   { background-color: var(--color-surface-mid);   }
 
 /* ── Z-index utilities ────────────────────────────────────────────────────── */
 .z-navbar   { z-index: var(--z-navbar);   }
@@ -86,6 +102,8 @@
 .z-overlay  { z-index: var(--z-overlay);  }
 
 /* ── Font-size utilities ──────────────────────────────────────────────────── */
+.text-nano    { font-size: var(--font-size-nano);    }
+.text-tiny    { font-size: var(--font-size-tiny);    }
 .text-micro   { font-size: var(--font-size-micro);   }
 .text-caption { font-size: var(--font-size-caption); }
 

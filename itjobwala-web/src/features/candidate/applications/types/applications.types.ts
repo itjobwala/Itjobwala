@@ -4,7 +4,6 @@ export type ApplicationStatus =
   | 'applied'
   | 'shortlisted'
   | 'interview'
-  | 'offer'
   | 'hired'
   | 'rejected'
   | 'withdrawn';
@@ -16,6 +15,7 @@ export interface Application {
   company:             string;
   company_logo?:       string;
   company_color_class?: string;
+  company_verified?:   boolean;
   location?:           string;
   status:              ApplicationStatus;
   applied_at:          string;
@@ -28,8 +28,31 @@ export interface ApplicationTimeline {
   note?:  string | null;
 }
 
-export interface ApplicationDetail extends Application {
-  timeline: ApplicationTimeline[];
+export interface ApplicationDetailJob {
+  id:      string;
+  title:   string;
+  company: string;
+}
+
+export interface CandidateInterview {
+  type:             'video' | 'phone' | 'in_person';
+  scheduled_at:     string;
+  duration_minutes?: number | null;
+  meeting_link?:    string | null;
+  location?:        string | null;
+  note?:            string | null;
+  status:           'scheduled' | 'past' | 'not_scheduled';
+}
+
+/** Shape returned by GET /candidate/applications/:id */
+export interface ApplicationDetail {
+  id:            string;
+  job:           ApplicationDetailJob;
+  status:        ApplicationStatus;
+  timeline:      ApplicationTimeline[];
+  applied_at:    string;
+  feedback_note?: string | null;
+  interview?:    CandidateInterview | null;
 }
 
 export interface ApplicationsListResponse {
@@ -50,6 +73,7 @@ export interface SavedJob {
   company:             string;
   company_logo?:       string;
   company_color_class?: string;
+  company_verified?:   boolean;
   location?:           string;
   salary_min?:         number;
   salary_max?:         number;

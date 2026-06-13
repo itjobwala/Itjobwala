@@ -31,7 +31,7 @@ export default function ReferralTimeline({ currentStatus, timeline }: Props) {
                     ? 'bg-primary border-primary text-white'
                     : active
                     ? `${cfg.bg} ${cfg.color} border-current shadow-md scale-110`
-                    : 'bg-white border-gray-200 text-gray-400'
+                    : 'bg-surface border-token text-subtle'
                 }`}
               >
                 {done && !active ? (
@@ -42,7 +42,7 @@ export default function ReferralTimeline({ currentStatus, timeline }: Props) {
                   <span>{i + 1}</span>
                 )}
               </div>
-              <span className={`text-[9px] font-semibold text-center whitespace-nowrap ${active ? cfg.color : done ? 'text-primary' : 'text-gray-400'}`}>
+              <span className={`text-[9px] font-semibold text-center whitespace-nowrap ${active ? cfg.color : done ? 'text-primary' : 'text-subtle'}`}>
                 {cfg.label}
               </span>
             </div>
@@ -50,7 +50,7 @@ export default function ReferralTimeline({ currentStatus, timeline }: Props) {
             {/* Connector */}
             {!isLast && (
               <div className={`flex-1 h-[2px] mx-1 rounded-full transition-all ${
-                i < currentIdx ? 'bg-primary' : 'bg-gray-200'
+                i < currentIdx ? 'bg-primary' : 'bg-surface-mid'
               }`} />
             )}
           </div>

@@ -19,3 +19,7 @@ export async function scheduleRecruiterInterview(
   );
   return res.data.data;
 }
+
+export async function cancelRecruiterInterview(interviewId: string): Promise<void> {
+  await recruiterClient.delete(`/recruiter/interviews/${interviewId}`);
+}

@@ -18,11 +18,11 @@ export default function MessageGroup({ group, myId, myRole, otherParty }: Props)
     <>
       {group.dayStart && (
         <div className="flex items-center gap-3 my-4">
-          <div className="flex-1 h-px bg-gray-100" />
-          <span className="text-[11px] font-semibold text-gray-400 bg-white px-2">
+          <div className="flex-1 h-px bg-surface-hover" />
+          <span className="text-micro font-semibold text-subtle bg-surface px-2">
             {formatDayLabel(group.dayStart)}
           </span>
-          <div className="flex-1 h-px bg-gray-100" />
+          <div className="flex-1 h-px bg-surface-hover" />
         </div>
       )}
 

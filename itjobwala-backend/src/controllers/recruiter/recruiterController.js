@@ -1,8 +1,24 @@
+import { Readable } from 'stream';
 import bcrypt from 'bcrypt';
 import dns from 'dns';
 import Recruiter from '../../models/recruiter/Recruiter.js';
 import cloudinary from '../../utils/cloudinary.js';
 import { generateAccessToken, generateRefreshToken, storeRefreshToken } from '../../utils/tokenService.js';
+import { createAndSendOtp } from '../../services/otp/otp.service.js';
+import { bufferStream, validateUpload, IMAGE_TYPES, UploadError } from '../../utils/upload/validateUpload.js';
+import { sanitizeText } from '../../utils/sanitize.js';
+
+function uploadBuffer(buffer, options) {
+  return new Promise((resolve, reject) => {
+    const cloudStream = cloudinary.uploader.upload_stream(options, (error, result) => {
+      if (error) return reject(error);
+      if (!result) return reject(new Error('Cloudinary returned no result'));
+      resolve(result);
+    });
+    cloudStream.on('error', reject);
+    Readable.from(buffer).pipe(cloudStream);
+  });
+}
 
 const resolveMx = dns.promises.resolveMx;
 
@@ -42,32 +58,29 @@ export const recruiterSignup = async (request, reply) => {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const newRecruiter = await Recruiter.query().insert({
-      full_name,
-      company_name,
+      full_name: sanitizeText(full_name),
+      company_name: sanitizeText(company_name),
       email,
       password: hashedPassword,
       terms_accepted
     }).returning('*');
 
-    delete newRecruiter.password;
-
-    const accessToken  = generateAccessToken({ sub: newRecruiter.id, role: 'recruiter' });
-    const refreshToken = generateRefreshToken({ sub: newRecruiter.id, role: 'recruiter' });
-
-    await storeRefreshToken({
-      userId:    newRecruiter.id,
-      role:      'recruiter',
-      token:     refreshToken,
-      ipAddress: request.ip,
-      userAgent: request.headers['user-agent'],
-    });
-
-    setRefreshCookie(reply, refreshToken);
+    const name = newRecruiter.full_name || newRecruiter.company_name;
+    const { email_sent } = await createAndSendOtp({ email, role: 'recruiter', name })
+      .catch((err) => {
+        request.server.log.error(err, '[otp] Failed to send verification email after recruiter signup');
+        return { email_sent: false };
+      });
 
     return reply.status(201).send({
       success: true,
-      message: 'Recruiter registered successfully',
-      token:   accessToken,
+      message: 'Registration successful. Please verify your email to continue.',
+      data: {
+        requiresVerification: true,
+        email,
+        role: 'recruiter',
+        email_sent,
+      },
     });
   } catch (error) {
     request.server.log.error(error);
@@ -77,31 +90,32 @@ export const recruiterSignup = async (request, reply) => {
 
 export const recruiterSignin = async (request, reply) => {
   const { email, password } = request.body;
-  console.log("email", email);
-  console.log("password", password);
   try {
-    if (email) {
-      const domain = email.split('@')[1];
-      try {
-        const mxRecords = await resolveMx(domain);
-        console.log("mxRecords", mxRecords);
-        if (!mxRecords || mxRecords.length === 0) {
-          return reply.status(400).send({ success: false, message: 'Invalid email domain. Please provide a valid email address.' });
-        }
-      } catch (err) {
-        console.log("err", err);
-        return reply.status(400).send({ success: false, message: 'Invalid email domain. Please provide a valid email address.' });
-      }
-    }
-
     const recruiter = await Recruiter.query().findOne({ email });
     if (!recruiter) {
-      return reply.status(404).send({ success: false, message: 'Recruiter not found' });
+      return reply.status(401).send({ success: false, message: 'Invalid credentials' });
     }
 
     const isMatch = await bcrypt.compare(password, recruiter.password);
     if (!isMatch) {
       return reply.status(401).send({ success: false, message: 'Invalid credentials' });
+    }
+
+    if (recruiter.is_active === false) {
+      return reply.status(403).send({
+        success: false,
+        message: 'Your account has been suspended. Please contact support.',
+        code:    'ACCOUNT_SUSPENDED',
+      });
+    }
+
+    if (!recruiter.email_verified) {
+      return reply.status(403).send({
+        success: false,
+        message: 'Please verify your email before signing in.',
+        code:    'EMAIL_NOT_VERIFIED',
+        data:    { email: recruiter.email, role: 'recruiter' },
+      });
     }
 
     const accessToken  = generateAccessToken({ sub: recruiter.id, role: 'recruiter' });
@@ -228,12 +242,12 @@ export const updateCompanyProfile = async (request, reply) => {
     }
 
     const updateData = {};
-    if (companyName !== undefined) updateData.company_name = companyName;
-    if (industry !== undefined) updateData.industry = industry;
-    if (website !== undefined) updateData.website = website;
-    if (description !== undefined) updateData.about = description;
+    if (companyName !== undefined) updateData.company_name = sanitizeText(companyName);
+    if (industry !== undefined) updateData.industry = sanitizeText(industry);
+    if (website !== undefined) updateData.website = sanitizeText(website);
+    if (description !== undefined) updateData.about = sanitizeText(description);
     if (companySize !== undefined) updateData.size = companySize;
-    if (location !== undefined) updateData.location = location;
+    if (location !== undefined) updateData.location = sanitizeText(location);
     if (foundedYear != null) updateData.founded = String(foundedYear);
 
     const updated = await Recruiter.query().patchAndFetchById(recruiterId, updateData);
@@ -265,39 +279,23 @@ export const uploadCompanyLogo = async (request, reply) => {
   try {
     const recruiterId = request.user.id;
     const data = await request.file();
+    if (!data) return reply.status(400).send({ success: false, message: 'No file uploaded' });
 
-    if (!data) {
-      return reply.status(400).send({ success: false, message: 'No file uploaded' });
-    }
+    const buffer = await bufferStream(data.file, IMAGE_TYPES.maxBytes);
+    await validateUpload(buffer, IMAGE_TYPES);
 
-    const result = await new Promise((resolve, reject) => {
-      const cloudStream = cloudinary.uploader.upload_stream(
-        {
-          folder: `itjobwala/company_logos/rec_${recruiterId}`,
-          resource_type: 'image',
-          public_id: 'logo',
-          overwrite: true,
-        },
-        (error, result) => {
-          if (error) return reject(error);
-          if (!result) return reject(new Error('Cloudinary returned no result'));
-          resolve(result);
-        }
-      );
-
-      cloudStream.on('error', reject);
-      data.file.on('error', (err) => { cloudStream.destroy(); reject(err); });
-      data.file.pipe(cloudStream);
+    const result = await uploadBuffer(buffer, {
+      folder: `itjobwala/company_logos/rec_${recruiterId}`,
+      resource_type: 'image',
+      public_id: 'logo',
+      overwrite: true,
     });
 
     await Recruiter.query().findById(recruiterId).patch({ logo: result.secure_url });
 
-    return reply.status(200).send({
-      success: true,
-      message: 'Company logo uploaded successfully.',
-      data: { logo: result.secure_url }
-    });
+    return reply.status(200).send({ success: true, message: 'Company logo uploaded successfully.', data: { logo: result.secure_url } });
   } catch (error) {
+    if (error instanceof UploadError) return reply.status(400).send({ success: false, message: error.message });
     request.server.log.error(error);
     return reply.status(500).send({ success: false, message: 'Internal server error' });
   }

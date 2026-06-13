@@ -36,7 +36,8 @@ class User extends Model {
         open_to_work: { type: 'boolean', default: false },
         profile_photo_url: { type: ['string', 'null'], maxLength: 500 },
         availability_to_join: { type: ['string', 'null'], format: 'date' },
-        profile_cover_url: { type: ['string', 'null'], maxLength: 500 }
+        profile_cover_url: { type: ['string', 'null'], maxLength: 500 },
+        is_active: { type: 'boolean', default: true },
       }
     };
   }
