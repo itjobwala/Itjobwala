@@ -120,6 +120,7 @@ export interface RecruiterApplicant {
   resume?: string;
   skills?: string[];
   experience?: number;
+  qaMatchScore?: number | null;
   profile?: {
     title?: string;
     location?: string;
@@ -130,6 +131,16 @@ export interface RecruiterApplicant {
   };
   coverLetter?: string;
   interview?: RecruiterApplicantInterview | null;
+}
+
+export interface BulkRejectSkip {
+  id: string;
+  reason: string;
+}
+
+export interface BulkRejectResponse {
+  rejected: string[];
+  skipped: BulkRejectSkip[];
 }
 
 export interface UpdateApplicantStatusRequest {

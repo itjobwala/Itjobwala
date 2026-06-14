@@ -6,13 +6,16 @@ import type {
   RecruiterApplicantsResponse,
   ApplicantATSIntelligence,
   PoolIntelligence,
+  BulkRejectResponse,
 } from '@/features/recruiter/types';
 
 export async function getRecruiterApplicants(filters?: {
-  jobId?:   string;
-  status?:  string;
-  page?:    number;
-  limit?:   number;
+  jobId?:     string;
+  status?:    string;
+  page?:      number;
+  limit?:     number;
+  sortBy?:    string;
+  sortOrder?: 'asc' | 'desc';
 }): Promise<RecruiterApplicantsResponse['data']> {
   const res = await recruiterClient.get<RecruiterApplicantsResponse>(
     '/recruiter/applicants',
@@ -51,6 +54,16 @@ export async function shortlistApplicant(applicantId: string): Promise<void> {
 
 export async function hireApplicant(applicantId: string): Promise<void> {
   await recruiterClient.post(`/recruiter/applicants/${applicantId}/hire`, {});
+}
+
+export async function bulkRejectApplicants(
+  applicationIds: string[],
+): Promise<BulkRejectResponse> {
+  const res = await recruiterClient.post<ApiResponse<BulkRejectResponse>>(
+    '/recruiter/applicants/bulk-reject',
+    { applicationIds },
+  );
+  return res.data.data!;
 }
 
 export async function getApplicantATSIntelligence(

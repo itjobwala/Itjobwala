@@ -1,4 +1,4 @@
-import { getNotifications, markAsRead, markAllAsRead } from '../../controllers/common/notificationController.js';
+import { getNotifications, getNotificationCount, markAsRead, markAllAsRead } from '../../controllers/common/notificationController.js';
 
 export default async function notificationRoutes(fastify, options) {
   // Generic authentication hook that works for both candidates and recruiters
@@ -8,6 +8,7 @@ export default async function notificationRoutes(fastify, options) {
   };
 
   fastify.get('/notifications', authOpts, getNotifications);
-  fastify.put('/notifications/:notification_id/read', authOpts, markAsRead);
+  fastify.get('/notifications/count', authOpts, getNotificationCount);
   fastify.put('/notifications/read-all', authOpts, markAllAsRead);
+  fastify.put('/notifications/:notification_id/read', authOpts, markAsRead);
 }

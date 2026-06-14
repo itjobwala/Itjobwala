@@ -1,5 +1,6 @@
 import User from '../../models/candidate/User.js';
 import ProfileView from '../../models/recruiter/ProfileView.js';
+import { upsertProfileViewNotification } from '../../utils/notifyHelper.js';
 
 // Safe list fields — NO email, NO mobile
 function formatCandidateCard(row) {
@@ -203,14 +204,26 @@ export const getCandidateProfile = async (request, reply) => {
       return reply.status(404).send({ success: false, message: 'Candidate not found or not visible' });
     }
 
-    // ── Record profile view — one per recruiter+candidate+day ────────────────
+    // ── Record profile view and notify candidate ──────────────────────────────
     const today = new Date().toISOString().split('T')[0];
     ProfileView.knex().raw(
       `INSERT INTO profile_views (candidate_user_id, recruiter_id, viewed_date)
        VALUES (?, ?, ?)
-       ON CONFLICT (candidate_user_id, recruiter_id, viewed_date) DO NOTHING`,
+       ON CONFLICT (candidate_user_id, recruiter_id, viewed_date) DO NOTHING
+       RETURNING id`,
       [numericId, recruiterId, today]
-    ).catch(() => {}); // fire-and-forget; never block the response
+    ).then(async result => {
+      if (result.rows.length === 0) return; // same recruiter, same day — already counted
+      const countRow = await ProfileView.knex().raw(
+        `SELECT COUNT(DISTINCT recruiter_id) AS count FROM profile_views WHERE candidate_user_id = ? AND viewed_date = ?`,
+        [numericId, today]
+      );
+      const count = parseInt(countRow.rows[0]?.count ?? '1', 10);
+      const message = count === 1
+        ? '1 recruiter viewed your profile today'
+        : `${count} recruiters viewed your profile today`;
+      upsertProfileViewNotification(numericId, { title: 'Profile Viewed', message, viewDate: today, count });
+    }).catch(() => {}); // fire-and-forget; never block the response
 
     return reply.status(200).send({
       success: true,

@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getRecruiterCompanyProfile, updateRecruiterCompanyProfile } from '@/features/recruiter/company';
 import { getRecruiterPostedJobs, getRecruiterPostedJobById, createRecruiterJob, updateRecruiterJob, deleteRecruiterJob, submitRecruiterJob } from '@/features/recruiter/jobs';
-import { getRecruiterApplicants, getRecruiterApplicantById, updateApplicantStatus, rejectApplicant, shortlistApplicant, hireApplicant, getApplicantATSIntelligence, getJobPoolStats } from '@/features/recruiter/applicants';
+import { getRecruiterApplicants, getRecruiterApplicantById, updateApplicantStatus, rejectApplicant, shortlistApplicant, hireApplicant, getApplicantATSIntelligence, getJobPoolStats, bulkRejectApplicants } from '@/features/recruiter/applicants';
 import { getRecruiterStats, getRecruiterNotifications, getRecruiterNotificationsPaged, markNotificationRead, markAllNotificationsRead } from '@/features/recruiter/dashboard';
 import { getRecruiterInterviews, scheduleRecruiterInterview, cancelRecruiterInterview } from '@/features/recruiter/interviews';
 import { searchCandidates, getCandidateProfile } from '@/features/recruiter/candidates';
@@ -14,6 +14,7 @@ import type {
   UpdateJobPostRequest,
   UpdateApplicantStatusRequest,
   ScheduleInterviewRequest,
+  BulkRejectResponse,
 } from '@/features/recruiter/types';
 
 export const recruiterKeys = {
@@ -131,10 +132,12 @@ export function useSubmitJobMutation() {
 // Applicants Queries
 export function useRecruiterApplicantsQuery(
   filters?: {
-    jobId?: string;
-    status?: string;
-    page?: number;
-    limit?: number;
+    jobId?:     string;
+    status?:    string;
+    page?:      number;
+    limit?:     number;
+    sortBy?:    string;
+    sortOrder?: 'asc' | 'desc';
   },
   enabled = true
 ) {
@@ -308,6 +311,17 @@ export function useHireApplicantMutation() {
     onSuccess: (_, applicantId) => {
       qc.invalidateQueries({ queryKey: recruiterKeys.applicantsAll() });
       qc.invalidateQueries({ queryKey: recruiterKeys.applicantDetail(applicantId) });
+      qc.invalidateQueries({ queryKey: recruiterKeys.stats() });
+    },
+  });
+}
+
+export function useBulkRejectMutation() {
+  const qc = useQueryClient();
+  return useMutation<BulkRejectResponse, Error, string[]>({
+    mutationFn: (applicationIds: string[]) => bulkRejectApplicants(applicationIds),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: recruiterKeys.applicantsAll() });
       qc.invalidateQueries({ queryKey: recruiterKeys.stats() });
     },
   });

@@ -82,14 +82,15 @@ export const updateReferralStatus = async (request, reply) => {
       : '';
 
     if (status === 'applied') {
-      // Notify the referrer
+      // Notify the referrer — actor is the applying candidate (auth enforces actorId === rr.candidate_id)
       const notif = STATUS_MESSAGES.applied;
       const msg   = `${notif.msg}${jobLabel}`;
+      const appliedActor = { type: 'candidate', id: actorId };
 
       if (rr.referrer_role === 'candidate') {
-        notifyCandidate(rr.referrer_id, { type: 'referral_update', title: notif.title, message: msg, actionUrl: '/candidate/referrals?tab=received' });
+        notifyCandidate(rr.referrer_id, { type: 'referral_update', title: notif.title, message: msg, actionUrl: '/candidate/referrals?tab=received', actor: appliedActor });
       } else {
-        notifyRecruiter(rr.referrer_id, { type: 'referral_update', title: notif.title, message: msg, actionUrl: '/recruiter/referrals?tab=received' });
+        notifyRecruiter(rr.referrer_id, { type: 'referral_update', title: notif.title, message: msg, actionUrl: '/recruiter/referrals?tab=received', actor: appliedActor });
       }
 
       try {
@@ -98,11 +99,12 @@ export const updateReferralStatus = async (request, reply) => {
       } catch { /* non-fatal */ }
 
     } else {
-      // Notify the candidate
+      // Notify the candidate — actor is the referrer (auth enforces actorId === rr.referrer_id, actorRole === rr.referrer_role)
       const notif = STATUS_MESSAGES[status];
       if (notif) {
         const msg = `${notif.msg}${jobLabel}`;
-        notifyCandidate(rr.candidate_id, { type: 'referral_update', title: notif.title, message: msg, actionUrl: '/candidate/referrals?tab=sent' });
+        const referrerActor = { type: actorRole, id: actorId };
+        notifyCandidate(rr.candidate_id, { type: 'referral_update', title: notif.title, message: msg, actionUrl: '/candidate/referrals?tab=sent', actor: referrerActor });
 
         try {
           const io = getIo?.();

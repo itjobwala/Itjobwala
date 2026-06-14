@@ -10,13 +10,14 @@ export type NotificationType =
   | 'message_received';
 
 export interface Notification {
-  id:          string;
-  type:        NotificationType;
-  title:       string;
-  message:     string;
-  is_read:     boolean;
-  action_url?: string;
-  created_at:  string;
+  id:               string;
+  type:             NotificationType;
+  title:            string;
+  message:          string;
+  is_read:          boolean;
+  action_url?:      string;
+  created_at:       string;
+  actor_avatar_url: string | null;
 }
 
 export interface NotificationsListResponse {

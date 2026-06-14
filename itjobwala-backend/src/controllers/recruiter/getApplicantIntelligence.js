@@ -22,7 +22,7 @@ export const getApplicantIntelligence = async (request, reply) => {
     .join('jobs', 'applications.job_id', 'jobs.id')
     .where('applications.id', applicationId)
     .where('jobs.recruiter_id', recruiterId)
-    .select('applications.id', 'applications.candidate_id', 'applications.job_id')
+    .select('applications.id', 'applications.user_id', 'applications.job_id')
     .first();
 
   if (!application) {
@@ -30,7 +30,7 @@ export const getApplicantIntelligence = async (request, reply) => {
   }
 
   const insight = await ResumeInsight.query()
-    .findOne({ candidate_id: application.candidate_id })
+    .findOne({ candidate_id: application.user_id })
     .select(
       'qa_match_score',
       'qa_specialization',

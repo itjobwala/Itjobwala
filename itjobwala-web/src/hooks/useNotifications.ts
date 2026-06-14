@@ -16,6 +16,7 @@ export const notifKeys = {
 
 export function useNotificationsQuery(params: {
   page?:    number;
+  limit?:   number;
   is_read?: boolean;
 } = {}) {
   return useQuery({

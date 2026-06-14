@@ -6,8 +6,10 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import UserDropdown, { type NavUser } from './UserDropdown';
 import MobileMenu from './MobileMenu';
+import NotificationDropdown from './NotificationDropdown';
 import { updateAuthProfile } from '@/src/lib/auth';
 import { useCandidateProfileQuery } from '@/features/candidate/profile';
+import { useNotificationCountQuery } from '@/src/hooks/useNotifications';
 
 const NAV_LINKS = [
   { label: 'Dashboard',  href: '/candidate/dashboard' },
@@ -27,6 +29,8 @@ export default function AuthNavbar({ user }: Props) {
   const pathname = usePathname();
 
   const { data: profile } = useCandidateProfileQuery();
+  const { data: countData } = useNotificationCountQuery();
+  const unreadCount = countData?.unread_notifications ?? 0;
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 30);
@@ -116,6 +120,9 @@ export default function AuthNavbar({ user }: Props) {
         {/* ── Right controls ── */}
         <div className="flex items-center gap-1.5 ml-auto">
 
+          {/* Notification bell — all screen sizes */}
+          <NotificationDropdown count={unreadCount} />
+
           {/* User dropdown — desktop */}
           {displayUser && (
             <div className="hidden sm:block">
@@ -146,7 +153,7 @@ export default function AuthNavbar({ user }: Props) {
       </div>
 
       {/* ── Mobile menu ── */}
-      {displayUser && <MobileMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} user={displayUser} />}
+      {displayUser && <MobileMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} user={{ ...displayUser, unreadNotifications: unreadCount }} />}
     </nav>
   );
 }

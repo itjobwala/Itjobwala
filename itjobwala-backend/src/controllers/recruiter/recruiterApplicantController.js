@@ -9,12 +9,99 @@ import { notifyCandidate, notifyRecruiter } from '../../utils/notifyHelper.js';
 import { saveFeedbackSignal, saveFeedbackNote } from '../../services/resume/feedbackSignal.service.js';
 import { sendApplicationStatusEmail } from '../../services/email/mailer.service.js';
 
-// Flip to true to also email candidates when they advance to the interview stage.
-// Off by default because the interview-scheduling email already covers that moment.
 const SEND_INTERVIEW_ADVANCE_EMAIL = false;
 
 const EMAIL_ON_STATUS = new Set(['shortlisted', 'hired', 'rejected']);
 if (SEND_INTERVIEW_ADVANCE_EMAIL) EMAIL_ON_STATUS.add('interview');
+
+const VALID_TRANSITIONS = {
+  applied:     ['shortlisted', 'rejected'],
+  shortlisted: ['interview', 'rejected'],
+  interview:   ['hired', 'rejected'],
+  rejected:    [],
+  hired:       [],
+  withdrawn:   [],
+};
+
+function buildCandidatePayload(status, jobTitle) {
+  const msgs = {
+    shortlisted: { type: 'shortlist',    title: 'Application Shortlisted', message: `Great news! Your application for "${jobTitle}" has been shortlisted.` },
+    interview:   { type: 'interview',    title: 'Selected for Interview',  message: `You've been selected for an interview for "${jobTitle}". Check your applications for details.` },
+    hired:       { type: 'application',  title: 'Offer Extended 🎉',       message: `Congratulations! You've been hired for "${jobTitle}".` },
+    rejected:    { type: 'application',  title: 'Application Update',      message: `Thank you for applying for "${jobTitle}". We have moved forward with other candidates.` },
+  };
+  return msgs[status] ?? null;
+}
+
+function buildRecruiterPayload(status, candidateName, jobTitle) {
+  const msgs = {
+    shortlisted: { type: 'shortlist',   title: 'Candidate Shortlisted', message: `You shortlisted ${candidateName} for "${jobTitle}"` },
+    interview:   { type: 'interview',   title: 'Interview Stage',        message: `${candidateName} moved to interview stage for "${jobTitle}"` },
+    hired:       { type: 'application', title: 'Candidate Hired',        message: `You hired ${candidateName} for "${jobTitle}"` },
+    rejected:    { type: 'application', title: 'Candidate Rejected',     message: `You rejected ${candidateName} for "${jobTitle}"` },
+  };
+  return msgs[status] ?? null;
+}
+
+/**
+ * Shared core for single-status and bulk-status transitions.
+ * Caller is responsible for ownership check and VALID_TRANSITIONS validation
+ * before calling this. Returns the patched application row.
+ */
+async function applyTransition(application, status, recruiterId, { notes = null, log = null } = {}) {
+  let timeline = application.timeline || [];
+  if (typeof timeline === 'string') timeline = JSON.parse(timeline);
+  timeline.push({ status, at: new Date().toISOString(), note: notes });
+
+  const updated = await application.$query().patchAndFetch({ status, timeline });
+
+  const candidateId     = application.user_id;
+  const candidateName   = application.applicant?.full_name || 'The candidate';
+  const jobTitle        = application.job_title || 'the position';
+  const appUrl          = `/candidate/applications/app_${application.id}`;
+  const appRecruiterUrl = `/recruiter/applicants/applicant_${application.id}`;
+
+  const candidatePayload = buildCandidatePayload(status, jobTitle);
+  const recruiterPayload = buildRecruiterPayload(status, candidateName, jobTitle);
+
+  if (candidatePayload) {
+    notifyCandidate(candidateId, { ...candidatePayload, actionUrl: appUrl, actor: { type: 'recruiter', id: recruiterId } });
+  }
+  if (recruiterPayload) {
+    notifyRecruiter(recruiterId, { ...recruiterPayload, actionUrl: appRecruiterUrl });
+  }
+
+  if (EMAIL_ON_STATUS.has(status)) {
+    const candidateEmail = application.applicant?.email;
+    if (candidateEmail) {
+      Recruiter.query()
+        .findById(recruiterId)
+        .select('company_name')
+        .then(rec =>
+          sendApplicationStatusEmail({
+            to:             candidateEmail,
+            name:           application.applicant?.full_name || null,
+            jobTitle,
+            companyName:    rec?.company_name || null,
+            newStatus:      status,
+            applicationUrl: appUrl,
+          })
+        )
+        .catch(() => {});
+    }
+  }
+
+  saveFeedbackSignal({
+    candidateId,
+    jobId:         application.job_id,
+    recruiterId,
+    applicationId: application.id,
+    outcome:       status,
+    log,
+  });
+
+  return updated;
+}
 
 function formatApplicant(app) {
   const candidate = app.applicant;
@@ -33,6 +120,7 @@ function formatApplicant(app) {
       ? JSON.parse(candidate.skills)
       : (candidate.skills || []),
     experience: candidate.experience_years || 0,
+    qaMatchScore: app.qa_match_score ?? null,
     profile: {
       title: candidate.title || null,
       location: candidate.location || null,
@@ -54,11 +142,15 @@ export const getApplicants = async (request, reply) => {
       sortOrder = 'desc',
     } = request.query;
 
+    const qaScoreSubquery = Application.knex().raw(
+      '(SELECT ri.qa_match_score FROM resume_insights ri WHERE ri.candidate_id = applications.user_id LIMIT 1) as qa_match_score'
+    );
+
     const query = Application.query()
       .join('jobs', 'applications.job_id', 'jobs.id')
       .where('jobs.recruiter_id', recruiterId)
       .withGraphFetched('applicant')
-      .select('applications.*', 'jobs.title as job_title');
+      .select('applications.*', 'jobs.title as job_title', qaScoreSubquery);
 
     if (jobId) {
       query.where('applications.job_id', jobId.replace('job_', ''));
@@ -77,8 +169,15 @@ export const getApplicants = async (request, reply) => {
       );
     }
 
-    const sortCol = sortBy === 'status' ? 'applications.status' : 'applications.applied_at';
-    query.orderBy(sortCol, sortOrder);
+    if (sortBy === 'qaScore') {
+      const dir = sortOrder === 'asc' ? 'ASC' : 'DESC';
+      query.orderByRaw(
+        `(SELECT ri.qa_match_score FROM resume_insights ri WHERE ri.candidate_id = applications.user_id LIMIT 1) ${dir} NULLS LAST`
+      );
+    } else {
+      const sortCol = sortBy === 'status' ? 'applications.status' : 'applications.applied_at';
+      query.orderBy(sortCol, sortOrder);
+    }
 
     const pageIndex = Math.max(0, parseInt(page, 10) - 1);
     const pageSize = parseInt(limit, 10);
@@ -171,15 +270,6 @@ export const getApplicantById = async (request, reply) => {
   }
 };
 
-const VALID_TRANSITIONS = {
-  applied:     ['shortlisted', 'rejected'],
-  shortlisted: ['interview', 'rejected'],
-  interview:   ['hired', 'rejected'],
-  rejected:    [],
-  hired:       [],
-  withdrawn:   [],
-};
-
 export const updateStatus = async (request, reply) => {
   try {
     const recruiterId = request.user.id;
@@ -212,71 +302,7 @@ export const updateStatus = async (request, reply) => {
       });
     }
 
-    // Append the transition to the application's timeline
-    let timeline = application.timeline || [];
-    if (typeof timeline === 'string') timeline = JSON.parse(timeline);
-    timeline.push({ status, at: new Date().toISOString(), note: notes || null });
-
-    const updated = await application.$query().patchAndFetch({ status, timeline });
-
-    // Fire notifications (non-blocking)
-    const candidateId = application.user_id;
-    const candidateName = application.applicant?.full_name || 'The candidate';
-    const jobTitle = application.job_title || 'the position';
-    const appUrl  = `/candidate/applications/app_${application.id}`;
-    const appRecruiterUrl = `/recruiter/applicants/applicant_${application.id}`;
-
-    const CANDIDATE_MESSAGES = {
-      shortlisted: { type: 'shortlist',    title: 'Application Shortlisted', message: `Great news! Your application for "${jobTitle}" has been shortlisted.` },
-      interview:   { type: 'interview',    title: 'Selected for Interview',  message: `You've been selected for an interview for "${jobTitle}". Check your applications for details.` },
-      hired:       { type: 'application',  title: 'Offer Extended 🎉',       message: `Congratulations! You've been hired for "${jobTitle}".` },
-      rejected:    { type: 'application',  title: 'Application Update',      message: `Thank you for applying for "${jobTitle}". We have moved forward with other candidates.` },
-    };
-
-    const RECRUITER_MESSAGES = {
-      shortlisted: { type: 'shortlist',   title: 'Candidate Shortlisted', message: `You shortlisted ${candidateName} for "${jobTitle}"` },
-      interview:   { type: 'interview',   title: 'Interview Stage',        message: `${candidateName} moved to interview stage for "${jobTitle}"` },
-      hired:       { type: 'application', title: 'Candidate Hired',        message: `You hired ${candidateName} for "${jobTitle}"` },
-      rejected:    { type: 'application', title: 'Candidate Rejected',     message: `You rejected ${candidateName} for "${jobTitle}"` },
-    };
-
-    if (CANDIDATE_MESSAGES[status]) {
-      notifyCandidate(candidateId, { ...CANDIDATE_MESSAGES[status], actionUrl: appUrl });
-    }
-    if (RECRUITER_MESSAGES[status]) {
-      notifyRecruiter(recruiterId, { ...RECRUITER_MESSAGES[status], actionUrl: appRecruiterUrl });
-    }
-
-    // Fire-and-forget: email the candidate on meaningful status transitions
-    if (status !== application.status && EMAIL_ON_STATUS.has(status)) {
-      const candidateEmail = application.applicant?.email;
-      if (candidateEmail) {
-        Recruiter.query()
-          .findById(recruiterId)
-          .select('company_name')
-          .then(recruiter =>
-            sendApplicationStatusEmail({
-              to:             candidateEmail,
-              name:           application.applicant?.full_name || null,
-              jobTitle,
-              companyName:    recruiter?.company_name || null,
-              newStatus:      status,
-              applicationUrl: appUrl,
-            })
-          )
-          .catch(() => {}); // recruiter-lookup failure absorbed; SMTP failure absorbed inside sendApplicationStatusEmail
-      }
-    }
-
-    // Phase 5: Capture feedback signal (fire-and-forget)
-    saveFeedbackSignal({
-      candidateId,
-      jobId:         application.job_id,
-      recruiterId,
-      applicationId: application.id,
-      outcome:       status,
-      log:           request.log,
-    });
+    const updated = await applyTransition(application, status, recruiterId, { notes, log: request.log });
 
     return reply.status(200).send({
       success: true,
@@ -313,8 +339,74 @@ export const hireApplicant = async (request, reply) => {
 };
 
 /**
+ * POST /recruiter/applicants/bulk-reject
+ * Body: { applicationIds: string[] }  e.g. ["applicant_12", "applicant_34"]
+ *
+ * Ownership-checks all IDs in one query. Skips IDs that don't belong to this
+ * recruiter or that are in a terminal/invalid state. Returns a summary.
+ * Max 100 IDs per call (page-scoped selection means realistic max ~20–50).
+ */
+export const bulkRejectApplicants = async (request, reply) => {
+  try {
+    const recruiterId = request.user.id;
+    const { applicationIds } = request.body;
+
+    if (!Array.isArray(applicationIds) || applicationIds.length === 0) {
+      return reply.status(400).send({ success: false, message: 'applicationIds must be a non-empty array.' });
+    }
+    if (applicationIds.length > 100) {
+      return reply.status(400).send({ success: false, message: 'Cannot process more than 100 applications per request.' });
+    }
+
+    const rawIds = applicationIds
+      .map(id => parseInt(String(id).replace('applicant_', ''), 10))
+      .filter(n => Number.isFinite(n) && n > 0);
+
+    if (rawIds.length === 0) {
+      return reply.status(400).send({ success: false, message: 'No valid application IDs provided.' });
+    }
+
+    // Single query — ownership check baked in via jobs.recruiter_id
+    const applications = await Application.query()
+      .join('jobs', 'applications.job_id', 'jobs.id')
+      .whereIn('applications.id', rawIds)
+      .where('jobs.recruiter_id', recruiterId)
+      .withGraphFetched('applicant')
+      .select('applications.*', 'jobs.title as job_title');
+
+    const appById = new Map(applications.map(a => [a.id, a]));
+
+    const rejected = [];
+    const skipped  = [];
+
+    for (const rawId of rawIds) {
+      const app = appById.get(rawId);
+      if (!app) {
+        skipped.push({ id: `applicant_${rawId}`, reason: 'not_found_or_not_owned' });
+        continue;
+      }
+      const allowedNext = VALID_TRANSITIONS[app.status] ?? [];
+      if (!allowedNext.includes('rejected')) {
+        skipped.push({ id: `applicant_${rawId}`, reason: `invalid_transition_from_${app.status}` });
+        continue;
+      }
+      await applyTransition(app, 'rejected', recruiterId, { log: request.log });
+      rejected.push(`applicant_${rawId}`);
+    }
+
+    return reply.status(200).send({
+      success: true,
+      message: `Bulk reject complete: ${rejected.length} rejected, ${skipped.length} skipped.`,
+      data: { rejected, skipped },
+    });
+  } catch (error) {
+    request.server.log.error(error);
+    return reply.status(500).send({ success: false, message: 'Internal server error' });
+  }
+};
+
+/**
  * Phase 5: POST /recruiter/applicants/:applicantId/feedback-note
- * Recruiter adds an optional constructive note for the candidate.
  */
 export const submitFeedbackNote = async (request, reply) => {
   try {

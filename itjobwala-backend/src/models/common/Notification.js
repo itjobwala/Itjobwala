@@ -17,7 +17,8 @@ class Notification extends Model {
         title: { type: 'string', maxLength: 255 },
         message: { type: 'string' },
         action_url: { type: ['string', 'null'], maxLength: 500 },
-        is_read: { type: 'boolean' }
+        is_read: { type: 'boolean' },
+        metadata: { type: ['object', 'null'] }
       }
     };
   }

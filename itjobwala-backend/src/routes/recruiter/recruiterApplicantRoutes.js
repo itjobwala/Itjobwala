@@ -6,6 +6,7 @@ import {
   rejectApplicant,
   hireApplicant,
   submitFeedbackNote,
+  bulkRejectApplicants,
 } from '../../controllers/recruiter/recruiterApplicantController.js';
 import { getApplicantIntelligence } from '../../controllers/recruiter/getApplicantIntelligence.js';
 import { getJobPoolStats }          from '../../controllers/recruiter/getJobPoolStats.js';
@@ -14,6 +15,21 @@ export default async function recruiterApplicantRoutes(fastify, options) {
   const preValidation = [fastify.requireRecruiter];
 
   fastify.get('/recruiter/applicants', { preValidation }, getApplicants);
+
+  // Bulk actions — must be registered before /:applicantId to avoid param capture
+  fastify.post('/recruiter/applicants/bulk-reject', {
+    preValidation,
+    schema: {
+      body: {
+        type: 'object',
+        required: ['applicationIds'],
+        properties: {
+          applicationIds: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 100 },
+        },
+      },
+    },
+  }, bulkRejectApplicants);
+
   fastify.get('/recruiter/applicants/:applicantId', { preValidation }, getApplicantById);
   fastify.put('/recruiter/applicants/:applicantId/status', { preValidation }, updateStatus);
   fastify.post('/recruiter/applicants/:applicantId/shortlist', { preValidation }, shortlistApplicant);

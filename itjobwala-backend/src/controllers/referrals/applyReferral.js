@@ -47,6 +47,7 @@ export const applyReferral = async (request, reply) => {
         title:     'New Referral Request',
         message:   `Someone requested a referral for "${job.job_title}" at ${job.company_name}`,
         actionUrl: `/candidate/referrals?tab=received`,
+        actor:     { type: 'candidate', id: candidateId },
       });
     }
 

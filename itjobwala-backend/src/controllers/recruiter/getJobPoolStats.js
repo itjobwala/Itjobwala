@@ -33,7 +33,7 @@ export const getJobPoolStats = async (request, reply) => {
   const applications = await Application.query()
     .where('job_id', jobId)
     .whereNotIn('status', ['withdrawn'])
-    .select('id', 'candidate_id', 'status');
+    .select('id', 'user_id', 'status');
 
   const totalApplicants = applications.length;
 
@@ -51,7 +51,7 @@ export const getJobPoolStats = async (request, reply) => {
     });
   }
 
-  const candidateIds = applications.map(a => a.candidate_id);
+  const candidateIds = applications.map(a => a.user_id);
 
   const insights = await ResumeInsight.query()
     .whereIn('candidate_id', candidateIds)
@@ -69,11 +69,11 @@ export const getJobPoolStats = async (request, reply) => {
   // Build candidate list with scores
   const candidates = applications
     .map(app => {
-      const insight = insightMap.get(app.candidate_id);
+      const insight = insightMap.get(app.user_id);
       if (!insight) return null;
       return {
         application_id:   app.id,
-        candidate_id:     app.candidate_id,
+        candidate_id:     app.user_id,
         status:           app.status,
         qa_match_score:   insight.qa_match_score,
         qa_specialization: insight.qa_specialization,
