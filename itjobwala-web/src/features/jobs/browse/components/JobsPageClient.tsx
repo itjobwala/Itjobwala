@@ -126,7 +126,8 @@ export default function JobsPageClient() {
     ...(filters.skills.length > 0 ? { skills: filters.skills.join(',') } : {}),
   };
 
-  const { data, isLoading, isError, refetch } = useJobsQuery(apiFilters);
+  const { data, isLoading: isQueryLoading, isError, refetch } = useJobsQuery(apiFilters, isHydrated);
+  const isLoading = !isHydrated || isQueryLoading;
 
   const handleReset = useCallback(() => {
     clearTimeout(salaryTimerRef.current);
@@ -186,21 +187,6 @@ export default function JobsPageClient() {
         {/* Hero bar */}
         <div className="bg-surface border-b border-token">
           <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-6">
-            <h1
-              className="text-xl sm:text-2xl font-extrabold text-heading mb-1"
-              style={{ letterSpacing: '-0.5px' }}
-            >
-              Browse IT Jobs
-            </h1>
-            <p className="text-base text-muted mb-4">
-              {isLoading ? (
-                'Loading roles…'
-              ) : (
-                <>
-                  <span className="font-semibold text-heading">{total} curated roles</span> · Updated daily
-                </>
-              )}
-            </p>
             <JobSearchBar
               search={search}
               onChange={setSearch}
@@ -212,47 +198,31 @@ export default function JobsPageClient() {
         {/* Main content */}
         <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
           {/* Top bar */}
-          <div className="flex items-center justify-between mb-5 gap-4">
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowFilters(v => !v)}
-                className="lg:hidden flex items-center gap-2 text-sm font-semibold text-body-secondary bg-surface border border-token rounded-xl px-4 py-2.5 hover:border-primary/40 transition-colors"
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-4">
+            <button
+              onClick={() => setShowFilters(v => !v)}
+              className="lg:hidden self-start flex items-center gap-2 text-sm font-semibold text-body-secondary bg-surface border border-token rounded-xl px-4 py-2.5 hover:border-primary/40 transition-colors"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
+              </svg>
+              Filters
+              {activeFilterCount > 0 && (
+                <span className="bg-primary text-white text-[11px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+
+            <div className="flex items-center justify-between w-full mb-4 gap-3">
+              <p className="text-sm text-muted font-medium">{isLoading || isError ? '–' : total} QA roles found</p>
+              <select
+                value={sort}
+                onChange={e => { setSort(e.target.value); setPage(1); }}
+                className="text-sm font-semibold border border-token rounded-lg px-3 py-1.5 bg-surface text-heading outline-none focus:border-primary/50"
               >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                  <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
-                </svg>
-                Filters
-                {activeFilterCount > 0 && (
-                  <span className="bg-primary text-white text-[11px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                    {activeFilterCount}
-                  </span>
-                )}
-              </button>
-
-              <p className="text-base text-muted">
-                <span className="font-bold text-heading">
-                  {isLoading || isError ? '–' : total}
-                </span>{' '}
-                jobs found
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-subtle hidden sm:inline">Sort:</span>
-              <div className="relative">
-                <select
-                  value={sort}
-                  onChange={e => { setSort(e.target.value); setPage(1); }}
-                  className="appearance-none text-sm font-semibold text-heading bg-surface border border-token rounded-xl pl-3.5 pr-8 py-2 outline-none hover:border-primary/40 cursor-pointer transition-colors"
-                >
-                  {SORT_OPTIONS.map(o => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
-                  ))}
-                </select>
-                <svg className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
-              </div>
+                {SORT_OPTIONS.map(o => (<option key={o.value} value={o.value}>{o.label}</option>))}
+              </select>
             </div>
           </div>
 

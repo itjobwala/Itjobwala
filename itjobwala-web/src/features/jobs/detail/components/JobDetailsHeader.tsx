@@ -5,12 +5,13 @@ import Link from 'next/link';
 import CompanyLogo from '@/src/components/ui/CompanyLogo';
 import Card from '@/src/components/ui/Card';
 import VerifiedBadge from '@/src/components/ui/VerifiedBadge';
+import Button from '@/src/components/ui/Button';
 import type { JobDetail } from '../../shared/types';
 import { salaryLabel, hashColor } from '@/src/lib/utils/format';
 
 const WORK_MODE_CLASS: Record<JobDetail['workMode'], string> = {
   remote: 'bg-success-bg text-success',
-  hybrid: 'bg-blue-50 text-blue-700',
+  hybrid: 'bg-info-bg text-info',
   onsite: 'bg-surface-hover text-body-secondary',
 };
 const WORK_MODE_LABEL: Record<JobDetail['workMode'], string> = {
@@ -31,40 +32,30 @@ function postedLabel(days: number) {
   return `${days} days ago`;
 }
 
-function formatDeadline(closesAt: string): string {
-  const deadline = new Date(closesAt);
-  const now = new Date();
-  const daysLeft = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-
-  if (daysLeft <= 0) return 'Closed';
-  if (daysLeft === 1) return 'Closes tomorrow';
-  if (daysLeft <= 7) return `Closes in ${daysLeft}d`;
-  return `Closes on ${deadline.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+function deadlineInfo(closesAt: string): { label: string; className: string } {
+  const daysLeft = Math.ceil((new Date(closesAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  if (daysLeft <= 0)  return { label: 'Closed',                   className: 'text-danger' };
+  if (daysLeft === 1) return { label: 'Closes today',             className: 'text-danger' };
+  if (daysLeft <= 3)  return { label: `Closes in ${daysLeft}d`,   className: 'text-danger' };
+  if (daysLeft <= 7)  return { label: `Closes in ${daysLeft}d`,   className: 'text-warning' };
+  return {
+    label: `Closes ${new Date(closesAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
+    className: 'text-subtle',
+  };
 }
 
 interface Props {
   job: JobDetail;
-  onApply: () => Promise<void>;
   applied: boolean;
   saved: boolean;
+  loading?: boolean;
+  onApply?: () => void;
   onSave: () => Promise<void>;
   onUnsave: () => Promise<void>;
 }
 
-export default function JobDetailsHeader({ job, onApply, applied, saved, onSave, onUnsave }: Props) {
+export default function JobDetailsHeader({ job, applied, saved, loading = false, onApply, onSave, onUnsave }: Props) {
   const [savingState, setSavingState] = useState(false);
-  const [applyingState, setApplyingState] = useState(false);
-
-
-
-  async function handleApplyClick() {
-    setApplyingState(true);
-    try {
-      await onApply();
-    } finally {
-      setApplyingState(false);
-    }
-  }
 
   async function handleSaveToggle() {
     setSavingState(true);
@@ -88,10 +79,7 @@ export default function JobDetailsHeader({ job, onApply, applied, saved, onSave,
         href="/candidate/jobs"
         className="inline-flex items-center gap-1.5 text-sm font-semibold text-subtle hover:text-primary transition-colors mb-6"
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <path d="M19 12H5M12 5l-7 7 7 7" />
-        </svg>
-        Back to jobs
+        ← Back to QA jobs
       </Link>
 
       <div className="flex flex-col sm:flex-row sm:items-start gap-5">
@@ -116,7 +104,7 @@ export default function JobDetailsHeader({ job, onApply, applied, saved, onSave,
             {job.title}
           </h1>
 
-          <p className="text-md font-semibold text-muted mb-4 flex items-center gap-2 flex-wrap">
+          <p className="text-sm font-semibold text-muted mb-4 flex items-center gap-2 flex-wrap">
             <span>{job.company}</span>
             {job.companyVerified && <VerifiedBadge />}
             <span>&middot; {job.location}</span>
@@ -139,41 +127,44 @@ export default function JobDetailsHeader({ job, onApply, applied, saved, onSave,
                 ? '0 yrs'
                 : `${job.experienceMin}–${job.experienceMax} yrs`}
             </span>
-            <span className="text-caption font-semibold rounded-full py-1 px-3 bg-emerald-50 text-emerald-700">
+            <span className="text-caption font-semibold rounded-full py-1 px-3 bg-success-bg text-success">
               ₹{salaryLabel(job.salaryLpaMin, job.salaryLpaMax)}
             </span>
             {job.jobLevel && (
-              <span className="text-caption font-semibold rounded-full py-1 px-3 bg-purple-50 text-purple-600">
+              <span className="text-caption font-semibold rounded-full py-1 px-3 bg-violet-bg text-violet">
                 {job.jobLevel}
               </span>
             )}
           </div>
 
           {/* Secondary meta */}
-          <div className="flex flex-wrap items-center gap-4 text-sm text-subtle mb-6">
+          <div className="flex flex-wrap items-center gap-4 text-caption text-subtle mb-6">
             <span className="flex items-center gap-1.5">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
               </svg>
               Posted {postedLabel(job.postedDaysAgo)}
             </span>
-            {job.closesAt && (
-              <span className="flex items-center gap-1.5">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                  <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
-                </svg>
-                {formatDeadline(job.closesAt)}
-              </span>
-            )}
+            {job.closesAt && (() => {
+              const dl = deadlineInfo(job.closesAt);
+              return (
+                <span className={`flex items-center gap-1.5 font-semibold ${dl.className}`}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                    <rect x="3" y="4" width="20" height="20" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+                  </svg>
+                  {dl.label}
+                </span>
+              );
+            })()}
             <span className="flex items-center gap-1.5">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
               {job.metrics?.applicants ?? job.applicants} applicants
             </span>
             {job.vacancies && (
               <span className="flex items-center gap-1.5">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                   <rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
                 </svg>
                 {job.vacancies} vacancies
@@ -186,52 +177,25 @@ export default function JobDetailsHeader({ job, onApply, applied, saved, onSave,
 
           {/* CTA row */}
           <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={handleApplyClick}
-              disabled={applied || applyingState}
-              className={`flex items-center gap-2 font-bold text-base rounded-xl px-6 py-3 transition-all ${
-                applied
-                  ? 'bg-green-500 text-white cursor-default'
-                  : applyingState
-                  ? 'bg-primary/70 text-white cursor-wait'
-                  : 'bg-primary text-white hover:brightness-110 cursor-pointer'
-              }`}
-            >
-              {applied ? (
-                <>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  Applied
-                </>
-              ) : applyingState ? (
-                <>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-spin">
-                    <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
-                  </svg>
-                  Applying...
-                </>
-              ) : (
-                'Apply Now →'
-              )}
-            </button>
-
-            <button
+            {applied ? (
+              <Button variant="primary" size="md" disabled>
+                Applied ✓
+              </Button>
+            ) : (
+              <Button variant="primary" size="md" onClick={onApply} loading={loading}>
+                Apply now
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="md"
               onClick={handleSaveToggle}
               disabled={savingState}
-              className={`flex items-center gap-2 text-base font-semibold rounded-xl px-4 py-3 border transition-all ${
-                savingState
-                  ? 'cursor-wait'
-                  : 'cursor-pointer'
-              } ${
-                saved
-                  ? 'bg-primary/10 border-primary text-primary'
-                  : 'border-token text-body-secondary hover:border-primary/40 hover:text-primary'
-              }`}
+              className={saved ? 'border-primary text-primary bg-primary/10' : ''}
             >
               <svg
-                width="15"
-                height="15"
+                width="14"
+                height="14"
                 viewBox="0 0 24 24"
                 fill={saved ? 'currentColor' : 'none'}
                 stroke="currentColor"
@@ -240,8 +204,7 @@ export default function JobDetailsHeader({ job, onApply, applied, saved, onSave,
                 <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
               </svg>
               {saved ? 'Saved' : 'Save'}
-            </button>
-
+            </Button>
           </div>
         </div>
       </div>

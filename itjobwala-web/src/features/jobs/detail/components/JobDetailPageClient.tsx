@@ -8,6 +8,7 @@ import SkillsTags from './SkillsTags';
 import { RecommendedJobs } from '@/features/jobs/browse';
 import SimilarCompanies from './SimilarCompanies';
 import { ProfileCompletionCard } from '@/features/jobs/browse';
+import Link from 'next/link';
 import JobDetailSkeleton from './JobDetailSkeleton';
 import { useSaveJobMutation, useUnsaveJobMutation } from '@/features/candidate/applications/hooks';
 import { useRecommendedJobsQuery, useSimilarCompaniesQuery } from '@/features/jobs/browse/hooks';
@@ -16,8 +17,6 @@ import { getSavedJobs } from '@/features/candidate/saved-jobs';
 import { safeLocalStorageGetItem } from '@/src/lib/hydration-safe';
 import { normalizeJob } from '../../shared/types';
 import type { JobDetail } from '../../shared/types';
-import JobFitIntelligencePanel  from '@/src/features/resume/components/job-fit/JobFitIntelligencePanel';
-import SemanticMatchPanel       from '@/src/features/resume/components/semantic/SemanticMatchPanel';
 import { ReportModal }          from '@/src/features/reports';
 
 interface Props {
@@ -119,16 +118,15 @@ export default function JobDetailPageClient({ job }: Props) {
               <div className="flex flex-col gap-5 min-w-0">
                 <JobDetailsHeader
                   job={job}
-                  onApply={handleApply}
                   applied={applied}
                   saved={saved}
+                  onApply={handleApply}
                   onSave={handleSave}
                   onUnsave={handleUnsave}
+                  loading={loading}
                 />
                 <JobDescription job={job} />
                 <SkillsTags skills={job.skills} />
-                <JobFitIntelligencePanel jobId={Number(job.id)} />
-                <SemanticMatchPanel jobId={Number(job.id)} />
 
                 {/* Report this job */}
                 <div className="flex justify-end">
@@ -136,7 +134,7 @@ export default function JobDetailPageClient({ job }: Props) {
                     onClick={() => setShowReportModal(true)}
                     className="flex items-center gap-1.5 text-caption text-subtle hover:text-danger transition-colors"
                   >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
                       <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
                     </svg>
@@ -164,13 +162,33 @@ export default function JobDetailPageClient({ job }: Props) {
         targetLabel={job.title}
       />
 
+      {/* Mobile sticky bottom bar */}
+      <div className="fixed bottom-0 left-0 right-0 p-4 border-t border-white/20 z-40 lg:hidden bg-primary/95 backdrop-blur-sm shadow-[0_-8px_30px_rgba(0,0,0,0.12)]">
+        {applied ? (
+          <Link
+            href="/candidate/applications"
+            className="flex items-center justify-center w-full bg-white text-primary font-bold text-base rounded-xl py-3.5"
+          >
+            Applied ✓ · View status →
+          </Link>
+        ) : (
+          <button
+            onClick={handleApply}
+            disabled={loading}
+            className="flex items-center justify-center w-full bg-white text-primary font-bold text-base rounded-xl py-3.5 disabled:opacity-70"
+          >
+            ₹{job.salaryLpaMin ? `${job.salaryLpaMin}–${job.salaryLpaMax}` : job.salaryLpaMax} LPA · Apply Now →
+          </button>
+        )}
+      </div>
+
       {/* Applied toast */}
       <div
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[300] transition-all duration-300 ${
+        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] transition-all duration-300 ${
           showAppliedToast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
         }`}
       >
-        <div className="flex items-center gap-3 bg-[#0f172a] text-white text-[13px] font-semibold rounded-2xl px-5 py-3.5 shadow-2xl">
+        <div className="flex items-center gap-3 bg-heading text-white text-[13px] font-semibold rounded-2xl px-5 py-3.5 shadow-2xl">
           <span className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center shrink-0">
             <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="2.5">
               <path d="M2 6l3 3 5-5" />

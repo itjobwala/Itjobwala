@@ -6,11 +6,10 @@ import { useAuthStore } from '@/src/features/auth/session/auth.store';
 import type { NavUser } from './UserDropdown';
 
 const NAV_LINKS = [
-  { label: 'Dashboard',      href: '/candidate/dashboard' },
-  { label: 'Find Jobs',      href: '/candidate/jobs' },
-  { label: 'Referrals',      href: '/candidate/referrals' },
-  { label: 'Messages',       href: '/candidate/chat' },
-  { label: 'Saved Jobs',     href: '/candidate/saved-jobs' },
+  { label: 'Dashboard',       href: '/candidate/dashboard'  },
+  { label: 'Find Jobs',       href: '/candidate/jobs'       },
+  { label: 'Messages',        href: '/candidate/chat'       },
+  { label: 'Saved Jobs',      href: '/candidate/saved-jobs' },
   { label: 'My Applications', href: '/candidate/applications' },
 ];
 
@@ -69,18 +68,26 @@ export default function MobileMenu({ isOpen, onClose, user }: Props) {
         {/* Nav links */}
         {NAV_LINKS.map(link => {
           const active = pathname === link.href;
+          const badge = link.href === '/candidate/chat' && (user.unreadMessages ?? 0) > 0
+            ? (user.unreadMessages > 99 ? '99+' : String(user.unreadMessages))
+            : null;
           return (
             <Link
               key={link.label}
               href={link.href}
               onClick={onClose}
-              className={`py-3 px-3 text-sm font-semibold rounded-xl transition-colors border-b border-token last:border-0 ${
+              className={`flex items-center justify-between py-3 px-3 text-sm font-semibold rounded-xl transition-colors border-b border-token last:border-0 ${
                 active
                   ? 'text-primary bg-primary/5'
                   : 'text-body hover:text-primary hover:bg-surface-alt'
               }`}
             >
               {link.label}
+              {badge && (
+                <span className="text-[10px] font-extrabold bg-danger text-white rounded-full px-1.5 py-0.5 min-w-[18px] text-center leading-none">
+                  {badge}
+                </span>
+              )}
             </Link>
           );
         })}

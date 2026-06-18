@@ -15,7 +15,7 @@ const FIELD_LABELS: Record<string, string> = {
 export default function ProfileCompletionCard() {
   const { data, isLoading, isError } = useProfileCompletionQuery();
 
-  const circumference = 2 * Math.PI * 37.5;
+  const circumference = 2 * Math.PI * 28;
   const completion    = data?.percentage ?? 0;
   const dash          = (completion / 100) * circumference;
 
@@ -47,25 +47,27 @@ export default function ProfileCompletionCard() {
       <h3 className="text-base font-extrabold text-heading mb-4">Profile strength</h3>
 
       <div className="flex items-center gap-5 mb-5">
-        <div className="relative w-[88px] h-[88px] shrink-0">
-          <svg width="88" height="88" viewBox="0 0 88 88" className="block">
-            <circle cx="44" cy="44" r="37.5" fill="none" stroke="var(--color-surface-hover)" strokeWidth="7" />
+        <div className="relative w-[72px] h-[72px] shrink-0">
+          <svg width="72" height="72" viewBox="0 0 72 72" className="block">
+            <circle cx="36" cy="36" r="28" fill="none" stroke="var(--color-surface-hover)" strokeWidth="6" />
             <circle
-              cx="44" cy="44" r="37.5"
+              cx="36" cy="36" r="28"
               fill="none"
               stroke="var(--color-primary)"
-              strokeWidth="7"
+              strokeWidth="6"
               strokeLinecap="round"
               strokeDasharray={`${dash} ${circumference - dash}`}
               strokeDashoffset={circumference * 0.25}
-              transform="rotate(-90 44 44)"
+              transform="rotate(-90 36 36)"
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
-            <span className="text-xl font-extrabold text-heading leading-none tracking-tight">
-              {completion}<span className="text-xs font-bold">%</span>
+            <span className="text-sm font-black text-heading leading-none">
+              {completion}%
             </span>
-            <span className="text-[10px] text-subtle font-medium">complete</span>
+            {completion < 100 && (
+              <span className="text-[10px] text-subtle font-medium">complete</span>
+            )}
           </div>
         </div>
         <div>

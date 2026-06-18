@@ -10,12 +10,12 @@ import NotificationDropdown from './NotificationDropdown';
 import { updateAuthProfile } from '@/src/lib/auth';
 import { useCandidateProfileQuery } from '@/features/candidate/profile';
 import { useNotificationCountQuery } from '@/src/hooks/useNotifications';
+import { useConversationsQuery } from '@/src/features/chat/hooks';
 
 const NAV_LINKS = [
-  { label: 'Dashboard',  href: '/candidate/dashboard' },
-  { label: 'Find Jobs',  href: '/candidate/jobs'      },
-  { label: 'Referrals',  href: '/candidate/referrals' },
-  { label: 'Messages',   href: '/candidate/chat'      },
+  { label: 'Dashboard', href: '/candidate/dashboard' },
+  { label: 'Find Jobs', href: '/candidate/jobs'      },
+  { label: 'Messages',  href: '/candidate/chat'      },
 ];
 
 interface Props {
@@ -31,6 +31,8 @@ export default function AuthNavbar({ user }: Props) {
   const { data: profile } = useCandidateProfileQuery();
   const { data: countData } = useNotificationCountQuery();
   const unreadCount = countData?.unread_notifications ?? 0;
+  const { data: convData } = useConversationsQuery();
+  const unreadMessages = (convData?.conversations ?? []).reduce((sum, c) => sum + (c.unread_count ?? 0), 0);
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 30);
@@ -104,11 +106,16 @@ export default function AuthNavbar({ user }: Props) {
               <Link
                 key={link.label}
                 href={link.href}
-                className={`text-sm font-medium transition-colors relative group ${
+                className={`text-sm font-medium transition-colors relative group flex items-center gap-1.5 ${
                   active ? 'text-primary font-semibold' : 'text-body hover:text-primary'
                 }`}
               >
                 {link.label}
+                {link.href === '/candidate/chat' && unreadMessages > 0 && (
+                  <span className="text-[10px] font-extrabold bg-danger text-white rounded-full px-1.5 py-0.5 min-w-[18px] text-center leading-none">
+                    {unreadMessages > 99 ? '99+' : unreadMessages}
+                  </span>
+                )}
                 {active && (
                   <span className="absolute -bottom-[22px] left-0 right-0 h-[2px] bg-primary rounded-full" />
                 )}
@@ -153,7 +160,7 @@ export default function AuthNavbar({ user }: Props) {
       </div>
 
       {/* ── Mobile menu ── */}
-      {displayUser && <MobileMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} user={{ ...displayUser, unreadNotifications: unreadCount }} />}
+      {displayUser && <MobileMenu isOpen={menuOpen} onClose={() => setMenuOpen(false)} user={{ ...displayUser, unreadNotifications: unreadCount, unreadMessages }} />}
     </nav>
   );
 }

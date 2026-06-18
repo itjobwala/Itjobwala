@@ -66,12 +66,14 @@ export default function ProfileCompletionCard() {
         ))}
       </div>
 
-      <Link
-        href="/candidate/profile"
-        className="block text-center text-sm font-bold text-primary border border-primary/30 rounded-xl py-2.5 hover:bg-primary/5 transition-colors"
-      >
-        Complete profile →
-      </Link>
+      {completion < 100 && (
+        <Link
+          href="/candidate/profile"
+          className="block text-center text-sm font-bold text-primary border border-primary/30 rounded-xl py-2.5 hover:bg-primary/5 transition-colors"
+        >
+          Complete profile →
+        </Link>
+      )}
     </Card>
   );
 }

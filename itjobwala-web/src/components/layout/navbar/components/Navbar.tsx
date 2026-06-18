@@ -6,8 +6,6 @@ import Image from 'next/image';
 
 const NAV_LINKS = [
   { label: 'Find Jobs', href: '/candidate/jobs' },
-  { label: 'Companies', href: '#' },
-  { label: 'Resources', href: '#' },
   { label: 'Post a Free Job', href: '/recruiter/post-job' },
 ];
 

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useRecruiterAuth } from '@/src/hooks/useRecruiterAuth';
 import { useRecruiterCompanyProfileQuery, useRecruiterStatsQuery } from '@/features/recruiter/hooks';
+import { useConversationsQuery } from '@/src/features/chat/hooks';
 
 const PRIMARY = '#1557FF';
 
@@ -114,6 +115,8 @@ export default function RecruiterSidebar({ isOpen, onClose }: RecruiterSidebarPr
   const { logout } = useRecruiterAuth();
   const { data: company } = useRecruiterCompanyProfileQuery();
   const { data: stats } = useRecruiterStatsQuery();
+  const { data: convData } = useConversationsQuery();
+  const totalUnread = (convData?.conversations ?? []).reduce((sum, c) => sum + (c.unread_count ?? 0), 0);
 
   const companyName = company?.companyName || 'TechNova Solutions';
   const logoUrl = company?.logo;
@@ -204,12 +207,26 @@ export default function RecruiterSidebar({ isOpen, onClose }: RecruiterSidebarPr
                           {item.icon}
                         </span>
                         <span className="flex-1">{item.label}</span>
+                        {item.href === '/recruiter/posted-jobs' && (stats?.activeJobs ?? 0) > 0 && (
+                          <span
+                            className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${active ? 'bg-primary text-white' : 'bg-surface-hover text-muted'}`}
+                          >
+                            {stats!.activeJobs}
+                          </span>
+                        )}
                         {item.href === '/recruiter/applicants' && (stats?.totalApplicants ?? 0) > 0 && (
                           <span
                             className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${active ? 'bg-primary text-white' : 'bg-surface-hover text-muted'
                               }`}
                           >
                             {stats!.totalApplicants}
+                          </span>
+                        )}
+                        {item.href === '/recruiter/chat' && totalUnread > 0 && (
+                          <span
+                            className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${active ? 'bg-primary text-white' : 'bg-danger text-white'}`}
+                          >
+                            {totalUnread > 99 ? '99+' : totalUnread}
                           </span>
                         )}
                       </Link>

@@ -10,6 +10,7 @@ import { fetchCandidateDashboard } from '../services/dashboard.api';
 import type { RecentApplication } from '../services/dashboard.api';
 import { useResumeInsightsQuery } from '@/features/resume';
 import ProfileCompletionCard from '@/features/candidate/profile/components/ProfileCompletionCard';
+import StatusBadge from '@/src/components/ui/StatusBadge';
 
 // ── Profile avatar with circular SVG progress ring ───────────────────────────
 function ProfileAvatar({ photo, name, completion, openToWork }: { photo: string | null; name: string; completion: number; openToWork: boolean }) {
@@ -57,27 +58,7 @@ function ProfileAvatar({ photo, name, completion, openToWork }: { photo: string 
   );
 }
 
-// ── Status pill ───────────────────────────────────────────────────────────────
-const STATUS_MAP: Record<string, { label: string; cls: string }> = {
-  applied:     { label: 'Applied',     cls: 'bg-blue-50   text-blue-600   border-blue-100' },
-  shortlisted: { label: 'Shortlisted', cls: 'bg-violet-50 text-violet-600 border-violet-100' },
-  interview:   { label: 'Interview',   cls: 'bg-amber-50  text-amber-600  border-amber-100' },
-  offer:       { label: 'Offer',       cls: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
-  selected:    { label: 'Selected',    cls: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
-  hired:       { label: 'Hired',       cls: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
-  rejected:    { label: 'Rejected',    cls: 'bg-red-50    text-red-500    border-red-100' },
-  withdrawn:   { label: 'Withdrawn',   cls: 'bg-gray-50   text-gray-400   border-gray-100' },
-};
 
-function StatusPill({ status }: { status: string }) {
-  const s = STATUS_MAP[status] ?? STATUS_MAP.withdrawn;
-  return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-micro font-semibold border ${s.cls}`}>
-      <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70" />
-      {s.label}
-    </span>
-  );
-}
 
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
@@ -128,31 +109,29 @@ function ATSMiniCard() {
       className="group flex items-center gap-4 bg-surface rounded-2xl border border-token-mid shadow-[0_2px_8px_rgba(0,0,0,0.03)] p-5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.07)] hover:-translate-y-0.5 transition-all duration-200"
     >
       {/* Mini radial ring */}
-      <div className="relative w-14 h-14 flex-shrink-0">
-        <svg width="56" height="56" viewBox="0 0 56 56" className="-rotate-90">
-          <circle cx="28" cy="28" r="22" fill="none" stroke="var(--color-surface-hover)" strokeWidth="6" />
+      <div className="relative w-[72px] h-[72px] flex-shrink-0">
+        <svg width="72" height="72" viewBox="0 0 72 72" className="-rotate-90">
+          <circle cx="36" cy="36" r="28" fill="none" stroke="var(--color-surface-hover)" strokeWidth="6" />
           {score !== null && (
             <circle
-              cx="28" cy="28" r="22"
+              cx="36" cy="36" r="28"
               fill="none"
               stroke={scoreColor}
               strokeWidth="6"
               strokeLinecap="round"
-              strokeDasharray={`${(score / 100) * 2 * Math.PI * 22} ${2 * Math.PI * 22}`}
+              strokeDasharray={`${(score / 100) * 2 * Math.PI * 28} ${2 * Math.PI * 28}`}
             />
           )}
         </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-0">
-          <span className="text-[11px] font-black leading-none" style={{ color: scoreColor }}>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-sm font-black leading-none" style={{ color: scoreColor }}>
             {score !== null ? `${score}%` : '?'}
           </span>
         </div>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-base font-bold text-heading">ATS Score</p>
-        <p className="text-caption text-subtle mt-0.5">
-          {score !== null ? `${band} — View full analysis` : 'Analyze your resume'}
-        </p>
+        <p className="text-base font-bold text-heading">QA Profile Score</p>
+        <p className="text-caption text-subtle mt-0.5">How recruiters see your profile</p>
       </div>
       <svg viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2.5" className="w-4 h-4 group-hover:translate-x-1 group-hover:stroke-primary transition-all duration-200">
         <path d="M5 12h14m-7-7 7 7-7 7"/>
@@ -204,7 +183,7 @@ export default function CandidateDashboardPage() {
                   <div className="pointer-events-none absolute -bottom-12 -left-12 w-56 h-56 rounded-full opacity-20 blur-3xl" style={{ background: 'radial-gradient(circle, #8b5cf6, transparent)' }} />
                   <div className="pointer-events-none absolute top-1/2 right-1/3 w-40 h-40 rounded-full opacity-10 blur-2xl" style={{ background: 'radial-gradient(circle, #06b6d4, transparent)' }} />
 
-                  <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-8">
+                  <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-5 sm:gap-8">
 
                     {/* Avatar + info */}
                     <div className="flex items-center gap-5 sm:gap-7">
@@ -266,8 +245,8 @@ export default function CandidateDashboardPage() {
                         { label: 'Interviews',  value: data.stats.interviews,         color: 'text-amber-300' },
                         { label: 'Offers',      value: data.stats.offers,             color: 'text-emerald-300' },
                       ].map(s => (
-                        <div key={s.label} className="backdrop-blur-sm rounded-2xl px-4 py-3 text-center" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                          <p className={`text-3xl font-bold ${s.color}`}>{s.value}</p>
+                        <div key={s.label} className="backdrop-blur-sm rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3 text-center" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                          <p className={`text-3xl font-extrabold tracking-tight ${s.color}`}>{s.value}</p>
                           <p className="text-white/40 text-micro font-medium mt-0.5">{s.label}</p>
                         </div>
                       ))}
@@ -281,11 +260,24 @@ export default function CandidateDashboardPage() {
                   {/* ── Left column ── */}
                   <div className="space-y-5">
 
+                    {/* Empty-state CTA */}
+                    {data.stats.totalApplications === 0 && (
+                      <div className="bg-primary/[0.04] border border-primary/20 rounded-2xl p-5 flex items-center justify-between gap-4">
+                        <div>
+                          <p className="text-sm font-bold text-heading">Start your QA job search</p>
+                          <p className="text-caption text-muted mt-0.5">600+ QA roles live right now</p>
+                        </div>
+                        <Link href="/candidate/jobs" className="text-sm font-bold text-primary hover:underline whitespace-nowrap">
+                          Browse jobs →
+                        </Link>
+                      </div>
+                    )}
+
                     {/* Recent Applications */}
                     <div className="bg-surface rounded-2xl border border-token-mid shadow-[0_2px_12px_rgba(0,0,0,0.04)] overflow-hidden">
                       <div className="flex items-center justify-between px-6 py-5 border-b border-token">
                         <div>
-                          <h2 className="text-md font-bold text-heading">Recent Applications</h2>
+                          <h2 className="text-base font-bold text-heading">Recent Applications</h2>
                           <p className="text-caption text-subtle mt-0.5">{data.stats.totalApplications} total · sorted by latest</p>
                         </div>
                         <Link href="/candidate/applications" className="group inline-flex items-center gap-1 text-sm font-semibold text-primary hover:text-primary/80 transition-colors">
@@ -300,7 +292,7 @@ export default function CandidateDashboardPage() {
                               <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
                             </svg>
                           </div>
-                          <p className="text-md font-bold text-heading">No applications yet</p>
+                          <p className="text-base font-bold text-heading">No applications yet</p>
                           <p className="text-sm text-subtle text-center max-w-xs leading-relaxed">
                             Start applying to roles that match your skills and experience.
                           </p>
@@ -313,42 +305,50 @@ export default function CandidateDashboardPage() {
                           {data.recentApplications.map((app: RecentApplication, idx) => (
                             <li
                               key={app.id}
-                              className={`group flex items-center gap-4 px-6 py-4 hover:bg-[#fafbff] transition-colors duration-150 ${idx < data.recentApplications.length - 1 ? 'border-b border-token' : ''}`}
+                              className={`relative overflow-hidden group ${idx < data.recentApplications.length - 1 ? 'border-b border-token' : ''}`}
                             >
-                              {/* Company logo */}
-                              <div className="w-[42px] h-[42px] rounded-xl bg-surface-alt border border-token flex items-center justify-center overflow-hidden flex-shrink-0">
-                                {app.companyLogo ? (
-                                  <Image src={app.companyLogo} alt={app.company} width={42} height={42} className="w-full h-full object-contain p-1" />
-                                ) : (
-                                  <span className="text-md font-extrabold text-gray-300">{app.company.charAt(0)}</span>
-                                )}
-                              </div>
-
-                              <div className="flex-1 min-w-0">
-                                <p className="text-base font-semibold text-heading truncate group-hover:text-primary transition-colors">{app.jobTitle}</p>
-                                <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                                  <span className="text-caption text-muted font-medium">{app.company}</span>
-                                  {app.location && (
-                                    <>
-                                      <span className="text-subtle">·</span>
-                                      <span className="text-caption text-subtle">{app.location}</span>
-                                    </>
-                                  )}
-                                  {app.workMode && (
-                                    <>
-                                      <span className="text-subtle">·</span>
-                                      <span className="text-micro text-subtle capitalize">{app.workMode.replace('_', ' ')}</span>
-                                    </>
+                              {!['rejected', 'hired', 'withdrawn'].includes(app.status) && (
+                                <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-success pointer-events-none" />
+                              )}
+                              <Link
+                                href={`/candidate/applications/${app.id}`}
+                                className="flex items-center gap-4 px-6 py-4 hover:bg-[#fafbff] transition-colors duration-150"
+                              >
+                                {/* Company logo */}
+                                <div className="w-[42px] h-[42px] rounded-xl bg-surface-alt border border-token flex items-center justify-center overflow-hidden flex-shrink-0">
+                                  {app.companyLogo ? (
+                                    <Image src={app.companyLogo} alt={app.company} width={42} height={42} className="w-full h-full object-contain p-1" />
+                                  ) : (
+                                    <span className="text-base font-extrabold text-gray-300">{app.company.charAt(0)}</span>
                                   )}
                                 </div>
-                              </div>
 
-                              <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                                <StatusPill status={app.status} />
-                                <span className="text-micro text-subtle">
-                                  {new Date(app.appliedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                                </span>
-                              </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-base font-semibold text-heading truncate group-hover:text-primary transition-colors">{app.jobTitle}</p>
+                                  <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                    <span className="text-caption text-muted font-medium">{app.company}</span>
+                                    {app.location && (
+                                      <>
+                                        <span className="text-subtle">·</span>
+                                        <span className="text-caption text-subtle">{app.location}</span>
+                                      </>
+                                    )}
+                                    {app.workMode && (
+                                      <>
+                                        <span className="text-subtle">·</span>
+                                        <span className="text-micro text-subtle capitalize">{app.workMode.replace('_', ' ')}</span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+
+                                <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                                  <StatusBadge status={app.status} showDot={true} />
+                                  <span className="text-caption text-subtle mt-0.5">
+                                    {new Date(app.appliedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                                  </span>
+                                </div>
+                              </Link>
                             </li>
                           ))}
                         </ul>

@@ -1,4 +1,4 @@
-export const TRENDING = ["Playwright","Cypress","Selenium","React","Node.js","Appium","TypeScript","Python"];
+export const TRENDING = ["Selenium","Playwright","Cypress","Appium","Postman","JIRA","Rest Assured","TestNG"];
 
 export const COMPANIES = [
   { name: "Razorpay",     color: "#2563eb", jobs: "12 jobs" },
@@ -36,23 +36,23 @@ export const JOBS = [
 ];
 
 export const STATS = [
-  { value: "4,000+", label: "Live IT jobs",              sub: "updated daily"          },
+  { value: "4,000+", label: "Live QA roles",             sub: "across India"           },
   { value: "800+",   label: "Companies hiring",          sub: "startups to MNCs"       },
   { value: "7 days", label: "Avg. time to first reply",  sub: "from real recruiters"   },
   { value: "92%",    label: "Applications go direct",    sub: "no middlemen"           },
 ];
 
 export const WHY = [
-  { icon: "salary",  title: "Salary transparency",    desc: "See salary ranges upfront. No surprises at the offer stage."       },
-  { icon: "spam",    title: "Zero recruiter spam",    desc: "No unsolicited calls. No follow-up emails. Just real jobs."        },
-  { icon: "direct",  title: "Direct to hiring teams", desc: "Your application goes straight to the people who decide."          },
-  { icon: "curated", title: "Curated listings only",  desc: "Every listing is manually reviewed. No duplicates, no noise."      },
+  { icon: "salary",  title: "Salary transparency",    desc: "See salary ranges upfront. No surprises at the offer stage."                        },
+  { icon: "spam",    title: "No placement consultants", desc: "Every listing is for a QA, testing, or automation role. No generic IT clutter."      },
+  { icon: "direct",  title: "QA-focused companies only", desc: "Your application goes straight to the QA hiring manager who decides."               },
+  { icon: "curated", title: "QA Fit Score",       desc: "Upload your resume and instantly see how you score against any QA job requirement."  },
 ];
 
 export const HOW_STEPS = [
-  { n: "01", title: "Create your profile",    desc: "Add your skills and experience in minutes. No lengthy forms." },
-  { n: "02", title: "Search relevant jobs",   desc: "Filter by role, company type, or location. Find what fits."  },
-  { n: "03", title: "Apply directly",         desc: "Your application goes straight to the hiring team. No barriers." },
+  { n: "01", title: "Build your QA profile",    desc: "Add your test skills, tools, and experience in minutes. No lengthy forms."           },
+  { n: "02", title: "Find roles that fit",      desc: "Filter by specialisation — automation, manual, SDET, or mobile testing."            },
+  { n: "03", title: "Apply directly to teams",  desc: "Your application lands with the QA hiring manager. No middlemen, no barriers."      },
 ];
 
 export const TESTIMONIALS = [
@@ -64,11 +64,11 @@ export const TESTIMONIALS = [
     initial: "A",
   },
   {
-    quote: "Finally a job site where I'm not getting WhatsApp pings at 11pm from random consultants. Salary was listed upfront.",
-    name: "Rohan Mehta",
-    role: "Backend Engineer → CRED",
-    avatarBg: "#111827",
-    initial: "R",
+    quote: "Finally a QA-focused job site. Every role was actually relevant — no generic dev roles being pushed to testers.",
+    name: "Karan Desai",
+    role: "Automation Engineer → BrowserStack",
+    avatarBg: "#ca8a04",
+    initial: "K",
   },
   {
     quote: "Applied Tuesday, on the call with the engineering manager Friday. No middlemen — that's the real difference.",
@@ -81,6 +81,7 @@ export const TESTIMONIALS = [
 
 export const FAQS = [
   { q: "Is itJobwala really free for candidates?",       a: "Yes — completely free. No premium tier, no paywalls. Recruiters pay to post, not you." },
+  { q: "Is this only for QA professionals?", a: "Yes — itJobwala lists only QA, automation, SDET, and testing roles. We don't list backend, frontend, or generic IT jobs." },
   { q: "How are you different from other job sites?",    a: "Two things: every listing is manually reviewed (no duplicates, no expired roles), and applications go straight to hiring teams — never to a recruiter middleman." },
   { q: "Will I get spam calls or emails?",               a: "No. We don't share your contact details. Recruiters can only reach you through the platform after you apply." },
   { q: "Are these all India-based jobs?",                a: "Primarily India-based plus remote roles open to Indian candidates. We focus on the Indian IT market specifically." },
@@ -92,28 +93,24 @@ export const FOOTER_COLS = [
     title: "Job Seekers",
     links: [
       { label: "Browse Jobs",     href: "/candidate/jobs" },
-      { label: "Companies",       href: "#" },
       { label: "Create Profile",  href: "/auth/signup" },
-      { label: "Job Alerts",      href: "#" },
-      { label: "Resources",       href: "#" },
+      { label: "Job Alerts",      href: "/candidate/job-alerts" },
     ],
   },
   {
     title: "Recruiters",
     links: [
       { label: "Post a Job",      href: "/recruiter/post-job" },
-      { label: "Pricing",         href: "#" },
       { label: "Recruiter Login", href: "/auth/login?role=recruiter" },
-      { label: "Resources",       href: "#" },
     ],
   },
   {
     title: "Company",
     links: [
-      { label: "About Us",        href: "#" },
-      { label: "Contact Us",      href: "#" },
-      { label: "Privacy Policy",  href: "#" },
-      { label: "Terms of Service",href: "#" },
+      { label: "About Us",        href: "/about" },
+      { label: "Contact Us",      href: "/contact" },
+      { label: "Privacy Policy",  href: "/privacy" },
+      { label: "Terms of Service",href: "/terms" },
     ],
   },
 ];

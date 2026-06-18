@@ -61,7 +61,7 @@ export default function ChatInput({ conversationId, myId, disabled }: Props) {
 
   return (
     <div className="border-t border-token bg-surface px-4 py-3 shrink-0">
-      <div className="flex items-end gap-3 bg-surface-alt border border-token rounded-2xl px-4 py-2.5 focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/10 transition-all">
+      <div className="flex items-center gap-3 bg-surface-alt border border-token rounded-2xl px-4 py-2.5 focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/10 transition-all">
         <textarea
           value={text}
           onChange={handleChange}

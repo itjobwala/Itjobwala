@@ -18,13 +18,13 @@ import { signinRecruiter } from '@/features/auth/services/recruiter.api';
 type Role = 'candidate' | 'recruiter';
 
 const EmailIcon = () => (
-  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
     <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
     <polyline points="22,6 12,13 2,6" />
   </svg>
 );
 const LockIcon = () => (
-  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
     <rect x="3" y="11" width="18" height="11" rx="2" />
     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
   </svg>
@@ -44,7 +44,7 @@ const Spinner = () => (
 function NavBar() {
   return (
     <nav
-      className="sticky top-0 z-[200] border-b border-black/[0.06] shrink-0"
+      className="sticky top-0 z-50 border-b border-black/[0.06] shrink-0"
       style={{ background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(14px)' }}
     >
       <div className="max-w-[1440px] mx-auto px-5 lg:px-10 flex items-center h-[68px] gap-9">
@@ -61,19 +61,7 @@ function NavBar() {
           >
             Find Jobs
           </Link>
-          <Link href="#" className="text-sm font-medium text-body no-underline"
-            onMouseEnter={e => { e.currentTarget.style.color = 'var(--color-primary)'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'var(--color-body)'; }}
-          >
-            Companies
-          </Link>
-          <Link href="#" className="text-sm font-medium text-body no-underline"
-            onMouseEnter={e => { e.currentTarget.style.color = 'var(--color-primary)'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = 'var(--color-body)'; }}
-          >
-            Resources
-          </Link>
-          <Link href="/recruiter/post-job" className="text-sm font-medium text-body no-underline"
+<Link href="/recruiter/post-job" className="text-sm font-medium text-body no-underline"
             onMouseEnter={e => { e.currentTarget.style.color = 'var(--color-primary)'; }}
             onMouseLeave={e => { e.currentTarget.style.color = 'var(--color-body)'; }}
           >
@@ -208,7 +196,7 @@ function RoleToggle({ role, onChange }: { role: Role; onChange: (r: Role) => voi
           : { background: 'transparent', color: 'var(--color-muted)' }
         }
       >
-        <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
           <circle cx="12" cy="7" r="4" />
         </svg>
@@ -223,7 +211,7 @@ function RoleToggle({ role, onChange }: { role: Role; onChange: (r: Role) => voi
           : { background: 'transparent', color: 'var(--color-muted)' }
         }
       >
-        <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
           <rect x="2" y="7" width="20" height="14" rx="2" />
           <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
         </svg>
@@ -465,7 +453,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={forgotLoading}
-                  className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-md cursor-pointer transition-all duration-200"
+                  className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-sm cursor-pointer transition-all duration-200"
                   style={{ padding: 14, background: forgotLoading ? '#93aef5' : 'var(--color-primary)', boxShadow: forgotLoading ? 'none' : '0 4px 20px rgba(21,87,255,0.27)' }}
                 >
                   {forgotLoading ? <><Spinner /> Sending…</> : 'Send reset link'}
@@ -492,13 +480,13 @@ export default function LoginPage() {
           </svg>
         </div>
         <h2 className="font-extrabold text-heading mb-2.5" style={{ fontSize: 26 }}>Check your inbox</h2>
-        <p className="text-md text-muted mb-2" style={{ lineHeight: 1.6 }}>
+        <p className="text-sm text-muted mb-2" style={{ lineHeight: 1.6 }}>
           If an account with <strong className="text-heading">{forgotEmail}</strong> exists, we&apos;ve sent a password reset code.
         </p>
         <p className="text-sm text-subtle mb-8">Didn&apos;t receive it? Check your spam folder or verify the email you used to sign up.</p>
         <button
           onClick={() => setScreen('reset')}
-          className="w-full text-white border-none rounded-xl font-bold text-md cursor-pointer mb-3"
+          className="w-full text-white border-none rounded-xl font-bold text-sm cursor-pointer mb-3"
           style={{ padding: 13, background: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(21,87,255,0.27)' }}
         >
           Enter reset code
@@ -562,7 +550,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={resetLoading}
-                  className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-md cursor-pointer transition-all duration-200"
+                  className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-sm cursor-pointer transition-all duration-200"
                   style={{ padding: 14, background: resetLoading ? '#93aef5' : 'var(--color-primary)', boxShadow: resetLoading ? 'none' : '0 4px 20px rgba(21,87,255,0.27)' }}
                 >
                   {resetLoading ? <><Spinner /> Resetting…</> : 'Reset password'}
@@ -585,12 +573,12 @@ export default function LoginPage() {
           </svg>
         </div>
         <h2 className="font-extrabold text-heading mb-2.5" style={{ fontSize: 26 }}>Password reset!</h2>
-        <p className="text-md text-muted mb-8" style={{ lineHeight: 1.6 }}>
+        <p className="text-sm text-muted mb-8" style={{ lineHeight: 1.6 }}>
           Your password has been updated. All existing sessions have been signed out. Sign in with your new password.
         </p>
         <button
           onClick={() => { setScreen('email'); setForgotEmail(''); setResetOtp(''); setNewPassword(''); }}
-          className="w-full text-white border-none rounded-xl font-bold text-md cursor-pointer"
+          className="w-full text-white border-none rounded-xl font-bold text-sm cursor-pointer"
           style={{ padding: 13, background: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(21,87,255,0.27)' }}
         >
           Sign in
@@ -611,7 +599,7 @@ export default function LoginPage() {
 
             {searchParams.get('registered') === '1' && (
               <div className="fade-up mb-5 flex items-start gap-3 rounded-xl px-4 py-3.5 bg-success-bg border border-success">
-                <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24" className="shrink-0 mt-0.5 text-success">
+                <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24" className="shrink-0 mt-0.5 text-success">
                   <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                   <polyline points="22 4 12 14.01 9 11.01" />
                 </svg>
@@ -685,7 +673,7 @@ export default function LoginPage() {
                     <button
                       type="submit"
                       disabled={passwordLoading}
-                      className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-md transition-all duration-200"
+                      className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-sm transition-all duration-200"
                       style={{
                         padding: 14,
                         cursor: passwordLoading ? 'not-allowed' : 'pointer',
@@ -717,7 +705,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => { setApiError(''); setScreen('send-otp'); }}
-                    className="w-full flex items-center justify-center gap-2.5 rounded-xl font-semibold text-base transition-all duration-200"
+                    className="w-full flex items-center justify-center gap-2.5 rounded-xl font-bold text-sm transition-all duration-200"
                     style={{
                       padding: 14,
                       cursor: 'pointer',
@@ -786,7 +774,7 @@ export default function LoginPage() {
                     <button
                       type="submit"
                       disabled={sendLoading}
-                      className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-md transition-all duration-200"
+                      className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-sm transition-all duration-200"
                       style={{
                         padding: 14,
                         cursor: sendLoading ? 'not-allowed' : 'pointer',
@@ -818,7 +806,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => { setApiError(''); setScreen('email'); }}
-                    className="w-full flex items-center justify-center gap-2.5 rounded-xl font-semibold text-base transition-all duration-200"
+                    className="w-full flex items-center justify-center gap-2.5 rounded-xl font-bold text-sm transition-all duration-200"
                     style={{
                       padding: 14,
                       cursor: 'pointer',
@@ -899,7 +887,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => handleVerify()}
                   disabled={verifyLoading || otp.replace(/\s/g, '').length < 6}
-                  className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-md transition-all duration-200 mb-5"
+                  className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-sm transition-all duration-200 mb-5"
                   style={{
                     padding: 15,
                     cursor: (verifyLoading || otp.replace(/\s/g, '').length < 6) ? 'not-allowed' : 'pointer',
