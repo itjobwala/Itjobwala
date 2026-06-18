@@ -15,7 +15,7 @@ export default function ReferralEmptyState({ title, description, action }: Props
           <path d="M16 3.13a4 4 0 0 1 0 7.75" />
         </svg>
       </div>
-      <h3 className="text-lg font-bold text-heading mb-1">{title}</h3>
+      <h3 className="text-base font-bold text-heading mb-1">{title}</h3>
       <p className="text-sm text-muted max-w-xs leading-relaxed mb-5">{description}</p>
       {action}
     </div>

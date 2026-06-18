@@ -113,8 +113,9 @@ export default function JobFilterSidebar({ filters, onChange, onReset, activeCou
   return (
     <Card as="aside" overflow>
       {/* Header */}
+      <p className="text-caption font-bold text-subtle uppercase tracking-[2px] mb-4">Filter QA roles</p>
       <div className="flex items-center justify-between mb-5">
-        <span className="font-bold text-md text-heading">Filters</span>
+        <span className="font-bold text-sm text-heading">Filters</span>
         {activeCount > 0 && (
           <button
             onClick={onReset}

@@ -188,7 +188,7 @@ export default function AdminJobQueuePage() {
       {confirm && (
         <Modal isOpen onClose={() => setConfirm(null)} titleId="moderate-job-title">
           <div className="p-6 space-y-4">
-            <h2 id="moderate-job-title" className="font-bold text-gray-900 text-base">
+            <h2 id="moderate-job-title" className="text-base font-bold text-heading">
               {decisionLabel(confirm.decision)}: "{confirm.job.title}"
             </h2>
 

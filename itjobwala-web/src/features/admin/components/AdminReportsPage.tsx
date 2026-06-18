@@ -160,7 +160,7 @@ export default function AdminReportsPage() {
       {confirm && (
         <Modal isOpen onClose={() => setConfirm(null)} titleId="resolve-report-title">
           <div className="p-6 space-y-4">
-            <h2 id="resolve-report-title" className="font-bold text-gray-900 text-base">
+            <h2 id="resolve-report-title" className="text-base font-bold text-heading">
               {confirm.action === 'resolved' ? 'Resolve' : 'Dismiss'} report
             </h2>
             <p className="text-sm text-gray-600">

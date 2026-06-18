@@ -39,11 +39,11 @@ export default function ReportModal({ isOpen, onClose, targetType, targetId, tar
         {done ? (
           <div className="text-center py-4 space-y-3">
             <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mx-auto">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
-            <h2 id="report-modal-title" className="font-bold text-heading text-base">Report submitted</h2>
+            <h2 id="report-modal-title" className="text-base font-bold text-heading">Report submitted</h2>
             <p className="text-sm text-muted">Thank you — our team will review it shortly.</p>
             <Button variant="primary" fullWidth rounded="xl" onClick={handleClose}>
               Done
@@ -51,7 +51,7 @@ export default function ReportModal({ isOpen, onClose, targetType, targetId, tar
           </div>
         ) : (
           <>
-            <h2 id="report-modal-title" className="font-bold text-heading text-base">
+            <h2 id="report-modal-title" className="text-base font-bold text-heading">
               Report {targetLabel ? `"${targetLabel}"` : `this ${targetType}`}
             </h2>
             <p className="text-sm text-muted">

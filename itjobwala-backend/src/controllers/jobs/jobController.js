@@ -4,12 +4,14 @@ import Application from '../../models/jobs/Application.js';
 import SavedJob from '../../models/jobs/SavedJob.js';
 import { ref, raw } from 'objection';
 
-// Resolve candidate user ID from request JWT without throwing (optional auth)
+// Resolve candidate user ID from request JWT without throwing (optional auth).
+// Tokens are signed as { sub: String(id), role, type } — sub must be mapped to id.
 const getCandidateId = async (request) => {
   try {
     await request.jwtVerify();
     if (request.user?.role === 'recruiter') return null;
-    return request.user?.id ?? null;
+    // New-format tokens use sub; old-format tokens used id directly
+    return request.user?.id ?? (request.user?.sub ? Number(request.user.sub) : null);
   } catch {
     return null;
   }
@@ -57,6 +59,7 @@ const formatJob = (job, hasApplied = false, isSaved = false) => {
     recruiter_name: job.recruiter?.recruiter_name || null,
     recruiter_title: job.recruiter?.recruiter_title || null,
     recruiter_response_days: job.recruiter?.recruiter_response_days || null,
+    applicants: parseInt(job.applicant_count || 0, 10),
     // Performance Metrics
     metrics: {
       views: job.views || 0,

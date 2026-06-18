@@ -39,7 +39,7 @@ export default function RecentApplicants() {
     <Card padding="none" className="shadow-sm">
       <div className="px-5 py-4 border-b border-token flex items-center justify-between">
         <div>
-          <h2 className="text-md font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
+          <h2 className="text-base font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
             Recent Applicants
           </h2>
           <p className="text-caption text-subtle mt-0.5">Latest applications across all active jobs</p>

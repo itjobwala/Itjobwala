@@ -94,7 +94,7 @@ function RoleToggle({ role, onChange }: { role: Role; onChange: (r: Role) => voi
           : { background: 'transparent', color: 'var(--color-muted)' }
         }
       >
-        <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
           <circle cx="12" cy="7" r="4"/>
         </svg>
@@ -109,7 +109,7 @@ function RoleToggle({ role, onChange }: { role: Role; onChange: (r: Role) => voi
           : { background: 'transparent', color: 'var(--color-muted)' }
         }
       >
-        <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+        <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
           <rect x="2" y="7" width="20" height="14" rx="2"/>
           <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
         </svg>
@@ -307,7 +307,7 @@ export default function SignUpPage() {
     <div className="min-h-screen flex flex-col" style={pageStyle}>
 
       {/* Nav */}
-      <nav className="border-b border-black/[0.06] sticky top-0 z-[200] shrink-0"
+      <nav className="border-b border-black/[0.06] sticky top-0 z-50 shrink-0"
         style={{ background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(14px)' }}>
         <div className="max-w-[1440px] mx-auto px-5 lg:px-10 h-[68px] flex items-center justify-between">
           <Link href="/" className="flex items-center gap-1 hover:opacity-80 transition-opacity no-underline">
@@ -344,7 +344,7 @@ export default function SignUpPage() {
               <h1 className="text-2xl sm:text-[28px] font-extrabold text-heading mb-2" style={{ letterSpacing: '-0.8px' }}>
                 Create your account
               </h1>
-              <p className="text-md text-muted leading-[1.6]">
+              <p className="text-sm text-muted leading-[1.6]">
                 {role === 'candidate'
                   ? 'Find IT jobs that actually match your skills.'
                   : 'Post jobs and reach thousands of IT professionals.'}
@@ -360,19 +360,19 @@ export default function SignUpPage() {
                 <div className="fade-up delay-2">
                   <Field label="Full Name" id="name" placeholder="e.g. Rahul Sharma"
                     value={cForm.name} onChange={v => setC('name', v)} error={cErrors.name}
-                    icon={<svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>}
+                    icon={<svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>}
                   />
                 </div>
                 <div className="fade-up delay-3">
                   <Field label="Email Address" id="email" type="email" placeholder="you@example.com"
                     value={cForm.email} onChange={v => setC('email', v)} error={cErrors.email}
-                    icon={<svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>}
+                    icon={<svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>}
                   />
                 </div>
                 <div className="fade-up delay-3">
                   <Field label="Mobile Number" id="mobile" type="tel" placeholder="10-digit mobile number"
                     value={cForm.mobile} onChange={v => setC('mobile', v.replace(/\D/g, '').slice(0, 10))} error={cErrors.mobile}
-                    icon={<svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.71a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16z" /></svg>}
+                    icon={<svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.18h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.71a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16z" /></svg>}
                     prefix={<span>+91</span>}
                   />
                 </div>
@@ -393,7 +393,7 @@ export default function SignUpPage() {
                       <input type="checkbox" checked={cForm.terms} onChange={e => setC('terms', e.target.checked)} className="sr-only" />
                       <div className="w-5 h-5 rounded-[6px] border-2 flex items-center justify-center transition-all duration-[180ms]"
                         style={{ borderColor: cForm.terms ? 'var(--color-primary)' : cErrors.terms ? '#ef4444' : '#d1d5db', background: cForm.terms ? 'var(--color-primary)' : '#fff' }}>
-                        {cForm.terms && <svg width="11" height="11" fill="none" stroke="#fff" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>}
+                        {cForm.terms && <svg width="14" height="14" fill="none" stroke="#fff" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>}
                       </div>
                     </div>
                     <span className="text-sm text-body leading-[1.6]">
@@ -410,7 +410,7 @@ export default function SignUpPage() {
                 )}
                 <div className="fade-up delay-7">
                   <button type="submit" disabled={cLoading}
-                    className="w-full border-none rounded-xl text-md font-bold text-white flex items-center justify-center gap-2.5 transition-all duration-200"
+                    className="w-full border-none rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2.5 transition-all duration-200"
                     style={{ padding: 15, background: cLoading ? '#93aef5' : 'var(--color-primary)', cursor: cLoading ? 'not-allowed' : 'pointer', boxShadow: cLoading ? 'none' : '0 4px 20px rgba(21,87,255,0.27)' }}
                     onMouseEnter={e => { if (!cLoading) e.currentTarget.style.background = '#0d3fd4'; }}
                     onMouseLeave={e => { if (!cLoading) e.currentTarget.style.background = 'var(--color-primary)'; }}
@@ -434,20 +434,20 @@ export default function SignUpPage() {
                 <div className="fade-up d2">
                   <Field label="Full Name" id="r-fullname" placeholder="e.g. Amit Sharma"
                     value={rForm.fullName} onChange={v => setR('fullName', v)} error={rErrors.fullName}
-                    icon={<svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>}
+                    icon={<svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>}
                   />
                 </div>
                 <div className="fade-up d3">
                   <Field label="Company Name" id="r-companyname" placeholder="e.g. Razorpay"
                     value={rForm.companyName} onChange={v => setR('companyName', v)} error={rErrors.companyName}
-                    icon={<svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>}
+                    icon={<svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>}
                   />
                 </div>
                 <div className="fade-up d4">
                   <Field label="Work Email" id="r-email" type="email" placeholder="you@company.com"
                     value={rForm.email} onChange={v => setR('email', v)} error={rErrors.email}
                     hint={<span className="text-micro text-muted font-normal">Use your official company email</span>}
-                    icon={<svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>}
+                    icon={<svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>}
                   />
                 </div>
                 <div className="fade-up d5">
@@ -478,7 +478,7 @@ export default function SignUpPage() {
                 )}
                 <div className="fade-up d7">
                   <button type="submit" disabled={rLoading}
-                    className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-md transition-all duration-200"
+                    className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-sm transition-all duration-200"
                     style={{
                       padding: 15,
                       cursor: rLoading ? 'not-allowed' : 'pointer',

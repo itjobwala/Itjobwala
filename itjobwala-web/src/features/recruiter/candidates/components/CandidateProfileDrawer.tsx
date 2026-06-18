@@ -89,7 +89,7 @@ function DrawerContent({ detail, onClose }: { detail: CandidateDetail; onClose: 
           className="text-subtle hover:text-muted transition-colors shrink-0 mt-0.5"
           aria-label="Close"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         </button>
@@ -152,7 +152,7 @@ function DrawerContent({ detail, onClose }: { detail: CandidateDetail; onClose: 
             <ul className="space-y-1">
               {detail.strengths.map((s, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-body-secondary">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" className="mt-[3px] shrink-0">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" className="mt-[3px] shrink-0">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                   {s}
@@ -168,7 +168,7 @@ function DrawerContent({ detail, onClose }: { detail: CandidateDetail; onClose: 
             <ul className="space-y-1">
               {detail.weaknesses.map((w, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-body-secondary">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.5" className="mt-[3px] shrink-0">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2.5" className="mt-[3px] shrink-0">
                     <circle cx="12" cy="12" r="10" /><path d="M12 8v4M12 16h.01" />
                   </svg>
                   {w}
@@ -239,7 +239,7 @@ function DrawerContent({ detail, onClose }: { detail: CandidateDetail; onClose: 
           href={chatUrl}
           className="flex items-center justify-center gap-2 w-full bg-primary text-white font-bold text-base rounded-xl px-5 py-3 hover:brightness-110 transition-all"
         >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
           Message candidate
@@ -271,7 +271,7 @@ export default function CandidateProfileDrawer({ candidateId, onClose }: Props) 
       <aside className="fixed top-0 right-0 bottom-0 w-full max-w-[440px] bg-surface z-[210] shadow-2xl flex flex-col overflow-hidden">
         {isLoading && (
           <div className="flex-1 flex items-center justify-center">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-spin text-primary">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="animate-spin text-primary">
               <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
             </svg>
           </div>

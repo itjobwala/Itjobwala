@@ -231,7 +231,7 @@ export default function AdminUsersPage() {
       {confirmAction && (
         <Modal isOpen onClose={() => setConfirmAction(null)} titleId="admin-confirm-title">
           <div className="p-6 space-y-4">
-            <h2 id="admin-confirm-title" className="font-bold text-gray-900 text-base">
+            <h2 id="admin-confirm-title" className="text-base font-bold text-heading">
               {confirmAction.type === 'suspend'    ? 'Suspend account' :
                confirmAction.type === 'reactivate' ? 'Reactivate account' :
                confirmAction.type === 'verify'     ? 'Verify recruiter' : 'Remove verification'}

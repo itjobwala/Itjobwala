@@ -302,7 +302,7 @@ export default function ResumeInsightsDashboard({ resumeUrl }: Props) {
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11.5px] font-semibold text-white transition-all active:scale-95 disabled:opacity-50"
           style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
         >
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/>
           </svg>
           {parseMutation.isPending ? 'Analyzing…' : 'Re-analyze'}
@@ -478,7 +478,7 @@ function CoachTab({ insights, onReanalyze }: { insights: ResumeInsights; onReana
     return (
       <div className="bg-surface rounded-2xl border border-token p-8 flex flex-col items-center gap-4 text-center">
         <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2">
             <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
           </svg>
         </div>
@@ -682,7 +682,7 @@ function OverviewTab({ insights }: { insights: ResumeInsights }) {
                 className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
                 style={{ background: 'linear-gradient(135deg, #eef2ff, #e0e7ff)' }}
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2">
                   <rect x="2" y="7" width="20" height="14" rx="2"/>
                   <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
                 </svg>
@@ -716,7 +716,7 @@ function OverviewTab({ insights }: { insights: ResumeInsights }) {
                 className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
                 style={{ background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)' }}
               >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2">
                   <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
                   <path d="M6 12v5c3 3 9 3 12 0v-5"/>
                 </svg>

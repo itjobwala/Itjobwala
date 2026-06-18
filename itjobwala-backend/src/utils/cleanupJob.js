@@ -10,6 +10,7 @@
 import { cleanExpiredTokens } from './tokenService.js';
 import RefreshToken from '../models/auth/RefreshToken.js';
 import { cleanExpiredOtps } from '../services/otp/otp.service.js';
+import Job from '../models/jobs/Job.js';
 
 export async function runCleanup(log) {
   const logger = log ?? console;
@@ -27,8 +28,15 @@ export async function runCleanup(log) {
     // Delete expired OTP rows
     const expiredOtps = await cleanExpiredOtps();
 
-    logger.info?.(`[cleanup] Removed ${expired} expired + ${revoked} old revoked refresh tokens + ${expiredOtps} expired OTPs`);
-    return { expired, revoked, expiredOtps };
+    // Close active jobs whose closes_at has passed (open-ended jobs with null closes_at are skipped)
+    const expiredJobs = await Job.query()
+      .where('status', 'active')
+      .whereNotNull('closes_at')
+      .where('closes_at', '<', new Date().toISOString())
+      .patch({ status: 'closed' });
+
+    logger.info?.(`[cleanup] Removed ${expired} expired + ${revoked} old revoked refresh tokens + ${expiredOtps} expired OTPs; closed ${expiredJobs} expired jobs`);
+    return { expired, revoked, expiredOtps, expiredJobs };
   } catch (err) {
     logger.error?.({ err }, '[cleanup] Cleanup failed');
     return { expired: 0, revoked: 0, expiredOtps: 0 };

@@ -77,15 +77,15 @@ export default function CategorySection() {
           <div className="reveal-left">
             <div
               className="text-caption font-bold uppercase mb-3"
-              style={{ color: PRIMARY, letterSpacing: 2 }}
+              style={{ color: PRIMARY, letterSpacing: 1.5 }}
             >
-              Browse by type
+              Browse by specialization
             </div>
             <h2
               className="text-[36px] md:text-[42px] font-extrabold text-[#0f172a] leading-[1.1]"
               style={{ letterSpacing: '-1.5px' }}
             >
-              Explore jobs<br />by category
+              Find QA roles<br />by type
             </h2>
           </div>
           {!isWaitingForData && !isError && categoriesData.length > 0 && (
@@ -208,7 +208,7 @@ export default function CategorySection() {
                       style={{ background: highlighted ? theme.accent : '#fff', border: `1.5px solid ${theme.border}` }}
                     >
                       <svg
-                        width="13" height="13" fill="none"
+                        width="14" height="14" fill="none"
                         stroke={highlighted ? '#fff' : theme.accent}
                         strokeWidth="2.5" viewBox="0 0 24 24"
                       >

@@ -34,7 +34,7 @@ export default function ResumeParsingLoader() {
       </div>
 
       <div className="text-center">
-        <p className="text-md font-semibold text-heading">Analyzing Your Resume</p>
+        <p className="text-sm font-semibold text-heading">Analyzing Your Resume</p>
         <p className="text-sm text-muted mt-1">Smart analysis in progress…</p>
       </div>
 

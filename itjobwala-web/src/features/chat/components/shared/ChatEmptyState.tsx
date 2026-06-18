@@ -6,7 +6,7 @@ export default function ChatEmptyState() {
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         </svg>
       </div>
-      <h3 className="text-md font-bold text-heading mb-1">Select a conversation</h3>
+      <h3 className="text-base font-bold text-heading mb-1">Select a conversation</h3>
       <p className="text-sm text-muted max-w-xs">
         Choose a conversation from the sidebar to start messaging.
       </p>

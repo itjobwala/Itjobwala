@@ -13,7 +13,7 @@ export default function ChatSidebar({ activeId, onSelect, isMobileOpen, onMobile
     <>
       {/* Mobile overlay */}
       {isMobileOpen && (
-        <div className="fixed inset-0 bg-black/30 z-30 sm:hidden" onClick={onMobileClose} />
+        <div className="fixed inset-0 bg-black/30 z-40 sm:hidden" onClick={onMobileClose} />
       )}
 
       <div

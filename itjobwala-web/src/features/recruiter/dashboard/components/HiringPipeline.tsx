@@ -25,7 +25,7 @@ export default function HiringPipeline() {
   return (
     <Card className="shadow-sm" overflow>
       <div className="mb-5">
-        <h2 className="text-md font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
+        <h2 className="text-base font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
           Hiring Pipeline
         </h2>
         <p className="text-caption text-subtle mt-0.5">Candidate distribution across all stages</p>

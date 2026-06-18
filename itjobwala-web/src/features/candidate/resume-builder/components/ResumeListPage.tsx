@@ -123,7 +123,7 @@ export function ResumeListPage() {
             </div>
           ) : resumes.length === 0 ? (
             <div className="bg-surface rounded-2xl border border-token p-10 text-center">
-              <p className="text-md font-semibold text-heading mb-1">No resumes yet</p>
+              <p className="text-sm font-semibold text-heading mb-1">No resumes yet</p>
               <p className="text-sm text-muted">Start with your profile data or a blank template.</p>
             </div>
           ) : (

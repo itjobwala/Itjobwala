@@ -27,7 +27,7 @@ export default function JobBasicsStep({ form, errors, setField, onBack, onSubmit
           ← Back
         </button>
         <button type="submit"
-          className="flex-[2] flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-md transition-all duration-200"
+          className="flex-[2] flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-sm transition-all duration-200"
           style={{ padding: 14, cursor: 'pointer', background: PRIMARY, boxShadow: `0 4px 18px ${PRIMARY}44` }}
           onMouseEnter={e => { e.currentTarget.style.background = '#0d3fd4'; }}
           onMouseLeave={e => { e.currentTarget.style.background = PRIMARY; }}>

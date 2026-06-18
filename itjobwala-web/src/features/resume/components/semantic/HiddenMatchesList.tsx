@@ -15,7 +15,7 @@ export default function HiddenMatchesList({ matches }: Props) {
       style={{ background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.12)' }}
     >
       <div className="flex items-center gap-2 mb-2.5">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" strokeWidth="2.5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6ee7b7" strokeWidth="2.5">
           <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
         </svg>
         <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">

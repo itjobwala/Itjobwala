@@ -20,7 +20,7 @@ export default function SkillGapVsTopCard({ skills }: Props) {
           className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
           style={{ background: 'rgba(245,158,11,0.15)' }}
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
             <circle cx="9" cy="7" r="4"/>
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>

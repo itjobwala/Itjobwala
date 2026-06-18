@@ -135,7 +135,7 @@ export default function SavedJobsListPageClient() {
                     <option value="newest">Recently Saved</option>
                     <option value="oldest">Oldest First</option>
                   </select>
-                  <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-subtle" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-subtle" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
                 </div>
@@ -160,7 +160,7 @@ export default function SavedJobsListPageClient() {
                 >
                   <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
                 </svg>
-                <p className="text-base font-semibold text-muted mb-1">No saved jobs yet</p>
+                <p className="text-base font-bold text-heading mb-1">No saved jobs yet</p>
                 <p className="text-sm text-subtle mb-4">
                   Save jobs to revisit them later
                 </p>
@@ -205,7 +205,7 @@ export default function SavedJobsListPageClient() {
                             <div>
                               <Link
                                 href={`/candidate/jobs/${job.job_id}`}
-                                className="text-md font-bold text-heading hover:text-primary transition-colors block"
+                                className="text-sm font-bold text-heading hover:text-primary transition-colors block"
                               >
                                 {job.title}
                               </Link>

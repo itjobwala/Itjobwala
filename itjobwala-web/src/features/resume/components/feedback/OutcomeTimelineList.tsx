@@ -7,9 +7,9 @@ interface Props {
 }
 
 const OUTCOME_CONFIG = {
-  shortlisted: { icon: '⬆', label: 'Shortlisted',   color: '#06b6d4', bg: 'rgba(6,182,212,0.1)',   border: 'rgba(6,182,212,0.2)'   },
-  interview:   { icon: '●',  label: 'Interview',     color: '#8b5cf6', bg: 'rgba(139,92,246,0.1)',  border: 'rgba(139,92,246,0.2)'  },
-  hired:       { icon: '★',  label: 'Hired',         color: '#10b981', bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.25)' },
+  shortlisted: { icon: '⬆', label: 'Shortlisted',   color: '#7c3aed', bg: 'rgba(124,58,237,0.1)',   border: 'rgba(124,58,237,0.2)'   },
+  interview:   { icon: '●',  label: 'Interview',     color: '#d97706', bg: 'rgba(217,119,6,0.1)',    border: 'rgba(217,119,6,0.2)'    },
+  hired:       { icon: '★',  label: 'Hired',         color: '#16a34a', bg: 'rgba(22,163,74,0.12)',   border: 'rgba(22,163,74,0.25)'   },
   rejected:    { icon: '✕',  label: 'Not Selected',  color: '#94a3b8', bg: 'rgba(148,163,184,0.06)', border: 'rgba(148,163,184,0.12)' },
 };
 

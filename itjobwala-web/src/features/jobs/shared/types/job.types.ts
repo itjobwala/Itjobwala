@@ -23,6 +23,7 @@ export interface Job extends CompanyInfo {
   isSaved?: boolean;
   hasApplied?: boolean;
   companyVerified?: boolean;
+  closesAt?: string | null;
 }
 
 export interface JobDetail extends Job, CompanyDetail, RecruiterInfo {
@@ -85,6 +86,7 @@ export function normalizeJob(j: ApiJob): Job {
       isSaved:           j.is_saved,
       hasApplied:        j.has_applied,
       companyVerified:   j.company_verified ?? false,
+      closesAt:          j.closes_at ?? null,
     };
   } catch (error) {
     console.error('[normalizeJob] Error normalizing job:', { job: j, error });

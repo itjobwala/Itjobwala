@@ -18,7 +18,7 @@ import type { ApplicationStatus } from '../types/applications.types';
 const TERMINAL: Set<ApplicationStatus> = new Set(['rejected', 'hired', 'withdrawn']);
 
 const BackIcon = () => (
-  <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
     <path d="M19 12H5M12 19l-7-7 7-7" />
   </svg>
 );
@@ -137,11 +137,11 @@ export default function ApplicationDetailPageClient() {
                   <Card padding="lg" overflow>
                     <div className="flex items-center gap-2 mb-4">
                       <div className="flex items-center justify-center rounded-lg bg-blue-50 border border-blue-200" style={{ width: 32, height: 32, flexShrink: 0 }}>
-                        <svg width="15" height="15" fill="none" stroke="#2563eb" strokeWidth="2" viewBox="0 0 24 24">
-                          <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+                        <svg width="16" height="16" fill="none" stroke="#2563eb" strokeWidth="2" viewBox="0 0 24 24">
+                          <rect x="3" y="4" width="20" height="20" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
                         </svg>
                       </div>
-                      <h2 className="text-md font-bold text-heading">Interview Details</h2>
+                      <h2 className="text-base font-bold text-heading">Interview Details</h2>
                       {app.interview.status === 'scheduled' && (
                         <span className="ml-auto text-micro font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded-full px-2.5 py-0.5">
                           Upcoming
@@ -158,7 +158,7 @@ export default function ApplicationDetailPageClient() {
                       {/* Date & time */}
                       <div className="flex items-start gap-2">
                         <span className="text-subtle shrink-0 mt-0.5">
-                          <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                           </svg>
                         </span>
@@ -177,15 +177,15 @@ export default function ApplicationDetailPageClient() {
                       <div className="flex items-center gap-2 text-body-secondary">
                         <span className="text-subtle shrink-0">
                           {app.interview.type === 'video' ? (
-                            <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                               <path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/>
                             </svg>
                           ) : app.interview.type === 'phone' ? (
-                            <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.27h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.91a16 16 0 0 0 6 6l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 21.73 16.92z"/>
                             </svg>
                           ) : (
-                            <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                             </svg>
                           )}
@@ -199,7 +199,7 @@ export default function ApplicationDetailPageClient() {
                       {app.interview.location && (
                         <div className="flex items-start gap-2 text-body-secondary">
                           <span className="text-subtle shrink-0 mt-0.5">
-                            <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                             </svg>
                           </span>
@@ -215,7 +215,7 @@ export default function ApplicationDetailPageClient() {
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-700 hover:underline mt-1"
                         >
-                          <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>
                           </svg>
                           Join Interview
@@ -237,7 +237,7 @@ export default function ApplicationDetailPageClient() {
                   <Card padding="lg" overflow>
                     <div className="flex items-start gap-3">
                       <div className="mt-0.5 shrink-0 flex items-center justify-center rounded-lg bg-amber-50 border border-amber-200" style={{ width: 32, height: 32 }}>
-                        <svg width="15" height="15" fill="none" stroke="#d97706" strokeWidth="2" viewBox="0 0 24 24">
+                        <svg width="16" height="16" fill="none" stroke="#d97706" strokeWidth="2" viewBox="0 0 24 24">
                           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                         </svg>
                       </div>
@@ -251,7 +251,7 @@ export default function ApplicationDetailPageClient() {
 
                 {/* Timeline */}
                 <Card padding="lg" overflow>
-                  <h2 className="text-md font-bold text-heading mb-5">Application History</h2>
+                  <h2 className="text-base font-bold text-heading mb-5">Application History</h2>
 
                   {app.timeline.length === 0 ? (
                     <p className="text-sm text-subtle">No history yet.</p>

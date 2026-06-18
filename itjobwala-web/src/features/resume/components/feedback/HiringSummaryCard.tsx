@@ -7,9 +7,9 @@ interface Props {
 }
 
 const OUTCOME_CONFIG = {
-  shortlisted: { label: 'Shortlisted', color: '#06b6d4',  bg: 'rgba(6,182,212,0.1)',  border: 'rgba(6,182,212,0.2)'  },
-  interview:   { label: 'Interview',   color: '#8b5cf6',  bg: 'rgba(139,92,246,0.1)', border: 'rgba(139,92,246,0.2)' },
-  hired:       { label: 'Hired',       color: '#10b981',  bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.25)' },
+  shortlisted: { label: 'Shortlisted', color: '#7c3aed',  bg: 'rgba(124,58,237,0.1)',  border: 'rgba(124,58,237,0.2)'  },
+  interview:   { label: 'Interview',   color: '#d97706',  bg: 'rgba(217,119,6,0.1)',   border: 'rgba(217,119,6,0.2)'   },
+  hired:       { label: 'Hired',       color: '#16a34a',  bg: 'rgba(22,163,74,0.12)',  border: 'rgba(22,163,74,0.25)'  },
   rejected:    { label: 'Rejected',    color: '#ef4444',  bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.18)'  },
 };
 

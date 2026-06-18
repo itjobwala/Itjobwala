@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Button from '@/src/components/ui/Button';
 import StatusBadge from '@/src/components/ui/StatusBadge';
 
 export interface Job {
@@ -33,7 +34,7 @@ export default function JobStatusCard({ job }: Props) {
           </div>
           <div className="flex items-center gap-3 text-caption text-subtle">
             <span className="flex items-center gap-1">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                 <circle cx="12" cy="10" r="3" />
               </svg>
@@ -59,13 +60,13 @@ export default function JobStatusCard({ job }: Props) {
           >
             Edit
           </Link>
-          <button className="p-1.5 text-gray-300 hover:text-muted transition-colors rounded-lg hover:bg-surface-hover">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+          <Button variant="outline" size="sm" iconOnly aria-label="More options">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <circle cx="12" cy="5"  r="1" fill="currentColor" />
               <circle cx="12" cy="12" r="1" fill="currentColor" />
               <circle cx="12" cy="19" r="1" fill="currentColor" />
             </svg>
-          </button>
+          </Button>
         </div>
       </div>
     </div>

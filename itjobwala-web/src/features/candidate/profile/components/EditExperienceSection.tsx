@@ -162,7 +162,7 @@ function SkillInput({ skills, onChange }: { skills: string[], onChange: (skills:
                 onClick={() => onChange(skills.filter(s => s !== skill))}
                 className="text-primary/60 hover:text-primary transition-colors"
               >
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M18 6 6 18M6 6l12 12" />
                 </svg>
               </button>
@@ -239,7 +239,7 @@ export default function EditExperienceSection({ experiences, onChange, onDelete 
           onClick={() => onChange([...experiences, emptyExperience()])}
           className="flex items-center gap-1.5 text-caption font-semibold text-subtle hover:text-primary transition-colors"
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <circle cx="12" cy="12" r="10" /><path d="M12 8v8M8 12h8" />
           </svg>
           Add experience

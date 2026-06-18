@@ -34,7 +34,7 @@ export default function NonQaResumeState({ domainLabel, domainConfidence, messag
         style={{ background: '#fef3c7', border: '1px solid rgba(245,158,11,0.25)' }}
       >
         <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-amber-600">Detected Domain</p>
-        <p className="text-md font-black text-heading">{domainLabel}</p>
+        <p className="text-sm font-black text-heading">{domainLabel}</p>
         <p className="text-micro text-amber-600 font-medium">{domainConfidence}% confidence</p>
       </div>
 

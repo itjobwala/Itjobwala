@@ -53,7 +53,7 @@ export default function JobDetailsStep({
           ← Back
         </button>
         <button type="submit" disabled={loading}
-          className="flex-[2] flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-md transition-all duration-200"
+          className="flex-[2] flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-sm transition-all duration-200"
           style={{
             padding: 14,
             cursor: loading ? 'not-allowed' : 'pointer',

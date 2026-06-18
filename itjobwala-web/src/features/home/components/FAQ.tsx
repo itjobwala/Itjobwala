@@ -22,7 +22,7 @@ export default function FAQ() {
         <div className="text-center mb-12">
           <div
             className="reveal text-[12px] font-bold uppercase mb-3"
-            style={{ color: PRIMARY, letterSpacing: 2 }}
+            style={{ color: PRIMARY, letterSpacing: 1.5 }}
           >
             Got questions?
           </div>

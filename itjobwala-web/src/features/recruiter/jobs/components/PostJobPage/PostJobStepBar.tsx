@@ -17,7 +17,7 @@ export default function PostJobStepBar({ current }: { current: number }) {
                   boxShadow: active ? `0 0 0 3px ${PRIMARY}18` : 'none',
                 }}>
                 {done
-                  ? <svg width="13" height="13" fill="none" stroke="#fff" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
+                  ? <svg width="14" height="14" fill="none" stroke="#fff" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
                   : <span className="text-xs font-bold" style={{ color: active ? PRIMARY : '#9ca3af' }}>{i + 1}</span>
                 }
               </div>

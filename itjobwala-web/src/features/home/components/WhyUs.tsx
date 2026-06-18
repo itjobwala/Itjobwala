@@ -6,26 +6,26 @@ import { WHY } from '@/src/lib/data';
 
 const WHY_ICONS: Record<string, React.ReactNode> = {
   salary: (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="6" width="20" height="12" rx="2"/>
       <circle cx="12" cy="12" r="2.5"/>
       <path d="M6 12h.01M18 12h.01"/>
     </svg>
   ),
   spam: (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
       <path d="M9 12l2 2 4-4"/>
     </svg>
   ),
   direct: (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M22 2L11 13"/>
       <path d="M22 2l-7 20-4-9-9-4 20-7z"/>
     </svg>
   ),
   curated: (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M9 11l3 3L22 4"/>
       <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
     </svg>
@@ -44,17 +44,17 @@ export default function WhyUs() {
         <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-12 lg:gap-20 items-center">
           {/* Left */}
           <div className="reveal-left">
-            <div className="text-[12px] font-bold text-[#93c5fd] uppercase mb-3" style={{ letterSpacing: 2 }}>
+            <div className="text-[12px] font-bold text-[#93c5fd] uppercase mb-3" style={{ letterSpacing: 1.5 }}>
               Our difference
             </div>
             <h2
               className="text-[36px] md:text-[42px] font-extrabold text-white leading-[1.1] mb-5"
               style={{ letterSpacing: '-1.5px' }}
             >
-              Why people choose this platform
+              Why QA professionals choose itJobwala
             </h2>
             <p className="text-[15px] text-slate-500 leading-[1.7]">
-              Built for IT professionals who are tired of recruiter chaos and irrelevant listings.
+              Built for QA engineers tired of generic job boards that don&apos;t understand testing roles.
             </p>
           </div>
 

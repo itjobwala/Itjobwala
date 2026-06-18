@@ -29,6 +29,8 @@
   --color-warning-bg:  #fffbeb;
   --color-info:        #2563eb;
   --color-info-bg:     #eff6ff;
+  --color-violet:      #7c3aed;
+  --color-violet-bg:   #f5f3ff;
 
   /* ── Typography scale ── */
   --font-size-nano:     9px;

@@ -218,7 +218,7 @@ export default function CreateReferralModal({ isOpen, onClose, onSuccess }: Prop
   const descLen = (form.description ?? '').trim().length;
 
   return (
-    <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 overflow-y-auto">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 overflow-y-auto">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-surface rounded-3xl shadow-2xl w-full max-w-xl my-6">
         <div className="bg-gradient-to-r from-indigo-600 to-primary px-6 py-5 text-white rounded-t-3xl">

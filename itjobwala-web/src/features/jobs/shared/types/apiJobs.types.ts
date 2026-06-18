@@ -30,6 +30,7 @@ export interface Job {
   has_applied?:        boolean;
   company_verified?:   boolean;
   status?:             string;
+  closes_at?:          string | null;
 }
 
 export interface JobDetail extends Job {

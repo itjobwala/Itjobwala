@@ -69,7 +69,7 @@ export default function ReferralRequestCard({ request, isReceived }: Props) {
             {party?.photo ? (
               <Image src={party.photo} alt={party.name ?? ''} width={44} height={44} className="rounded-full object-cover shrink-0" />
             ) : (
-              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center text-white text-md font-bold shrink-0">
+              <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-blue-400 flex items-center justify-center text-white text-sm font-bold shrink-0">
                 {(party?.name ?? (request.referral_job?.company_name ?? '?')).charAt(0).toUpperCase()}
               </div>
             )}
@@ -137,7 +137,7 @@ export default function ReferralRequestCard({ request, isReceived }: Props) {
             {request.notes && (
               <div className="text-caption text-indigo-800 bg-indigo-50 border border-indigo-200 rounded-xl px-4 py-3">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="text-indigo-500"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="text-indigo-500"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
                   <span className="text-[10px] font-extrabold text-indigo-600 uppercase tracking-wide">Instructions from Referrer</span>
                 </div>
                 <p className="leading-relaxed">{request.notes}</p>
@@ -155,7 +155,7 @@ export default function ReferralRequestCard({ request, isReceived }: Props) {
                   className="flex items-center justify-center gap-2 w-full py-3 rounded-xl text-base font-extrabold bg-emerald-600 text-white hover:bg-emerald-700 active:scale-[0.98] transition-all shadow-sm shadow-emerald-200"
                 >
                   Apply Now
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                 </a>
 
                 {/* Divider + instruction */}
@@ -227,7 +227,7 @@ export default function ReferralRequestCard({ request, isReceived }: Props) {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-caption font-medium text-blue-700 hover:text-blue-900 underline underline-offset-2 break-all"
             >
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
               {request.apply_link}
             </a>
           </div>
@@ -268,14 +268,14 @@ export default function ReferralRequestCard({ request, isReceived }: Props) {
           {request.resume_url && (
             <a href={request.resume_url} target="_blank" rel="noopener noreferrer"
               className="text-micro font-semibold text-primary bg-primary/8 px-3 py-1.5 rounded-lg hover:bg-primary/15 transition-colors flex items-center gap-1">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               Resume
             </a>
           )}
           {request.linkedin_url && (
             <a href={request.linkedin_url} target="_blank" rel="noopener noreferrer"
               className="text-micro font-semibold text-[#0A66C2] bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-1">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
               LinkedIn
             </a>
           )}

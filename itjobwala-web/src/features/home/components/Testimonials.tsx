@@ -25,7 +25,7 @@ export default function Testimonials() {
         <div className="text-center mb-14">
           <div
             className="reveal text-[12px] font-bold uppercase mb-3"
-            style={{ color: PRIMARY, letterSpacing: 2 }}
+            style={{ color: PRIMARY, letterSpacing: 1.5 }}
           >
             From the community
           </div>
@@ -61,7 +61,7 @@ export default function Testimonials() {
             >
               <Stars />
 
-              <p className="text-md leading-[1.7] text-heading font-medium flex-1">
+              <p className="text-sm leading-[1.7] text-heading font-medium flex-1">
                 &ldquo;{t.quote}&rdquo;
               </p>
 

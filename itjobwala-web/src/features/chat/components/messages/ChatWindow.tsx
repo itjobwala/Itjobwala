@@ -58,7 +58,7 @@ export default function ChatWindow({ conversation, myId, isTyping }: Props) {
       <div className="flex-1 flex items-center justify-center text-center p-8">
         <div>
           <div className="w-14 h-14 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-3">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1557FF" strokeWidth="1.5">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1557FF" strokeWidth="1.5">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
           </div>

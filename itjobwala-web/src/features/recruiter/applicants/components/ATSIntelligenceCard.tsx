@@ -155,7 +155,7 @@ export default function ATSIntelligenceCard({ data }: Props) {
           className="rounded-2xl px-4 py-3 flex gap-2.5"
           style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)' }}
         >
-          <svg className="shrink-0 mt-0.5" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.5">
+          <svg className="shrink-0 mt-0.5" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2.5">
             <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
           </svg>
           <p className="text-[11px] text-amber-200 leading-relaxed">{data.recruiter_tip}</p>

@@ -58,7 +58,7 @@ export default function ReferralOpportunityCard({ job, onApplied }: Props) {
               {companyInitial}
             </div>
             <div className="min-w-0">
-              <h3 className="text-md font-extrabold text-heading leading-tight truncate" style={{ letterSpacing: '-0.2px' }}>
+              <h3 className="text-sm font-extrabold text-heading leading-tight truncate" style={{ letterSpacing: '-0.2px' }}>
                 {job.job_title}
               </h3>
               <p className="text-caption text-muted font-medium truncate">{job.company_name}</p>
@@ -74,19 +74,19 @@ export default function ReferralOpportunityCard({ job, onApplied }: Props) {
           <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-caption text-muted">
             {job.location && (
               <span className="flex items-center gap-1">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
                 {job.location}
               </span>
             )}
             {job.experience_required && (
               <span className="flex items-center gap-1">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
                 {job.experience_required}
               </span>
             )}
             {job.salary_range && (
               <span className="flex items-center gap-1 font-semibold text-emerald-600">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 {job.salary_range}
               </span>
             )}

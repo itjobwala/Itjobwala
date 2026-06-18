@@ -4,7 +4,7 @@ import type { SearchState } from '../../shared/types';
 
 function SearchIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
       <circle cx="11" cy="11" r="8" />
       <path d="m21 21-4.35-4.35" />
     </svg>
@@ -13,7 +13,7 @@ function SearchIcon() {
 
 function MapPinIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
       <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
       <circle cx="12" cy="9" r="2.5" />
     </svg>
@@ -22,7 +22,7 @@ function MapPinIcon() {
 
 function BriefcaseIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
       <rect x="2" y="7" width="20" height="14" rx="2" />
       <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
       <path d="M12 12v2M8 12v2M16 12v2" />
@@ -125,7 +125,7 @@ export default function JobSearchBar({ search, onChange, onSearch }: Props) {
             value={search.jobTitle}
             onChange={e => onChange({ ...search, jobTitle: e.target.value })}
             onKeyDown={handleKey}
-            className="flex-1 bg-transparent text-md text-heading placeholder:text-subtle outline-none min-w-0"
+            className="flex-1 bg-transparent text-sm text-heading placeholder:text-subtle outline-none min-w-0"
           />
           {search.jobTitle && (
             <button onClick={() => onChange({ ...search, jobTitle: '' })} className="text-subtle hover:text-muted transition-colors shrink-0">
@@ -147,7 +147,7 @@ export default function JobSearchBar({ search, onChange, onSearch }: Props) {
             value={search.company}
             onChange={e => onChange({ ...search, company: e.target.value })}
             onKeyDown={handleKey}
-            className="flex-1 bg-transparent text-md text-heading placeholder:text-subtle outline-none min-w-0"
+            className="flex-1 bg-transparent text-sm text-heading placeholder:text-subtle outline-none min-w-0"
           />
           {search.company && (
             <button onClick={() => onChange({ ...search, company: '' })} className="text-subtle hover:text-muted transition-colors shrink-0">
@@ -169,7 +169,7 @@ export default function JobSearchBar({ search, onChange, onSearch }: Props) {
             value={search.city}
             onChange={e => onChange({ ...search, city: e.target.value })}
             onKeyDown={handleKey}
-            className="flex-1 bg-transparent text-md text-heading placeholder:text-subtle outline-none min-w-0"
+            className="flex-1 bg-transparent text-sm text-heading placeholder:text-subtle outline-none min-w-0"
           />
           {search.city && (
             <button onClick={() => onChange({ ...search, city: '' })} className="text-subtle hover:text-muted transition-colors shrink-0">

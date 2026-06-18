@@ -80,7 +80,7 @@ export default function SavedJobsCard({ jobs: initialJobs, total, hasMore, onUns
                     onClick={() => handleUnsave(job)}
                     className="w-6 h-6 flex items-center justify-center text-gray-300 hover:text-red-400 transition-colors"
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path d="M18 6 6 18M6 6l12 12" />
                     </svg>
                   </button>
@@ -97,7 +97,7 @@ export default function SavedJobsCard({ jobs: initialJobs, total, hasMore, onUns
           className="mt-3 flex items-center justify-center gap-1.5 w-full py-2.5 rounded-xl border border-token text-caption font-bold text-primary hover:bg-primary/5 transition-colors"
         >
           View all {total} saved jobs
-          <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+          <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
             <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>
         </Link>

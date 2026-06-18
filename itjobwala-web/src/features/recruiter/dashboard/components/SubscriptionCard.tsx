@@ -16,7 +16,7 @@ export default function SubscriptionCard() {
   return (
     <Card className="shadow-sm" overflow>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-md font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
+        <h2 className="text-base font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
           Subscription
         </h2>
         <span

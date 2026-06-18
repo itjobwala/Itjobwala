@@ -271,8 +271,8 @@ export default function RecruiterInterviewsPage() {
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2.5">
                         {interview.scheduledAt ? (
                           <div className="flex items-center gap-1.5 text-caption text-muted">
-                            <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                              <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+                            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                              <rect x="3" y="4" width="20" height="20" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
                             </svg>
                             <span className="font-semibold">{formatDateTime(interview.scheduledAt)}</span>
                             {interview.durationMinutes && (
@@ -292,7 +292,7 @@ export default function RecruiterInterviewsPage() {
 
                         {interview.location && (
                           <div className="flex items-center gap-1.5 text-caption text-muted">
-                            <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
                             </svg>
                             <span className="truncate max-w-[160px]">{interview.location}</span>

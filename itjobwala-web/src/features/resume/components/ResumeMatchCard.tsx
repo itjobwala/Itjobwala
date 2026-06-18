@@ -98,7 +98,7 @@ export default function ResumeMatchCard({ jobId }: Props) {
         {/* Domain mismatch notice — intentional amber status */}
         {!isDomain && data.resume_domain && data.job_domain && (
           <div className="mb-3 flex items-start gap-2 px-3 py-2 bg-amber-50 border border-amber-100 rounded-xl">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.5" className="shrink-0 mt-px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.5" className="shrink-0 mt-px">
               <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
               <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
             </svg>

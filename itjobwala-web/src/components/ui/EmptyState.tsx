@@ -29,7 +29,7 @@ export default function EmptyState({ icon, emoji, title, description, cta, class
         <div className="text-[40px] mb-4 leading-none">{emoji}</div>
       ) : null}
 
-      <h3 className="text-lg font-bold text-heading mb-2">{title}</h3>
+      <h3 className="text-base font-bold text-heading mb-2">{title}</h3>
 
       {description && (
         <p className="text-sm text-muted max-w-xs mx-auto">{description}</p>
@@ -41,7 +41,6 @@ export default function EmptyState({ icon, emoji, title, description, cta, class
             <Link
               href={cta.href}
               className="inline-block px-5 py-2.5 bg-primary text-white text-sm font-semibold rounded-xl hover:opacity-90 transition-opacity"
-              style={{ color: '#fff' }}
             >
               {cta.label}
             </Link>

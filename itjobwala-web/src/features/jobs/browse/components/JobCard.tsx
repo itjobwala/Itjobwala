@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import CompanyLogo from '@/src/components/ui/CompanyLogo';
 import VerifiedBadge from '@/src/components/ui/VerifiedBadge';
+import Badge from '@/src/components/ui/Badge';
 import type { Job } from '../../shared/types';
 import { salaryLabel } from '@/src/lib/utils/format';
 
@@ -16,7 +17,7 @@ interface Props {
 
 function MapPinIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
       <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
       <circle cx="12" cy="9" r="2.5" />
     </svg>
@@ -25,7 +26,7 @@ function MapPinIcon() {
 
 function BriefcaseIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
       <rect x="2" y="7" width="20" height="14" rx="2" />
       <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
     </svg>
@@ -34,7 +35,7 @@ function BriefcaseIcon() {
 
 function ClockIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
       <circle cx="12" cy="12" r="10" />
       <path d="M12 6v6l4 2" />
     </svg>
@@ -43,7 +44,7 @@ function ClockIcon() {
 
 function IndianRupeeIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
       <path d="M6 3h12M6 8h12M15 21 9 8" />
       <path d="M6 13h3a4 4 0 0 0 0-5H6" />
     </svg>
@@ -58,7 +59,7 @@ const WORK_MODE_LABEL: Record<Job['workMode'], string> = {
 
 const WORK_MODE_CLASS: Record<Job['workMode'], string> = {
   remote: 'bg-success-bg text-success',
-  hybrid: 'bg-blue-50 text-blue-700',
+  hybrid: 'bg-info-bg text-info',
   onsite: 'bg-surface-hover text-body-secondary',
 };
 
@@ -73,6 +74,18 @@ function postedLabel(days: number) {
   if (days === 0) return 'Today';
   if (days === 1) return '1d ago';
   return `${days}d ago`;
+}
+
+function expiresInfo(closesAt: string | null | undefined): { label: string; className: string } | null {
+  if (!closesAt) return null;
+  const daysLeft = Math.ceil((new Date(closesAt).getTime() - Date.now()) / 86_400_000);
+  if (daysLeft <= 0)  return { label: 'Closed',           className: 'text-danger' };
+  if (daysLeft === 1) return { label: 'Closes today',     className: 'text-danger' };
+  if (daysLeft <= 3)  return { label: `Closes in ${daysLeft}d`, className: 'text-danger' };
+  if (daysLeft <= 7)  return { label: `Closes in ${daysLeft}d`, className: 'text-warning' };
+  if (daysLeft <= 30) return { label: `Closes in ${daysLeft}d`, className: 'text-subtle' };
+  const d = new Date(closesAt);
+  return { label: `Closes ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`, className: 'text-subtle' };
 }
 
 export default function JobCard({ job, onSave, onUnsave, initialSaved = false }: Props) {
@@ -102,7 +115,8 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false }:
   };
 
   return (
-    <div onClick={() => router.push(`/candidate/jobs/${job.id}`)} className="group bg-white rounded-2xl border border-token hover:border-primary/40 hover:shadow-lg transition-all duration-200 cursor-pointer p-5 sm:p-6">
+    <div onClick={() => router.push(`/candidate/jobs/${job.id}`)} className="group relative overflow-hidden bg-white rounded-2xl border border-token hover:border-primary/40 hover:shadow-lg transition-all duration-200 cursor-pointer p-5 sm:p-6">
+      {job.hasApplied && <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-success" />}
       <div className="flex items-start gap-4">
         {/* Company logo */}
         <CompanyLogo name={job.company} logo={job.companyLogo} colorClass={job.companyColorClass} />
@@ -127,7 +141,7 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false }:
                 )}
               </div>
               {/* Title */}
-              <h3 className="font-bold text-md text-heading leading-snug group-hover:text-primary transition-colors">
+              <h3 className="font-bold text-sm text-heading leading-snug group-hover:text-primary transition-colors">
                 {job.title}
               </h3>
               <p className="text-sm text-muted mt-0.5 flex items-center gap-1.5 flex-wrap">
@@ -144,12 +158,12 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false }:
               aria-label={saved ? 'Unsave job' : 'Save job'}
             >
               {saving ? (
-                <svg width="15" height="15" viewBox="0 0 24 24" className="animate-spin" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <svg width="16" height="16" viewBox="0 0 24 24" className="animate-spin" fill="none" stroke="currentColor" strokeWidth="2.2">
                   <circle cx="12" cy="12" r="10" />
                   <path d="M12 2a10 10 0 0 1 0 20" />
                 </svg>
               ) : (
-                <svg width="15" height="15" viewBox="0 0 24 24" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2.2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2.2">
                   <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
                 </svg>
               )}
@@ -167,7 +181,7 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false }:
                 ? '0 yrs'
                 : `${job.experienceMin}–${job.experienceMax} yrs`}
             </span>
-            <span className="flex items-center gap-1.5">
+            <span className="flex items-center gap-1.5 bg-success-bg text-success font-semibold rounded-full px-3 py-1">
               <IndianRupeeIcon /> {salaryLabel(job.salaryLpaMin, job.salaryLpaMax)}
             </span>
             <span className="flex items-center gap-1.5">
@@ -188,9 +202,9 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false }:
               </span>
             )}
             {job.skills.slice(0, 3).map(skill => (
-              <span key={skill} className="text-caption font-medium rounded-full py-[3px] px-3 bg-surface-alt text-muted border border-token">
+              <Badge key={skill} variant="default" size="md">
                 {skill}
-              </span>
+              </Badge>
             ))}
             {job.skills.length > 3 && (
               <span className="text-caption text-subtle">+{job.skills.length - 3} more</span>
@@ -201,7 +215,20 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false }:
 
       {/* Footer */}
       <div className="flex items-center justify-between mt-4 pt-4 border-t border-token">
-        <span className="text-caption text-subtle">{job.applicants} applicants</span>
+        <div className="flex items-center gap-3">
+          <span className="text-caption text-subtle">{job.applicants} applicants</span>
+          {(() => {
+            const exp = expiresInfo(job.closesAt);
+            return exp ? (
+              <span className={`text-caption font-semibold flex items-center gap-1 ${exp.className}`}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
+                  <rect x="3" y="4" width="20" height="20" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+                </svg>
+                {exp.label}
+              </span>
+            ) : null;
+          })()}
+        </div>
         <span className="text-[13px] font-bold text-primary hover:bg-primary/10 rounded-lg px-4 py-2 transition-colors">
           View job →
         </span>

@@ -5,7 +5,7 @@ import { useHomeStatsQuery } from '@/features/jobs/browse/hooks';
 import { PRIMARY } from '@/src/lib/constants';
 
 const FALLBACK_STATS = [
-  { value: '4,000+', label: 'Live IT jobs',              sub: 'updated daily'        },
+  { value: '4,000+', label: 'Live QA roles',              sub: 'across India'         },
   { value: '800+',   label: 'Companies hiring',          sub: 'startups to MNCs'     },
   { value: '7 days', label: 'Avg. time to first reply',  sub: 'from real recruiters' },
   { value: '92%',    label: 'Applications go direct',    sub: 'no middlemen'         },
@@ -24,7 +24,7 @@ export default function StatsStrip() {
     ? [
         {
           value: apiStats.total_jobs != null ? `${fmt(apiStats.total_jobs)}+` : FALLBACK_STATS[0].value,
-          label: 'Live IT jobs', sub: 'updated daily',
+          label: 'Live QA roles', sub: 'across India',
         },
         {
           value: apiStats.total_companies != null ? `${fmt(apiStats.total_companies)}+` : FALLBACK_STATS[1].value,

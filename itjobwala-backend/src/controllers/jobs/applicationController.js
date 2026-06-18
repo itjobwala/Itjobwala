@@ -4,7 +4,7 @@ import User from '../../models/candidate/User.js';
 import ResumeInsight from '../../models/candidate/ResumeInsight.js';
 import RecruiterFeedbackSignal from '../../models/candidate/RecruiterFeedbackSignal.js';
 import Interview from '../../models/recruiter/Interview.js';
-import { notifyRecruiter } from '../../utils/notifyHelper.js';
+import { notifyRecruiter, notifyCandidate } from '../../utils/notifyHelper.js';
 
 export const applyToJob = async (request, reply) => {
   try {
@@ -63,6 +63,14 @@ export const applyToJob = async (request, reply) => {
         actionUrl: `/recruiter/applicants/applicant_${application.id}`,
       });
     }).catch(() => {});
+
+    // Notify candidate that their application was received (non-blocking)
+    notifyCandidate(userId, {
+      type:      'application_status',
+      title:     'Application Submitted',
+      message:   `Your application for "${job.title}" has been received. We'll notify you of any updates.`,
+      actionUrl: `/candidate/applications/app_${application.id}`,
+    });
 
     return reply.status(201).send({
       success: true,

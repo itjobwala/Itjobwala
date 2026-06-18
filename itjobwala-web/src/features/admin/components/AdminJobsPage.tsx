@@ -164,7 +164,7 @@ export default function AdminJobsPage() {
       {confirm && (
         <Modal isOpen onClose={() => setConfirm(null)} titleId="admin-job-confirm-title">
           <div className="p-6 space-y-4">
-            <h2 id="admin-job-confirm-title" className="font-bold text-gray-900 text-base">
+            <h2 id="admin-job-confirm-title" className="text-base font-bold text-heading">
               {confirm.newStatus === 'removed' ? 'Take down job' : 'Restore job'}
             </h2>
             <p className="text-sm text-gray-600">

@@ -147,7 +147,7 @@ export default function ScheduleInterviewModal({
             onClick={onClose}
             className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-hover text-subtle hover:text-muted transition-colors"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M18 6L6 18M6 6l12 12"/>
             </svg>
           </button>

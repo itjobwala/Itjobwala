@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect }   from 'react';
+import Button          from '@/src/components/ui/Button';
 import ChatAvatar      from '../shared/ChatAvatar';
 import ChatWindow      from '../messages/ChatWindow';
 import ChatInput       from '../input/ChatInput';
@@ -68,10 +69,10 @@ export default function ChatWindowLayout({ conversation, myId, onOpenSidebar }: 
     return (
       <div className="flex-1 flex flex-col">
         <div className="sm:hidden flex items-center gap-3 px-4 py-3 border-b border-token bg-surface shrink-0">
-          <button onClick={onOpenSidebar} className="p-2 rounded-xl hover:bg-surface-hover transition-colors">
+          <Button variant="outline" size="md" iconOnly onClick={onOpenSidebar} aria-label="Open sidebar">
             <HamburgerIcon />
-          </button>
-          <span className="text-md font-bold text-heading">Messages</span>
+          </Button>
+          <span className="text-sm font-bold text-heading">Messages</span>
         </div>
         <ConnectionStatus />
         <ChatEmptyState />
@@ -86,10 +87,9 @@ export default function ChatWindowLayout({ conversation, myId, onOpenSidebar }: 
     <div className="flex-1 flex flex-col min-h-0 bg-surface-alt">
       {/* Chat header */}
       <div className="flex items-center gap-3 px-5 py-4 bg-surface border-b border-token shrink-0">
-        <button onClick={onOpenSidebar}
-          className="sm:hidden p-2 rounded-xl hover:bg-surface-hover transition-colors -ml-1">
+        <Button variant="outline" size="md" iconOnly onClick={onOpenSidebar} aria-label="Open sidebar" className="sm:hidden -ml-1">
           <HamburgerIcon />
-        </button>
+        </Button>
 
         <ChatAvatar name={party?.name ?? null} photo={party?.photo} size={40} online={isOtherOnline} />
 
@@ -122,7 +122,7 @@ export default function ChatWindowLayout({ conversation, myId, onOpenSidebar }: 
 
 function HamburgerIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.2">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.2">
       <line x1="3" y1="6"  x2="21" y2="6"  />
       <line x1="3" y1="12" x2="21" y2="12" />
       <line x1="3" y1="18" x2="21" y2="18" />

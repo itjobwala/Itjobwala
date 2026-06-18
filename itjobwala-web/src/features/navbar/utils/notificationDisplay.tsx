@@ -16,7 +16,7 @@ export const TYPE_ICON: Partial<Record<NotificationType, React.ReactNode>> & { d
   ),
   interview_scheduled: (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-      <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+      <rect x="3" y="4" width="20" height="20" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
     </svg>
   ),
   offer_received: (
@@ -42,12 +42,12 @@ export const TYPE_ICON: Partial<Record<NotificationType, React.ReactNode>> & { d
 };
 
 export const TYPE_COLOR: Partial<Record<NotificationType, string>> & { default: string } = {
-  profile_view:        'bg-blue-50 text-blue-600',
-  application_status:  'bg-purple-50 text-purple-600',
-  interview_scheduled: 'bg-amber-50 text-amber-600',
-  offer_received:      'bg-yellow-50 text-yellow-600',
-  new_applicant:       'bg-green-50 text-green-600',
-  message_received:    'bg-sky-50 text-sky-600',
+  profile_view:        'bg-info-bg text-info',
+  application_status:  'bg-violet-bg text-violet',
+  interview_scheduled: 'bg-warning-bg text-warning',
+  offer_received:      'bg-warning-bg text-warning',
+  new_applicant:       'bg-success-bg text-success',
+  message_received:    'bg-info-bg text-info',
   default:             'bg-surface-alt text-muted',
 };
 

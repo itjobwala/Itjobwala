@@ -24,7 +24,7 @@ export default function RecommendedSkillsCard({ trendingSkills, currentSkills, o
             onClick={onEdit}
             className="flex items-center gap-1.5 text-caption font-semibold rounded-xl px-3 py-1.5 border bg-surface-alt text-body-secondary border-token hover:border-primary/40 hover:text-primary hover:bg-primary/5 transition-colors"
           >
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M12 5v14M5 12h14" />
             </svg>
             {skill}

@@ -23,7 +23,7 @@ export default function PostJobSuccessScreen({ jobId }: { jobId: string }) {
           Review and publish your job from the dashboard to start receiving applications.
         </p>
         <Link href={`/recruiter/posted-jobs/${jobId}`}
-          className="block text-white rounded-xl font-bold text-md text-center mb-3 py-3.5 transition-all"
+          className="block text-white rounded-xl font-bold text-sm text-center mb-3 py-3.5 transition-all"
           style={{ background: PRIMARY, textDecoration: 'none' }}
           onMouseEnter={e => { e.currentTarget.style.background = '#0d3fd4'; }}
           onMouseLeave={e => { e.currentTarget.style.background = PRIMARY; }}>

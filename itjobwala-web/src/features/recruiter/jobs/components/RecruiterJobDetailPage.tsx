@@ -150,7 +150,7 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
           { label: 'Vacancies', value: job.vacancies ?? 1 },
           { label: 'Closes', value: formatDate(job.closesAt) },
         ].map(({ label, value }) => (
-          <div key={label} className="bg-surface rounded-xl border border-token p-4">
+          <div key={label} className="bg-surface rounded-2xl border border-token p-4">
             <p className="text-micro text-subtle font-medium">{label}</p>
             <p className="text-xl font-extrabold text-heading mt-0.5" style={{ letterSpacing: '-0.5px' }}>
               {value}
@@ -191,7 +191,7 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
         <div className="space-y-6">
           {/* Meta */}
           <Card overflow>
-            <h2 className="text-md font-extrabold text-heading mb-4">Job Details</h2>
+            <h2 className="text-base font-extrabold text-heading mb-4">Job Details</h2>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div><span className="text-muted">Location</span><p className="font-semibold text-heading mt-0.5">{job.location || '—'}</p></div>
               <div><span className="text-muted">Work Mode</span><p className="font-semibold text-heading mt-0.5">{job.workMode || '—'}</p></div>
@@ -218,7 +218,7 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
 
           {/* Description */}
           <Card className="space-y-5" overflow>
-            <h2 className="text-md font-extrabold text-heading">About the Role</h2>
+            <h2 className="text-base font-extrabold text-heading">About the Role</h2>
 
             {job.description && (
               <p className="text-sm text-body leading-relaxed whitespace-pre-line">{job.description}</p>
@@ -254,7 +254,7 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
         <div className="space-y-4">
           <Card overflow>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-md font-extrabold text-heading">
+              <h2 className="text-base font-extrabold text-heading">
                 Applicants
                 {applicants.length > 0 && (
                   <span className="ml-2 text-caption font-semibold text-subtle">({job.applicationCount ?? applicants.length})</span>

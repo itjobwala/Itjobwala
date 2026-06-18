@@ -55,7 +55,7 @@ export default function CertificationAdvisorCard({ data }: Props) {
           className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0"
           style={{ background: 'rgba(245,158,11,0.15)' }}
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2">
             <circle cx="12" cy="8" r="6"/>
             <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
           </svg>

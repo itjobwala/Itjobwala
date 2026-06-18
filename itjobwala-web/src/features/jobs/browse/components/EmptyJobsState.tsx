@@ -11,9 +11,9 @@ export default function EmptyJobsState({ onReset }: { onReset: () => void }) {
   return (
     <EmptyState
       icon={SearchIcon}
-      title="No jobs found"
-      description="Try adjusting your search or filters to find more opportunities."
-      cta={{ label: 'Clear all filters', onClick: onReset }}
+      title="No QA roles match your filters"
+      description="Try removing a filter or browsing all QA roles"
+      cta={{ label: 'Browse all QA roles', onClick: onReset }}
       className="py-24"
     />
   );

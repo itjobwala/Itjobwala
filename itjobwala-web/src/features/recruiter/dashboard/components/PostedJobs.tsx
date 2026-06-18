@@ -22,7 +22,7 @@ export default function PostedJobs() {
     <Card padding="none" className="shadow-sm">
       <div className="px-5 py-4 border-b border-token flex items-center justify-between">
         <div>
-          <h2 className="text-md font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
+          <h2 className="text-base font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
             Posted Jobs
           </h2>
           <p className="text-caption text-subtle mt-0.5">Manage your active and paused listings</p>
@@ -32,7 +32,7 @@ export default function PostedJobs() {
           className="flex items-center gap-1.5 text-caption font-bold text-white bg-primary px-3.5 py-1.5 rounded-xl hover:bg-primary/90 transition-colors"
           style={{ color: '#fff' }}
         >
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5"  y1="12" x2="19" y2="12" />
           </svg>

@@ -58,7 +58,7 @@ export default function AccountStep({ account, errors, setField, onSubmit }: Pro
       </div>
 
       <button type="submit"
-        className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-md transition-all duration-200"
+        className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-sm transition-all duration-200"
         style={{ padding: 15, background: PRIMARY, boxShadow: `0 4px 20px ${PRIMARY}44`, cursor: 'pointer' }}
         onMouseEnter={e => { e.currentTarget.style.background = '#0d3fd4'; }}
         onMouseLeave={e => { e.currentTarget.style.background = PRIMARY; }}>

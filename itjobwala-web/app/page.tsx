@@ -18,7 +18,7 @@ export default function Home() {
     if (!isHydrated || isLoading) return;
 
     if (session?.userRole === 'candidate') {
-      router.replace('/jobs');
+      router.replace('/candidate/jobs');
     }
   }, [isHydrated, isLoading, router, session]);
 
@@ -30,15 +30,15 @@ export default function Home() {
     <main className="min-h-screen">
       <SmartNavbar />
       <HeroSection />
-      <StatsStrip />
       <CompanyMarquee />
       <CategorySection />
       <FeaturedJobs />
       <HowItWorks />
       <WhyUs />
+      <StatsStrip />
       <Testimonials />
-      <FAQ />
       <RecruiterCTA />
+      <FAQ />
       <Footer />
     </main>
   );

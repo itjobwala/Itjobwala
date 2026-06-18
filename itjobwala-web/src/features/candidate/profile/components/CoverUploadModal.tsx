@@ -107,7 +107,7 @@ export default function CoverUploadModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="cover-upload-title"
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200] p-4"
     >
       <div className="bg-surface rounded-2xl max-w-md w-full shadow-2xl">
         {/* Header */}
@@ -186,7 +186,7 @@ export default function CoverUploadModal({
                         onClick={() => handleFileSelect(null)}
                         className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
                       >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                           <path d="M18 6L6 18M6 6l12 12" />
                         </svg>
                       </button>

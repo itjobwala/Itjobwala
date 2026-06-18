@@ -103,7 +103,7 @@ export default function CertificateFileUploadModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="cert-upload-title"
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] p-4"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200] p-4"
     >
       <div className="bg-surface rounded-2xl max-w-md w-full shadow-2xl">
         {/* Header */}

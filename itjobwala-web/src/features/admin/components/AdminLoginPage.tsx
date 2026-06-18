@@ -74,7 +74,7 @@ export default function AdminLoginPage() {
           <span className="font-extrabold text-xl text-white" style={{ letterSpacing: '-0.5px' }}>
             it<span style={{ color: ADMIN_ACCENT }}>Jobwala</span>
             <span className="ml-2 text-[11px] font-semibold tracking-widest uppercase"
-              style={{ color: 'rgba(255,255,255,0.4)', letterSpacing: 3 }}>Admin</span>
+              style={{ color: 'rgba(255,255,255,0.4)', letterSpacing: 1.5 }}>Admin</span>
           </span>
         </div>
 

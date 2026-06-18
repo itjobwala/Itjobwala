@@ -112,7 +112,7 @@ export default function SkillGapCard({ extracted, missing, suggested }: Props) {
         <div className="flex flex-col items-center py-4 gap-2 text-center">
           {/* Intentional emerald success state */}
           <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
           </div>

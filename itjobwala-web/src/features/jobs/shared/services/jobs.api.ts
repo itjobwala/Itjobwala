@@ -1,4 +1,4 @@
-import { publicClient } from '@/src/lib/api/client';
+import apiClient, { publicClient } from '@/src/lib/api/client';
 import type { ApiResponse } from '@/src/types/api';
 import type { Job, JobDetail, JobsListResponse, JobFilters, JobCategory, JobCategoriesResponse } from '@/features/jobs/shared/types/apiJobs.types';
 
@@ -13,7 +13,7 @@ export interface SimilarCompany {
 
 // GET /jobs — paginated, filtered list
 export async function getJobs(filters: JobFilters = {}): Promise<JobsListResponse> {
-  const res = await publicClient.get<ApiResponse<JobsListResponse>>('/jobs', {
+  const res = await apiClient.get<ApiResponse<JobsListResponse>>('/jobs', {
     params: filters,
   });
   return res.data.data!;
@@ -30,13 +30,13 @@ export async function getJobCategories(): Promise<JobCategory[]> {
 
 // GET /jobs/featured — home page jobs
 export async function getFeaturedJobs(): Promise<Job[]> {
-  const res = await publicClient.get<ApiResponse<{ jobs: Job[] }>>('/jobs/featured');
+  const res = await apiClient.get<ApiResponse<{ jobs: Job[] }>>('/jobs/featured');
   return res.data.data?.jobs ?? [];
 }
 
 // GET /jobs/recommended — public newest-job recommendations
 export async function getRecommendedJobs(limit = 5, exclude?: string): Promise<Job[]> {
-  const res = await publicClient.get<ApiResponse<{ jobs: Job[] }>>('/jobs/recommended', {
+  const res = await apiClient.get<ApiResponse<{ jobs: Job[] }>>('/jobs/recommended', {
     params: { limit, ...(exclude ? { exclude } : {}) },
   });
   return res.data.data?.jobs ?? [];
@@ -44,7 +44,7 @@ export async function getRecommendedJobs(limit = 5, exclude?: string): Promise<J
 
 // GET /jobs/:job_id
 export async function getJobById(jobId: string): Promise<JobDetail> {
-  const res = await publicClient.get<ApiResponse<JobDetail>>(`/jobs/${jobId}`);
+  const res = await apiClient.get<ApiResponse<JobDetail>>(`/jobs/${jobId}`);
   return res.data.data!;
 }
 

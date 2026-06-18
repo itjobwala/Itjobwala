@@ -63,7 +63,7 @@ export default function SemanticMatchPanel({ jobId }: Props) {
           className="w-7 h-7 rounded-xl flex items-center justify-center shrink-0"
           style={{ background: 'rgba(139,92,246,0.15)' }}
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" strokeWidth="2.5">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" strokeWidth="2.5">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
           </svg>
         </div>

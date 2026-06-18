@@ -42,7 +42,7 @@ export default function DynamicScoreBadge({
           className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
           style={{ background: 'rgba(99,102,241,0.2)' }}
         >
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" strokeWidth="2.5">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" strokeWidth="2.5">
             <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>
           </svg>
         </div>

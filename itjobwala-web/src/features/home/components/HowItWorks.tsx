@@ -17,9 +17,9 @@ export default function HowItWorks() {
         <div className="text-center mb-12">
           <div
             className="reveal text-caption font-bold uppercase mb-3"
-            style={{ color: PRIMARY, letterSpacing: 2 }}
+            style={{ color: PRIMARY, letterSpacing: 1.5 }}
           >
-            Simple by design
+            Built for QA careers
           </div>
           <h2
             className="reveal stagger-1 text-[36px] md:text-[42px] font-extrabold text-[#0f172a]"
@@ -58,7 +58,7 @@ export default function HowItWorks() {
                 </span>
               </div>
               <h3 className="text-xl font-bold text-[#0f172a] mb-3">{s.title}</h3>
-              <p className="text-md text-muted leading-[1.7]">{s.desc}</p>
+              <p className="text-sm text-muted leading-[1.7]">{s.desc}</p>
             </div>
           ))}
         </div>

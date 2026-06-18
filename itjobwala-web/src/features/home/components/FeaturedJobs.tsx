@@ -47,7 +47,7 @@ export default function
           <div className="reveal-left lg:pt-2">
             <div
               className="text-caption font-bold uppercase mb-3"
-              style={{ color: PRIMARY, letterSpacing: 2 }}
+              style={{ color: PRIMARY, letterSpacing: 1.5 }}
             >
               Opportunities
             </div>
@@ -59,7 +59,7 @@ export default function
               Featured jobs
             </h2>
 
-            <p className="text-md text-muted leading-[1.7] mb-8">
+            <p className="text-sm text-muted leading-[1.7] mb-8">
               Hand-picked roles from the best companies in India&apos;s tech ecosystem.
             </p>
 
@@ -164,7 +164,7 @@ export default function
                       <div className="min-w-0">
  
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className="font-bold text-md text-heading">
+                          <span className="font-bold text-sm text-heading">
                             {job?.title}
                           </span>
  

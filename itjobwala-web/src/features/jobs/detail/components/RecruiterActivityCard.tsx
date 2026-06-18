@@ -95,7 +95,7 @@ export default function RecruiterActivityCard({ job }: Props) {
         {/* Posted */}
         <div className="flex items-center gap-2.5">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0 text-subtle">
-            <rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
+            <rect x="3" y="4" width="20" height="20" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
           </svg>
           <span className="text-sm text-muted">
             Posted{' '}

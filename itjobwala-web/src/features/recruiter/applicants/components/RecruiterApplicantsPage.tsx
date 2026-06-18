@@ -339,11 +339,11 @@ export default function RecruiterApplicantsPage() {
               className="w-8 h-8 flex items-center justify-center rounded-lg border border-token text-muted hover:bg-surface-alt hover:text-heading transition-colors"
             >
               {sortOrder === 'desc' ? (
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M12 20V4M5 13l7 7 7-7" />
                 </svg>
               ) : (
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M12 4v16M5 11l7-7 7 7" />
                 </svg>
               )}
@@ -396,7 +396,7 @@ export default function RecruiterApplicantsPage() {
                 return (
                   <div
                     key={applicant.id}
-                    className={`bg-surface rounded-xl border transition-colors p-5 hover:border-token-mid ${
+                    className={`bg-surface rounded-2xl border transition-colors p-5 hover:border-token-mid ${
                       isChecked ? 'border-primary/40 bg-primary/[0.01]' : 'border-token'
                     }`}
                   >
@@ -431,7 +431,7 @@ export default function RecruiterApplicantsPage() {
                               <p className="text-caption text-muted mt-0.5">{applicant.profile.title}</p>
                             )}
                           </div>
-                          <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+                          <div className="flex items-center gap-2 flex-wrap mt-1 sm:mt-0 sm:justify-end sm:shrink-0">
                             <QAScoreBadge score={applicant.qaMatchScore} />
                             <StatusBadge status={applicant.status} />
                             <Link
@@ -445,7 +445,7 @@ export default function RecruiterApplicantsPage() {
 
                         {/* Meta row */}
                         <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-caption text-muted">
-                          <span>{applicant.candidateEmail}</span>
+                          <span className="truncate max-w-[180px] sm:max-w-none">{applicant.candidateEmail}</span>
                           <span>Applied for: <span className="font-medium text-body">{applicant.jobTitle || 'Unknown Position'}</span></span>
                           {applicant.experience !== undefined && applicant.experience > 0 && (
                             <span>{applicant.experience} yr{applicant.experience !== 1 ? 's' : ''} experience</span>
@@ -475,7 +475,7 @@ export default function RecruiterApplicantsPage() {
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 mt-2 text-caption text-primary font-medium hover:underline"
                           >
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                               <polyline points="14 2 14 8 20 8" />
                             </svg>
