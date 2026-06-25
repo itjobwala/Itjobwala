@@ -28,6 +28,10 @@ export const getResumeInsights = async (request, reply) => {
 
   const band = getScoreBand(insight.ats_score ?? 0);
 
+  const wc = insight.word_count ?? 0;
+  const parse_quality = wc < 50 ? 'failed' : wc < 150 ? 'poor' : wc < 300 ? 'fair' : wc < 500 ? 'good' : 'excellent';
+  const parse_warning = wc < 150 ? 'Very little text was extracted from your resume. Some skills may not have been detected.' : null;
+
   const isIneligible = insight.eligible === false;
 
   // Use stored domain when available (rows parsed after the migration).
@@ -50,12 +54,10 @@ export const getResumeInsights = async (request, reply) => {
       qa_score_breakdown:        insight.qa_score_breakdown        ?? null,
       qa_hiring_label:           insight.qa_hiring_label           ?? null,
       qa_specialization:         insight.qa_specialization         ?? null,
-      specialization_confidence: insight.specialization_confidence ?? null,
       recruiter_confidence:      insight.recruiter_confidence      ?? null,
       career_level:              insight.career_level              ?? null,
 
       // ── Profile & band ────────────────────────────────────────────────────
-      profile_completion_score: insight.profile_completion_score,
       band_label:               band.label,
       band_color:               band.color,
 
@@ -101,30 +103,25 @@ export const getResumeInsights = async (request, reply) => {
 
       // ── Guidance intelligence ─────────────────────────────────────────────
       improvement_priorities:  insight.improvement_priorities  ?? null,
-      score_explanations:      insight.score_explanations      ?? null,
-      career_roadmap:          insight.career_roadmap          ?? null,
       recruiter_readiness:     insight.recruiter_readiness     ?? null,
       improvement_impacts:     insight.improvement_impacts     ?? null,
-      specialization_guidance: insight.specialization_guidance ?? null,
-      recruiter_insights:      insight.recruiter_insights      ?? null,
-      action_plan:             insight.action_plan             ?? null,
 
       // ── Evidence intelligence ─────────────────────────────────────────────
       evidence_profile:        insight.evidence_profile     ?? null,
       skill_evidence:          insight.skill_evidence       ?? [],
-      skill_timeline:          insight.skill_timeline       ?? {},
       weak_evidence_skills:    insight.weak_evidence_skills ?? [],
 
       // ── Phase 4 + 5 intelligence ──────────────────────────────────────────
       trust_breakdown:         insight.trust_breakdown      ?? null,
       skill_recency:           insight.skill_recency        ?? null,
       recency_summary:         insight.recency_summary      ?? null,
-      authenticity_profile:    insight.authenticity_profile ?? null,
       risk_flags:              insight.risk_flags           ?? [],
       overall_risk_score:      insight.overall_risk_score   ?? null,
       overall_risk_level:      insight.overall_risk_level   ?? null,
-      trajectory_profile:      insight.trajectory_profile   ?? null,
-      first_impression:        insight.first_impression     ?? null,
+
+      // ── Parse quality ─────────────────────────────────────────────────────
+      parse_quality,
+      parse_warning,
     },
   });
 };

@@ -52,6 +52,8 @@ export const SKILL_CATEGORIES = {
     'git', 'github', 'gitlab', 'bitbucket', 'jira', 'confluence', 'trello',
     'figma', 'sketch', 'postman', 'swagger', 'linux', 'unix', 'macos',
     'vscode', 'intellij', 'vim', 'neovim',
+    // Jira variant spellings — normalize via ALIASES
+    'jira software', 'atlassian jira',
   ],
   qa_testing: [
     // Manual & functional testing
@@ -131,6 +133,32 @@ export const SKILL_CATEGORIES = {
 
     // Broader QA coverage
     'mobile testing', 'automation testing',
+
+    // Cloud test platforms
+    'browserstack', 'saucelabs', 'lambdatest',
+
+    // Test reporting
+    'allure', 'extent report',
+
+    // Language-specific test frameworks
+    'nunit', 'pytest', 'vitest',
+
+    // Mobile E2E / contract / integration
+    'detox', 'maestro', 'testcontainers', 'mockserver',
+
+    // Variant spellings — also in ALIASES so they normalize to canonical form
+    'restassured',
+    'selenium grid', 'selenide',
+    'junit4', 'junit5',
+    'cypress io',
+    'gh actions', 'github action',
+    'test rail',
+    'apache jmeter',
+    'behavior driven development', 'behaviour driven development',
+    'page object pattern', 'page object framework',
+    'zephyr scale', 'zephyr squad',
+    'browser stack', 'sauce labs', 'lambda test',
+    'sprint grooming', 'backlog grooming',
   ],
   messaging: [
     'kafka', 'rabbitmq',
@@ -186,6 +214,114 @@ const ALIASES = {
   'user acceptance testing':'uat',
   'cucumber bdd':           'cucumber',
   'robotframework':         'robot framework',
+
+  // REST Assured variants
+  'restassured':                      'rest assured',
+  'rest assured java':                'rest assured',
+
+  // Selenium variants
+  'selenium grid':                    'selenium',
+  'selenide':                         'selenium',
+  'selenium ide':                     'selenium',
+  'selenium rc':                      'selenium',
+
+  // JUnit versioned variants
+  'junit4':                           'junit',
+  'junit5':                           'junit',
+  'junit 4':                          'junit',
+  'junit 5':                          'junit',
+
+  // Cypress variants
+  'cypress io':                       'cypress',
+
+  // CI/CD variants
+  'gh actions':                       'github actions',
+  'github action':                    'github actions',
+  'jenkins ci':                       'jenkins',
+  'jenkins cd':                       'jenkins',
+
+  // Test management variants
+  'test rail':                        'testrail',
+  'testrail app':                     'testrail',
+  'zephyr scale':                     'zephyr',
+  'zephyr squad':                     'zephyr',
+
+  // Performance testing
+  'apache jmeter':                    'jmeter',
+
+  // Jira variants
+  'jira software':                    'jira',
+  'atlassian jira':                   'jira',
+
+  // Cloud test platforms
+  'browser stack':                    'browserstack',
+  'sauce labs':                       'saucelabs',
+  'lambda test':                      'lambdatest',
+
+  // BDD variants
+  'behavior driven development':      'bdd',
+  'behaviour driven development':     'bdd',
+  'bdd framework':                    'bdd',
+
+  // Page Object variants
+  'page object pattern':              'page object model',
+  'page object framework':            'page object model',
+  'pom pattern':                      'page object model',
+
+  // Agile ceremony variants
+  'sprint grooming':                  'sprint planning',
+  'backlog grooming':                 'backlog refinement',
+};
+
+/**
+ * Canonical QA skill → common display text variants.
+ * Used for skill cards, profile auto-fill labels, and search facets.
+ */
+export const QA_SKILLS = {
+  'selenium':                ['Selenium', 'Selenium WebDriver'],
+  'playwright':              ['Playwright', 'Playwright Test'],
+  'cypress':                 ['Cypress'],
+  'appium':                  ['Appium'],
+  'webdriverio':             ['WebdriverIO'],
+  'katalon':                 ['Katalon', 'Katalon Studio'],
+  'postman':                 ['Postman'],
+  'swagger':                 ['Swagger', 'Swagger UI'],
+  'openapi':                 ['OpenAPI', 'Open API'],
+  'soapui':                  ['SoapUI'],
+  'rest assured':            ['Rest Assured'],
+  'jmeter':                  ['JMeter', 'Apache JMeter'],
+  'gatling':                 ['Gatling'],
+  'k6':                      ['k6'],
+  'locust':                  ['Locust'],
+  'testng':                  ['TestNG'],
+  'junit':                   ['JUnit'],
+  'cucumber':                ['Cucumber', 'Cucumber BDD'],
+  'robot framework':         ['Robot Framework', 'RobotFramework'],
+  'page object model':       ['Page Object Model', 'POM'],
+  'bdd':                     ['BDD', 'Behaviour-Driven Development'],
+  'tdd':                     ['TDD', 'Test-Driven Development'],
+  'agile scrum':             ['Agile Scrum', 'Agile', 'Scrum'],
+  'testrail':                ['TestRail'],
+  'zephyr':                  ['Zephyr'],
+  'qtest':                   ['qTest'],
+  'jira':                    ['JIRA'],
+  'github actions':          ['GitHub Actions'],
+  'jenkins':                 ['Jenkins'],
+  'gitlab ci':               ['GitLab CI'],
+  'azure devops':            ['Azure DevOps'],
+  'docker':                  ['Docker'],
+  'kubernetes':              ['Kubernetes', 'K8s'],
+  'sql':                     ['SQL'],
+  'api testing':             ['API Testing'],
+  'manual testing':          ['Manual Testing'],
+  'automation testing':      ['Automation Testing', 'Test Automation'],
+  'performance testing':     ['Performance Testing'],
+  'mobile testing':          ['Mobile Testing'],
+  'regression testing':      ['Regression Testing'],
+  'functional testing':      ['Functional Testing'],
+  'ci testing':              ['CI Testing', 'CI/CD Testing'],
+  'containerization':        ['Containerization'],
+  'automation framework design': ['Automation Framework Design', 'Framework Development'],
 };
 
 /**
@@ -401,7 +537,9 @@ export function extractSkillsFromText(text) {
     found.add(inferred);
   }
 
-  return Array.from(found);
+  // Final dedup pass: two ALL_SKILLS entries may produce the same canonical form
+  // via the alias table (e.g. 'selenium grid' and 'selenide' both → 'selenium').
+  return [...new Set([...found].map(s => normalizeSkill(s)))];
 }
 
 // ── Inference engine ──────────────────────────────────────────────────────────
@@ -615,12 +753,21 @@ function contextWindow(lower, idx, len, size = 200) {
   return lower.slice(Math.max(0, idx - size), Math.min(lower.length, idx + len + size));
 }
 
+// Display labels for section types used in skill source reporting
+const SECTION_DISPLAY = {
+  experience: 'Experience',
+  project:    'Projects',
+  skills:     'Skills',
+  cert:       'Certifications',
+  unknown:    'Other',
+};
+
 /**
  * Extract skills with per-skill source, confidence, and evidence-level metadata.
  *
  * Returns:
  *   extractedSkills  — flat normalized skill array (same as extractSkillsFromText)
- *   skillMetadata    — [{ skill, source, confidence, evidence_level }]
+ *   skillMetadata    — [{ skill, source, confidence, evidence_level, occurrences, sources }]
  *
  * Confidence rules (section-based):
  *   experience section  = 95   project section = 85
@@ -640,7 +787,9 @@ export function extractSkillsWithConfidence(text) {
   const lower    = text.toLowerCase();
   const sections = detectSections(lower);
 
-  // Exact extraction (no inference) to distinguish inferred from directly found
+  // Exact extraction (no inference) to distinguish inferred from directly found.
+  // normalizeSkill() ensures variants ('selenium grid', 'selenide') all map to
+  // the same canonical form ('selenium') — the Set deduplicates automatically.
   const exactFound = new Set();
   const sorted     = ALL_SKILLS.slice().sort((a, b) => b.length - a.length);
   for (const skill of sorted) {
@@ -649,25 +798,31 @@ export function extractSkillsWithConfidence(text) {
     }
   }
 
-  const inferredSet = new Set(inferSkills([...exactFound]));
-  const allSkills   = new Set([...exactFound, ...inferredSet]);
+  // Second alias pass: catches edge-cases where two variant forms in ALL_SKILLS
+  // normalize to the same canonical but arrived via different paths.
+  const exactFoundDeduped = new Set([...exactFound].map(s => normalizeSkill(s)));
+
+  const inferredSet = new Set(inferSkills([...exactFoundDeduped]));
+  const allSkills   = new Set([...exactFoundDeduped, ...inferredSet]);
 
   const skillMetadata = Array.from(allSkills).map(skill => {
-    if (inferredSet.has(skill)) {
-      return { skill, source: 'inferred', confidence: CONFIDENCE_BY_SOURCE.inferred, evidence_level: 'inferred' };
+    if (inferredSet.has(skill) && !exactFoundDeduped.has(skill)) {
+      return { skill, source: 'inferred', confidence: CONFIDENCE_BY_SOURCE.inferred, evidence_level: 'inferred', occurrences: 0, sources: ['Inferred'] };
     }
 
     // Find all occurrences of the skill in the text
     const escaped = skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex   = new RegExp(`(?<![a-z0-9])${escaped}(?![a-z0-9])`, 'ig');
-    const sources = new Set();
+    const rawSources  = new Set();
+    let   occurrences = 0;
     let   hasImplVerb = false;
     let   hasQuantMetric = false;
     let   m;
 
     while ((m = regex.exec(lower)) !== null) {
+      occurrences++;
       const src = sectionAt(m.index, sections);
-      sources.add(src);
+      rawSources.add(src);
 
       // Check context window for implementation verbs and quantified metrics
       const ctx = contextWindow(lower, m.index, skill.length);
@@ -676,20 +831,22 @@ export function extractSkillsWithConfidence(text) {
     }
 
     // Section-based confidence
-    const best       = [...sources].reduce((a, b) =>
+    const best       = [...rawSources].reduce((a, b) =>
       (CONFIDENCE_BY_SOURCE[a] ?? 0) >= (CONFIDENCE_BY_SOURCE[b] ?? 0) ? a : b, 'unknown');
-    const confidence = sources.size >= 2 ? 100 : (CONFIDENCE_BY_SOURCE[best] ?? 40);
+    const confidence = rawSources.size >= 2 ? 100 : (CONFIDENCE_BY_SOURCE[best] ?? 40);
 
     // Evidence level
-    const inExpOrProj = sources.has('experience') || sources.has('project');
+    const inExpOrProj = rawSources.has('experience') || rawSources.has('project');
     let evidence_level;
     if      (inExpOrProj && hasImplVerb && hasQuantMetric) evidence_level = 'very_strong';
     else if (inExpOrProj && hasImplVerb)                   evidence_level = 'strong';
     else if (inExpOrProj)                                  evidence_level = 'moderate';
-    else if (sources.has('skills') && sources.size >= 2)   evidence_level = 'basic';
+    else if (rawSources.has('skills') && rawSources.size >= 2) evidence_level = 'basic';
     else                                                   evidence_level = 'weak';
 
-    return { skill, source: best, confidence, evidence_level };
+    const sources = [...rawSources].map(s => SECTION_DISPLAY[s] ?? s);
+
+    return { skill, source: best, confidence, evidence_level, occurrences, sources };
   });
 
   return {

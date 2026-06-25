@@ -244,12 +244,10 @@ function formatInsightResponse(insight, ats) {
     capability_score:          insight.capability_score,
     qa_hiring_label:           insight.qa_hiring_label,
     qa_specialization:         insight.qa_specialization,
-    specialization_confidence: insight.specialization_confidence,
     recruiter_confidence:      insight.recruiter_confidence,
     career_level:              insight.career_level,
     qa_score_breakdown:        insight.qa_score_breakdown,
     // ── Profile & band ─────────────────────────────────────────────────────
-    profile_completion_score: insight.profile_completion_score,
     band_label:               ats.band_label,
     band_color:               ats.band_color,
     // ── Parsed content ──────────────────────────────────────────────────────
@@ -285,27 +283,25 @@ function formatInsightResponse(insight, ats) {
     achievements:             insight.achievement_entries    ?? [],
     // ── Guidance intelligence ───────────────────────────────────────────────
     improvement_priorities:   insight.improvement_priorities,
-    score_explanations:       insight.score_explanations,
-    career_roadmap:           insight.career_roadmap,
     recruiter_readiness:      insight.recruiter_readiness,
     improvement_impacts:      insight.improvement_impacts,
-    specialization_guidance:  insight.specialization_guidance,
-    recruiter_insights:       insight.recruiter_insights,
-    action_plan:              insight.action_plan,
     // ── Evidence intelligence ───────────────────────────────────────────────
     evidence_profile:         insight.evidence_profile,
     skill_evidence:           insight.skill_evidence,
-    skill_timeline:           insight.skill_timeline,
     weak_evidence_skills:     insight.weak_evidence_skills,
     // ── Phase 4 + 5 intelligence ────────────────────────────────────────────
     trust_breakdown:          insight.trust_breakdown,
     skill_recency:            insight.skill_recency,
     recency_summary:          insight.recency_summary,
-    authenticity_profile:     insight.authenticity_profile,
     risk_flags:               insight.risk_flags,
     overall_risk_score:       insight.overall_risk_score,
     overall_risk_level:       insight.overall_risk_level,
-    trajectory_profile:       insight.trajectory_profile,
-    first_impression:         insight.first_impression,
+    // ── Parse quality ────────────────────────────────────────────────────────
+    ...(() => {
+      const wc = insight.word_count ?? 0;
+      const parse_quality = wc < 50 ? 'failed' : wc < 150 ? 'poor' : wc < 300 ? 'fair' : wc < 500 ? 'good' : 'excellent';
+      const parse_warning = wc < 150 ? 'Very little text was extracted from your resume. Some skills may not have been detected.' : null;
+      return { parse_quality, parse_warning };
+    })(),
   };
 }

@@ -26,12 +26,22 @@ export function extractContactInfo(text) {
     }
   }
 
+  // Location heuristic: first line in top 25 that matches city, state/country pattern
+  let location = null;
+  for (const line of firstLines.slice(0, 25)) {
+    if (isLocationLine(line)) {
+      location = line;
+      break;
+    }
+  }
+
   return {
     name:     name,
     email:    emailMatch?.[0]   ?? null,
     phone:    phoneMatch?.[0]   ?? null,
     linkedin: linkedinMatch ? `linkedin.com/in/${linkedinMatch[1]}` : null,
     github:   githubMatch   ? `github.com/${githubMatch[1]}`        : null,
+    location,
   };
 }
 
@@ -50,6 +60,7 @@ const SUMMARY_SECTION_RE = /^\s*(professional\s+)?summary\s*:?\s*$|^\s*profile\s
 const SKILLS_SECTION_HEADERS    = /^\s*(technical\s+)?skills?\s*:?\s*$|^\s*core\s+competenc(y|ies)\s*:?\s*$|^\s*technologies?\s*:?\s*$|^\s*areas?\s+of\s+expertise\s*:?\s*$|^\s*key\s+skills?\s*:?\s*$|^\s*technical\s+expertise\s*:?\s*$/i;
 const LANGUAGES_SECTION_HEADERS = /^\s*(programming\s+)?languages?\s*:?\s*$/i;
 const MISC_SECTION_HEADERS      = /^\s*hobbies\s*:?\s*$|^\s*interests?\s*:?\s*$|^\s*references?\s*:?\s*$/i;
+const ACHIEVEMENTS_HEADERS      = /^\s*(?:key\s+)?achievements?\s*:?\s*$|^\s*accomplishments?\s*:?\s*$|^\s*highlights?\s*:?\s*$|^\s*awards?\s*(?:&\s*achievements?)?\s*:?\s*$/i;
 
 // Used by isProjectSectionHeader to reject role/title lines masquerading as project names
 const ROLE_TITLE_GUARD_RE = /\b(engineer|developer|analyst|manager|architect|lead|consultant|specialist|intern|fresher|tester|designer|programmer)\b/i;
@@ -71,6 +82,7 @@ export function splitIntoSections(text) {
     education:      [],
     projects:       [],
     certifications: [],
+    achievements:   [],
     _misc:          [],
   };
   let current = 'preamble';
@@ -88,6 +100,7 @@ export function splitIntoSections(text) {
       else if (SUMMARY_SECTION_RE.test(trimmed))      { current = 'summary';        continue; }
       else if (SKILLS_SECTION_HEADERS.test(trimmed))  { current = 'skills';         continue; }
       else if (LANGUAGES_SECTION_HEADERS.test(trimmed)) { current = 'languages';    continue; }
+      else if (ACHIEVEMENTS_HEADERS.test(trimmed))    { current = 'achievements';   continue; }
       else if (MISC_SECTION_HEADERS.test(trimmed))    { current = '_misc';          continue; }
     }
 
@@ -101,11 +114,12 @@ const MONTH_WORD_SRC = '(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|
 
 // Shared pattern source — handles all common date formats:
 //   "Apr 2022 – Present", "2022 - 2024", "09/2022 - 03/2024",
-//   "2022/09 – 2024/03", "09-2022 to 03-2024", "January 2020 to March 2023"
+//   "2022/09 – 2024/03", "09-2022 to 03-2024", "January 2020 to March 2023",
+//   "2020 – Till Date"
 const DATE_RANGE_SRC =
   `(?:\\d{1,2}[/\\-])?(?:${MONTH_WORD_SRC}[\\s,]+)?(\\b(?:19|20)\\d{2}\\b)(?:[/\\-]\\d{1,2})?` +
   `(?:\\s+to\\s+|[\\s\\-–—,]+)` +
-  `(?:\\d{1,2}[/\\-])?(?:${MONTH_WORD_SRC}[\\s,]+)?(\\b(?:19|20)\\d{2}\\b|present|current|now)(?:[/\\-]\\d{1,2})?`;
+  `(?:\\d{1,2}[/\\-])?(?:${MONTH_WORD_SRC}[\\s,]+)?(\\b(?:19|20)\\d{2}\\b|present|current|now|till\\s*date)(?:[/\\-]\\d{1,2})?`;
 
 // Global version — used ONLY by estimateExperienceYears (matchAll)
 const YEAR_RANGE = new RegExp(DATE_RANGE_SRC, 'gi');
@@ -570,20 +584,59 @@ export function extractCertificationEntries(text) {
     );
 }
 
+// ── Achievements ─────────────────────────────────────────────────────────────
+
+export function extractAchievementEntries(text) {
+  const sections = splitIntoSections(text);
+  const lines    = sections['achievements'] || [];
+  return lines
+    .map(l => l.trim().replace(/^[\-•*◦▸]\s+|^\d+\.\s+/, ''))
+    .filter(l => l.length > 4 && l.length < 300 && !/^\d{4}$/.test(l));
+}
+
 // ── Experience Years ──────────────────────────────────────────────────────────
 
 export function estimateExperienceYears(text) {
-  const matches = [...text.matchAll(YEAR_RANGE)];
-  if (!matches.length) return 0;
+  // Scan only the experience section to avoid education/project dates inflating the total.
+  // Fall back to full text for resumes with no detectable experience header.
+  const sections = splitIntoSections(text);
+  const expLines = sections.experience ?? [];
+  const scanText = expLines.length > 0 ? expLines.join('\n') : text;
 
   const currentYear = new Date().getFullYear();
-  let total = 0;
+  const matches = [...scanText.matchAll(YEAR_RANGE)];
+  if (!matches.length) return 0;
+
+  const intervals = [];
   for (const m of matches) {
-    const from = parseInt(m[1], 10);
-    const toRaw = m[2].toLowerCase();
-    const to = /present|current|now/.test(toRaw) ? currentYear : parseInt(m[2], 10);
-    if (to > from && to <= currentYear + 1) total += (to - from);
+    const from   = parseInt(m[1], 10);
+    const toRaw  = (m[2] ?? '').toLowerCase();
+    const to     = /present|current|now|till\s*date/.test(toRaw) ? currentYear : parseInt(m[2], 10);
+
+    // Sanity checks — reject implausible ranges
+    if (from < 1990)            continue;
+    if (to > currentYear + 1)   continue;
+    if (to <= from)             continue;
+    if (to - from > 30)         continue;
+
+    intervals.push([from, to]);
   }
+
+  if (!intervals.length) return 0;
+
+  // Merge overlapping intervals to avoid double-counting concurrent roles
+  intervals.sort((a, b) => a[0] - b[0]);
+  const merged = [[...intervals[0]]];
+  for (let i = 1; i < intervals.length; i++) {
+    const last = merged[merged.length - 1];
+    if (intervals[i][0] <= last[1]) {
+      last[1] = Math.max(last[1], intervals[i][1]);
+    } else {
+      merged.push([...intervals[i]]);
+    }
+  }
+
+  const total = merged.reduce((sum, [from, to]) => sum + (to - from), 0);
   return Math.min(total, 40);
 }
 

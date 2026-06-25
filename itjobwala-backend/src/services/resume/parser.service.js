@@ -5,14 +5,15 @@
  * replace the heuristic extractors while keeping the output shape identical.
  */
 
-import { extractTextFromResumeUrl } from '../../utils/resume/extractText.js';
-import { extractSkillsFromText }    from '../../utils/resume/normalizeSkills.js';
+import { extractTextFromResumeUrl }              from '../../utils/resume/extractText.js';
+import { extractSkillsFromText, extractSkillsWithConfidence } from '../../utils/resume/normalizeSkills.js';
 import {
   extractContactInfo,
   extractExperienceEntries,
   extractEducationEntries,
   extractProjectEntries,
   extractCertificationEntries,
+  extractAchievementEntries,
   estimateExperienceYears,
   extractSummary,
   extractGlobalMetrics,
@@ -39,10 +40,50 @@ export function parseResumeFromText(parsedText) {
   return buildParsedResult(parsedText, null);
 }
 
+/**
+ * Compact structured snapshot for profile auto-fill, skill cards, and job matching.
+ * Cheaper than a full parse — skips semantic enrichment and confidence scoring.
+ *
+ * @param {string} parsedText
+ * @returns {object|null}
+ */
+export function extractStructuredData(parsedText) {
+  if (!parsedText) return null;
+
+  const contactInfo                        = extractContactInfo(parsedText);
+  const { extractedSkills, skillMetadata } = extractSkillsWithConfidence(parsedText);
+  const experienceEntries                  = extractExperienceEntries(parsedText);
+  const educationEntries                   = extractEducationEntries(parsedText);
+  const certificationEntries               = extractCertificationEntries(parsedText);
+  const achievementEntries                 = extractAchievementEntries(parsedText);
+  const experienceYears                    = estimateExperienceYears(parsedText);
+  const summaryText                        = extractSummary(parsedText);
+
+  return {
+    name:               contactInfo.name,
+    email:              contactInfo.email,
+    phone:              contactInfo.phone,
+    location:           contactInfo.location ?? null,
+    linkedin:           contactInfo.linkedin,
+    github:             contactInfo.github,
+    skills:             extractedSkills,
+    skillMetadata,
+    experienceYears,
+    summaryText,
+    currentTitle:       experienceEntries[0]?.title   ?? null,
+    currentCompany:     experienceEntries[0]?.company ?? null,
+    experienceCount:    experienceEntries.length,
+    educationCount:     educationEntries.length,
+    certificationCount: certificationEntries.length,
+    achievements:       achievementEntries,
+  };
+}
+
 function buildParsedResult(parsedText, resumeUrl) {
-  const wordCount            = parsedText.split(/\s+/).filter(Boolean).length;
-  const contactInfo          = extractContactInfo(parsedText);
-  const extractedSkills      = extractSkillsFromText(parsedText);
+  const wordCount                            = parsedText.split(/\s+/).filter(Boolean).length;
+  const contactInfo                          = extractContactInfo(parsedText);
+  const { extractedSkills, skillMetadata }   = extractSkillsWithConfidence(parsedText);
+  const achievementEntries                   = extractAchievementEntries(parsedText);
   const globalMetrics        = extractGlobalMetrics(parsedText);                         // Phase 1
   const rawExperienceEntries = extractExperienceEntries(parsedText);
   const experienceEntries    = recoverOrphanBullets(parsedText, rawExperienceEntries);   // Phase 3
@@ -66,6 +107,9 @@ function buildParsedResult(parsedText, resumeUrl) {
     ? normalized.semanticProjects
     : projectEntries;
 
+  const parse_quality = wordCount < 50 ? 'failed' : wordCount < 150 ? 'poor' : wordCount < 300 ? 'fair' : wordCount < 500 ? 'good' : 'excellent';
+  const parse_warning = wordCount < 150 ? 'Very little text was extracted from your resume. Some skills may not have been detected.' : null;
+
   const parse_confidence  = computeParseConfidence({
     experienceEntries,
     extractedSkills,
@@ -83,6 +127,8 @@ function buildParsedResult(parsedText, resumeUrl) {
     wordCount,
     contactInfo,
     extractedSkills,
+    skillMetadata,
+    achievementEntries,
     globalMetrics,
     experienceEntries,
     educationEntries,
@@ -99,5 +145,7 @@ function buildParsedResult(parsedText, resumeUrl) {
     // Phase 6+7: parse quality signals
     parse_confidence,
     needs_llm_recovery,
+    parse_quality,
+    parse_warning,
   };
 }

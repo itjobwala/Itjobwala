@@ -20,8 +20,13 @@ const DOMAIN_SIGNATURES = {
     'integration testing', 'system testing', 'e2e testing', 'end-to-end testing',
     'page object model', 'pom', 'data-driven testing', 'keyword-driven testing',
     'sdlc', 'stlc', 'test plan', 'test strategy', 'defect tracking', 'bug tracking',
-    'testrail', 'zephyr', 'qtest', 'xray', 'maven', 'quality assurance',
+    'testrail', 'zephyr', 'qtest', 'xray', 'quality assurance',
     'test automation', 'load testing', 'stress testing', 'security testing', 'sdet',
+    // Modern & cloud testing tools
+    'vitest', 'jest', 'detox', 'maestro', 'pact', 'testcontainers', 'allure',
+    'extent report', 'wiremock', 'mockserver', 'browserstack', 'saucelabs', 'lambdatest',
+    'robot framework', 'nunit', 'pytest', 'zephyr scale', 'ui automation',
+    'regression suite', 'test suite',
   ],
   frontend: [
     'react', 'vue', 'angular', 'svelte', 'next.js', 'remix', 'gatsby',
@@ -34,6 +39,11 @@ const DOMAIN_SIGNATURES = {
     'django', 'flask', 'fastapi', 'spring', 'spring boot', 'rails', 'laravel',
     'asp.net', '.net', 'grpc', 'websocket', 'microservices',
     'rest api', 'orm', 'prisma', 'typeorm', 'sequelize',
+    // Java-specific backend tools (prevent junit/testng misclassifying Java devs as QA)
+    'java', 'hibernate', 'jpa', 'jdbc', 'spring mvc', 'spring framework',
+    'spring data', 'spring security', 'jax-rs', 'servlet',
+    // Python/Ruby backend
+    'mysql', 'postgresql', 'mongodb',
   ],
   devops: [
     'docker', 'kubernetes', 'k8s', 'terraform', 'ansible', 'jenkins',
@@ -88,13 +98,23 @@ const QA_TITLE_PATTERNS = [
   /\bqa\b.{0,30}\b(?:engineer|analyst|tester|lead)\b/i,  // "QA <words> Engineer"
   /\bsdet\b/i,
   /\bsoftware\s+development\s+engineer\s+in\s+test\b/i,
-  /\btest\s+(?:engineer|lead|analyst|manager|architect)\b/i,
+  /\btest\s+(?:engineer|lead|analyst|manager|architect|infrastructure|platform|development|reliability)\b/i,
   /\btest\s+automation\b/i,
   /\bautomation\s+(?:engineer|tester|lead|architect|qa|specialist)\b/i,
   /\bautomation\s+test\b/i,
-  /\bsoftware\s+(?:tester|quality\s+engineer)\b/i,
+  /\bsoftware\s+(?:tester|quality\s+engineer|quality\s+analyst)\b/i,
   /\bmanual\s+tester\b/i,
   /\bperformance\s+test(?:er|ing|s)?\b/i,
+  // Extended patterns
+  /\bui\s+automation\s+(?:engineer|tester|lead|architect|specialist)\b/i,
+  /\bsdet\s+(?:lead|senior|junior|engineer|architect)\b/i,
+  /\bapi\s+test(?:ing)?\s+engineer\b/i,
+  /\bperformance\s+(?:test\s+)?engineer\b/i,
+  /\brelease\s+engineer\s+in\s+test\b/i,
+  /\bautomation\s+quality\s+(?:engineer|analyst)\b/i,
+  /\bmobile\s+automation\s+(?:engineer|tester)\b/i,
+  /\bsoftware\s+test(?:er|ing)\s+engineer\b/i,
+  /\bquality\s+test(?:ing)?\s+engineer\b/i,
 ];
 
 // QA-specific vocabulary — phrases that appear naturally in QA resumes regardless
@@ -121,16 +141,70 @@ const QA_VOCABULARY_PATTERNS = [
   /\bpage\s+object\s+model\b/i,
   /\btest\s+execution\b/i,
   /\btest\s+script/i,
+  // Extended vocabulary
+  /\bui\s+automation\b/i,
+  /\bregression\s+suite\b/i,
+  /\btest\s+suite\b/i,
+  /\bcross[\-\s]browser\b/i,
+  /\btest\s+framework\b/i,
+  /\btest\s+coverage\b/i,
+  /\btest\s+environment\b/i,
+  /\btest\s+data\b/i,
+  /\btest\s+automation\s+framework\b/i,
+  /\bautomation\s+script/i,
+  /\bend[\-\s]to[\-\s]end\s+test/i,
+  /\be2e\s+test/i,
+  /\bacceptance\s+test(?:ing)?\b/i,
+];
+
+// "validation engineer" is ambiguous (hardware, pharma, software QA) — only
+// treat it as a QA title signal when QA vocabulary density is also ≥ 2.
+const VALIDATION_ENGINEER_RE = /\bvalidation\s+engineer\b/i;
+
+// Java dev vocabulary that can cause false positives: a Java developer who writes
+// JUnit/Maven tests is not necessarily a QA professional.
+const JAVA_DEV_VOCAB = new Set([
+  'hibernate', 'spring mvc', 'jpa', 'jsp', 'servlets', 'struts', 'ejb', 'j2ee',
+  'jee', 'spring data', 'spring security', 'jax-rs', 'jdbc', 'spring framework',
+]);
+
+// QA-specific terms that distinguish a QA engineer from a Java dev who happens to use JUnit.
+// If a resume has no QA title AND Java dev vocab ≥ 3, require at least 2 of these.
+const QA_SPECIFIC_PATTERNS = [
+  /\btest\s+(?:plan|strategy|case|suite|execution)\b/i,
+  /\bdefect\s+(?:tracking|report|management)\b/i,
+  /\bregression\s+test/i,
+  /\bstlc\b/i,
+  /\bquality\s+assurance\b/i,
+  /\buat\b/i,
+  /\bpage\s+object\s+model\b/i,
+  /\btest\s+automation\s+framework\b/i,
 ];
 
 function hasQaRoleSignal(text = '') {
-  // Pass 1: look for a recognised QA job title in the first 30 lines
   const headerText = text.split('\n').slice(0, 30).join('\n');
+  const vocabHits = QA_VOCABULARY_PATTERNS.filter(re => re.test(text)).length;
+
+  // Pass 1: explicit QA job title in header → confirmed QA
   if (QA_TITLE_PATTERNS.some(re => re.test(headerText))) return true;
 
-  // Pass 2: vocabulary density — 3+ distinct QA phrases anywhere in the resume
-  const hits = QA_VOCABULARY_PATTERNS.filter(re => re.test(text)).length;
-  return hits >= 3;
+  // Pass 1b: "validation engineer" only counts as a QA title when vocab density ≥ 2
+  if (VALIDATION_ENGINEER_RE.test(headerText) && vocabHits >= 2) return true;
+
+  // Pass 2: vocabulary density — 3+ distinct QA phrases
+  if (vocabHits >= 3) {
+    // Guard: if Java dev vocab is strong (≥ 3 hits) and QA-specific patterns are weak,
+    // this may be a Java developer who happens to write unit tests — not a QA engineer.
+    const lowerText = text.toLowerCase();
+    const javaDensity = [...JAVA_DEV_VOCAB].filter(kw => lowerText.includes(kw)).length;
+    if (javaDensity >= 3) {
+      const qaSpecificHits = QA_SPECIFIC_PATTERNS.filter(re => re.test(text)).length;
+      if (qaSpecificHits < 2) return false;
+    }
+    return true;
+  }
+
+  return false;
 }
 
 // ── Main export ───────────────────────────────────────────────────────────────
