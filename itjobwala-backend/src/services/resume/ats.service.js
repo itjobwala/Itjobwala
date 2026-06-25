@@ -16,20 +16,90 @@ import { generateInsightNarrative }                            from '../../intel
 
 const IS_DEV = process.env.NODE_ENV !== 'production';
 
+// ── Non-resume document detection ────────────────────────────────────────────
+// Patterns that only appear in travel tickets, invoices, receipts, etc.
+const NON_RESUME_SIGNALS = [
+  // Travel tickets
+  /\bpnr\b[^\n]{0,30}\b(?:no|number|:|\d)/i,
+  /\btrain\s+(?:no|number|name)\s*[:\-]/i,
+  /\bpassenger\s+name\s*[:\-]/i,
+  /\bberth\s*(?:no|type|number)\s*[:\-]/i,
+  /\b(?:departure|arrival)\s+station\b/i,
+  /\bboarding\s+(?:pass|point)\b/i,
+  /\bflight\s+(?:no|number)\s*[:\-]/i,
+  /\bseat\s+(?:no|number)\s*[:\-]/i,
+  // Invoices / receipts
+  /\btax\s+invoice\b/i,
+  /\binvoice\s+(?:no|number|date)\s*[:\-]/i,
+  /\border\s+(?:id|number)\s*[:\-]/i,
+  /\bpayment\s+receipt\b/i,
+  /\bgstin\b/i,
+  /\bgst\s+(?:no|number|invoice)\b/i,
+  /\bshipping\s+address\b/i,
+  /\bbill\s+to\b/i,
+];
+
+// Every real resume has at least one of these structural markers.
+const RESUME_STRUCTURE_SIGNALS = [
+  /\b(?:work\s+experience|experience|employment|work\s+history)\b/i,
+  /\b(?:education|academic(?:s)?|qualification)\b/i,
+  /\b(?:skills|technical\s+skills|core\s+competencies|key\s+skills)\b/i,
+  /\b(?:objective|professional\s+summary|career\s+summary|profile)\b/i,
+  /\b(?:projects|certifications?|achievements?|awards?)\b/i,
+];
+
+function isNonResumeDocument(text, skills) {
+  // Explicit non-resume signals are dispositive
+  if (NON_RESUME_SIGNALS.some(re => re.test(text))) return true;
+  // No skills extracted + no resume section headers → not a resume
+  const hasSkills  = skills.length > 0;
+  const hasStructure = RESUME_STRUCTURE_SIGNALS.some(re => re.test(text));
+  return !hasSkills && !hasStructure;
+}
+
+const INVALID_DOCUMENT_RESULT = {
+  eligible:          false,
+  reason:            'invalid_document',
+  detected_domain:   'unknown',
+  domain_confidence: 0,
+  domain_label:      'Invalid Document',
+};
+
 export async function runATSAnalysis(parsed, profileSkills = []) {
   const allKnownSkills = [...new Set([...(parsed.extractedSkills || []), ...profileSkills])];
+  const text = parsed.parsedText ?? '';
+
+  // ── Minimum content gate ─────────────────────────────────────────────────────
+  const MIN_RESUME_WORDS = 150;
+  if ((parsed.wordCount ?? 0) < MIN_RESUME_WORDS) {
+    if (IS_DEV) console.log(`[ATS] Invalid document — word count ${parsed.wordCount} < ${MIN_RESUME_WORDS}`);
+    return { ...INVALID_DOCUMENT_RESULT, word_count: parsed.wordCount };
+  }
+
+  // ── Non-resume document detection ────────────────────────────────────────────
+  // Catches travel tickets, invoices, receipts, and structureless files that
+  // happened to pass the word count gate (e.g. lengthy T&C text on a ticket).
+  if (isNonResumeDocument(text, allKnownSkills)) {
+    if (IS_DEV) {
+      console.log(`[ATS] Invalid document — non-resume signals detected`);
+      console.log(`[ATS] Skills: ${allKnownSkills.slice(0, 10).join(', ') || '(none)'}`);
+      console.log(`[ATS] Header: ${text.split('\n').slice(0, 5).join(' | ')}`);
+    }
+    return { ...INVALID_DOCUMENT_RESULT, word_count: parsed.wordCount };
+  }
 
   // ── Domain detection ──────────────────────────────────────────────────────────
-  const domainResult = detectSkillDomain(allKnownSkills);
+  const domainResult = detectSkillDomain(allKnownSkills, text);
 
   if (IS_DEV) {
-    console.log(`[ATS] Domain: ${domainResult.domain} (${domainResult.confidence}%)`);
+    console.log(`[ATS] Word count: ${parsed.wordCount} | Domain: ${domainResult.domain} (${domainResult.confidence}%)`);
+    if (domainResult.domain !== 'qa_testing') {
+      console.log(`[ATS] Skills sample: ${allKnownSkills.slice(0, 10).join(', ')}`);
+      console.log(`[ATS] Header (first 5 lines): ${text.split('\n').slice(0, 5).join(' | ')}`);
+    }
   }
 
   // ── QA eligibility gate ───────────────────────────────────────────────────────
-  // This platform scores QA professionals only. Any resume whose dominant domain
-  // is not qa_testing (even with the 1.6× QA boost applied) is returned early.
-  // No scoring, no guidance, no DB write happens for ineligible resumes.
   if (domainResult.domain !== 'qa_testing') {
     return {
       eligible:          false,

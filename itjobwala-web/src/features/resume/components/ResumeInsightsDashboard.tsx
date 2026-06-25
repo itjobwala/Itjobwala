@@ -10,8 +10,8 @@ import ResumeSuggestions         from './ResumeSuggestions';
 import ResumeParsingLoader       from './ResumeParsingLoader';
 import ResumeEmptyState          from './ResumeEmptyState';
 import NonQaResumeState          from './NonQaResumeState';
-import { NonQaResumeError }      from '../services/resume.api';
 import { useResumeInsightsQuery, useParseResumeMutation } from '../hooks';
+import { isNonQaResult }         from '../services/resume.api';
 import type { ResumeInsights }   from '../types/resume.types';
 import RecruiterReadinessCard    from './guidance/RecruiterReadinessCard';
 import ATSImprovementPriorities  from './guidance/ATSImprovementPriorities';
@@ -198,14 +198,31 @@ export default function ResumeInsightsDashboard({ resumeUrl }: Props) {
     );
   }
 
-  if (parseMutation.isError && parseMutation.error instanceof NonQaResumeError) {
-    const err = parseMutation.error;
+  // Mutation result (ephemeral) — handles invalid_document (not stored in DB)
+  // and non_qa_resume immediately after parse before the cache refetches.
+  if (parseMutation.data && isNonQaResult(parseMutation.data)) {
+    const nonQa = parseMutation.data;
     return (
       <Card padding="lg">
         <NonQaResumeState
-          domainLabel={err.domain_label}
-          domainConfidence={err.domain_confidence}
-          message={err.message}
+          reason={nonQa.reason}
+          domainLabel={nonQa.domain_label}
+          domainConfidence={nonQa.domain_confidence}
+          message={nonQa.message}
+        />
+      </Card>
+    );
+  }
+
+  // Persisted non-QA from DB — survives page refresh for non_qa_resume.
+  if (insights?.eligible === false) {
+    return (
+      <Card padding="lg">
+        <NonQaResumeState
+          reason={insights.reason ?? 'non_qa_resume'}
+          domainLabel={insights.domain_label ?? ''}
+          domainConfidence={insights.domain_confidence}
+          message="Resume does not appear to belong to a QA professional."
         />
       </Card>
     );
@@ -225,7 +242,7 @@ export default function ResumeInsightsDashboard({ resumeUrl }: Props) {
 
   const qa              = computeQAMetrics(insights);
   const atsScore        = insights.qa_match_score ?? 0;
-  const trustScore      = insights.recruiter_trust_score;
+  const trustScore      = insights.evidence_profile?.recruiter_trust_score ?? null;
   const capabilityScore = insights.capability_score;
 
   return (
@@ -435,7 +452,7 @@ export default function ResumeInsightsDashboard({ resumeUrl }: Props) {
             riskFlags={insights.risk_flags ?? null}
             overallRiskScore={insights.overall_risk_score ?? null}
             overallRiskLevel={insights.overall_risk_level ?? null}
-            recommendationMode={insights.recommendation_mode ?? null}
+            recommendationMode={null}
           />
         </div>
       ) : (
@@ -450,7 +467,7 @@ export default function ResumeInsightsDashboard({ resumeUrl }: Props) {
           )}
           {tab === 'suggestions' && (
             <ResumeSuggestions
-              strengths={insights.strengths}
+              strengths={[]}
               weaknesses={insights.weaknesses}
               suggestions={insights.suggestions}
             />
@@ -603,10 +620,10 @@ function normalizeCertifications(certs: string[]): string[] {
 // ── Overview Tab ──────────────────────────────────────────────────────────────
 
 function OverviewTab({ insights }: { insights: ResumeInsights }) {
-  const shortlistReasons = (insights.strengths || []).slice(0, 5);
+  const shortlistReasons = (insights.weaknesses || []).slice(0, 0); // strengths removed from API; section hidden until re-added
   const potentialGaps    = (insights.weaknesses || []).slice(0, 4);
   const expYears         = insights.experience_years ?? 0;
-  const normalizedCerts  = normalizeCertifications(insights.certification_entries ?? []);
+  const normalizedCerts  = normalizeCertifications(insights.certifications ?? []);
 
   // Profile headline parts
   const specLabel   = insights.qa_specialization ? (SPECIALIZATION_LABEL[insights.qa_specialization] ?? null) : null;

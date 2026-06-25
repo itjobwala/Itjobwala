@@ -62,87 +62,100 @@ export type QaSpecialization = 'sdet' | 'automation_qa' | 'api_testing' | 'mobil
 export type RecruiterConfidence = 'very_low' | 'low' | 'medium' | 'high';
 export type CareerLevel     = 'fresher' | 'junior' | 'mid_level' | 'senior' | 'lead';
 
+export interface SkillMetadata {
+  skill:          string;
+  occurrences:    number;
+  sources:        string[];
+  confidence:     number;
+  evidence_level: EvidenceLevel;
+}
+
+export interface SkillStrengthSummary {
+  very_strong: number;
+  strong:      number;
+  moderate:    number;
+  weak:        number;
+  inferred:    number;
+}
+
 export interface ResumeInsights {
   id:                       number;
+  eligible:                 boolean;
+  reason?:                  'non_qa_resume';
 
   // ── QA scores ───────────────────────────────────────────────────────────────
-  qa_match_score:           number;          // QA hiring intelligence (0–100)
-  capability_score:         number | null;   // blended: ATS×0.6 + trust×0.4 (0–100)
+  qa_match_score:           number;
+  capability_score:         number | null;
   qa_score_breakdown:       QaScoreBreakdown;
 
   // ── Hiring intelligence ──────────────────────────────────────────────────────
-  qa_seniority:              QaSeniority       | null;
-  qa_hiring_label:           string            | null;
-  qa_specialization:         QaSpecialization  | null;
-  specialization_confidence: number            | null;
+  qa_hiring_label:           string             | null;
+  qa_specialization:         QaSpecialization   | null;
+  specialization_confidence: number             | null;
   recruiter_confidence:      RecruiterConfidence | null;
-  career_level:              CareerLevel       | null;
-
-  // ── Legacy alias ────────────────────────────────────────────────────────────
-  ats_score:                number;          // same as qa_match_score
+  career_level:              CareerLevel        | null;
 
   // ── Profile & band ──────────────────────────────────────────────────────────
   profile_completion_score: number;
   band_label:               ScoreBand;
   band_color:               BandColor;
-  score_breakdown?:         ScoreBreakdown; // kept optional for old cached rows
 
   // ── Parsed content ──────────────────────────────────────────────────────────
   extracted_skills:         string[];
   missing_skills:           string[];
   suggested_keywords:       string[];
-  strengths:                string[];
   weaknesses:               string[];
   suggestions:              string[];
-  contact_info:             ContactInfo;
   experience_entries:       ExperienceEntry[];
   education_entries:        EducationEntry[];
   project_entries:          ProjectEntry[];
-  certification_entries:    string[];
   experience_years:         number;
   total_skills_found:       number;
-  word_count:               number;
   last_parsed_at:           string;
   resume_url:               string | null;
 
-  // ── Domain intelligence (computed at response time) ─────────────────────────
+  // ── Structured profile convenience fields ───────────────────────────────────
+  name:                     string | null;
+  email:                    string | null;
+  current_title:            string | null;
+  current_company:          string | null;
+  skill_metadata:           SkillMetadata[];
+  skill_strength_summary:   SkillStrengthSummary;
+  certifications:           string[];
+  certification_count:      number;
+  achievements:             string[];
+
+  // ── Domain intelligence ──────────────────────────────────────────────────────
   detected_domain:          string;
   domain_confidence:        number;
-  domain_label:             string;
+  domain_label?:            string; // only present for ineligible (non-QA / invalid) rows
 
   // ── Guidance intelligence ────────────────────────────────────────────────────
-  improvement_priorities:   ImprovementPriorities | null;
-  score_explanations:       ScoreExplanations     | null;
-  career_roadmap:           CareerRoadmap         | null;
-  recruiter_readiness:      RecruiterReadiness    | null;
-  improvement_impacts:      ImprovementImpact[]   | null;
+  improvement_priorities:   ImprovementPriorities  | null;
+  score_explanations:       ScoreExplanations      | null;
+  career_roadmap:           CareerRoadmap          | null;
+  recruiter_readiness:      RecruiterReadiness     | null;
+  improvement_impacts:      ImprovementImpact[]    | null;
   specialization_guidance:  SpecializationGuidance | null;
-  recruiter_insights:       RecruiterInsights     | null;
-  action_plan:              ActionPlan            | null;
+  recruiter_insights:       RecruiterInsights      | null;
+  action_plan:              ActionPlan             | null;
 
   // ── Evidence intelligence ────────────────────────────────────────────────────
-  evidence_profile:         EvidenceProfile       | null;
-  skill_evidence:           SkillEvidenceItem[]   | null;
+  evidence_profile:         EvidenceProfile        | null;
+  skill_evidence:           SkillEvidenceItem[]    | null;
   skill_timeline:           Record<string, string[]> | null;
-  weak_evidence_skills:     string[]              | null;
-  recruiter_trust_score:    number                | null;
-  implementation_maturity:  string                | null;
-  evidence_strength:        string                | null;
-  experience_depth_level:   string                | null;
-  keyword_stuffing_risk:    string                | null;
-  evidence_multiplier:      number                | null;
+  weak_evidence_skills:     string[]               | null;
 
   // ── Phase 4 + 5 intelligence ─────────────────────────────────────────────────
-  trust_breakdown:          TrustBreakdown        | null;
+  trust_breakdown:          TrustBreakdown         | null;
   skill_recency:            Record<string, SkillRecencyItem> | null;
-  recency_summary:          RecencySummary        | null;
-  authenticity_profile:     AuthenticityProfile   | null;
-  risk_flags:               RiskFlag[]            | null;
-  overall_risk_score:       number                | null;
-  overall_risk_level:       OverallRiskLevel      | null;
-  trajectory_profile:       TrajectoryProfile     | null;
-  recommendation_mode:      RecommendationMode    | null;
-  first_impression:         FirstImpression       | null;
+  recency_summary:          RecencySummary         | null;
+  authenticity_profile:     AuthenticityProfile    | null;
+  risk_flags:               RiskFlag[]             | null;
+  overall_risk_score:       number                 | null;
+  overall_risk_level:       OverallRiskLevel       | null;
+  trajectory_profile:       TrajectoryProfile      | null;
+  first_impression:         FirstImpression        | null;
 }
 
 // ── Phase 4 intelligence types ────────────────────────────────────────────────

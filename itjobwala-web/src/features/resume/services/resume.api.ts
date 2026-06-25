@@ -1,46 +1,65 @@
-import apiClient from '@/src/lib/api/client';
+import apiClient, { ApiError } from '@/src/lib/api/client';
 import type { ApiResponse } from '@/src/types/api';
 import type { ResumeInsights, JobMatchResult, ParseResumePayload, JobFitResult, MarketIntelligenceResult, LearningRecommendations, ResumeProgressResult, HiringSignalsResult, BenchmarkResult, DynamicWeightResult, SemanticMatchResult, BehavioralHireabilityResult } from '../types/resume.types';
 
-export class NonQaResumeError extends Error {
-  reason:            string;
+export type NonQaResult = {
+  eligible:          false;
+  reason:            'non_qa_resume' | 'invalid_document';
   detected_domain:   string;
   domain_confidence: number;
   domain_label:      string;
-
-  constructor(message: string, reason: string, detected_domain: string, domain_confidence: number, domain_label: string) {
-    super(message);
-    this.name              = 'NonQaResumeError';
-    this.reason            = reason;
-    this.detected_domain   = detected_domain;
-    this.domain_confidence = domain_confidence;
-    this.domain_label      = domain_label;
-  }
-}
-
-type ParseResumeResponse = ApiResponse<ResumeInsights> & {
-  eligible?:         boolean;
-  reason?:           string;
-  detected_domain?:  string;
-  domain_confidence?: number;
-  domain_label?:     string;
+  message:           string;
+  word_count?:       number | null;
 };
 
-export async function parseResume(payload: ParseResumePayload = {}): Promise<ResumeInsights> {
-  const res = await apiClient.post<ParseResumeResponse>('/resume/parse', payload);
-  const body = res.data;
+export type ParseResumeResult = ResumeInsights | NonQaResult;
 
-  if (body.eligible === false && body.reason === 'non_qa_resume') {
-    throw new NonQaResumeError(
-      body.message ?? 'Resume does not belong to the QA domain.',
-      body.reason,
-      body.detected_domain   ?? '',
-      body.domain_confidence ?? 0,
-      body.domain_label      ?? '',
-    );
+export function isNonQaResult(r: ParseResumeResult): r is NonQaResult {
+  return 'eligible' in r && r.eligible === false;
+}
+
+type ParseResumeResponse = ApiResponse<ResumeInsights | NonQaResult>;
+
+export async function parseResume(payload: ParseResumePayload = {}): Promise<ParseResumeResult> {
+  try {
+    const res  = await apiClient.post<ParseResumeResponse>('/resume/parse', payload);
+    const body = res.data;
+    const data = body.data;
+
+    // Handle any 200-level non-QA response (future-proofing)
+    if (!body.success && data && 'eligible' in data && data.eligible === false) {
+      const d = data as Omit<NonQaResult, 'message'>;
+      return {
+        eligible:          false,
+        reason:            d.reason,
+        detected_domain:   d.detected_domain,
+        domain_confidence: d.domain_confidence,
+        domain_label:      d.domain_label,
+        message:           body.message ?? 'Resume does not belong to the QA domain.',
+      };
+    }
+
+    return data as ResumeInsights;
+  } catch (err) {
+    // 422 responses are converted to ApiError by the Axios interceptor.
+    // Read the preserved response body to reconstruct the NonQaResult.
+    if (err instanceof ApiError && err.status === 422) {
+      const body = err.data as { success: boolean; message?: string; data?: Record<string, unknown> } | undefined;
+      const data = body?.data;
+      if (data && data.eligible === false) {
+        return {
+          eligible:          false,
+          reason:            (data.reason as NonQaResult['reason']) ?? 'non_qa_resume',
+          detected_domain:   (data.detected_domain as string)       ?? 'unknown',
+          domain_confidence: (data.domain_confidence as number)     ?? 0,
+          domain_label:      (data.domain_label as string)          ?? 'Unknown',
+          message:           body?.message                          ?? 'Resume not eligible.',
+          word_count:        (data.word_count as number | null)     ?? null,
+        };
+      }
+    }
+    throw err;
   }
-
-  return body.data!;
 }
 
 export async function getResumeInsights(): Promise<ResumeInsights> {

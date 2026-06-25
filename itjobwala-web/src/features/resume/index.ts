@@ -6,6 +6,7 @@ export { default as ResumeSuggestions }       from './components/ResumeSuggestio
 export { default as ResumeScoreBreakdown }    from './components/ResumeScoreBreakdown';
 export { default as ResumeParsingLoader }     from './components/ResumeParsingLoader';
 export { default as ResumeEmptyState }        from './components/ResumeEmptyState';
+export { default as NonQaResumeState }        from './components/NonQaResumeState';
 
 export * from './hooks';
 export * from './types/resume.types';

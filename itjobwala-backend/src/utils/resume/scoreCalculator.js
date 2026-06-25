@@ -296,11 +296,28 @@ export function calculateQaResumeScore({
   const weaknesses  = [];
   const suggestions = [];
 
-  if (autoS >= 20)       strengths.push('Selenium/Cypress/Playwright automation coverage');
-  else if (autoS >= 14)  strengths.push('Solid automation foundation — room to expand');
+  if (autoS >= 20) {
+    const autoTools = ['selenium', 'cypress', 'playwright', 'appium', 'webdriverio']
+      .filter(t => skills.includes(t))
+      .map(t => t.charAt(0).toUpperCase() + t.slice(1));
+    const toolStr = autoTools.length
+      ? autoTools.join('/') + ' automation coverage'
+      : 'Automation testing depth confirmed';
+    strengths.push(toolStr);
+  } else if (autoS >= 14) {
+    strengths.push('Solid automation foundation — room to expand');
+  }
 
-  if (apiS >= 15)        strengths.push('REST API testing proficiency (Postman/REST Assured)');
-  else if (apiS >= 8)    strengths.push('API testing awareness detected');
+  if (apiS >= 15) {
+    const apiTools = ['postman', 'rest assured', 'soapui']
+      .filter(t => skills.some(s => s.includes(t)));
+    const toolStr = apiTools.length
+      ? apiTools.map(t => t.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')).join('/')
+      : 'API testing';
+    strengths.push(`${toolStr} proficiency confirmed`);
+  } else if (apiS >= 8) {
+    strengths.push('API testing awareness detected');
+  }
 
   if (fwS >= 12)         strengths.push('Framework engineering depth — POM/BDD/parallel patterns demonstrated');
   else if (fwS >= 6)    strengths.push('Framework engineering awareness — some patterns applied');

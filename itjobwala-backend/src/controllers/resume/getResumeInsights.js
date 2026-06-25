@@ -26,28 +26,33 @@ export const getResumeInsights = async (request, reply) => {
     });
   }
 
-  const band   = getScoreBand(insight.ats_score ?? 0);
-  const domain = detectSkillDomain(insight.extracted_skills ?? []);
+  const band = getScoreBand(insight.ats_score ?? 0);
+
+  const isIneligible = insight.eligible === false;
+
+  // Use stored domain when available (rows parsed after the migration).
+  // Fall back to recomputation for older rows whose domain columns are still null.
+  const domain = (isIneligible && insight.detected_domain != null)
+    ? { domain: insight.detected_domain, confidence: insight.domain_confidence ?? 0, label: insight.domain_label ?? '' }
+    : detectSkillDomain(insight.extracted_skills ?? [], insight.parsed_text ?? '');
 
   return reply.send({
     success: true,
     message: 'Resume insights fetched.',
     data: {
       id:                       insight.id,
+      eligible:                 insight.eligible ?? true,
+      ...(isIneligible && { reason: insight.reason ?? 'non_qa_resume' }),
 
-      // ── QA scores (persisted during parse) ───────────────────────────────
-      qa_match_score:           insight.qa_match_score     ?? null,
-      capability_score:         insight.capability_score   ?? null,
-      qa_score_breakdown:       insight.qa_score_breakdown ?? null,
-      qa_seniority:              insight.qa_seniority              ?? null,
+      // ── QA scores ────────────────────────────────────────────────────────
+      qa_match_score:            insight.qa_match_score            ?? null,
+      capability_score:          insight.capability_score          ?? null,
+      qa_score_breakdown:        insight.qa_score_breakdown        ?? null,
       qa_hiring_label:           insight.qa_hiring_label           ?? null,
       qa_specialization:         insight.qa_specialization         ?? null,
       specialization_confidence: insight.specialization_confidence ?? null,
       recruiter_confidence:      insight.recruiter_confidence      ?? null,
       career_level:              insight.career_level              ?? null,
-
-      // ── Legacy alias ──────────────────────────────────────────────────────
-      ats_score:                insight.ats_score,
 
       // ── Profile & band ────────────────────────────────────────────────────
       profile_completion_score: insight.profile_completion_score,
@@ -55,29 +60,46 @@ export const getResumeInsights = async (request, reply) => {
       band_color:               band.color,
 
       // ── Parsed content ────────────────────────────────────────────────────
-      extracted_skills:         insight.extracted_skills      ?? [],
-      missing_skills:           insight.missing_skills        ?? [],
-      suggested_keywords:       insight.suggested_keywords    ?? [],
-      strengths:                insight.strengths             ?? [],
-      weaknesses:               insight.weaknesses            ?? [],
-      suggestions:              insight.suggestions           ?? [],
-      contact_info:             insight.contact_info          ?? {},
-      experience_entries:       insight.experience_entries    ?? [],
-      education_entries:        insight.education_entries     ?? [],
-      project_entries:          insight.project_entries       ?? [],
-      certification_entries:    insight.certification_entries ?? [],
-      experience_years:         insight.experience_years      ?? 0,
-      total_skills_found:       insight.total_skills_found    ?? 0,
-      word_count:               insight.word_count            ?? 0,
+      extracted_skills:         insight.extracted_skills   ?? [],
+      missing_skills:           insight.missing_skills     ?? [],
+      suggested_keywords:       insight.suggested_keywords ?? [],
+      weaknesses:               insight.weaknesses         ?? [],
+      suggestions:              insight.suggestions        ?? [],
+      experience_entries:       insight.experience_entries ?? [],
+      education_entries:        insight.education_entries  ?? [],
+      project_entries:          insight.project_entries    ?? [],
+      experience_years:         insight.experience_years   ?? 0,
+      total_skills_found:       insight.total_skills_found ?? 0,
       last_parsed_at:           insight.last_parsed_at,
       resume_url:               insight.resume_url,
 
-      // ── Domain intelligence (lightweight, computed from stored skills) ─────
+      // ── Structured profile convenience fields ─────────────────────────────
+      name:                     insight.contact_info?.name     ?? null,
+      email:                    insight.contact_info?.email    ?? null,
+      current_title:            insight.experience_entries?.[0]?.title   ?? null,
+      current_company:          insight.experience_entries?.[0]?.company ?? null,
+      skill_metadata:           insight.skill_metadata        ?? [],
+      skill_strength_summary:   (() => {
+        const meta = insight.skill_metadata ?? [];
+        return {
+          very_strong: meta.filter(s => s.evidence_level === 'very_strong').length,
+          strong:      meta.filter(s => s.evidence_level === 'strong').length,
+          moderate:    meta.filter(s => s.evidence_level === 'moderate').length,
+          weak:        meta.filter(s => s.evidence_level === 'weak').length,
+          inferred:    meta.filter(s => s.evidence_level === 'inferred').length,
+        };
+      })(),
+      certifications:           insight.certification_entries ?? [],
+      certification_count:      (insight.certification_entries ?? []).length,
+      achievements:             insight.achievement_entries   ?? [],
+
+      // ── Domain intelligence ───────────────────────────────────────────────
       detected_domain:          domain.domain,
       domain_confidence:        domain.confidence,
-      domain_label:             domain.label,
+      // domain_label kept only for ineligible rows (used by NonQaResumeState UI)
+      ...(isIneligible && { domain_label: domain.label }),
 
-      // ── Guidance intelligence (persisted during parse) ────────────────────
+      // ── Guidance intelligence ─────────────────────────────────────────────
       improvement_priorities:  insight.improvement_priorities  ?? null,
       score_explanations:      insight.score_explanations      ?? null,
       career_roadmap:          insight.career_roadmap          ?? null,
@@ -87,29 +109,22 @@ export const getResumeInsights = async (request, reply) => {
       recruiter_insights:      insight.recruiter_insights      ?? null,
       action_plan:             insight.action_plan             ?? null,
 
-      // ── Evidence intelligence (persisted during parse) ────────────────────
-      evidence_profile:        insight.evidence_profile        ?? null,
-      skill_evidence:          insight.skill_evidence          ?? [],
-      skill_timeline:          insight.skill_timeline          ?? {},
-      weak_evidence_skills:    insight.weak_evidence_skills    ?? [],
-      recruiter_trust_score:   insight.recruiter_trust_score   ?? null,
-      implementation_maturity: insight.implementation_maturity ?? null,
-      evidence_strength:       insight.evidence_strength       ?? null,
-      experience_depth_level:  insight.experience_depth_level  ?? null,
-      keyword_stuffing_risk:   insight.keyword_stuffing_risk   ?? null,
-      evidence_multiplier:     insight.evidence_multiplier     ?? null,
+      // ── Evidence intelligence ─────────────────────────────────────────────
+      evidence_profile:        insight.evidence_profile     ?? null,
+      skill_evidence:          insight.skill_evidence       ?? [],
+      skill_timeline:          insight.skill_timeline       ?? {},
+      weak_evidence_skills:    insight.weak_evidence_skills ?? [],
 
-      // ── Phase 4 + 5 intelligence (persisted during parse) ────────────────
-      trust_breakdown:         insight.trust_breakdown         ?? null,
-      skill_recency:           insight.skill_recency           ?? null,
-      recency_summary:         insight.recency_summary         ?? null,
-      authenticity_profile:    insight.authenticity_profile    ?? null,
-      risk_flags:              insight.risk_flags              ?? [],
-      overall_risk_score:      insight.overall_risk_score      ?? null,
-      overall_risk_level:      insight.overall_risk_level      ?? null,
-      trajectory_profile:      insight.trajectory_profile      ?? null,
-      recommendation_mode:     insight.recommendation_mode     ?? null,
-      first_impression:        insight.first_impression        ?? null,
+      // ── Phase 4 + 5 intelligence ──────────────────────────────────────────
+      trust_breakdown:         insight.trust_breakdown      ?? null,
+      skill_recency:           insight.skill_recency        ?? null,
+      recency_summary:         insight.recency_summary      ?? null,
+      authenticity_profile:    insight.authenticity_profile ?? null,
+      risk_flags:              insight.risk_flags           ?? [],
+      overall_risk_score:      insight.overall_risk_score   ?? null,
+      overall_risk_level:      insight.overall_risk_level   ?? null,
+      trajectory_profile:      insight.trajectory_profile   ?? null,
+      first_impression:        insight.first_impression     ?? null,
     },
   });
 };

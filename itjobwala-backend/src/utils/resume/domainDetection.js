@@ -78,15 +78,81 @@ export const DOMAIN_LABELS = {
   general:    'Software Engineer',
 };
 
+// Individual title patterns — any one match = confirmed QA title.
+// Split into simple patterns so partial titles like "QA Automation Engineer"
+// (where "Automation" sits between "QA" and "Engineer") still match.
+const QA_TITLE_PATTERNS = [
+  /\bquality\s+assurance\b/i,
+  /\bquality\s+(?:analyst|engineer|lead|tester|specialist|control)\b/i,
+  /\bqa\s+(?:engineer|lead|analyst|tester|manager|specialist|architect|automation|professional)\b/i,
+  /\bqa\b.{0,30}\b(?:engineer|analyst|tester|lead)\b/i,  // "QA <words> Engineer"
+  /\bsdet\b/i,
+  /\bsoftware\s+development\s+engineer\s+in\s+test\b/i,
+  /\btest\s+(?:engineer|lead|analyst|manager|architect)\b/i,
+  /\btest\s+automation\b/i,
+  /\bautomation\s+(?:engineer|tester|lead|architect|qa|specialist)\b/i,
+  /\bautomation\s+test\b/i,
+  /\bsoftware\s+(?:tester|quality\s+engineer)\b/i,
+  /\bmanual\s+tester\b/i,
+  /\bperformance\s+test(?:er|ing|s)?\b/i,
+];
+
+// QA-specific vocabulary — phrases that appear naturally in QA resumes regardless
+// of job title. 3+ distinct hits → treat as QA professional.
+const QA_VOCABULARY_PATTERNS = [
+  /\btest\s+cases?\b/i,
+  /\btest\s+plan\b/i,
+  /\btest\s+strategy\b/i,
+  /\bregression\s+test/i,
+  /\bmanual\s+test/i,
+  /\bfunctional\s+test/i,
+  /\bsmoke\s+test/i,
+  /\bdefect\s+(?:tracking|report|management|lifecycle)\b/i,
+  /\bbug\s+(?:report|tracking|life\s*cycle)\b/i,
+  /\bquality\s+assurance\b/i,
+  /\bstlc\b/i,
+  /\btestng\b/i,
+  /\bselenium\b/i,
+  /\bplaywright\b/i,
+  /\bcypress\b/i,
+  /\bappium\b/i,
+  /\bjmeter\b/i,
+  /\bapi\s+test/i,
+  /\bpage\s+object\s+model\b/i,
+  /\btest\s+execution\b/i,
+  /\btest\s+script/i,
+];
+
+function hasQaRoleSignal(text = '') {
+  // Pass 1: look for a recognised QA job title in the first 30 lines
+  const headerText = text.split('\n').slice(0, 30).join('\n');
+  if (QA_TITLE_PATTERNS.some(re => re.test(headerText))) return true;
+
+  // Pass 2: vocabulary density — 3+ distinct QA phrases anywhere in the resume
+  const hits = QA_VOCABULARY_PATTERNS.filter(re => re.test(text)).length;
+  return hits >= 3;
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 
 /**
  * Detect the dominant skill domain from an array of skills.
  *
- * @param {string[]} skills - Extracted or job skill strings (raw, any case)
+ * @param {string[]}  skills     - Extracted or job skill strings (raw, any case)
+ * @param {string}   [parsedText] - Optional raw resume text; when provided, a
+ *                                  QA role title in the header forces qa_testing
+ *                                  regardless of skill score distribution.
  * @returns {{ domain: string, confidence: number, label: string }}
  */
-export function detectSkillDomain(skills = []) {
+export function detectSkillDomain(skills = [], parsedText = '') {
+  // Title-based shortcut: if the resume header declares a QA role, trust it.
+  // This prevents misclassification when the candidate lists non-QA tech skills.
+  if (parsedText && hasQaRoleSignal(parsedText)) {
+    const label = getQASpecialization(skills.map(s => s.toLowerCase().trim()))
+      ?? DOMAIN_LABELS.qa_testing;
+    return { domain: 'qa_testing', confidence: 90, label };
+  }
+
   if (!skills.length) {
     return { domain: 'general', confidence: 0, label: DOMAIN_LABELS.general };
   }
@@ -105,6 +171,25 @@ export function detectSkillDomain(skills = []) {
   });
 
   domainScores.sort((a, b) => b.score - a.score);
+
+  // Guard: if the top domain is not qa_testing and every matched keyword is a
+  // common word that appears in non-resume documents (train tickets, receipts,
+  // etc.), return general instead of a false high-confidence domain match.
+  const NON_QA_GENERIC = new Set([
+    'express', 'rails', 'net', 'asp.net', '.net',
+    'spring', 'rest api', 'hapi', 'orm', 'grpc',
+    'android', 'ios', 'mobile development',
+  ]);
+  const topResult = domainScores[0];
+  if (topResult.domain !== 'qa_testing' && topResult.hits > 0) {
+    const hitKeywords = DOMAIN_SIGNATURES[topResult.domain].filter(kw =>
+      normalized.some(s => skillMatches(s, kw))
+    );
+    if (hitKeywords.every(kw => NON_QA_GENERIC.has(kw))) {
+      return { domain: 'general', confidence: 0, label: DOMAIN_LABELS.general };
+    }
+  }
+
   const top = domainScores[0];
 
   if (top.hits === 0) {
@@ -129,11 +214,19 @@ export function detectSkillDomain(skills = []) {
  */
 function getQASpecialization(normalizedSkills) {
   const ranked = QA_SPECIALIZATIONS.map(spec => ({
+    type:  spec.type,
     label: spec.label,
-    hits: spec.keywords.filter(kw =>
+    hits:  spec.keywords.filter(kw =>
       normalizedSkills.some(s => skillMatches(s, kw))
     ).length,
-  })).filter(s => s.hits > 0).sort((a, b) => b.hits - a.hits);
+  })).filter(s => s.hits > 0).sort((a, b) => {
+    // Automation beats manual on equal hits — it's the higher-value signal
+    if (b.hits === a.hits) {
+      if (a.type === 'automation') return -1;
+      if (b.type === 'automation') return  1;
+    }
+    return b.hits - a.hits;
+  });
 
   return ranked.length ? ranked[0].label : null;
 }

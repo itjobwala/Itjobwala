@@ -20,6 +20,7 @@ import {
   uploadCertificateFile,
   uploadProfileCover,
 } from '@/features/candidate/profile/services/profile.api';
+import { parseResume } from '@/features/resume/services/resume.api';
 import type {
   UpdateProfileRequest,
   UpdateSkillsRequest,
@@ -147,7 +148,18 @@ export function useUploadResumeMutation() {
   return useMutation({
     mutationFn: ({ file, onProgress }: { file: File; onProgress?: (pct: number) => void }) =>
       uploadResume(file, onProgress),
-    onSuccess: () => qc.invalidateQueries({ queryKey: profileKeys.all() }),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: profileKeys.all() });
+      // Fire-and-forget: parse the newly uploaded resume immediately.
+      // Result is stored in DB; invalidate resume cache when done so any
+      // open ATS page reflects the fresh analysis without a manual click.
+      parseResume({ resume_url: data.url })
+        .then(() => qc.invalidateQueries({ queryKey: ['resume'] }))
+        .catch(() => {
+          // Parse failed silently — user can retry manually on the resume page.
+          qc.invalidateQueries({ queryKey: ['resume'] });
+        });
+    },
   });
 }
 

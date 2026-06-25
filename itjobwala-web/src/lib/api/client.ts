@@ -9,13 +9,15 @@ import type { ApiResponse } from '@/src/types/api';
 const BASE_URL = env.apiUrl;
 
 export class ApiError extends Error {
-  status?: number;
+  status?:  number;
   details?: Record<string, string>;
-  constructor(message: string, status?: number, details?: Record<string, string>) {
+  data?:    unknown; // full response body, preserved for structured 4xx handling
+  constructor(message: string, status?: number, details?: Record<string, string>, data?: unknown) {
     super(message);
-    this.name = 'ApiError';
-    this.status = status;
+    this.name    = 'ApiError';
+    this.status  = status;
     this.details = details;
+    this.data    = data;
   }
 }
 
@@ -31,6 +33,7 @@ function toApiError(error: unknown): ApiError {
     message,
     isAxios ? error.response?.status : undefined,
     isAxios ? error.response?.data?.details : undefined,
+    isAxios ? error.response?.data : undefined,
   );
 }
 

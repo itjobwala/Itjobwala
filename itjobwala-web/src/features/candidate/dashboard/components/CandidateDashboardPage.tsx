@@ -93,7 +93,7 @@ const Arrow = () => (
 function ATSMiniCard() {
   const { data: insights } = useResumeInsightsQuery();
 
-  const score  = insights?.ats_score ?? null;
+  const score  = insights?.qa_match_score ?? null;
   const band   = insights?.band_label ?? null;
 
   const scoreColor =

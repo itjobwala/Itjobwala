@@ -8,9 +8,11 @@ import {
   SkillGapCard,
   ResumeScoreBreakdown,
   ResumeEmptyState,
+  NonQaResumeState,
   useResumeInsightsQuery,
   useParseResumeMutation,
 } from '@/features/resume';
+import { isNonQaResult } from '@/src/features/resume/services/resume.api';
 import { useCandidateProfileQuery } from '@/features/candidate/profile';
 
 function ResumePageContent() {
@@ -81,6 +83,20 @@ function ResumePageContent() {
               <div className="h-44 bg-surface-alt rounded-xl" />
               <div className="h-28 bg-surface-alt rounded-xl" />
             </div>
+          ) : parseMutation.data && isNonQaResult(parseMutation.data) ? (
+            <NonQaResumeState
+              reason={parseMutation.data.reason}
+              domainLabel={parseMutation.data.domain_label}
+              domainConfidence={parseMutation.data.domain_confidence}
+              message={parseMutation.data.message}
+            />
+          ) : insights?.eligible === false ? (
+            <NonQaResumeState
+              reason={insights.reason ?? 'non_qa_resume'}
+              domainLabel={insights.domain_label ?? ''}
+              domainConfidence={insights.domain_confidence}
+              message="Resume does not appear to belong to a QA professional."
+            />
           ) : !insights ? (
             <ResumeEmptyState
               onAnalyze={handleAnalyze}
@@ -104,7 +120,7 @@ function ResumePageContent() {
       )}
 
       {/* Section 3 — Skill Gaps */}
-      {insights && (
+      {insights && insights.eligible !== false && (
         <div className="bg-white rounded-2xl border border-token p-6">
           <h2 className="text-base font-bold text-heading mb-4">Skill Gaps</h2>
           <SkillGapCard

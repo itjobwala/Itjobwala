@@ -45,6 +45,14 @@ class ResumeInsight extends Model {
         last_parsed_at:           { type: ['string', 'null'] },
         created_at:               { type: ['string', 'null'] },
         updated_at:               { type: ['string', 'null'] },
+        eligible:                 { type: ['boolean', 'null'] },
+        reason:                   { type: ['string', 'null'], maxLength: 30 },
+        detected_domain:          { type: ['string', 'null'], maxLength: 30 },
+        domain_confidence:        { type: ['integer', 'null'] },
+        domain_label:             { type: ['string', 'null'], maxLength: 100 },
+        candidate_location:       { type: ['string', 'null'], maxLength: 200 },
+        skill_metadata:           { type: ['array',  'null'] },
+        achievement_entries:      { type: ['array',  'null'] },
         // ── Guidance intelligence ─────────────────────────────────────────────
         improvement_priorities:   { type: ['object', 'null'] },
         score_explanations:       { type: ['object', 'null'] },
@@ -109,6 +117,8 @@ class ResumeInsight extends Model {
       'skill_evidence',
       'skill_timeline',
       'weak_evidence_skills',
+      'skill_metadata',
+      'achievement_entries',
       // Phase 4 + 5 intelligence
       'trust_breakdown',
       'skill_recency',

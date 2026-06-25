@@ -54,16 +54,59 @@ export const parseResume = async (request, reply) => {
   // ── ATS analysis ──────────────────────────────────────────────────────────
   const ats = await runATSAnalysis(parsed, profileSkills);
 
-  // ── QA eligibility check — stop here for non-QA resumes ───────────────────
+  // ── Eligibility gate — invalid document or non-QA resume ────────────────────
   if (ats.eligible === false) {
+    const message = ats.reason === 'invalid_document'
+      ? 'The uploaded file does not appear to be a resume. Please upload a valid resume.'
+      : 'Resume does not appear to belong to a QA professional.';
+
+    const now = new Date().toISOString();
+    const ineligiblePayload = {
+      eligible:              false,
+      reason:                ats.reason,
+      detected_domain:       ats.detected_domain,
+      domain_confidence:     ats.domain_confidence,
+      domain_label:          ats.domain_label,
+      ats_score:             0,
+      profile_completion_score: 0,
+      parsed_text:           parsed.parsedText,
+      contact_info:          parsed.contactInfo,
+      candidate_location:    parsed.contactInfo?.location ?? null,
+      extracted_skills:      parsed.extractedSkills       ?? [],
+      skill_metadata:        parsed.skillMetadata         ?? [],
+      experience_entries:    parsed.experienceEntries     ?? [],
+      education_entries:     parsed.educationEntries      ?? [],
+      certification_entries: parsed.certificationEntries  ?? [],
+      achievement_entries:   parsed.achievementEntries    ?? [],
+      experience_years:      parsed.experienceYears       ?? 0,
+      total_skills_found:    (parsed.extractedSkills ?? []).length,
+      word_count:            parsed.wordCount             ?? 0,
+      parse_version:         '1.0',
+      last_parsed_at:        now,
+      updated_at:            now,
+    };
+
+    // Always upsert regardless of reason so GET /resume/insights always reflects
+    // the latest parse. Different uploads have different URLs, so keying on
+    // (candidate_id, resume_url) ensures each uploaded file gets its own row.
+    const existing = await ResumeInsight.query().findOne({ candidate_id: candidateId, resume_url: resumeUrl });
+    if (existing) {
+      await existing.$query().patchAndFetch(ineligiblePayload);
+    } else {
+      await ResumeInsight.query().insertAndFetch({ candidate_id: candidateId, resume_url: resumeUrl, ...ineligiblePayload });
+    }
+
     return reply.status(422).send({
-      success:           false,
-      eligible:          false,
-      reason:            'non_qa_resume',
-      message:           'Resume does not appear to belong to a QA professional.',
-      detected_domain:   ats.detected_domain,
-      domain_confidence: ats.domain_confidence,
-      domain_label:      ats.domain_label,
+      success: false,
+      message,
+      data: {
+        eligible:          false,
+        reason:            ats.reason,
+        detected_domain:   ats.detected_domain,
+        domain_confidence: ats.domain_confidence,
+        domain_label:      ats.domain_label,
+        word_count:        ats.word_count ?? null,
+      },
     });
   }
 
@@ -72,6 +115,11 @@ export const parseResume = async (request, reply) => {
   const payload = {
     candidate_id:             candidateId,
     resume_url:               resumeUrl,
+    eligible:                 true,
+    reason:                   null,
+    detected_domain:          ats.detected_domain,
+    domain_confidence:        ats.domain_confidence,
+    domain_label:             ats.domain_label,
     parsed_text:              parsed.parsedText,
     ats_score:                ats.ats_score,
     qa_match_score:           ats.qa_match_score,
@@ -122,6 +170,9 @@ export const parseResume = async (request, reply) => {
     trajectory_profile:       ats.trajectory_profile,
     recommendation_mode:      ats.recommendation_mode,
     first_impression:         ats.first_impression,
+    candidate_location:       parsed.contactInfo?.location ?? null,
+    skill_metadata:           parsed.skillMetadata         ?? [],
+    achievement_entries:      parsed.achievementEntries    ?? [],
     contact_info:             parsed.contactInfo,
     experience_entries:       parsed.experienceEntries,
     education_entries:        parsed.educationEntries,
@@ -161,9 +212,8 @@ export const parseResume = async (request, reply) => {
     message: 'Resume parsed successfully.',
     data: {
       ...formatInsightResponse(insight, ats),
-      detected_domain:    ats.detected_domain,
-      domain_confidence:  ats.domain_confidence,
-      domain_label:       ats.domain_label,
+      detected_domain:   ats.detected_domain,
+      domain_confidence: ats.domain_confidence,
     },
   });
 };
@@ -188,25 +238,52 @@ function computeProfileCompletion(user, parsed) {
 function formatInsightResponse(insight, ats) {
   return {
     id:                        insight.id,
+    eligible:                  insight.eligible ?? true,
+    // ── QA scores ──────────────────────────────────────────────────────────
     qa_match_score:            insight.qa_match_score,
     capability_score:          insight.capability_score,
-    qa_seniority:              insight.qa_seniority,
     qa_hiring_label:           insight.qa_hiring_label,
     qa_specialization:         insight.qa_specialization,
     specialization_confidence: insight.specialization_confidence,
     recruiter_confidence:      insight.recruiter_confidence,
     career_level:              insight.career_level,
     qa_score_breakdown:        insight.qa_score_breakdown,
-    ats_score:                 insight.ats_score,
+    // ── Profile & band ─────────────────────────────────────────────────────
     profile_completion_score: insight.profile_completion_score,
     band_label:               ats.band_label,
     band_color:               ats.band_color,
+    // ── Parsed content ──────────────────────────────────────────────────────
     extracted_skills:         insight.extracted_skills,
     missing_skills:           insight.missing_skills,
     suggested_keywords:       insight.suggested_keywords,
-    strengths:                insight.strengths,
     weaknesses:               insight.weaknesses,
     suggestions:              insight.suggestions,
+    experience_entries:       insight.experience_entries,
+    education_entries:        insight.education_entries,
+    project_entries:          insight.project_entries,
+    experience_years:         insight.experience_years,
+    total_skills_found:       insight.total_skills_found,
+    last_parsed_at:           insight.last_parsed_at,
+    // ── Structured profile convenience fields ──────────────────────────────
+    name:                     insight.contact_info?.name     ?? null,
+    email:                    insight.contact_info?.email    ?? null,
+    current_title:            insight.experience_entries?.[0]?.title   ?? null,
+    current_company:          insight.experience_entries?.[0]?.company ?? null,
+    skill_metadata:           insight.skill_metadata         ?? [],
+    skill_strength_summary:   (() => {
+      const meta = insight.skill_metadata ?? [];
+      return {
+        very_strong: meta.filter(s => s.evidence_level === 'very_strong').length,
+        strong:      meta.filter(s => s.evidence_level === 'strong').length,
+        moderate:    meta.filter(s => s.evidence_level === 'moderate').length,
+        weak:        meta.filter(s => s.evidence_level === 'weak').length,
+        inferred:    meta.filter(s => s.evidence_level === 'inferred').length,
+      };
+    })(),
+    certifications:           insight.certification_entries  ?? [],
+    certification_count:      (insight.certification_entries ?? []).length,
+    achievements:             insight.achievement_entries    ?? [],
+    // ── Guidance intelligence ───────────────────────────────────────────────
     improvement_priorities:   insight.improvement_priorities,
     score_explanations:       insight.score_explanations,
     career_roadmap:           insight.career_roadmap,
@@ -215,27 +292,12 @@ function formatInsightResponse(insight, ats) {
     specialization_guidance:  insight.specialization_guidance,
     recruiter_insights:       insight.recruiter_insights,
     action_plan:              insight.action_plan,
-    contact_info:             insight.contact_info,
-    experience_entries:       insight.experience_entries,
-    education_entries:        insight.education_entries,
-    project_entries:          insight.project_entries,
-    certification_entries:    insight.certification_entries,
-    experience_years:         insight.experience_years,
-    total_skills_found:       insight.total_skills_found,
-    word_count:               insight.word_count,
-    last_parsed_at:           insight.last_parsed_at,
-    // Evidence intelligence
+    // ── Evidence intelligence ───────────────────────────────────────────────
     evidence_profile:         insight.evidence_profile,
     skill_evidence:           insight.skill_evidence,
     skill_timeline:           insight.skill_timeline,
     weak_evidence_skills:     insight.weak_evidence_skills,
-    recruiter_trust_score:    insight.recruiter_trust_score,
-    implementation_maturity:  insight.implementation_maturity,
-    evidence_strength:        insight.evidence_strength,
-    experience_depth_level:   insight.experience_depth_level,
-    keyword_stuffing_risk:    insight.keyword_stuffing_risk,
-    evidence_multiplier:      insight.evidence_multiplier,
-    // Phase 4 + 5 intelligence
+    // ── Phase 4 + 5 intelligence ────────────────────────────────────────────
     trust_breakdown:          insight.trust_breakdown,
     skill_recency:            insight.skill_recency,
     recency_summary:          insight.recency_summary,
@@ -244,7 +306,6 @@ function formatInsightResponse(insight, ats) {
     overall_risk_score:       insight.overall_risk_score,
     overall_risk_level:       insight.overall_risk_level,
     trajectory_profile:       insight.trajectory_profile,
-    recommendation_mode:      insight.recommendation_mode,
     first_impression:         insight.first_impression,
   };
 }

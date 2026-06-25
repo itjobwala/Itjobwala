@@ -33,7 +33,11 @@ export function useParseResumeMutation() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (payload: ParseResumePayload) => parseResume(payload),
-    onSuccess:  () => qc.invalidateQueries({ queryKey: resumeKeys.all() }),
+    onSuccess:  () => {
+      // Always invalidate — non-QA results are now stored in DB,
+      // so the insights query reflects the correct eligible state on refetch.
+      qc.invalidateQueries({ queryKey: resumeKeys.all() });
+    },
   });
 }
 
