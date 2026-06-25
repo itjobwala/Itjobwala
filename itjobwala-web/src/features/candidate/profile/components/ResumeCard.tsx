@@ -10,9 +10,25 @@ interface Props {
 
 export default function ResumeCard({ fileName, uploadDate, fileUrl, onEdit }: Props & { onEdit?: () => void }) {
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isViewing,    setIsViewing]    = useState(false);
 
-  const handleView = () => {
-    window.open(fileUrl, '_blank');
+  const handleView = async () => {
+    try {
+      setIsViewing(true);
+      // Cloudinary raw resources ignore fl_attachment transformations, so the
+      // server always sends Content-Disposition:attachment. Fetching as a blob
+      // and creating a local object URL bypasses that header entirely, letting
+      // the browser open the PDF in its built-in viewer.
+      const res  = await fetch(fileUrl);
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
+      window.open(url, '_blank', 'noopener,noreferrer');
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch {
+      window.open(fileUrl, '_blank', 'noopener,noreferrer');
+    } finally {
+      setIsViewing(false);
+    }
   };
 
   const handleDownload = async () => {
@@ -75,6 +91,7 @@ export default function ResumeCard({ fileName, uploadDate, fileUrl, onEdit }: Pr
               variant="outline"
               size="sm"
               rounded="lg"
+              disabled={isViewing}
               leftIcon={
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -83,7 +100,7 @@ export default function ResumeCard({ fileName, uploadDate, fileUrl, onEdit }: Pr
               }
               onClick={handleView}
             >
-              View
+              {isViewing ? 'Opening...' : 'View'}
             </Button>
             <Button
               variant="outline"
