@@ -5,7 +5,6 @@ import EvidenceStrengthCard  from './EvidenceStrengthCard';
 import SkillEvidenceMatrix   from './SkillEvidenceMatrix';
 import WeakEvidenceWarnings  from './WeakEvidenceWarnings';
 import ExperienceDepthCard   from './ExperienceDepthCard';
-import SkillProofTimeline    from './SkillProofTimeline';
 import RecruiterTrustPanel   from './RecruiterTrustPanel';
 
 interface Props {
@@ -16,7 +15,6 @@ export default function EvidenceInsightsPanel({ insights }: Props) {
   const profile    = insights.evidence_profile;
   const skillEv    = insights.skill_evidence   ?? [];
   const weakSkills = insights.weak_evidence_skills ?? [];
-  const timeline   = insights.skill_timeline   ?? {};
 
   // Older parsed resumes won't have evidence data yet
   if (!profile) {
@@ -65,10 +63,6 @@ export default function EvidenceInsightsPanel({ insights }: Props) {
       {/* 5. Experience depth analysis */}
       <ExperienceDepthCard profile={profile} />
 
-      {/* 6. Skill proof timeline */}
-      {Object.keys(timeline).length > 0 && (
-        <SkillProofTimeline skillTimeline={timeline} />
-      )}
     </div>
   );
 }

@@ -445,9 +445,9 @@ export default function ResumeInsightsDashboard({ resumeUrl }: Props) {
           }}
         >
           <Phase4IntelPanel
-            firstImpression={insights.first_impression ?? null}
-            authenticityProfile={insights.authenticity_profile ?? null}
-            trajectoryProfile={insights.trajectory_profile ?? null}
+            firstImpression={null}
+            authenticityProfile={null}
+            trajectoryProfile={null}
             trustBreakdown={insights.trust_breakdown ?? null}
             riskFlags={insights.risk_flags ?? null}
             overallRiskScore={insights.overall_risk_score ?? null}
@@ -489,7 +489,7 @@ export default function ResumeInsightsDashboard({ resumeUrl }: Props) {
 // ── Coach Tab ─────────────────────────────────────────────────────────────────
 
 function CoachTab({ insights, onReanalyze }: { insights: ResumeInsights; onReanalyze: () => void }) {
-  const hasGuidance = !!(insights.score_explanations || insights.improvement_priorities || insights.recruiter_insights);
+  const hasGuidance = !!(insights.improvement_priorities || insights.recruiter_readiness);
 
   if (!hasGuidance) {
     return (
@@ -520,26 +520,11 @@ function CoachTab({ insights, onReanalyze }: { insights: ResumeInsights; onReana
       {insights.recruiter_readiness && (
         <RecruiterReadinessCard data={insights.recruiter_readiness} />
       )}
-      {insights.score_explanations && (
-        <ScoreExplanationCard data={insights.score_explanations} qaMatchScore={insights.qa_match_score} />
-      )}
       {insights.improvement_priorities && (
         <ATSImprovementPriorities data={insights.improvement_priorities} />
       )}
       {insights.improvement_impacts && insights.improvement_impacts.length > 0 && (
         <ImprovementImpactList data={insights.improvement_impacts} />
-      )}
-      {insights.specialization_guidance && (
-        <SpecializationUpgradeCard data={insights.specialization_guidance} />
-      )}
-      {insights.career_roadmap && (
-        <CareerRoadmapCard data={insights.career_roadmap} />
-      )}
-      {insights.recruiter_insights && (
-        <RecruiterInsightsPanel data={insights.recruiter_insights} />
-      )}
-      {insights.action_plan && (
-        <CandidateActionPlan data={insights.action_plan} />
       )}
     </div>
   );

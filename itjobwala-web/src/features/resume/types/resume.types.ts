@@ -61,6 +61,7 @@ export type QaSeniority     = 'junior' | 'mid-level' | 'senior' | 'lead';
 export type QaSpecialization = 'sdet' | 'automation_qa' | 'api_testing' | 'mobile_testing' | 'performance_testing' | 'hybrid_qa' | 'manual_qa';
 export type RecruiterConfidence = 'very_low' | 'low' | 'medium' | 'high';
 export type CareerLevel     = 'fresher' | 'junior' | 'mid_level' | 'senior' | 'lead';
+export type ParseQuality    = 'failed' | 'poor' | 'fair' | 'good' | 'excellent';
 
 export interface SkillMetadata {
   skill:          string;
@@ -91,12 +92,10 @@ export interface ResumeInsights {
   // ── Hiring intelligence ──────────────────────────────────────────────────────
   qa_hiring_label:           string             | null;
   qa_specialization:         QaSpecialization   | null;
-  specialization_confidence: number             | null;
   recruiter_confidence:      RecruiterConfidence | null;
   career_level:              CareerLevel        | null;
 
   // ── Profile & band ──────────────────────────────────────────────────────────
-  profile_completion_score: number;
   band_label:               ScoreBand;
   band_color:               BandColor;
 
@@ -132,30 +131,25 @@ export interface ResumeInsights {
 
   // ── Guidance intelligence ────────────────────────────────────────────────────
   improvement_priorities:   ImprovementPriorities  | null;
-  score_explanations:       ScoreExplanations      | null;
-  career_roadmap:           CareerRoadmap          | null;
   recruiter_readiness:      RecruiterReadiness     | null;
   improvement_impacts:      ImprovementImpact[]    | null;
-  specialization_guidance:  SpecializationGuidance | null;
-  recruiter_insights:       RecruiterInsights      | null;
-  action_plan:              ActionPlan             | null;
 
   // ── Evidence intelligence ────────────────────────────────────────────────────
   evidence_profile:         EvidenceProfile        | null;
   skill_evidence:           SkillEvidenceItem[]    | null;
-  skill_timeline:           Record<string, string[]> | null;
   weak_evidence_skills:     string[]               | null;
 
   // ── Phase 4 + 5 intelligence ─────────────────────────────────────────────────
   trust_breakdown:          TrustBreakdown         | null;
   skill_recency:            Record<string, SkillRecencyItem> | null;
   recency_summary:          RecencySummary         | null;
-  authenticity_profile:     AuthenticityProfile    | null;
   risk_flags:               RiskFlag[]             | null;
   overall_risk_score:       number                 | null;
   overall_risk_level:       OverallRiskLevel       | null;
-  trajectory_profile:       TrajectoryProfile      | null;
-  first_impression:         FirstImpression        | null;
+
+  // ── Parse quality ────────────────────────────────────────────────────────────
+  parse_quality:            ParseQuality           | null;
+  parse_warning:            string                 | null;
 }
 
 // ── Phase 4 intelligence types ────────────────────────────────────────────────
