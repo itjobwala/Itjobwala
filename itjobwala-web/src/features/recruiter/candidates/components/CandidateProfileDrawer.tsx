@@ -143,6 +143,50 @@ function DrawerContent({ detail, onClose }: { detail: CandidateDetail; onClose: 
                 </span>
               ))}
             </div>
+
+            {/* Skill evidence */}
+            {detail.skill_evidence && detail.skill_evidence.length > 0 && (
+              <div className="mt-4">
+                <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-500 mb-2">
+                  Skill Evidence
+                </p>
+                {detail.weak_evidence_skills && detail.weak_evidence_skills.length > 0 && (
+                  <div className="mb-2 px-3 py-2 rounded-lg text-[11px]"
+                    style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)', color: '#fcd34d' }}>
+                    ⚠ Listed without proof: {detail.weak_evidence_skills.join(', ')}
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-1.5">
+                  {detail.skill_evidence
+                    .filter(e => e.evidence_level === 'strong' || e.evidence_level === 'very_strong')
+                    .slice(0, 8)
+                    .map(e => (
+                      <span
+                        key={e.skill}
+                        className="text-[11px] px-2 py-0.5 rounded-lg font-semibold capitalize"
+                        style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', color: '#6ee7b7' }}
+                      >
+                        ✓ {e.skill}
+                      </span>
+                    ))}
+                  {detail.skill_evidence
+                    .filter(e => e.evidence_level === 'weak' && e.evidence_score === 0)
+                    .slice(0, 4)
+                    .map(e => (
+                      <span
+                        key={e.skill}
+                        className="text-[11px] px-2 py-0.5 rounded-lg font-semibold capitalize"
+                        style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.15)', color: '#fcd34d' }}
+                      >
+                        ? {e.skill}
+                      </span>
+                    ))}
+                </div>
+                <p className="text-[10px] text-slate-600 mt-1.5">
+                  Green = proven in experience · Amber = listed only, unverified
+                </p>
+              </div>
+            )}
           </Section>
         )}
 

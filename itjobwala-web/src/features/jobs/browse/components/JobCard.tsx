@@ -9,10 +9,12 @@ import type { Job } from '../../shared/types';
 import { salaryLabel } from '@/src/lib/utils/format';
 
 interface Props {
-  job: Job;
-  onSave?: (jobId: string) => Promise<void>;
-  onUnsave?: (jobId: string) => Promise<void>;
-  initialSaved?: boolean;
+  job:            Job;
+  onSave?:        (jobId: string) => Promise<void>;
+  onUnsave?:      (jobId: string) => Promise<void>;
+  initialSaved?:  boolean;
+  matchScore?:    number | null;
+  matchedSkills?: string[];
 }
 
 function MapPinIcon() {
@@ -88,7 +90,7 @@ function expiresInfo(closesAt: string | null | undefined): { label: string; clas
   return { label: `Closes ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`, className: 'text-subtle' };
 }
 
-export default function JobCard({ job, onSave, onUnsave, initialSaved = false }: Props) {
+export default function JobCard({ job, onSave, onUnsave, initialSaved = false, matchScore, matchedSkills }: Props) {
   const router = useRouter();
   const [saved, setSaved] = useState(initialSaved);
   const [saving, setSaving] = useState(false);
@@ -210,6 +212,25 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false }:
               <span className="text-caption text-subtle">+{job.skills.length - 3} more</span>
             )}
           </div>
+
+          {matchScore != null && (
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <span
+                className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                style={{
+                  background: matchScore >= 70 ? 'rgba(16,185,129,0.12)' : matchScore >= 45 ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.08)',
+                  color:      matchScore >= 70 ? '#10b981' : matchScore >= 45 ? '#f59e0b' : '#ef4444',
+                }}
+              >
+                {matchScore}% skill match
+              </span>
+              {matchedSkills && matchedSkills.length > 0 && (
+                <span className="text-[10px] text-subtle truncate">
+                  {matchedSkills.slice(0, 2).join(', ')}{matchedSkills.length > 2 ? ` +${matchedSkills.length - 2}` : ''}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

@@ -2,6 +2,7 @@ import Job from '../../models/jobs/Job.js';
 import Recruiter from '../../models/recruiter/Recruiter.js';
 import Application from '../../models/jobs/Application.js';
 import SavedJob from '../../models/jobs/SavedJob.js';
+import ResumeInsight from '../../models/candidate/ResumeInsight.js';
 import { ref, raw } from 'objection';
 
 // Resolve candidate user ID from request JWT without throwing (optional auth).
@@ -259,28 +260,88 @@ export const getJobDetails = async (request, reply) => {
 
 export const getRecommendedJobs = async (request, reply) => {
   try {
-    const limit = parseInt(request.query.limit, 10) || 5;
+    const limit      = parseInt(request.query.limit, 10) || 5;
     const excludeRaw = request.query.exclude;
-    const excludeId = excludeRaw ? excludeRaw.toString().replace('job_', '') : null;
-
-    const query = Job.query()
-      .withGraphFetched('recruiter')
-      .select('jobs.*')
-      .select(Job.relatedQuery('applications').count().as('applicant_count'))
-      .select(Job.relatedQuery('applications').where('status', 'shortlisted').count().as('shortlisted_count'))
-      .select(Job.relatedQuery('applications').where('status', 'interview').count().as('interview_count'))
-      .where('status', 'active')
-      .orderBy('created_at', 'desc')
-      .limit(limit);
-
-    if (excludeId) query.whereNot('id', excludeId);
+    const excludeId  = excludeRaw ? excludeRaw.toString().replace('job_', '') : null;
 
     const candidateId = await getCandidateId(request);
-    const jobs = await query;
+
+    let candidateSkills  = [];
+    if (candidateId) {
+      const insight = await ResumeInsight.query()
+        .findOne({ candidate_id: candidateId })
+        .select('extracted_skills', 'qa_specialization');
+      if (insight) {
+        candidateSkills = insight.extracted_skills ?? [];
+      }
+    }
+
+    let jobs;
+
+    if (candidateSkills.length >= 3) {
+      const lowerSkills = candidateSkills.map(s => s.toLowerCase());
+
+      jobs = await Job.query()
+        .withGraphFetched('recruiter')
+        .select('jobs.*')
+        .select(Job.relatedQuery('applications').count().as('applicant_count'))
+        .select(Job.relatedQuery('applications').where('status', 'shortlisted').count().as('shortlisted_count'))
+        .select(Job.relatedQuery('applications').where('status', 'interview').count().as('interview_count'))
+        .where('status', 'active')
+        .whereRaw(
+          `(
+            SELECT COUNT(*)
+            FROM jsonb_array_elements_text(jobs.skills::jsonb) AS job_skill
+            WHERE LOWER(job_skill) = ANY(?)
+          ) >= 2`,
+          [lowerSkills]
+        )
+        .orderByRaw(
+          `(
+            SELECT COUNT(*)
+            FROM jsonb_array_elements_text(jobs.skills::jsonb) AS job_skill
+            WHERE LOWER(job_skill) = ANY(?)
+          ) DESC, jobs.created_at DESC`,
+          [lowerSkills]
+        )
+        .limit(limit);
+
+      if (jobs.length < limit) {
+        const existingIds = jobs.map(j => j.id);
+        const backfill = await Job.query()
+          .withGraphFetched('recruiter')
+          .select('jobs.*')
+          .select(Job.relatedQuery('applications').count().as('applicant_count'))
+          .select(Job.relatedQuery('applications').where('status', 'shortlisted').count().as('shortlisted_count'))
+          .select(Job.relatedQuery('applications').where('status', 'interview').count().as('interview_count'))
+          .where('status', 'active')
+          .whereNotIn('id', existingIds.length ? existingIds : [0])
+          .orderBy('created_at', 'desc')
+          .limit(limit - jobs.length);
+        jobs = [...jobs, ...backfill];
+      }
+    } else {
+      jobs = await Job.query()
+        .withGraphFetched('recruiter')
+        .select('jobs.*')
+        .select(Job.relatedQuery('applications').count().as('applicant_count'))
+        .select(Job.relatedQuery('applications').where('status', 'shortlisted').count().as('shortlisted_count'))
+        .select(Job.relatedQuery('applications').where('status', 'interview').count().as('interview_count'))
+        .where('status', 'active')
+        .orderBy('created_at', 'desc')
+        .limit(limit);
+    }
+
+    if (excludeId) {
+      jobs = jobs.filter(j => String(j.id) !== String(excludeId));
+    }
 
     let savedJobIds = new Set();
     if (candidateId && jobs.length > 0) {
-      const rows = await SavedJob.query().whereIn('job_id', jobs.map(j => j.id)).where('user_id', candidateId).select('job_id');
+      const rows = await SavedJob.query()
+        .whereIn('job_id', jobs.map(j => j.id))
+        .where('user_id', candidateId)
+        .select('job_id');
       savedJobIds = new Set(rows.map(r => r.job_id));
     }
 
@@ -288,8 +349,9 @@ export const getRecommendedJobs = async (request, reply) => {
       success: true,
       message: 'Recommended jobs fetched.',
       data: {
-        jobs: jobs.map(j => formatJob(j, false, savedJobIds.has(j.id)))
-      }
+        skill_matched: candidateSkills.length >= 3,
+        jobs: jobs.map(j => formatJob(j, false, savedJobIds.has(j.id))),
+      },
     });
   } catch (error) {
     request.server.log.error(error);

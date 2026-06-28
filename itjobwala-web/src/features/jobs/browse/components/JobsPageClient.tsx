@@ -9,6 +9,7 @@ import JobList from './JobList';
 import type { FilterState, SearchState } from '../../shared/types';
 import { normalizeJob } from '../../shared/types';
 import { useJobsQuery } from '@/features/jobs/browse/hooks';
+import { useResumeInsightsQuery } from '@/features/resume/hooks';
 import { useSavedJobsQuery, useSaveJobMutation, useUnsaveJobMutation } from '@/features/candidate/applications/hooks';
 import { useAuthHydration } from '@/src/hooks/useAuthHydration';
 import type { JobFilters } from '@/features/jobs/shared';
@@ -104,7 +105,9 @@ export default function JobsPageClient() {
   const [showFilters, setShowFilters] = useState(false);
   const { toast, show: showToast } = useToast();
 
-  const canLoadSavedJobs = isHydrated && !authLoading && session?.userRole === 'candidate';
+  const canLoadSavedJobs  = isHydrated && !authLoading && session?.userRole === 'candidate';
+  const { data: insightData } = useResumeInsightsQuery(canLoadSavedJobs);
+  const candidateSkills       = insightData?.extracted_skills ?? [];
   const { data: savedData } = useSavedJobsQuery({ limit: 100 }, canLoadSavedJobs);
   const saveJobMutation = useSaveJobMutation();
   const unsaveJobMutation = useUnsaveJobMutation();
@@ -253,6 +256,7 @@ export default function JobsPageClient() {
                 savedJobIds={savedJobIds}
                 onSaveJob={handleSaveJob}
                 onUnsaveJob={handleUnsaveJob}
+                candidateSkills={candidateSkills}
               />
               )}
 

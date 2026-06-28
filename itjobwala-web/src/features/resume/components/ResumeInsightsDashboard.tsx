@@ -11,7 +11,7 @@ import ResumeParsingLoader                                   from './ResumeParsi
 import ResumeEmptyState                                      from './ResumeEmptyState';
 import InfoButton                                            from './InfoButton';
 import NonQaResumeState                                      from './NonQaResumeState';
-import { useResumeInsightsQuery, useParseResumeMutation }   from '../hooks';
+import { useResumeInsightsQuery, useParseResumeMutation, useBenchmarkingQuery } from '../hooks';
 import { isNonQaResult }                                     from '../services/resume.api';
 import { useCandidateProfileQuery }                          from '@/features/candidate/profile/hooks';
 
@@ -45,6 +45,28 @@ const T = {
 const cardStyle: React.CSSProperties = {
   background: T.card, border: `1px solid ${T.border}`,
   borderRadius: 22, padding: '30px 32px',
+};
+
+const TIER_COLORS: Record<string, string> = {
+  emerald: 'rgba(16,185,129,0.1)',
+  cyan:    'rgba(6,182,212,0.1)',
+  blue:    'rgba(99,102,241,0.1)',
+  amber:   'rgba(245,158,11,0.1)',
+  red:     'rgba(239,68,68,0.08)',
+};
+const TIER_BORDERS: Record<string, string> = {
+  emerald: 'rgba(16,185,129,0.25)',
+  cyan:    'rgba(6,182,212,0.25)',
+  blue:    'rgba(99,102,241,0.25)',
+  amber:   'rgba(245,158,11,0.2)',
+  red:     'rgba(239,68,68,0.15)',
+};
+const TIER_TEXT: Record<string, string> = {
+  emerald: '#6ee7b7',
+  cyan:    '#67e8f9',
+  blue:    '#a5b4fc',
+  amber:   '#fcd34d',
+  red:     '#fca5a5',
 };
 
 const sLabelStyle: React.CSSProperties = {
@@ -559,6 +581,7 @@ function HeaderSection({ insights, onReanalyze, isParsing }: { insights: ResumeI
 // ── Section 2: QA Match Score ─────────────────────────────────────────────────
 
 function ScoreSection({ insights }: { insights: ResumeInsights }) {
+  const { data: benchmarkData } = useBenchmarkingQuery();
   const score    = insights.qa_match_score ?? 0;
   const gc       = score >= 80 ? T.green : score >= 60 ? T.blue : score >= 40 ? T.amber : T.red;
   const hlStyle  = hiringLabelStyle(score);
@@ -605,6 +628,23 @@ function ScoreSection({ insights }: { insights: ResumeInsights }) {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {benchmarkData && (
+          <div
+            className="flex items-center justify-center gap-2 mt-4 px-3 py-2 rounded-xl w-full"
+            style={{
+              background: TIER_COLORS[benchmarkData.tier_color] ?? 'rgba(99,102,241,0.1)',
+              border: `1px solid ${TIER_BORDERS[benchmarkData.tier_color] ?? 'rgba(99,102,241,0.2)'}`,
+            }}
+          >
+            <span className="text-[11px] font-semibold" style={{ color: TIER_TEXT[benchmarkData.tier_color] ?? '#a5b4fc' }}>
+              Top {100 - benchmarkData.percentile_rank + 1}% of QA candidates
+            </span>
+            <span className="text-[10px] opacity-60" style={{ color: TIER_TEXT[benchmarkData.tier_color] ?? '#a5b4fc' }}>
+              · {benchmarkData.benchmark_tier}
+            </span>
           </div>
         )}
       </div>

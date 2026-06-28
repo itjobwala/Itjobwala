@@ -27,20 +27,38 @@ export interface CandidateCard {
   qa_match_score:    number | null;
 }
 
+export interface SkillEvidenceEntry {
+  skill:          string;
+  evidence_level: string;
+  evidence_score: number;
+  proof_sources:  string[];
+}
+
+export interface SkillMetadataEntry {
+  skill:          string;
+  occurrences:    number;
+  sources:        string[];
+  evidence_level: string;
+  confidence:     number;
+}
+
 export interface CandidateDetail extends CandidateCard {
-  about:               string | null;
-  work_status:         string | null;
+  about:                string | null;
+  work_status:          string | null;
   availability_to_join: string | null;
-  linked_in:           string | null;
-  github:              string | null;
-  profile_completion:  number;
-  career_level:        string | null;
-  ats_score:           number | null;
-  capability_score:    number | null;
-  strengths:           string[] | null;
-  weaknesses:          string[] | null;
-  recruiter_insights:  Record<string, unknown> | null;
-  qa_score_breakdown:  Record<string, unknown> | null;
+  linked_in:            string | null;
+  github:               string | null;
+  profile_completion:   number;
+  career_level:         string | null;
+  ats_score:            number | null;
+  capability_score:     number | null;
+  strengths:            string[] | null;
+  weaknesses:           string[] | null;
+  recruiter_insights:   Record<string, unknown> | null;
+  qa_score_breakdown:   Record<string, unknown> | null;
+  skill_evidence:       SkillEvidenceEntry[] | null;
+  skill_metadata:       SkillMetadataEntry[] | null;
+  weak_evidence_skills: string[] | null;
 }
 
 export interface CandidateSearchPagination {

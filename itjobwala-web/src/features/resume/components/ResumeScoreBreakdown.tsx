@@ -15,8 +15,9 @@ const QA_LABELS: Record<string, { label: string; icon: string }> = {
   qa_experience:       { label: 'QA Experience',         icon: '📋' },
   certifications:      { label: 'QA Certifications',     icon: '✅' },
   bug_tracking:        { label: 'Bug Tracking',          icon: '🐛' },
-  ci_cd_readiness:     { label: 'CI/CD Readiness',       icon: '⚙️' },
-  mobile_testing:      { label: 'Mobile Testing',        icon: '📱' },
+  ci_cd_readiness:          { label: 'CI/CD Readiness',       icon: '⚙️' },
+  test_design_methodology:  { label: 'Test Design',           icon: '🎯' },
+  mobile_testing:           { label: 'Mobile Testing',        icon: '📱' },
   domain_expertise:    { label: 'Domain Expertise',      icon: '🏢' },
 };
 
@@ -49,8 +50,9 @@ const HINTS: Record<string, { strong: string; mid: string; weak: string }> = {
   automation_testing:  { strong: 'Well-evidenced — multiple automation tools',      mid: 'Expand with Cypress or Playwright',       weak: 'No automation tools detected — critical gap' },
   api_testing:         { strong: 'REST API testing expertise confirmed',             mid: 'Add REST Assured or schema validation',   weak: 'No API testing tools — add Postman or REST Assured' },
   framework_expertise: { strong: 'Mature multi-framework toolchain',                mid: 'Diversify with BDD or a performance tool', weak: 'Limited framework diversity' },
-  performance_testing: { strong: 'Performance engineering experience present',      mid: 'Consider JMeter or K6 for depth',         weak: 'Optional — add JMeter/K6 to differentiate' },
-  qa_experience:       { strong: 'Strong QA tenure with methodology depth',         mid: 'Add measurable impact to descriptions',   weak: 'Experience years or depth unclear' },
+  performance_testing:      { strong: 'Performance engineering experience present',      mid: 'Consider JMeter or K6 for depth',         weak: 'Optional — add JMeter/K6 to differentiate' },
+  test_design_methodology:  { strong: 'Test design techniques demonstrated — BVA, exploratory, risk-based testing', mid: 'Add test case design or exploratory testing to descriptions', weak: 'Add test design methodology — equivalence partitioning, boundary value analysis' },
+  qa_experience:            { strong: 'Strong QA tenure with methodology depth',         mid: 'Add measurable impact to descriptions',   weak: 'Experience years or depth unclear' },
   certifications:      { strong: 'ISTQB or equivalent — strong trust signal',       mid: 'Pursuing ISTQB would strengthen profile',  weak: 'No QA certifications detected' },
   bug_tracking:        { strong: 'JIRA/TestRail workflow confirmed',                 mid: 'Mention defect lifecycle experience',     weak: 'No bug tracking tools — add JIRA/TestRail' },
   ci_cd_readiness:     { strong: 'CI/CD pipeline integration — automation-first',   mid: 'Add GitHub Actions or Jenkins',           weak: 'No CI/CD tools — common expectation in automation roles' },
@@ -58,7 +60,7 @@ const HINTS: Record<string, { strong: string; mid: string; weak: string }> = {
   domain_expertise:    { strong: 'Domain-specific QA experience detected',          mid: 'Highlight domain context in descriptions', weak: '' },
 };
 
-const SKIP_DIMS   = new Set(['resume_quality', 'test_design_methodology']);
+const SKIP_DIMS   = new Set(['resume_quality']);
 const BONUS_DIMS  = new Set(['mobile_testing', 'domain_expertise']);
 const PENALTY_KEY = 'penalties';
 
