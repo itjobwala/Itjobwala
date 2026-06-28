@@ -147,7 +147,7 @@ export const SKILL_CATEGORIES = {
     'detox', 'maestro', 'testcontainers', 'mockserver',
 
     // Variant spellings — also in ALIASES so they normalize to canonical form
-    'restassured',
+    'restassured', 'rest-assured',
     'selenium grid', 'selenide',
     'junit4', 'junit5',
     'cypress io',
@@ -217,6 +217,7 @@ const ALIASES = {
 
   // REST Assured variants
   'restassured':                      'rest assured',
+  'rest-assured':                     'rest assured',
   'rest assured java':                'rest assured',
 
   // Selenium variants

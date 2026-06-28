@@ -23,10 +23,11 @@ export const parseResume = async (request, reply) => {
     return reply.status(404).send({ success: false, message: 'User not found.' });
   }
 
-  // Determine resume URL: accept override in body or use profile URL
+  // Determine resume URL: accept override in body or fall back to the
+  // resume_url column that uploadResume stores on the user row.
   const resumeUrl = request.body?.resume_url
-    || (await User.query().findById(candidateId).select('career_profile'))
-      ?.career_profile?.resume_url
+    || (await User.query().findById(candidateId).select('resume_url'))
+      ?.resume_url
     || null;
 
   if (!resumeUrl) {
@@ -268,14 +269,14 @@ function formatInsightResponse(insight, ats) {
     current_title:            insight.experience_entries?.[0]?.title   ?? null,
     current_company:          insight.experience_entries?.[0]?.company ?? null,
     skill_metadata:           insight.skill_metadata         ?? [],
-    skill_strength_summary:   (() => {
-      const meta = insight.skill_metadata ?? [];
+    skill_strength_summary: (() => {
+    const ev = insight.skill_evidence ?? [];
       return {
-        very_strong: meta.filter(s => s.evidence_level === 'very_strong').length,
-        strong:      meta.filter(s => s.evidence_level === 'strong').length,
-        moderate:    meta.filter(s => s.evidence_level === 'moderate').length,
-        weak:        meta.filter(s => s.evidence_level === 'weak').length,
-        inferred:    meta.filter(s => s.evidence_level === 'inferred').length,
+        very_strong: ev.filter(s => s.evidence_level === 'very_strong').length,
+        strong:      ev.filter(s => s.evidence_level === 'strong').length,
+        moderate:    ev.filter(s => s.evidence_level === 'moderate').length,
+        weak:        ev.filter(s => s.evidence_level === 'weak').length,
+        inferred:    (insight.skill_metadata ?? []).filter(s => s.evidence_level === 'inferred').length,
       };
     })(),
     certifications:           insight.certification_entries  ?? [],

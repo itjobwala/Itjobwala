@@ -21,11 +21,12 @@ export const resumeKeys = {
 
 export function useResumeInsightsQuery(enabled = true) {
   return useQuery({
-    queryKey: resumeKeys.insights(),
-    queryFn:  getResumeInsights,
+    queryKey:   resumeKeys.insights(),
+    queryFn:    ({ signal }) => getResumeInsights(signal),
     enabled,
-    retry:    false,
-    staleTime: 5 * 60 * 1000,
+    retry:      1,
+    retryDelay: 1500,
+    staleTime:  5 * 60 * 1000,
   });
 }
 

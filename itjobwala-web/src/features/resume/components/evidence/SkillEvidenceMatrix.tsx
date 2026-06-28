@@ -7,11 +7,13 @@ interface Props {
   skillEvidence: SkillEvidenceItem[];
 }
 
-const LEVEL_CONFIG = {
-  strong:   { color: '#6ee7b7', bg: 'rgba(16,185,129,0.12)',  border: 'rgba(16,185,129,0.25)',  label: 'Strong'   },
-  moderate: { color: '#93c5fd', bg: 'rgba(59,130,246,0.12)',  border: 'rgba(59,130,246,0.25)',  label: 'Moderate' },
-  basic:    { color: '#fbbf24', bg: 'rgba(245,158,11,0.12)',  border: 'rgba(245,158,11,0.25)',  label: 'Basic'    },
-  weak:     { color: '#f87171', bg: 'rgba(239,68,68,0.10)',   border: 'rgba(239,68,68,0.2)',    label: 'Weak'     },
+const LEVEL_CONFIG: Record<string, { color: string; bg: string; border: string; label: string }> = {
+  very_strong: { color: '#6ee7b7', bg: 'rgba(16,185,129,0.15)',  border: 'rgba(16,185,129,0.30)',  label: 'Very Strong' },
+  strong:      { color: '#6ee7b7', bg: 'rgba(16,185,129,0.12)',  border: 'rgba(16,185,129,0.25)',  label: 'Strong'      },
+  moderate:    { color: '#93c5fd', bg: 'rgba(59,130,246,0.12)',  border: 'rgba(59,130,246,0.25)',  label: 'Moderate'    },
+  basic:       { color: '#fbbf24', bg: 'rgba(245,158,11,0.12)',  border: 'rgba(245,158,11,0.25)',  label: 'Basic'       },
+  weak:        { color: '#f87171', bg: 'rgba(239,68,68,0.10)',   border: 'rgba(239,68,68,0.2)',    label: 'Weak'        },
+  inferred:    { color: '#a78bfa', bg: 'rgba(139,92,246,0.12)',  border: 'rgba(139,92,246,0.25)', label: 'Inferred'    },
 };
 
 const PROOF_LABELS: Record<string, string> = {

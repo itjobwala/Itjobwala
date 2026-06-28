@@ -1,802 +1,1058 @@
 'use client';
 
-import { useState }              from 'react';
-import Card                      from '@/src/components/ui/Card';
-import ATSScoreRing               from './ATSScoreRing';
-import type { BandColor, QaScoreBreakdown, QaSeniority, QaSpecialization, RecruiterConfidence } from '../types/resume.types';
-import ResumeScoreBreakdown      from './ResumeScoreBreakdown';
-import SkillGapCard              from './SkillGapCard';
-import ResumeSuggestions         from './ResumeSuggestions';
-import ResumeParsingLoader       from './ResumeParsingLoader';
-import ResumeEmptyState          from './ResumeEmptyState';
-import NonQaResumeState          from './NonQaResumeState';
-import { useResumeInsightsQuery, useParseResumeMutation } from '../hooks';
-import { isNonQaResult }         from '../services/resume.api';
-import type { ResumeInsights }   from '../types/resume.types';
-import RecruiterReadinessCard    from './guidance/RecruiterReadinessCard';
-import ATSImprovementPriorities  from './guidance/ATSImprovementPriorities';
-import ImprovementImpactList     from './guidance/ImprovementImpactList';
-import ScoreExplanationCard      from './guidance/ScoreExplanationCard';
-import CareerRoadmapCard         from './guidance/CareerRoadmapCard';
-import SpecializationUpgradeCard from './guidance/SpecializationUpgradeCard';
-import RecruiterInsightsPanel    from './guidance/RecruiterInsightsPanel';
-import CandidateActionPlan       from './guidance/CandidateActionPlan';
-import MarketInsightsPanel       from './market/MarketInsightsPanel';
-import LearningInsightsPanel     from './learning/LearningInsightsPanel';
-import ResumeProgressPanel       from './progress/ResumeProgressPanel';
-import BenchmarkingPanel         from './benchmarking/BenchmarkingPanel';
-import WeightEnginePanel              from './weights/WeightEnginePanel';
-import BehavioralHireabilityPanel    from './behavioral/BehavioralHireabilityPanel';
-import EvidenceInsightsPanel         from './evidence/EvidenceInsightsPanel';
-import Phase4IntelPanel              from './intelligence/Phase4IntelPanel';
+import { useEffect, useState }                              from 'react';
+import type {
+  ResumeInsights, RiskFlag, RiskSeverity, OverallRiskLevel,
+  ImprovementPriorities, PrioritySkill, TrustSignal,
+  ImplMaturity, InflationRisk, ParseQuality,
+}                                                            from '../types/resume.types';
+import { buildMergedSkills, type MergedSkill }             from '../utils/buildMergedSkills';
+import ResumeParsingLoader                                   from './ResumeParsingLoader';
+import ResumeEmptyState                                      from './ResumeEmptyState';
+import InfoButton                                            from './InfoButton';
+import NonQaResumeState                                      from './NonQaResumeState';
+import { useResumeInsightsQuery, useParseResumeMutation }   from '../hooks';
+import { isNonQaResult }                                     from '../services/resume.api';
+import { useCandidateProfileQuery }                          from '@/features/candidate/profile/hooks';
 
-type Tab = 'overview' | 'skills' | 'suggestions' | 'breakdown' | 'evidence' | 'coach' | 'market' | 'learn' | 'progress' | 'bench' | 'weights' | 'hire' | 'intel';
+// ── Design tokens ─────────────────────────────────────────────────────────────
+const T = {
+  bg:       '#0c0e0f',
+  card:     '#181a1b',
+  card2:    '#202324',
+  border:   '#2a2e30',
+  border2:  '#34393b',
+  ink:      '#f3f4f5',
+  muted:    '#9aa0a6',
+  muted2:   '#6c7378',
+  blue:     '#5b87d6',
+  blueBg:   '#1c2940',
+  blueBd:   '#2e4368',
+  green:    '#5cb085',
+  greenBg:  '#18301f',
+  greenBd:  '#2c5238',
+  greenInk: '#7fcca0',
+  amber:    '#c79a4f',
+  amberBg:  '#33290f',
+  amberBd:  '#574517',
+  amberInk: '#d8ad63',
+  red:      '#d18a84',
+  redBg:    '#361c1b',
+  redBd:    '#5a2e2b',
+  track:    '#26292b',
+} as const;
 
-interface Props {
-  resumeUrl?: string | null;
+const cardStyle: React.CSSProperties = {
+  background: T.card, border: `1px solid ${T.border}`,
+  borderRadius: 22, padding: '30px 32px',
+};
+
+const sLabelStyle: React.CSSProperties = {
+  fontSize: 12, fontWeight: 700, letterSpacing: '1.8px',
+  textTransform: 'uppercase', color: T.muted2,
+};
+
+// ── Score breakdown constants ─────────────────────────────────────────────────
+
+const SKIP_DIMS = new Set(['resume_quality', 'mobile_testing', 'domain_expertise']);
+
+const DIM_LABELS: Record<string, string> = {
+  automation_testing:      'Automation Testing',
+  api_testing:             'API Testing',
+  framework_expertise:     'Framework Expertise',
+  performance_testing:     'Performance Testing',
+  test_design_methodology: 'Test Design',
+  qa_experience:           'QA Experience',
+  certifications:          'Certifications',
+  bug_tracking:            'Bug Tracking',
+  ci_cd_readiness:         'CI/CD Readiness',
+};
+
+const DIM_HINTS: Record<string, { good: string; bad: string }> = {
+  automation_testing:      { good: 'Well-evidenced — multiple automation tools',           bad: 'Add Selenium, Playwright, or Cypress to improve' },
+  api_testing:             { good: 'REST API testing expertise confirmed',                  bad: 'Add Postman or REST Assured' },
+  framework_expertise:     { good: 'Framework patterns confirmed',                          bad: 'Add Page Object Model or BDD patterns' },
+  performance_testing:     { good: 'Performance testing expertise confirmed',               bad: 'JMeter or K6 would unlock this dimension' },
+  test_design_methodology: { good: 'Test design techniques demonstrated',                   bad: 'Add test case design, BVA, or exploratory testing' },
+  qa_experience:           { good: 'Strong QA tenure with methodology depth',               bad: 'Add more QA methodology keywords: STLC, defect tracking' },
+  certifications:          { good: 'QA certification confirmed',                            bad: 'ISTQB Foundation would add 3-5 points here' },
+  bug_tracking:            { good: 'JIRA defect lifecycle confirmed',                       bad: 'Add JIRA or TestRail experience' },
+  ci_cd_readiness:         { good: 'CI/CD pipeline integration confirmed',                  bad: 'No CI/CD tools — common expectation in automation roles' },
+};
+
+const DIM_RENDER_ORDER = [
+  'automation_testing', 'api_testing', 'framework_expertise', 'performance_testing',
+  'test_design_methodology', 'qa_experience', 'certifications', 'bug_tracking', 'ci_cd_readiness',
+];
+
+// ── Risk flag constants ───────────────────────────────────────────────────────
+
+const RISK_FLAG_LABELS: Record<string, string> = {
+  no_ci_cd_context:         'No CI/CD context',
+  no_cicd_mention:          'No CI/CD context',
+  outdated_stack:           'Legacy-only toolstack',
+  stale_skills:             'Legacy-only toolstack',
+  keyword_stuffing:         'Keyword stuffing detected',
+  no_projects:              'No QA projects found',
+  no_project_context:       'No QA projects found',
+  weak_evidence:            'Skills listed without proof',
+  low_evidence_density:     'Skills listed without proof',
+  no_quantified_impact:     'No Quantified Impact',
+  experience_inflation:     'Experience Inflation',
+  generic_descriptions:     'Generic Descriptions',
+  missing_automation_tools: 'Missing Automation Tools',
+  weak_toolchain_coherence: 'Weak Toolchain Coherence',
+};
+
+// Risk badge header labels for Section 1
+const RISK_HEADER_LABELS: Record<string, string> = {
+  no_ci_cd_context:   'CI/CD Gap',
+  no_cicd_mention:    'CI/CD Gap',
+  outdated_stack:     'Outdated Stack',
+  stale_skills:       'Outdated Stack',
+  keyword_stuffing:   'Keyword Stuffing',
+  no_projects:        'No Projects',
+  no_project_context: 'No Projects',
+  weak_evidence:      'Weak Evidence',
+  low_evidence_density: 'Weak Evidence',
+};
+
+// ── Chip kind from evidence level ─────────────────────────────────────────────
+
+type ChipKind = 'green' | 'gray' | 'amber' | 'blue';
+
+function evidenceToChip(level: string): ChipKind {
+  if (level === 'very_strong' || level === 'strong') return 'green';
+  if (level === 'moderate'    || level === 'basic')  return 'gray';
+  if (level === 'weak')                              return 'amber';
+  if (level === 'inferred')                          return 'blue';
+  return 'gray';
 }
 
-// ── QA metric computation ─────────────────────────────────────────────────────
+const CHIP_CFG: Record<ChipKind, { bg: string; bd: string; color: string; dot: string }> = {
+  green: { bg: '#15241a', bd: T.greenBd,  color: T.greenInk, dot: T.green  },
+  gray:  { bg: '#1b1e1f', bd: T.border2,  color: '#d2d6d9',  dot: '#7b8186' },
+  amber: { bg: '#271f0d', bd: T.amberBd,  color: T.amberInk, dot: T.amber  },
+  blue:  { bg: '#182337', bd: T.blueBd,   color: '#9fbdf0',  dot: T.blue   },
+};
 
-function computeQAMetrics(insights: ResumeInsights) {
-  const bd = insights.qa_score_breakdown;
+// ── Bar color from pct ────────────────────────────────────────────────────────
 
-  // Automation Coverage — ATS dimension, not skill scanning
-  const automationDim = bd?.automation_testing;
-  const automationPct = automationDim
-    ? Math.round((automationDim.score / automationDim.max) * 100)
-    : 0;
-  const autoLabel =
-    automationPct >= 81 ? 'Advanced'   :
-    automationPct >= 61 ? 'Strong'     :
-    automationPct >= 31 ? 'Developing' : 'Beginner';
-  const autoSub = automationDim
-    ? `${automationDim.score}/${automationDim.max} ATS points`
-    : '—';
+function barColor(pct: number): string {
+  if (pct >= 80) return T.green;
+  if (pct >= 60) return T.blue;
+  if (pct >= 30) return T.amber;
+  return T.red;
+}
 
-  // Framework Maturity — ATS dimension, not tool counting
-  const frameworkDim = bd?.framework_expertise;
-  const frameworkPct = frameworkDim
-    ? Math.round((frameworkDim.score / frameworkDim.max) * 100)
-    : 0;
-  const frameworkLabel =
-    frameworkPct >= 81 ? 'Expert'       :
-    frameworkPct >= 61 ? 'Advanced'     :
-    frameworkPct >= 31 ? 'Intermediate' : 'Beginner';
-  const frameworkSub = frameworkDim
-    ? `${frameworkDim.score}/${frameworkDim.max} ATS points`
-    : '—';
+// ── Severity colors ───────────────────────────────────────────────────────────
 
-  // API Testing — ATS dimension, not skill scanning
-  const apiDim    = bd?.api_testing;
-  const apiPct    = apiDim
-    ? Math.round((apiDim.score / apiDim.max) * 100)
-    : 0;
-  const apiLabel  =
-    apiPct >= 81 ? 'Expert'     :
-    apiPct >= 61 ? 'Strong'     :
-    apiPct >= 31 ? 'Developing' : 'Beginner';
-  const apiAccent =
-    apiPct >= 61 ? '#10b981' :
-    apiPct >= 31 ? '#f59e0b' : '#94a3b8';
-  const apiSub    = apiDim
-    ? `${apiDim.score}/${apiDim.max} ATS points`
-    : '—';
+const SEV_CFG: Record<RiskSeverity, { bg: string; color: string; label: string }> = {
+  low:      { bg: T.blueBg,   color: '#9fbdf0',  label: 'Low'      },
+  medium:   { bg: '#4a2f12',  color: T.amberInk, label: 'Medium'   },
+  high:     { bg: T.redBg,    color: '#e9b3ae',  label: 'High'     },
+  critical: { bg: '#5a2e2b',  color: '#e9b3ae',  label: 'Critical' },
+};
 
-  // QA Experience — ATS dimension, not project counting
-  const expDim   = bd?.qa_experience;
-  const expYears = insights.experience_years ?? 0;
-  const expSub   = expDim
-    ? `Experience Score: ${expDim.score}/${expDim.max}`
-    : '—';
+const LEVEL_CFG: Record<OverallRiskLevel, { label: string; bg: string; color: string }> = {
+  low:      { label: 'Low risk',      bg: '#1f3b27', color: '#84d3a4' },
+  moderate: { label: 'Moderate risk', bg: T.amberBg, color: T.amberInk },
+  high:     { label: 'High risk',     bg: T.redBg,   color: T.red      },
+  critical: { label: 'Critical risk', bg: '#5a2e2b', color: '#e9b3ae'  },
+};
 
-  return {
-    automationPct, autoLabel,    autoSub,
-    frameworkLabel, frameworkSub,
-    apiLabel, apiAccent, apiSub,
-    expYears, expSub,
+// ── Specialization / career labels ───────────────────────────────────────────
+
+const SPEC_LABELS: Record<string, string> = {
+  sdet: 'SDET', automation_qa: 'Automation QA', api_testing: 'API QA',
+  mobile_testing: 'Mobile QA', performance_testing: 'Performance QA',
+  hybrid_qa: 'Hybrid QA', manual_qa: 'Manual QA',
+};
+
+const CAREER_LABELS: Record<string, string> = {
+  fresher: 'Fresher', junior: 'Junior', mid_level: 'Mid Level',
+  senior: 'Senior', lead: 'Lead',
+};
+
+// ── Band color → token ────────────────────────────────────────────────────────
+
+const BAND_COLOR: Record<string, string> = {
+  emerald: T.greenInk, green: T.greenInk, blue: '#9fbdf0',
+  amber: T.amberInk, orange: '#e9965f', red: T.red,
+};
+const BAND_BG: Record<string, string> = {
+  emerald: T.greenBg, green: T.greenBg, blue: T.blueBg,
+  amber: T.amberBg, orange: '#3a1f0a', red: T.redBg,
+};
+
+// ── Hiring label badge color (score-based) ────────────────────────────────────
+
+function hiringLabelStyle(score: number): { bg: string; color: string } {
+  if (score >= 76) return { bg: T.greenBg, color: T.greenInk };
+  if (score >= 61) return { bg: T.blueBg,  color: '#9fbdf0'  };
+  if (score >= 41) return { bg: T.amberBg, color: T.amberInk };
+  return               { bg: T.redBg,   color: T.red       };
+}
+
+// ── Gauge ─────────────────────────────────────────────────────────────────────
+
+const CIRC = 2 * Math.PI * 92;
+
+function ScoreGauge({ score, color }: { score: number; color: string }) {
+  const offset = CIRC * (1 - Math.max(0, Math.min(100, score)) / 100);
+  return (
+    <div style={{ position: 'relative', width: 220, height: 220, margin: '26px 0 4px' }}>
+      <svg width="220" height="220" viewBox="0 0 220 220" style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx="110" cy="110" r="92" fill="none" stroke={T.track} strokeWidth="17" />
+        <circle cx="110" cy="110" r="92" fill="none" stroke={color} strokeWidth="17"
+          strokeLinecap="round" strokeDasharray={CIRC} strokeDashoffset={offset} />
+      </svg>
+      <div style={{
+        position: 'absolute', inset: 0,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <div style={{ fontSize: 60, fontWeight: 800, lineHeight: 1, letterSpacing: -2, color: T.ink }}>{score}</div>
+        <div style={{ fontSize: 14, fontWeight: 600, letterSpacing: '1.5px', color: T.muted, marginTop: 6 }}>QA MATCH</div>
+      </div>
+    </div>
+  );
+}
+
+// ── Pill ──────────────────────────────────────────────────────────────────────
+
+function Pill({
+  children, bg, color, fw = 600, padding = '6px 13px',
+}: {
+  children: React.ReactNode; bg: string; color: string; fw?: number; padding?: string;
+}) {
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      borderRadius: 999, padding, fontSize: 13.5, fontWeight: fw, lineHeight: 1,
+      whiteSpace: 'nowrap', background: bg, color,
+    }}>
+      {children}
+    </span>
+  );
+}
+
+// ── Chip ──────────────────────────────────────────────────────────────────────
+
+function Chip({ label, kind, tooltip }: { label: string; kind: ChipKind; tooltip?: string }) {
+  const s = CHIP_CFG[kind];
+  return (
+    <span
+      title={tooltip}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 8,
+        borderRadius: 999, padding: '8px 14px', fontSize: 14.5, fontWeight: 500,
+        border: `1px solid ${s.bd}`, background: s.bg, color: s.color,
+        cursor: tooltip ? 'help' : 'default',
+      }}
+    >
+      <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.dot, flexShrink: 0 }} />
+      {label}
+    </span>
+  );
+}
+
+// ── Dimension icon ────────────────────────────────────────────────────────────
+
+function DimIcon({ k }: { k: string }) {
+  if (k === 'api_testing') {
+    return <span style={{ width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: T.muted, fontFamily: 'monospace' }}>API</span>;
+  }
+  const icons: Record<string, React.ReactNode> = {
+    qa_experience: (
+      <svg viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 20, height: 20 }}>
+        <rect x="8" y="3" width="8" height="4" rx="1"/><path d="M8 5H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><path d="M9 14l2 2 4-4"/>
+      </svg>
+    ),
+    bug_tracking: (
+      <svg viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 20, height: 20 }}>
+        <rect x="8" y="6" width="8" height="12" rx="4"/>
+        <path d="M8 10H4m4 4H4m16-4h-4m4 4h-4M9 4l2 2m4-2l-2 2M5 6l2.5 2M19 6l-2.5 2M5 18l2.5-2M19 18l-2.5-2"/>
+      </svg>
+    ),
+    automation_testing: (
+      <svg viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 20, height: 20 }}>
+        <path d="M13 2L4 14h7l-1 8 9-12h-7z"/>
+      </svg>
+    ),
+    framework_expertise: (
+      <svg viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 20, height: 20 }}>
+        <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+        <rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>
+      </svg>
+    ),
+    certifications: (
+      <svg viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 20, height: 20 }}>
+        <rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h5M7 14h3"/><circle cx="16.5" cy="12" r="2"/>
+      </svg>
+    ),
+    ci_cd_readiness: (
+      <svg viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 20, height: 20 }}>
+        <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/>
+      </svg>
+    ),
+    performance_testing: (
+      <svg viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 20, height: 20 }}>
+        <path d="M18 20V10M12 20V4M6 20v-6"/>
+      </svg>
+    ),
+    test_design_methodology: (
+      <svg viewBox="0 0 24 24" fill="none" stroke={T.muted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 20, height: 20 }}>
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+      </svg>
+    ),
   };
+  return <>{icons[k] ?? <span style={{ width: 20, height: 20 }} />}</>;
 }
 
-function getBandColor(confidence: number): BandColor {
-  if (confidence >= 80) return 'emerald';
-  if (confidence >= 65) return 'green';
-  if (confidence >= 50) return 'blue';
-  if (confidence >= 30) return 'amber';
-  return 'red';
-}
+// ── Main export ───────────────────────────────────────────────────────────────
 
-const SENIORITY_LABEL: Record<string, string> = {
-  lead:       'Lead QA Engineer',
-  senior:     'Senior-Level QA',
-  'mid-level': 'Mid-Level QA',
-  junior:     'Junior QA',
-  fresher:    'Fresher QA',
-};
+interface Props { resumeUrl?: string | null }
 
-const SPECIALIZATION_LABEL: Record<string, string> = {
-  sdet:                'SDET',
-  automation_qa:       'Automation QA',
-  api_testing:         'API QA',
-  mobile_testing:      'Mobile QA',
-  performance_testing: 'Performance QA',
-  hybrid_qa:           'Hybrid QA',
-  manual_qa:           'Manual QA',
-};
+export default function ResumeInsightsDashboard({ resumeUrl: resumeUrlProp }: Props) {
+  const { data: profile }                      = useCandidateProfileQuery();
+  const resumeUrl                              = resumeUrlProp ?? profile?.resume?.url ?? null;
+  const { data: insights, isLoading, isError, refetch } = useResumeInsightsQuery();
+  const parseMutation                                   = useParseResumeMutation();
+  const [showLoader, setShowLoader]                     = useState(false);
 
-const CAREER_LEVEL_LABEL: Record<string, string> = {
-  fresher:   'Fresher',
-  junior:    'Junior',
-  mid_level: 'Mid-Level',
-  senior:    'Senior',
-  lead:      'Lead',
-};
+  // Keep loader visible until its own animation finishes, even if parse returns fast
+  useEffect(() => {
+    if (parseMutation.isPending) setShowLoader(true);
+  }, [parseMutation.isPending]);
 
-const CONFIDENCE_CONFIG: Record<string, { label: string; dot: string; text: string }> = {
-  high:     { label: 'High Recruiter Confidence',   dot: '#10b981', text: 'rgba(167,243,208,0.85)' },
-  medium:   { label: 'Medium Recruiter Confidence', dot: '#f59e0b', text: 'rgba(253,230,138,0.8)'  },
-  low:      { label: 'Needs More Depth',             dot: '#ef4444', text: 'rgba(252,165,165,0.8)'  },
-  very_low: { label: 'Insufficient Evidence',        dot: '#7f1d1d', text: 'rgba(254,202,202,0.7)'  },
-};
-
-const BD_SHORT_LABELS: Record<string, string> = {
-  automation_testing:  'Automation',
-  api_testing:         'API Testing',
-  framework_expertise: 'Frameworks',
-  performance_testing: 'Performance',
-  qa_experience:       'QA Experience',
-  certifications:      'Certified',
-  bug_tracking:        'Bug Tracking',
-  ci_cd_readiness:     'CI/CD',
-};
-
-function getTopStrengthTags(breakdown: QaScoreBreakdown): string[] {
-  return (Object.entries(breakdown) as [string, { score: number; max: number }][])
-    .filter(([, v]) => v.max > 0 && v.score / v.max >= 0.5)
-    .sort(([, a], [, b]) => b.score / b.max - a.score / a.max)
-    .slice(0, 3)
-    .map(([k]) => BD_SHORT_LABELS[k] ?? k);
-}
-
-function getTopGapTags(breakdown: QaScoreBreakdown): string[] {
-  return (Object.entries(breakdown) as [string, { score: number; max: number }][])
-    .filter(([, v]) => v.max > 0 && v.score / v.max < 0.35)
-    .sort(([, a], [, b]) => a.score / a.max - b.score / b.max)
-    .slice(0, 2)
-    .map(([k]) => BD_SHORT_LABELS[k] ?? k);
-}
-
-// ── Main component ────────────────────────────────────────────────────────────
-
-export default function ResumeInsightsDashboard({ resumeUrl }: Props) {
-  const [tab, setTab] = useState<Tab>('overview');
-
-  const { data: insights, isLoading, isError } = useResumeInsightsQuery();
-  const parseMutation = useParseResumeMutation();
-
-  const handleAnalyze = () => {
-    parseMutation.mutate(resumeUrl ? { resume_url: resumeUrl } : {});
-  };
+  const handleAnalyze = () => parseMutation.mutate(resumeUrl ? { resume_url: resumeUrl } : {});
 
   if (isLoading) {
     return (
-      <Card padding="lg">
-        <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-surface-hover rounded w-1/2" />
-          <div className="h-48 bg-surface-hover rounded-2xl" />
-          <div className="h-4 bg-surface-hover rounded w-2/3" />
-        </div>
-      </Card>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {[220, 160, 100].map(h => (
+          <div key={h} className="animate-pulse" style={{ height: h, borderRadius: 16, background: T.card2, border: `1px solid ${T.border}` }} />
+        ))}
+      </div>
     );
   }
-
-  if (parseMutation.isPending) {
+  if (parseMutation.isPending || showLoader) {
     return (
-      <Card padding="lg">
-        <ResumeParsingLoader />
-      </Card>
+      <div style={cardStyle}>
+        <ResumeParsingLoader
+          done={!parseMutation.isPending}
+          onComplete={() => setShowLoader(false)}
+        />
+      </div>
     );
   }
 
-  // Mutation result (ephemeral) — handles invalid_document (not stored in DB)
-  // and non_qa_resume immediately after parse before the cache refetches.
   if (parseMutation.data && isNonQaResult(parseMutation.data)) {
-    const nonQa = parseMutation.data;
-    return (
-      <Card padding="lg">
-        <NonQaResumeState
-          reason={nonQa.reason}
-          domainLabel={nonQa.domain_label}
-          domainConfidence={nonQa.domain_confidence}
-          message={nonQa.message}
-        />
-      </Card>
-    );
+    const d = parseMutation.data;
+    return <div style={cardStyle}><NonQaResumeState reason={d.reason} domainLabel={d.domain_label} domainConfidence={d.domain_confidence} message={d.message} /></div>;
   }
-
-  // Persisted non-QA from DB — survives page refresh for non_qa_resume.
   if (insights?.eligible === false) {
+    return <div style={cardStyle}><NonQaResumeState reason={insights.reason ?? 'non_qa_resume'} domainLabel={insights.domain_label ?? ''} domainConfidence={insights.domain_confidence} message="Resume does not appear to belong to a QA professional." /></div>;
+  }
+  if (isError) {
     return (
-      <Card padding="lg">
-        <NonQaResumeState
-          reason={insights.reason ?? 'non_qa_resume'}
-          domainLabel={insights.domain_label ?? ''}
-          domainConfidence={insights.domain_confidence}
-          message="Resume does not appear to belong to a QA professional."
-        />
-      </Card>
+      <div style={{ ...cardStyle, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14, padding: '40px 32px', textAlign: 'center' }}>
+        <svg viewBox="0 0 24 24" fill="none" stroke={T.muted2} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: 36, height: 36 }}>
+          <circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 3v.5"/>
+        </svg>
+        <div style={{ fontSize: 17, fontWeight: 600, color: T.ink }}>Couldn&apos;t load your report</div>
+        <div style={{ fontSize: 14, color: T.muted, maxWidth: 280 }}>There was a problem fetching your analysis. Your data is safe — tap retry to reload.</div>
+        <button
+          onClick={() => refetch()}
+          style={{ marginTop: 4, padding: '10px 22px', borderRadius: 12, fontSize: 14, fontWeight: 700, color: '#fff', border: 'none', cursor: 'pointer', background: 'linear-gradient(135deg, #5b87d6, #3f63a8)' }}
+        >
+          Retry
+        </button>
+      </div>
     );
   }
-
-  if (!insights || isError) {
-    return (
-      <Card padding="lg">
-        <ResumeEmptyState
-          onAnalyze={handleAnalyze}
-          isParsing={parseMutation.isPending}
-          hasResume={!!resumeUrl}
-        />
-      </Card>
-    );
+  if (!insights) {
+    return <div style={cardStyle}><ResumeEmptyState onAnalyze={handleAnalyze} isParsing={parseMutation.isPending} hasResume={!!resumeUrl} /></div>;
   }
 
-  const qa              = computeQAMetrics(insights);
-  const atsScore        = insights.qa_match_score ?? 0;
-  const trustScore      = insights.evidence_profile?.recruiter_trust_score ?? null;
-  const capabilityScore = insights.capability_score;
+  return <Report insights={insights} onReanalyze={handleAnalyze} isParsing={parseMutation.isPending} />;
+}
+
+// ── Report ────────────────────────────────────────────────────────────────────
+
+function Report({ insights, onReanalyze, isParsing }: { insights: ResumeInsights; onReanalyze: () => void; isParsing: boolean }) {
+  const mergedSkills = buildMergedSkills(insights.skill_metadata, insights.skill_evidence ?? []);
+  // Build lookup: skill.toLowerCase() → MergedSkill
+  const mergedMap = new Map<string, MergedSkill>(mergedSkills.map(m => [m.skill.toLowerCase(), m]));
+
+  const bd  = insights.qa_score_breakdown as unknown as Record<string, { score: number; max: number }>;
+  const riskFlags = insights.risk_flags ?? [];
 
   return (
-    <div className="space-y-3">
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
 
-      {/* ── QA metric cards (always shown) ───────────────────────────────── */}
-      <div className="grid grid-cols-2 gap-2">
-        <QAMetricCard icon={<BoltIcon />}   label="Automation Coverage" value={`${qa.automationPct}%`}                              sub={qa.autoSub}      accent="#6366f1"      />
-        <QAMetricCard icon={<LayersIcon />} label="Framework Maturity"  value={qa.frameworkLabel}                                    sub={qa.frameworkSub} accent="#06b6d4"      />
-        <QAMetricCard icon={<ApiIcon />}    label="API Testing"         value={qa.apiLabel}                                         sub={qa.apiSub}       accent={qa.apiAccent} />
-        <QAMetricCard icon={<ClockIcon />}  label="QA Experience"       value={`${qa.expYears} Yr${qa.expYears !== 1 ? 's' : ''}`} sub={qa.expSub}       accent="#8b5cf6"      />
+      {/* Parse quality banner */}
+      <ParseBanner quality={insights.parse_quality} warning={insights.parse_warning} />
+
+      {/* 1. Header */}
+      <HeaderSection insights={insights} onReanalyze={onReanalyze} isParsing={isParsing} />
+
+      {/* 2. QA Match Score */}
+      <ScoreSection insights={insights} />
+
+      {/* 3. Score Breakdown */}
+      {bd && <BreakdownSection breakdown={bd} />}
+
+      {/* 4. Skill Evidence */}
+      {insights.extracted_skills.length > 0 && (
+        <SkillSection insights={insights} mergedMap={mergedMap} />
+      )}
+
+      {/* 5. What To Learn Next */}
+      {insights.improvement_priorities && (
+        <LearnSection insights={insights} />
+      )}
+
+      {/* 6. Why Recruiters Trust */}
+      {insights.trust_breakdown && (
+        <TrustSection insights={insights} />
+      )}
+
+      {/* 7. Risk Flags */}
+      <RiskSection flags={riskFlags} overallScore={insights.overall_risk_score} overallLevel={insights.overall_risk_level} />
+
+      {/* 8. Skill Recency */}
+      {insights.skill_recency && insights.recency_summary && (
+        <RecencySection recency={insights.skill_recency} summary={insights.recency_summary} />
+      )}
+
+      {/* 9. Evidence Profile */}
+      {insights.evidence_profile && (
+        <EvidenceProfileSection ep={insights.evidence_profile} />
+      )}
+
+    </div>
+  );
+}
+
+// ── Parse quality banner ──────────────────────────────────────────────────────
+
+function ParseBanner({ quality, warning }: { quality: ParseQuality | null; warning: string | null }) {
+  if (!quality || !warning) return null;
+  if (quality === 'good' || quality === 'excellent') return null;
+
+  const isRed = quality === 'failed' || quality === 'poor';
+  return (
+    <div style={{
+      display: 'flex', gap: 12, alignItems: 'flex-start', borderRadius: 14, padding: '14px 18px',
+      background: isRed ? T.redBg   : T.amberBg,
+      border:     isRed ? `1px solid ${T.redBd}` : `1px solid ${T.amberBd}`,
+    }}>
+      <svg viewBox="0 0 24 24" fill="none" stroke={isRed ? T.red : T.amberInk} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18, flexShrink: 0, marginTop: 1 }}>
+        <path d="M12 3L2 20h20L12 3z"/><path d="M12 10v4m0 3v.5"/>
+      </svg>
+      <span style={{ fontSize: 14, color: isRed ? '#e9b3ae' : '#d8c39a', lineHeight: 1.5 }}>
+        {quality === 'fair'
+          ? 'Resume text was partially extracted. Some skills may be missed.'
+          : warning}
+      </span>
+    </div>
+  );
+}
+
+// ── Section 1: Header ─────────────────────────────────────────────────────────
+
+function HeaderSection({ insights, onReanalyze, isParsing }: { insights: ResumeInsights; onReanalyze: () => void; isParsing: boolean }) {
+  const name    = insights.name ?? 'QA Candidate';
+  const words   = name.trim().split(/\s+/);
+  const initials = words.length >= 2
+    ? ((words[0][0] ?? '') + (words[words.length - 1][0] ?? '')).toUpperCase()
+    : name.slice(0, 2).toUpperCase();
+
+  const subParts = [
+    insights.current_title,
+    insights.current_company,
+    (insights.experience_years ?? 0) > 0 ? `${insights.experience_years} year${insights.experience_years !== 1 ? 's' : ''}` : null,
+  ].filter(Boolean);
+
+  // ISTQB badge label
+  let istqbLabel: string | null = null;
+  if ((insights.certification_count ?? 0) > 0 && insights.certifications?.length) {
+    const first = insights.certifications[0];
+    const word  = first.split(/\s+/)[0] ?? 'Certified';
+    istqbLabel  = `${word} Certified`;
+  }
+
+  const riskFlags = insights.risk_flags ?? [];
+
+  return (
+    <section style={{ ...cardStyle, display: 'flex', alignItems: 'flex-start', gap: 20, flexWrap: 'wrap' }}>
+      {/* Avatar */}
+      <div style={{
+        width: 60, height: 60, borderRadius: '50%', flexShrink: 0,
+        background: 'linear-gradient(160deg, #5b87d6, #3f63a8)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontWeight: 700, fontSize: 19, letterSpacing: '.5px', color: '#fff',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,.18)',
+      }}>{initials}</div>
+
+      {/* Main */}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 27, fontWeight: 700, letterSpacing: '-.4px', color: T.ink }}>{name}</div>
+        {subParts.length > 0 && (
+          <div style={{ fontSize: 16, color: T.muted, marginTop: 4 }}>{subParts.join(' · ')}</div>
+        )}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 18 }}>
+          {/* Specialization */}
+          {insights.qa_specialization && (
+            <Pill bg={T.blueBg} color="#9fbdf0">
+              {SPEC_LABELS[insights.qa_specialization] ?? insights.qa_specialization.toUpperCase()}
+            </Pill>
+          )}
+          {/* Career level */}
+          {insights.career_level && (
+            <Pill bg={T.blueBg} color="#9fbdf0">
+              {CAREER_LABELS[insights.career_level] ?? insights.career_level}
+            </Pill>
+          )}
+          {/* ISTQB / cert badge */}
+          {istqbLabel && <Pill bg={T.greenBg} color={T.greenInk}>{istqbLabel}</Pill>}
+          {/* All risk flag badges */}
+          {riskFlags.map((f, i) => {
+            const label = RISK_HEADER_LABELS[f.flag];
+            if (!label) return null;
+            const isHigh = f.severity === 'high' || f.severity === 'critical';
+            return <Pill key={i} bg={isHigh ? T.redBg : T.amberBg} color={isHigh ? T.red : T.amberInk}>{label}</Pill>;
+          })}
+        </div>
       </div>
 
-      {/* ── Four recruiter-facing signal cards ────────────────────────────── */}
-      {trustScore != null && capabilityScore != null && (
-        <div className="grid grid-cols-2 gap-2">
-          <CredibilitySignalCard
-            label="ATS Score"
-            sublabel="QA profile match score"
-            value={`${atsScore}`}
-            suffix="/100"
-            color={
-              atsScore >= 70 ? '#10b981' :
-              atsScore >= 50 ? '#6366f1' :
-              atsScore >= 35 ? '#f59e0b' : '#ef4444'
-            }
-          />
-          <CredibilitySignalCard
-            label="Capability"
-            sublabel="Ability to execute QA responsibilities"
-            value={`${capabilityScore}`}
-            suffix="/100"
-            color={
-              capabilityScore >= 70 ? '#10b981' :
-              capabilityScore >= 50 ? '#6366f1' :
-              capabilityScore >= 35 ? '#f59e0b' : '#ef4444'
-            }
-          />
-          <CredibilitySignalCard
-            label="Credibility"
-            sublabel="Evidence-backed trust score"
-            value={`${trustScore}`}
-            suffix="/100"
-            color={
-              trustScore >= 70 ? '#10b981' :
-              trustScore >= 50 ? '#6366f1' :
-              trustScore >= 35 ? '#f59e0b' : '#ef4444'
-            }
-          />
-          {insights.recruiter_readiness && (
-            <CredibilitySignalCard
-              label="Recruiter Readiness"
-              sublabel="Estimated shortlist probability"
-              value={`${insights.recruiter_readiness.shortlist_probability}`}
-              suffix="%"
-              color={
-                insights.recruiter_readiness.shortlist_probability >= 72 ? '#10b981' :
-                insights.recruiter_readiness.shortlist_probability >= 52 ? '#6366f1' :
-                insights.recruiter_readiness.shortlist_probability >= 38 ? '#f59e0b' : '#ef4444'
-              }
-            />
+      {/* Right */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10, flexShrink: 0 }}>
+        {insights.eligible && (
+          <Pill bg="#1f3b27" color="#84d3a4" fw={700} padding="8px 15px">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 14, height: 14 }}>
+              <circle cx="12" cy="12" r="9"/><path d="M8.5 12l2.5 2.5 4.5-5"/>
+            </svg>
+            QA Eligible
+          </Pill>
+        )}
+        <button
+          onClick={onReanalyze} disabled={isParsing}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 12,
+            fontSize: 11.5, fontWeight: 700, color: '#fff', border: 'none',
+            cursor: isParsing ? 'not-allowed' : 'pointer',
+            background: 'linear-gradient(135deg, #5b87d6, #3f63a8)', opacity: isParsing ? 0.5 : 1,
+          }}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/>
+          </svg>
+          {isParsing ? 'Analyzing…' : 'Re-analyze'}
+        </button>
+      </div>
+    </section>
+  );
+}
+
+// ── Section 2: QA Match Score ─────────────────────────────────────────────────
+
+function ScoreSection({ insights }: { insights: ResumeInsights }) {
+  const score    = insights.qa_match_score ?? 0;
+  const gc       = score >= 80 ? T.green : score >= 60 ? T.blue : score >= 40 ? T.amber : T.red;
+  const hlStyle  = hiringLabelStyle(score);
+  const bandC    = insights.band_color ? BAND_COLOR[insights.band_color] ?? '#9fbdf0' : '#9fbdf0';
+  const bandBg   = insights.band_color ? BAND_BG[insights.band_color]   ?? T.blueBg  : T.blueBg;
+
+  return (
+    <section style={cardStyle}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={sLabelStyle}>QA Match Score</div>
+        <InfoButton size="md" text="Your overall readiness for QA roles right now. 80 means you are a strong, competitive candidate — most recruiters shortlist above 70. The gap to 100 shows exactly what would make you exceptional." />
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <ScoreGauge score={score} color={gc} />
+
+        {/* Tags */}
+        <div style={{ display: 'flex', gap: 12, margin: '18px 0 24px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          {insights.qa_hiring_label && (
+            <Pill bg={hlStyle.bg} color={hlStyle.color}>{insights.qa_hiring_label}</Pill>
           )}
+          {insights.band_label && (
+            <Pill bg={bandBg} color={bandC}>{insights.band_label}</Pill>
+          )}
+        </div>
+
+        {/* Stats */}
+        {(insights.capability_score != null || insights.recruiter_readiness != null) && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, width: '100%' }}>
+            {insights.capability_score != null && (
+              <div style={{ background: T.card2, border: `1px solid ${T.border}`, borderRadius: 16, padding: 22, textAlign: 'center' }}>
+                <div style={{ fontSize: 34, fontWeight: 800, letterSpacing: -1, color: T.ink }}>{insights.capability_score}</div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 4 }}>
+                  <div style={{ fontSize: 15, color: T.muted }}>Capability ceiling</div>
+                  <InfoButton text="The score you could reach if your listed skills were all backed by implementation evidence. It reflects your actual ability, not just what is on paper." />
+                </div>
+              </div>
+            )}
+            {insights.recruiter_readiness != null && (
+              <div style={{ background: T.card2, border: `1px solid ${T.border}`, borderRadius: 16, padding: 22, textAlign: 'center' }}>
+                <div style={{ fontSize: 34, fontWeight: 800, letterSpacing: -1, color: T.ink }}>{insights.recruiter_readiness.shortlist_probability}%</div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 4 }}>
+                  <div style={{ fontSize: 15, color: T.muted }}>Shortlist probability</div>
+                  <InfoButton text="How likely a recruiter reviewing your profile would add you to their shortlist. Based on your score, specialization, experience level, and evidence quality." />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// ── Section 3: Score Breakdown ────────────────────────────────────────────────
+
+function BreakdownSection({ breakdown }: { breakdown: Record<string, { score: number; max: number }> }) {
+  type DimEntry = { key: string; score: number; max: number; pct: number };
+
+  const dims: DimEntry[] = [];
+  for (const key of DIM_RENDER_ORDER) {
+    if (SKIP_DIMS.has(key)) continue;
+    const dim = breakdown[key];
+    if (!dim || dim.max === 0) continue;
+    // Special: penalties — only show if score < 0
+    if (key === 'penalties' && dim.score >= 0) continue;
+    const pct = Math.round((dim.score / dim.max) * 100);
+    dims.push({ key, score: dim.score, max: dim.max, pct });
+  }
+
+  // Also catch any extra keys from API not in DIM_RENDER_ORDER
+  for (const [key, dim] of Object.entries(breakdown)) {
+    if (SKIP_DIMS.has(key)) continue;
+    if (DIM_RENDER_ORDER.includes(key)) continue;
+    if (key === 'penalties' && dim.score >= 0) continue;
+    if (!dim || dim.max === 0) continue;
+    if (!DIM_LABELS[key]) continue; // only show labelled dims
+    const pct = Math.round((dim.score / dim.max) * 100);
+    dims.push({ key, score: dim.score, max: dim.max, pct });
+  }
+
+  const strong = dims.filter(d => d.pct >= 70);
+  const gaps   = dims.filter(d => d.pct <  70);
+
+  function DimRow({ d }: { d: DimEntry }) {
+    const hint = DIM_HINTS[d.key];
+    const hintText = hint ? (d.pct >= 70 ? hint.good : hint.bad) : '';
+    const bc = barColor(d.pct);
+    return (
+      <div style={{ padding: '18px 0', borderTop: `1px solid ${T.border}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+          <DimIcon k={d.key} />
+          <span style={{ fontSize: 18, fontWeight: 600, flex: 1, color: T.ink }}>{DIM_LABELS[d.key] ?? d.key}</span>
+          <span style={{ fontSize: 18, fontWeight: 700, color: T.ink }}>
+            {d.score}<span style={{ color: T.muted2, fontWeight: 600 }}>/{d.max}</span>
+          </span>
+        </div>
+        <div style={{ height: 7, borderRadius: 6, background: T.track, marginTop: 11, overflow: 'hidden' }}>
+          <span style={{ display: 'block', height: '100%', borderRadius: 6, width: `${d.pct}%`, background: bc }} />
+        </div>
+        {hintText && <div style={{ fontSize: 14.5, color: T.muted, marginTop: 10 }}>{hintText}</div>}
+      </div>
+    );
+  }
+
+  if (dims.length === 0) return null;
+  return (
+    <section style={cardStyle}>
+      <div style={sLabelStyle}>Score Breakdown</div>
+      {strong.length > 0 && (
+        <>
+          <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: T.muted, margin: '20px 0 0' }}>Strong Dimensions</div>
+          {strong.map(d => <DimRow key={d.key} d={d} />)}
+        </>
+      )}
+      {gaps.length > 0 && (
+        <>
+          <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: T.muted, margin: '20px 0 0' }}>Gaps</div>
+          {gaps.map(d => <DimRow key={d.key} d={d} />)}
+        </>
+      )}
+    </section>
+  );
+}
+
+// ── Section 4: Skill Evidence ─────────────────────────────────────────────────
+
+function SkillSection({ insights, mergedMap }: { insights: ResumeInsights; mergedMap: Map<string, MergedSkill> }) {
+  const hasWeakWarning = (insights.weak_evidence_skills?.length ?? 0) > 0;
+  const warningText    = insights.weaknesses?.[0] ?? null;
+
+  return (
+    <section style={cardStyle}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={sLabelStyle}>Skill Evidence · {insights.total_skills_found} Detected</div>
+        <InfoButton size="md" text="Not all skills on your resume carry the same weight. Green means a recruiter can verify you used this skill in a real project. Amber means you listed it but gave no proof — recruiters notice this." />
+      </div>
+
+      {/* Legend */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 22, margin: '18px 0 4px' }}>
+        {[
+          { dot: T.green,   label: 'Proven in experience' },
+          { dot: '#7b8186', label: 'Mentioned in context' },
+          { dot: T.amber,   label: 'Listed only — no proof' },
+          { dot: T.blue,    label: 'Inferred from context' },
+        ].map(({ dot, label }) => (
+          <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14.5, color: T.muted }}>
+            <span style={{ width: 9, height: 9, borderRadius: '50%', background: dot, flexShrink: 0 }} />
+            {label}
+          </span>
+        ))}
+      </div>
+
+      {/* Weak evidence warning */}
+      {hasWeakWarning && warningText && (
+        <div style={{
+          display: 'flex', gap: 12, alignItems: 'flex-start',
+          background: T.amberBg, border: `1px solid ${T.amberBd}`,
+          borderRadius: 14, padding: '16px 18px', margin: '20px 0',
+        }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke={T.amberInk} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 19, height: 19, flexShrink: 0, marginTop: 1 }}>
+            <path d="M12 3L2 20h20L12 3z"/><path d="M12 10v4m0 3v.5"/>
+          </svg>
+          <div style={{ fontSize: 15, lineHeight: 1.5, color: '#d8c39a' }}>{warningText}</div>
         </div>
       )}
 
-      {/* ── Re-analyze action bar ────────────────────────────────────────── */}
-      <div className="flex items-center justify-between px-1">
-        <p className="text-micro text-subtle">
-          {insights.qa_match_score != null ? `ATS Score: ${insights.qa_match_score}` : 'Run analysis to get your score'}
-        </p>
-        <button
-          onClick={handleAnalyze}
-          disabled={parseMutation.isPending}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11.5px] font-semibold text-white transition-all active:scale-95 disabled:opacity-50"
-          style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/>
-          </svg>
-          {parseMutation.isPending ? 'Analyzing…' : 'Re-analyze'}
-        </button>
+      {/* Chips */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+        {insights.extracted_skills.map(skill => {
+          const merged  = mergedMap.get(skill.toLowerCase());
+          const kind    = evidenceToChip(merged?.evidence_level ?? 'moderate');
+          const tooltip = merged
+            ? `Found ${merged.occurrences} time${merged.occurrences !== 1 ? 's' : ''} · Sections: ${merged.sources.join(', ')}`
+            : undefined;
+          return <Chip key={skill} label={skill} kind={kind} tooltip={tooltip} />;
+        })}
+      </div>
+    </section>
+  );
+}
+
+// ── Section 5: What To Learn Next ─────────────────────────────────────────────
+
+function LearnSection({ insights }: { insights: ResumeInsights }) {
+  const imp = insights.improvement_priorities!;
+  const weaknesses  = insights.weaknesses  ?? [];
+  const suggestions = insights.suggestions ?? [];
+
+  const highPriority   = imp.high_priority   ?? [];
+  const medPriority    = imp.medium_priority ?? [];
+  const lowPriority    = imp.low_priority    ?? [];
+  const hasPriorities  = highPriority.length > 0 || medPriority.length > 0 || lowPriority.length > 0;
+  if (!hasPriorities && weaknesses.length === 0 && suggestions.length === 0) return null;
+
+  function prioBadge(item: PrioritySkill, level: 'high' | 'medium' | 'low') {
+    // Use recruiter_impact text if present, else derive from level
+    const label = item.recruiter_impact
+      ?? (level === 'high'   ? (item.score >= 70 ? 'Very High' : 'High')
+        : level === 'medium' ? 'Medium' : 'Low');
+    const bg    = label === 'Very High' ? T.greenBg
+                : label === 'High'      ? T.blueBg
+                : label === 'Medium'    ? T.amberBg
+                : T.track;
+    const color = label === 'Very High' ? T.greenInk
+                : label === 'High'      ? '#9fbdf0'
+                : label === 'Medium'    ? T.amberInk
+                : T.muted;
+    return <span style={{ fontSize: 13.5, fontWeight: 700, borderRadius: 999, padding: '6px 13px', flexShrink: 0, background: bg, color }}>{label}</span>;
+  }
+
+  function RecCard({ item, level }: { item: PrioritySkill; level: 'high' | 'medium' | 'low' }) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, border: `1px solid ${T.border}`, borderRadius: 14, padding: '18px 20px', marginBottom: 12 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 18, fontWeight: 700, color: T.ink }}>{item.skill}</div>
+          {item.reason && <div style={{ fontSize: 14.5, color: T.muted, marginTop: 4 }}>{item.reason}</div>}
+        </div>
+        {prioBadge(item, level)}
+      </div>
+    );
+  }
+
+  return (
+    <section style={cardStyle}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={sLabelStyle}>What To Learn Next</div>
+        <InfoButton size="md" text="The skills that will have the biggest impact on your hireability if you add them. Ordered by what recruiters are actually searching for right now — not a generic list." />
       </div>
 
-      {/* ── Tab navigation ────────────────────────────────────────────────── */}
-      <div className="flex gap-1 bg-surface-hover p-1 rounded-2xl overflow-x-auto">
-        {(['overview', 'skills', 'breakdown', 'evidence', 'coach', 'market', 'learn', 'progress', 'bench', 'weights', 'hire', 'intel'] as Tab[]).map(t => {
-          const LABELS: Record<Tab, string> = {
-            overview:    'Overview',
-            skills:      'Skills',
-            suggestions: 'Insights',
-            breakdown:   'Score',
-            evidence:    'Evidence',
-            coach:       'Coach',
-            market:      'Market',
-            learn:       'Learn',
-            progress:    'Progress',
-            bench:       'Bench',
-            weights:     'Weights',
-            hire:        'Hire IQ',
-            intel:       'Intel',
-          };
-          const ACTIVE_CLASS: Record<string, string> = {
-            evidence: 'bg-violet-700 text-white shadow-sm',
-            coach:    'bg-indigo-600 text-white shadow-sm',
-            market:   'bg-slate-900 text-white shadow-sm',
-            learn:    'bg-emerald-600 text-white shadow-sm',
-            progress: 'bg-violet-600 text-white shadow-sm',
-            bench:    'bg-cyan-700 text-white shadow-sm',
-            weights:  'bg-orange-600 text-white shadow-sm',
-            hire:     'bg-rose-600 text-white shadow-sm',
-            intel:    'bg-purple-700 text-white shadow-sm',
-          };
+      {/* Weaknesses alert */}
+      {weaknesses.length > 0 && (
+        <div style={{ background: T.amberBg, border: `1px solid ${T.amberBd}`, borderRadius: 13, padding: '14px 16px', margin: '18px 0 4px', fontSize: 14, color: '#d8c39a', lineHeight: 1.5 }}>
+          {weaknesses[0]}
+        </div>
+      )}
+
+      {highPriority.length > 0 && (
+        <>
+          <div style={{ fontSize: 14.5, fontWeight: 700, color: T.red, margin: '22px 0 14px' }}>HIGH IMPACT — add these to stand out</div>
+          {highPriority.map((item, i) => <RecCard key={i} item={item} level="high" />)}
+        </>
+      )}
+      {medPriority.length > 0 && (
+        <>
+          <div style={{ fontSize: 14.5, fontWeight: 700, color: T.amberInk, margin: '22px 0 14px' }}>MEDIUM — strengthens your profile</div>
+          {medPriority.map((item, i) => <RecCard key={i} item={item} level="medium" />)}
+        </>
+      )}
+      {lowPriority.length > 0 && (
+        <>
+          <div style={{ fontSize: 14.5, fontWeight: 700, color: T.muted, margin: '22px 0 14px' }}>LOW — nice to add</div>
+          {lowPriority.map((item, i) => <RecCard key={i} item={item} level="low" />)}
+        </>
+      )}
+
+      {/* Suggestions list */}
+      {suggestions.length > 0 && (
+        <div style={{ marginTop: 18, borderTop: `1px solid ${T.border}`, paddingTop: 18 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase' as const, color: T.muted2, marginBottom: 12 }}>Action Items</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {suggestions.map((s, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: T.muted2, flexShrink: 0, marginTop: 7 }} />
+                <span style={{ fontSize: 14.5, color: T.muted, lineHeight: 1.5 }}>{s}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
+// ── Section 6: Why Recruiters Trust ──────────────────────────────────────────
+
+function TrustSection({ insights }: { insights: ResumeInsights }) {
+  const tb  = insights.trust_breakdown!;
+  const ep  = insights.evidence_profile;
+  const trustScore = ep?.recruiter_trust_score ?? null;
+
+  function dotColor(impact: string): string {
+    if (impact === 'high') return T.green;
+    if (impact === 'medium') return T.amber;
+    return T.muted;
+  }
+
+  return (
+    <section style={cardStyle}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <div style={sLabelStyle}>Why Recruiters Trust This Profile</div>
+        <InfoButton size="md" text="Recruiters do not just read skills — they look for proof. This section shows what in your resume makes them confident you can actually do the work, not just that you have heard of the tools." />
+        {trustScore != null && (
+          <Pill bg={T.greenBg} color={T.greenInk}>{trustScore}% recruiter trust score</Pill>
+        )}
+      </div>
+
+      <div style={{ marginTop: 14 }}>
+        {(tb.positive ?? []).map((s: TrustSignal, i: number) => (
+          <div key={i} style={{ display: 'flex', gap: 14, padding: '14px 0' }}>
+            <span style={{ width: 9, height: 9, borderRadius: '50%', background: dotColor(s.impact), flexShrink: 0, marginTop: 8 }} />
+            <div style={{ fontSize: 16, lineHeight: 1.55, color: T.muted }}>
+              <b style={{ color: T.ink, fontWeight: 700 }}>{s.signal}</b>
+              {s.note ? ` — ${s.note}` : ''}
+            </div>
+          </div>
+        ))}
+
+        {(tb.negative ?? []).length > 0 && (tb.negative ?? []).map((s: TrustSignal, i: number) => (
+          <div key={i} style={{ display: 'flex', gap: 14, padding: '14px 0' }}>
+            <span style={{ width: 9, height: 9, borderRadius: '50%', background: T.red, flexShrink: 0, marginTop: 8 }} />
+            <div style={{ fontSize: 16, lineHeight: 1.55, color: T.muted }}>
+              <b style={{ color: '#e9b3ae', fontWeight: 700 }}>{s.signal}</b>
+              {s.note ? ` — ${s.note}` : ''}
+            </div>
+          </div>
+        ))}
+
+        {tb.fastest_trust_gain && (
+          <div style={{ display: 'flex', gap: 11, alignItems: 'flex-start', borderTop: `1px solid ${T.border}`, marginTop: 8, paddingTop: 20, fontSize: 15.5, color: '#cfd3d6' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke={T.amberInk} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18, flexShrink: 0, marginTop: 2 }}>
+              <path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.3 1 2.5h6c0-1.2.3-1.8 1-2.5A6 6 0 0 0 12 3z"/>
+            </svg>
+            <div><b style={{ color: T.ink, fontWeight: 600 }}>Fastest trust gain:</b> {tb.fastest_trust_gain}</div>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// ── Section 7: Risk Flags ─────────────────────────────────────────────────────
+
+function RiskSection({ flags, overallScore, overallLevel }: { flags: RiskFlag[]; overallScore: number | null; overallLevel: OverallRiskLevel | null }) {
+  const lvl = overallLevel ? LEVEL_CFG[overallLevel] : null;
+
+  return (
+    <section style={cardStyle}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 18 }}>
+        <div style={sLabelStyle}>Risk Flags</div>
+        <InfoButton size="md" text="Gaps that experienced recruiters will likely notice and raise in an interview — or use to pass on your profile. Fixing even one of these can meaningfully improve your shortlist rate." />
+        {lvl && overallScore != null && (
+          <>
+            <Pill bg={lvl.bg} color={lvl.color} fw={700}>{lvl.label}</Pill>
+            <span style={{ fontSize: 14, color: T.muted }}>
+              <b style={{ color: T.ink }}>{overallScore}/100</b>
+            </span>
+          </>
+        )}
+      </div>
+
+      {flags.length === 0 ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 0', color: T.greenInk, fontSize: 15, fontWeight: 600 }}>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: 18, height: 18 }}>
+            <circle cx="12" cy="12" r="9"/><path d="M8.5 12l2.5 2.5 4.5-5"/>
+          </svg>
+          No risk flags detected — strong profile
+        </div>
+      ) : (
+        flags.map((flag, i) => {
+          const sev   = SEV_CFG[flag.severity];
+          const label = RISK_FLAG_LABELS[flag.flag] ?? flag.flag.replace(/_/g, ' ');
           return (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`flex-1 py-1.5 text-[12px] font-semibold rounded-xl transition-all whitespace-nowrap ${
-                tab === t
-                  ? (ACTIVE_CLASS[t] ?? 'bg-surface text-heading shadow-sm')
-                  : 'text-muted hover:text-body'
-              }`}
-            >
-              {LABELS[t]}
-            </button>
+            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14, background: T.redBg, border: `1px solid ${T.redBd}`, borderRadius: 14, padding: '18px 20px', marginBottom: 12 }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke={T.red} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ width: 19, height: 19, flexShrink: 0, marginTop: 2 }}>
+                <circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 3v.5"/>
+              </svg>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 17, fontWeight: 700, color: '#e9b3ae' }}>{label}</div>
+                {flag.explanation && (
+                  <div style={{ fontSize: 14.5, color: '#c39c98', marginTop: 4, lineHeight: 1.5 }}>{flag.explanation}</div>
+                )}
+                {flag.recruiter_effect && (
+                  <div style={{ fontSize: 13, color: '#a08080', marginTop: 4, fontStyle: 'italic', lineHeight: 1.5 }}>{flag.recruiter_effect}</div>
+                )}
+              </div>
+              <span style={{ fontSize: 13.5, fontWeight: 700, borderRadius: 999, padding: '6px 13px', flexShrink: 0, background: sev.bg, color: sev.color }}>{sev.label}</span>
+            </div>
+          );
+        })
+      )}
+    </section>
+  );
+}
+
+// ── Section 8: Skill Recency ──────────────────────────────────────────────────
+
+function RecencySection({ recency, summary }: { recency: Record<string, { classification: string; last_used_year: number | null; explicit_year_detected: boolean; recency_confidence: string }>; summary: { recent_skills: number; aging_skills: number; stale_skills: number; unknown_skills: number } }) {
+  const recencyDot: Record<string, string> = {
+    recent: T.green, aging: T.amber, stale: T.red, unknown: T.muted,
+  };
+
+  const entries = Object.entries(recency).sort((a, b) => {
+    const order: Record<string, number> = { recent: 0, aging: 1, stale: 2, unknown: 3 };
+    return (order[a[1].classification] ?? 3) - (order[b[1].classification] ?? 3);
+  });
+
+  return (
+    <section style={cardStyle}>
+      <div style={sLabelStyle}>Skill Recency</div>
+
+      {/* Summary row */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 18, margin: '16px 0 20px' }}>
+        {[
+          { label: 'Recent',  count: summary.recent_skills,  color: T.green },
+          { label: 'Aging',   count: summary.aging_skills,   color: T.amber },
+          { label: 'Stale',   count: summary.stale_skills,   color: T.red   },
+          { label: 'Unknown', count: summary.unknown_skills, color: T.muted },
+        ].map(({ label, count, color }) => (
+          <span key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14.5, color: T.muted }}>
+            <span style={{ fontSize: 18, fontWeight: 700, color }}>{count}</span> {label}
+          </span>
+        ))}
+      </div>
+
+      {/* Per-skill rows */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+        {entries.map(([skill, data]) => {
+          const dot = recencyDot[data.classification] ?? T.muted;
+          const year = data.explicit_year_detected && data.recency_confidence === 'high' && data.last_used_year
+            ? ` (${data.last_used_year})`
+            : '';
+          return (
+            <span key={skill} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: T.card2, border: `1px solid ${T.border}`, borderRadius: 999, padding: '6px 12px', fontSize: 13.5, color: T.muted }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: dot, flexShrink: 0 }} />
+              {skill}{year}
+            </span>
           );
         })}
       </div>
-
-      {/* ── Tab content ───────────────────────────────────────────────────── */}
-      {tab === 'evidence' ? (
-        <div
-          className="rounded-2xl p-4"
-          style={{
-            background: 'linear-gradient(160deg, #0d0a1e 0%, #160d2e 60%, #0d0a1e 100%)',
-            border: '1px solid rgba(109,40,217,0.18)',
-          }}
-        >
-          <EvidenceInsightsPanel insights={insights} />
-        </div>
-      ) : tab === 'coach' ? (
-        <CoachTab insights={insights} onReanalyze={handleAnalyze} />
-      ) : tab === 'market' ? (
-        <MarketInsightsPanel candidateSpec={insights.qa_specialization} />
-      ) : tab === 'learn' ? (
-        <div
-          className="rounded-2xl p-4"
-          style={{
-            background: 'linear-gradient(160deg, #080d1c 0%, #0d1a2e 60%, #080d1c 100%)',
-            border: '1px solid rgba(16,185,129,0.15)',
-          }}
-        >
-          <LearningInsightsPanel />
-        </div>
-      ) : tab === 'progress' ? (
-        <div
-          className="rounded-2xl p-4"
-          style={{
-            background: 'linear-gradient(160deg, #0a0714 0%, #120d28 60%, #0a0714 100%)',
-            border: '1px solid rgba(139,92,246,0.15)',
-          }}
-        >
-          <ResumeProgressPanel />
-        </div>
-      ) : tab === 'bench' ? (
-        <div
-          className="rounded-2xl p-4"
-          style={{
-            background: 'linear-gradient(160deg, #020f18 0%, #051824 60%, #020f18 100%)',
-            border: '1px solid rgba(6,182,212,0.15)',
-          }}
-        >
-          <BenchmarkingPanel />
-        </div>
-      ) : tab === 'weights' ? (
-        <div
-          className="rounded-2xl p-4"
-          style={{
-            background: 'linear-gradient(160deg, #130a00 0%, #1f1000 60%, #130a00 100%)',
-            border: '1px solid rgba(234,88,12,0.15)',
-          }}
-        >
-          <WeightEnginePanel />
-        </div>
-      ) : tab === 'hire' ? (
-        <div
-          className="rounded-2xl p-4"
-          style={{
-            background: 'linear-gradient(160deg, #140008 0%, #200010 60%, #140008 100%)',
-            border: '1px solid rgba(225,29,72,0.15)',
-          }}
-        >
-          <BehavioralHireabilityPanel />
-        </div>
-      ) : tab === 'intel' ? (
-        <div
-          className="rounded-2xl p-4"
-          style={{
-            background: 'linear-gradient(160deg, #0d0820 0%, #160d30 60%, #0d0820 100%)',
-            border: '1px solid rgba(126,34,206,0.18)',
-          }}
-        >
-          <Phase4IntelPanel
-            firstImpression={null}
-            authenticityProfile={null}
-            trajectoryProfile={null}
-            trustBreakdown={insights.trust_breakdown ?? null}
-            riskFlags={insights.risk_flags ?? null}
-            overallRiskScore={insights.overall_risk_score ?? null}
-            overallRiskLevel={insights.overall_risk_level ?? null}
-            recommendationMode={null}
-          />
-        </div>
-      ) : (
-        <Card padding="lg">
-          {tab === 'overview'    && <OverviewTab insights={insights} />}
-          {tab === 'skills'      && (
-            <SkillGapCard
-              extracted={insights.extracted_skills}
-              missing={insights.missing_skills}
-              suggested={insights.suggested_keywords}
-            />
-          )}
-          {tab === 'suggestions' && (
-            <ResumeSuggestions
-              strengths={[]}
-              weaknesses={insights.weaknesses}
-              suggestions={insights.suggestions}
-            />
-          )}
-          {tab === 'breakdown'   && insights.qa_score_breakdown && (
-            <ResumeScoreBreakdown breakdown={insights.qa_score_breakdown} />
-          )}
-          {tab === 'breakdown'   && !insights.qa_score_breakdown && (
-            <p className="text-sm text-subtle text-center py-8">
-              Re-analyze your resume to see the QA breakdown.
-            </p>
-          )}
-        </Card>
-      )}
-    </div>
+    </section>
   );
 }
 
-// ── Coach Tab ─────────────────────────────────────────────────────────────────
+// ── Section 9: Evidence Profile ───────────────────────────────────────────────
 
-function CoachTab({ insights, onReanalyze }: { insights: ResumeInsights; onReanalyze: () => void }) {
-  const hasGuidance = !!(insights.improvement_priorities || insights.recruiter_readiness);
-
-  if (!hasGuidance) {
-    return (
-      <div className="bg-surface rounded-2xl border border-token p-8 flex flex-col items-center gap-4 text-center">
-        <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2">
-            <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-          </svg>
-        </div>
-        <div>
-          <p className="text-sm font-semibold text-body mb-1">Coaching data not yet generated</p>
-          <p className="text-xs text-subtle leading-relaxed">
-            Your resume was parsed before the coaching engine was enabled.<br />Re-analyze to generate your personalized career guidance.
-          </p>
-        </div>
-        <button
-          onClick={onReanalyze}
-          className="px-5 py-2 rounded-xl text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95 transition-all"
-        >
-          Re-analyze Resume
-        </button>
-      </div>
-    );
-  }
+function EvidenceProfileSection({ ep }: { ep: NonNullable<ResumeInsights['evidence_profile']> }) {
+  const maturityBadge = (m: ImplMaturity): { bg: string; color: string; label: string } => {
+    if (m === 'expert' || m === 'advanced') return { bg: T.greenBg, color: T.greenInk, label: m === 'expert' ? 'Expert' : 'Advanced' };
+    if (m === 'moderate')                   return { bg: T.blueBg,  color: '#9fbdf0',  label: 'Moderate' };
+    return                                         { bg: T.amberBg, color: T.amberInk, label: m === 'basic' ? 'Basic' : 'Minimal' };
+  };
+  const maturity = maturityBadge(ep.implementation_maturity);
 
   return (
-    <div className="space-y-3">
-      {insights.recruiter_readiness && (
-        <RecruiterReadinessCard data={insights.recruiter_readiness} />
-      )}
-      {insights.improvement_priorities && (
-        <ATSImprovementPriorities data={insights.improvement_priorities} />
-      )}
-      {insights.improvement_impacts && insights.improvement_impacts.length > 0 && (
-        <ImprovementImpactList data={insights.improvement_impacts} />
-      )}
-    </div>
-  );
-}
-
-// ── QA Metric Card ────────────────────────────────────────────────────────────
-
-interface MetricProps {
-  icon:   React.ReactNode;
-  label:  string;
-  value:  string;
-  sub:    string;
-  accent: string;
-}
-
-function QAMetricCard({ icon, label, value, sub, accent }: MetricProps) {
-  return (
-    <div
-      className="rounded-2xl p-3 space-y-2"
-      style={{
-        background: `${accent}0d`,
-        border: `1px solid ${accent}22`,
-      }}
-    >
-      <div
-        className="w-7 h-7 rounded-lg flex items-center justify-center"
-        style={{ background: `${accent}20`, color: accent }}
-      >
-        {icon}
+    <section style={cardStyle}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={sLabelStyle}>Evidence Profile</div>
+        <InfoButton size="md" text="A recruiter reading your resume in 30 seconds is asking one question: does this person prove they can do the work, or are they just listing tools? Evidence density answers that question." />
       </div>
-      <div>
-        <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-subtle">{label}</p>
-        <p className="text-[18px] font-black text-heading leading-tight mt-0.5">{value}</p>
-        <p className="text-[10px] font-medium mt-0.5" style={{ color: accent }}>{sub}</p>
-      </div>
-    </div>
-  );
-}
 
-// SVG icons (14×14)
-const BoltIcon   = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>;
-const LayersIcon = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>;
-const ApiIcon    = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>;
-const ClockIcon  = () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>;
-
-// ── Certification normalizer (deduplicates + canonicalizes known cert names) ──
-
-const CERT_CANONICAL: Array<{ pattern: RegExp; canonical: string }> = [
-  { pattern: /istqb/i,                            canonical: 'ISTQB Certified Tester'               },
-  { pattern: /selenium/i,                         canonical: 'Selenium WebDriver Certification'     },
-  { pattern: /appium/i,                           canonical: 'Appium Mobile Testing Certification'  },
-  { pattern: /aws/i,                              canonical: 'AWS Certification'                    },
-  { pattern: /azure/i,                            canonical: 'Microsoft Azure Certification'        },
-  { pattern: /scrum|agile/i,                      canonical: 'Agile / Scrum Certification'          },
-  { pattern: /jira|atlassian/i,                   canonical: 'Jira / Atlassian Certification'       },
-  { pattern: /jmeter|gatling|k6|performance/i,    canonical: 'Performance Testing Certification'    },
-  { pattern: /cypress/i,                          canonical: 'Cypress Automation Certification'     },
-  { pattern: /playwright/i,                       canonical: 'Playwright Certification'             },
-];
-
-function normalizeCertifications(certs: string[]): string[] {
-  const seen   = new Set<string>();
-  const result: string[] = [];
-  for (const cert of certs) {
-    let canonical: string | null = null;
-    for (const { pattern, canonical: c } of CERT_CANONICAL) {
-      if (pattern.test(cert)) { canonical = c; break; }
-    }
-    const key = (canonical ?? cert).toLowerCase();
-    if (!seen.has(key)) {
-      seen.add(key);
-      result.push(canonical ?? cert);
-    }
-  }
-  return result;
-}
-
-// ── Overview Tab ──────────────────────────────────────────────────────────────
-
-function OverviewTab({ insights }: { insights: ResumeInsights }) {
-  const shortlistReasons = (insights.weaknesses || []).slice(0, 0); // strengths removed from API; section hidden until re-added
-  const potentialGaps    = (insights.weaknesses || []).slice(0, 4);
-  const expYears         = insights.experience_years ?? 0;
-  const normalizedCerts  = normalizeCertifications(insights.certifications ?? []);
-
-  // Profile headline parts
-  const specLabel   = insights.qa_specialization ? (SPECIALIZATION_LABEL[insights.qa_specialization] ?? null) : null;
-  const levelLabel  = insights.career_level      ? (CAREER_LEVEL_LABEL[insights.career_level]        ?? null) : null;
-  const yearsLabel  = expYears > 0 ? `${expYears} yr${expYears !== 1 ? 's' : ''}` : null;
-  const headlineParts = [specLabel, levelLabel, yearsLabel].filter(Boolean);
-
-  return (
-    <div className="space-y-5">
-
-      {/* Profile headline */}
-      {headlineParts.length > 0 && (
-        <div className="flex flex-wrap items-center gap-1.5 pb-1">
-          {headlineParts.map((part, i) => (
-            <span key={i} className="flex items-center gap-1.5">
-              {i > 0 && <span className="text-gray-300 text-[11px]">·</span>}
-              <span
-                className="px-2 py-0.5 rounded-full text-[11px] font-semibold"
-                style={{ background: '#eef2ff', color: '#4f46e5' }}
-              >
-                {part}
-              </span>
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Why recruiters will shortlist */}
-      {shortlistReasons.length > 0 && (
-        <div>
-          <SectionHeading text="Why Recruiters Will Shortlist This" />
-          <div className="space-y-1.5">
-            {shortlistReasons.map((s, i) => (
-              <div key={i} className="flex items-start gap-2.5">
-                <div className="w-4 h-4 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center shrink-0 mt-0.5">
-                  <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="3.5">
-                    <polyline points="20 6 9 17 4 12"/>
-                  </svg>
-                </div>
-                <span className="text-sm text-body leading-snug">{s}</span>
-              </div>
-            ))}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 18 }}>
+        <div style={{ background: T.card2, border: `1px solid ${T.border}`, borderRadius: 14, padding: '16px 18px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: T.muted2 }}>Evidence Density</div>
+            <InfoButton text="What percentage of your skills appear in actual job descriptions and project outcomes — not just the Skills section. A high percentage means almost all your skills have real context behind them." />
           </div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: T.ink, marginTop: 4 }}>{ep.evidence_density}%</div>
         </div>
-      )}
-
-      {/* Potential gaps */}
-      {potentialGaps.length > 0 && (
-        <div>
-          <SectionHeading text="Potential Gaps" />
-          <div className="space-y-1.5">
-            {potentialGaps.map((s, i) => (
-              <div key={i} className="flex items-start gap-2.5">
-                <div className="w-4 h-4 rounded-full bg-red-50 border border-red-200 flex items-center justify-center shrink-0 mt-0.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                </div>
-                <span className="text-sm text-body-secondary leading-snug">{s}</span>
-              </div>
-            ))}
+        <div style={{ background: T.card2, border: `1px solid ${T.border}`, borderRadius: 14, padding: '16px 18px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: T.muted2 }}>Recruiter Trust</div>
+            <InfoButton text="How much a recruiter can trust that your listed skills are real. High trust comes from quantified outcomes, architecture ownership, and skills appearing across multiple sections." />
           </div>
+          <div style={{ fontSize: 28, fontWeight: 800, color: T.ink, marginTop: 4 }}>{ep.recruiter_trust_score}</div>
         </div>
-      )}
-
-      {/* Work experience */}
-      {insights.experience_entries.length > 0 && (
-        <div>
-          <SectionHeading
-            text={expYears > 0 ? `Work Experience (${expYears} yr${expYears !== 1 ? 's' : ''})` : 'Work Experience'}
-          />
-          {insights.experience_entries.map((e, i) => (
-            <div key={i} className="flex gap-3 py-2.5 border-b border-token last:border-0">
-              <div
-                className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
-                style={{ background: 'linear-gradient(135deg, #eef2ff, #e0e7ff)' }}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2">
-                  <rect x="2" y="7" width="20" height="14" rx="2"/>
-                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-                </svg>
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-heading truncate">{e.title || e.company}</p>
-                {e.title && e.company && (
-                  <p className="text-micro text-muted truncate">{e.company}</p>
-                )}
-                {e.duration && (
-                  <p className="text-micro text-indigo-400 font-medium mt-0.5">{e.duration}</p>
-                )}
-                {e.description && (
-                  <p className="text-micro text-subtle mt-1 leading-snug">
-                    {e.description.length > 120 ? `${e.description.slice(0, 120)}…` : e.description}
-                  </p>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Education */}
-      {insights.education_entries.length > 0 && (
-        <div>
-          <SectionHeading text="Education" />
-          {insights.education_entries.map((e, i) => (
-            <div key={i} className="flex gap-3 py-2.5 border-b border-token last:border-0">
-              <div
-                className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5"
-                style={{ background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)' }}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2">
-                  <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-                  <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-                </svg>
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-heading truncate">{e.degree}</p>
-                {e.institution && (
-                  <p className="text-micro text-muted truncate">{e.institution}</p>
-                )}
-                {e.year && (
-                  <p className="text-micro text-purple-400 font-medium mt-0.5">{e.year}</p>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Certifications */}
-      {normalizedCerts.length > 0 && (
-        <div>
-          <SectionHeading text="Certifications" />
-          {normalizedCerts.map((c, i) => (
-            <div key={i} className="flex items-start gap-2 py-1">
-              <span className="text-amber-400 text-sm shrink-0">★</span>
-              <span className="text-sm text-body">{c}</span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {insights.experience_entries.length === 0 &&
-       insights.education_entries.length === 0 &&
-       normalizedCerts.length === 0 && (
-        <p className="text-sm text-subtle text-center py-6">
-          No structured data found. Ensure your resume has clear section headers.
-        </p>
-      )}
-    </div>
-  );
-}
-
-function SectionHeading({ text }: { text: string }) {
-  return (
-    <h4 className="text-micro font-bold text-subtle uppercase tracking-[0.1em] mb-2.5">
-      {text}
-    </h4>
-  );
-}
-
-// ── Capability vs Credibility Signal Card (Fix 9) ─────────────────────────────
-
-interface CredibilitySignalProps {
-  label:    string;
-  sublabel: string;
-  value:    string;
-  suffix:   string;
-  color:    string;
-}
-
-function CredibilitySignalCard({ label, sublabel, value, suffix, color }: CredibilitySignalProps) {
-  return (
-    <div
-      className="rounded-2xl px-3 py-2.5 flex items-center gap-3"
-      style={{ background: `${color}0d`, border: `1px solid ${color}22` }}
-    >
-      <div
-        className="w-1 self-stretch rounded-full shrink-0"
-        style={{ background: color }}
-      />
-      <div className="min-w-0">
-        <p className="text-[10px] font-bold uppercase tracking-[0.1em] text-subtle">{label}</p>
-        <p className="text-[18px] font-black leading-tight" style={{ color }}>
-          {value}<span className="text-[11px] font-semibold text-subtle">{suffix}</span>
-        </p>
-        <p className="text-[10px] text-subtle mt-0.5">{sublabel}</p>
       </div>
-    </div>
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 16 }}>
+        {ep.has_quantified_impact && (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <Pill bg={T.greenBg} color={T.greenInk}>✓ Measurable outcomes</Pill>
+            <InfoButton text="Your resume includes specific numbers — test cases written, defects found, time saved. Recruiters treat this as the strongest possible signal that your claims are real." />
+          </span>
+        )}
+        {ep.has_architecture_depth && (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <Pill bg={T.greenBg} color={T.greenInk}>✓ Framework ownership</Pill>
+            <InfoButton text="Your resume shows you designed or built an automation framework, not just used one. This separates mid-level from senior candidates in recruiter evaluations." />
+          </span>
+        )}
+        {!ep.has_cicd_integration && (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            <Pill bg={T.amberBg} color={T.amberInk}>✗ No CI/CD</Pill>
+            <InfoButton text="Your automation currently runs locally or manually triggered. Most mid-to-senior QA roles now expect tests to run automatically in a pipeline. This is the most impactful gap to fix." />
+          </span>
+        )}
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+          <Pill bg={maturity.bg} color={maturity.color}>{maturity.label} maturity</Pill>
+          <InfoButton text="Based on the complexity of what your resume describes — framework design, parallel execution, cross-platform testing — this reflects how advanced your implementation capability appears to recruiters." />
+        </span>
+        {ep.keyword_stuffing_risk !== 'none' && (
+          <Pill bg={T.redBg} color={T.red}>Keyword stuffing risk: {ep.keyword_stuffing_risk}</Pill>
+        )}
+      </div>
+    </section>
   );
 }
-

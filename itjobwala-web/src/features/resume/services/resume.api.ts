@@ -22,7 +22,7 @@ type ParseResumeResponse = ApiResponse<ResumeInsights | NonQaResult>;
 
 export async function parseResume(payload: ParseResumePayload = {}): Promise<ParseResumeResult> {
   try {
-    const res  = await apiClient.post<ParseResumeResponse>('/resume/parse', payload);
+    const res  = await apiClient.post<ParseResumeResponse>('/resume/parse', payload, { timeout: 120_000 });
     const body = res.data;
     const data = body.data;
 
@@ -62,8 +62,8 @@ export async function parseResume(payload: ParseResumePayload = {}): Promise<Par
   }
 }
 
-export async function getResumeInsights(): Promise<ResumeInsights> {
-  const res = await apiClient.get<ApiResponse<ResumeInsights>>('/resume/insights');
+export async function getResumeInsights(signal?: AbortSignal): Promise<ResumeInsights> {
+  const res = await apiClient.get<ApiResponse<ResumeInsights>>('/resume/insights', { signal });
   return res.data.data!;
 }
 

@@ -250,7 +250,7 @@ export interface EnterpriseProfileScores {
 
 // ── Evidence intelligence types ───────────────────────────────────────────────
 
-export type EvidenceLevel    = 'strong' | 'moderate' | 'basic' | 'weak';
+export type EvidenceLevel    = 'very_strong' | 'strong' | 'moderate' | 'basic' | 'weak' | 'inferred';
 export type EvidenceStrength = 'strong' | 'moderate' | 'basic' | 'weak';
 export type InflationRisk    = 'none'   | 'low'      | 'moderate' | 'high';
 export type ImplMaturity     = 'expert' | 'advanced' | 'moderate' | 'basic' | 'minimal';
@@ -291,10 +291,11 @@ export interface EvidenceProfile {
 // ── Guidance types ─────────────────────────────────────────────────────────────
 
 export interface PrioritySkill {
-  skill:     string;
-  score:     number;
-  dimension: string;
-  reason:    string;
+  skill:             string;
+  score:             number;
+  dimension:         string;
+  reason:            string;
+  recruiter_impact?: string;
 }
 
 export interface ImprovementPriorities {

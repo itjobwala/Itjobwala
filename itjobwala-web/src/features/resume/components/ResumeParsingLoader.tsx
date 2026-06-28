@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
+
 const STEPS = [
   { label: 'Downloading resume…',    delay: 0    },
   { label: 'Extracting text…',       delay: 800  },
@@ -8,17 +10,52 @@ const STEPS = [
   { label: 'Calculating ATS score…', delay: 3400 },
 ];
 
-import { useEffect, useState } from 'react';
+interface Props {
+  done?:       boolean;
+  onComplete?: () => void;
+}
 
-export default function ResumeParsingLoader() {
-  const [step, setStep] = useState(0);
+export default function ResumeParsingLoader({ done = false, onComplete }: Props) {
+  const [step, setStep]   = useState(0);
+  const stepRef           = useRef(0);
+  const timerIds          = useRef<ReturnType<typeof setTimeout>[]>([]);
 
+  // Normal progression timers
   useEffect(() => {
-    const timers = STEPS.map((s, i) =>
-      setTimeout(() => setStep(i), s.delay)
+    timerIds.current = STEPS.map((s, i) =>
+      setTimeout(() => {
+        stepRef.current = i;
+        setStep(i);
+      }, s.delay)
     );
-    return () => timers.forEach(clearTimeout);
+    return () => timerIds.current.forEach(clearTimeout);
   }, []);
+
+  // When parse is done, clear remaining normal timers and fast-forward
+  useEffect(() => {
+    if (!done) return;
+    timerIds.current.forEach(clearTimeout);
+    timerIds.current = [];
+
+    const current = stepRef.current;
+    const FAST    = 350;
+    const newTimers: ReturnType<typeof setTimeout>[] = [];
+
+    for (let i = current + 1; i < STEPS.length; i++) {
+      const target = i;
+      newTimers.push(setTimeout(() => {
+        stepRef.current = target;
+        setStep(target);
+      }, (i - current) * FAST));
+    }
+
+    const finishDelay = (STEPS.length - current) * FAST + 300;
+    newTimers.push(setTimeout(() => onComplete?.(), finishDelay));
+    timerIds.current = newTimers;
+
+    return () => newTimers.forEach(clearTimeout);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [done]);
 
   return (
     <div className="flex flex-col items-center justify-center py-10 gap-6">
@@ -44,7 +81,7 @@ export default function ResumeParsingLoader() {
           <div
             key={i}
             className={`flex items-center gap-2.5 text-sm transition-all duration-300 ${
-              i <= step ? 'text-heading' : 'text-gray-300'
+              i <= step ? 'text-white' : 'text-gray-300'
             }`}
           >
             <span className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold transition-all duration-300 ${
