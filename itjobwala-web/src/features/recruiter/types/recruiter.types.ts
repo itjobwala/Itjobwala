@@ -106,6 +106,41 @@ export interface RecruiterApplicantInterview {
   status: 'scheduled' | 'past' | 'not_scheduled';
 }
 
+export interface ApplicantSkillEvidence {
+  skill:          string;
+  evidence_level: string;
+  evidence_score: number;
+  proof_sources:  string[];
+}
+
+export interface ApplicantRiskFlag {
+  flag:             string;
+  severity:         string;
+  impact_score:     number;
+  explanation:      string;
+  recruiter_effect: string;
+}
+
+export interface ScoreDistribution {
+  high_count:     number;
+  mid_count:      number;
+  low_count:      number;
+  unscored_count: number;
+  total:          number;
+}
+
+export interface TopCandidate {
+  id:           string;
+  candidateName: string;
+  jobTitle:     string;
+  jobId:        string;
+  qaMatchScore: number;
+  careerLevel:  string | null;
+  status:       string;
+  appliedDate:  string;
+  topSkills:    string[];
+}
+
 // Recruiter Applicant
 export interface RecruiterApplicant {
   id: string;
@@ -121,6 +156,12 @@ export interface RecruiterApplicant {
   skills?: string[];
   experience?: number;
   qaMatchScore?: number | null;
+  skillEvidence?: ApplicantSkillEvidence[] | null;
+  riskFlags?: ApplicantRiskFlag[] | null;
+  weakEvidenceSkills?: string[] | null;
+  missingSkills?: string[] | null;
+  careerLevel?: string | null;
+  certCount?: number;
   profile?: {
     title?: string;
     location?: string;
@@ -183,24 +224,51 @@ export interface RecruiterInterviewsResponse {
 
 // Phase 8: ATS Intelligence Types
 
+export interface SkillEvidenceEntry {
+  skill:          string;
+  evidence_level: string;
+  evidence_score: number;
+  proof_sources:  string[];
+}
+
+export interface RiskFlag {
+  flag:             string;
+  severity:         string;
+  explanation:      string;
+  impact_score:     number;
+  recruiter_effect: string;
+}
+
 export interface ApplicantATSIntelligence {
-  has_data: boolean;
-  qa_match_score: number | null;
-  qa_specialization: string | null;
-  qa_seniority: string | null;
-  qa_hiring_label: string | null;
-  recruiter_confidence: string | null;
-  specialization_confidence: number | null;
-  shortlist_probability: number | null;
-  recruiter_visibility: string | null;
-  market_readiness: string | null;
-  best_fit_roles: string[];
-  recruiter_tip: string | null;
-  concerns: string[];
-  extracted_skills: string[];
-  missing_skills: string[];
-  strengths: string[];
-  weaknesses: string[];
+  has_data:                   boolean;
+  qa_match_score?:            number | null;
+  qa_specialization?:         string | null;
+  qa_seniority?:              string | null;
+  qa_hiring_label?:           string | null;
+  recruiter_confidence?:      string | null;
+  specialization_confidence?: number | null;
+  shortlist_probability?:     number | null;
+  recruiter_visibility?:      string | null;
+  market_readiness?:          string | null;
+  best_fit_roles:             string[];
+  recruiter_tip?:             string | null;
+  concerns:                   string[];
+  extracted_skills:           string[];
+  missing_skills:             string[];
+  strengths:                  string[];
+  weaknesses:                 string[];
+  skill_evidence?:            SkillEvidenceEntry[];
+  weak_evidence_skills?:      string[];
+  risk_flags?:                RiskFlag[];
+  overall_risk_level?:        string;
+  overall_risk_score?:        number;
+  qa_score_breakdown?:        Record<string, { score: number; max: number }> | null;
+  evidence_density?:          number | null;
+  recruiter_trust_score?:     number | null;
+  has_quantified_impact?:     boolean;
+  has_architecture_depth?:    boolean;
+  trust_signals?:             Array<{ signal: string; note: string; impact: string }>;
+  fastest_trust_gain?:        string | null;
 }
 
 export interface PoolScoreBucket {
@@ -255,6 +323,7 @@ export interface RecruiterApplicantsResponse {
       total: number;
       pages: number;
     };
+    score_distribution?: ScoreDistribution;
   };
 }
 

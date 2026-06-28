@@ -140,7 +140,7 @@ export default function ATSIntelligenceCard({ data }: Props) {
           className="rounded-2xl px-4 py-3"
           style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
         >
-          <ProbabilityBar probability={data.shortlist_probability} label={data.recruiter_visibility} />
+          <ProbabilityBar probability={data.shortlist_probability!} label={data.recruiter_visibility ?? null} />
           {data.market_readiness && (
             <p className="text-[10px] text-slate-500 mt-2">
               Market readiness: <span className="text-slate-300 font-semibold">{data.market_readiness}</span>
@@ -197,6 +197,185 @@ export default function ATSIntelligenceCard({ data }: Props) {
               </li>
             ))}
           </ul>
+        </div>
+      )}
+
+      {/* Score breakdown bars */}
+      {data.qa_score_breakdown && (() => {
+        const LABELS: Record<string, string> = {
+          automation_testing:      'Automation',
+          api_testing:             'API Testing',
+          framework_expertise:     'Framework',
+          qa_experience:           'QA Experience',
+          certifications:          'Certifications',
+          bug_tracking:            'Bug Tracking',
+          ci_cd_readiness:         'CI/CD',
+          performance_testing:     'Performance',
+          test_design_methodology: 'Test Design',
+        };
+        const dims = Object.entries(data.qa_score_breakdown)
+          .filter(([key, val]) => key !== 'resume_quality' && key !== 'penalties' && val.max > 0)
+          .sort(([, a], [, b]) => (b.score / b.max) - (a.score / a.max));
+
+        if (dims.length === 0) return null;
+        return (
+          <div
+            className="rounded-2xl px-4 py-3"
+            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+          >
+            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3">
+              Score Breakdown
+            </p>
+            <div className="space-y-2">
+              {dims.map(([key, val]) => {
+                const pct   = Math.round((val.score / val.max) * 100);
+                const color = pct >= 75 ? '#10b981' : pct >= 45 ? '#f59e0b' : '#ef4444';
+                return (
+                  <div key={key}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-[10px] text-slate-400">{LABELS[key] ?? key}</span>
+                      <span className="text-[10px] font-bold" style={{ color }}>
+                        {val.score}/{val.max}
+                      </span>
+                    </div>
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                      <div
+                        className="h-full rounded-full"
+                        style={{ width: `${pct}%`, background: color, transition: 'width 0.4s ease' }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Skill evidence */}
+      {data.skill_evidence && data.skill_evidence.length > 0 && (
+        <div
+          className="rounded-2xl px-4 py-3"
+          style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+        >
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">
+            Skill Evidence
+          </p>
+
+          {data.weak_evidence_skills && data.weak_evidence_skills.length > 0 && (
+            <div
+              className="mb-2 px-3 py-2 rounded-xl text-[10.5px]"
+              style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.15)', color: '#fcd34d' }}
+            >
+              ⚠ Listed without proof: {data.weak_evidence_skills.join(', ')}
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-1.5 mb-2">
+            {data.skill_evidence
+              .filter(e => e.evidence_level === 'strong' || e.evidence_level === 'very_strong')
+              .slice(0, 8)
+              .map(e => (
+                <span
+                  key={e.skill}
+                  className="text-[10px] font-semibold px-2 py-0.5 rounded-lg capitalize"
+                  style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', color: '#6ee7b7' }}
+                  title={`Proof: ${e.proof_sources?.join(', ')}`}
+                >
+                  ✓ {e.skill}
+                </span>
+              ))}
+          </div>
+
+          <div className="flex flex-wrap gap-1.5">
+            {data.skill_evidence
+              .filter(e => e.evidence_level === 'weak' && e.evidence_score === 0)
+              .slice(0, 4)
+              .map(e => (
+                <span
+                  key={e.skill}
+                  className="text-[10px] font-semibold px-2 py-0.5 rounded-lg capitalize"
+                  style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)', color: '#fcd34d' }}
+                >
+                  ? {e.skill}
+                </span>
+              ))}
+          </div>
+
+          <p className="text-[9px] text-slate-600 mt-2">
+            ✓ proven in experience descriptions · ? listed only, unverified
+          </p>
+        </div>
+      )}
+
+      {/* Risk flags */}
+      {data.risk_flags && data.risk_flags.length > 0 && (
+        <div
+          className="rounded-2xl px-4 py-3"
+          style={{ background: 'rgba(239,68,68,0.04)', border: '1px solid rgba(239,68,68,0.1)' }}
+        >
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-red-400">Risk Flags</p>
+            <span
+              className="text-[9px] font-bold px-2 py-0.5 rounded-full"
+              style={{
+                background: data.overall_risk_level === 'low' ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+                color:      data.overall_risk_level === 'low' ? '#6ee7b7'              : '#fca5a5',
+              }}
+            >
+              {data.overall_risk_level} risk · {data.overall_risk_score}/100
+            </span>
+          </div>
+          <div className="space-y-2">
+            {data.risk_flags.map(flag => (
+              <div key={flag.flag}>
+                <p className="text-[11px] font-semibold text-red-300 capitalize">
+                  {flag.flag === 'no_ci_cd_context' ? 'No CI/CD integration'
+                 : flag.flag === 'outdated_stack'   ? 'Legacy-only toolstack'
+                 : flag.flag.replace(/_/g, ' ')}
+                </p>
+                <p className="text-[10px] text-red-400 opacity-70 mt-0.5">{flag.recruiter_effect}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Trust signals */}
+      {data.trust_signals && data.trust_signals.length > 0 && (
+        <div
+          className="rounded-2xl px-4 py-3"
+          style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2">
+            Why Trust This Profile
+            {data.recruiter_trust_score != null && (
+              <span className="ml-2 text-emerald-400 normal-case">· {data.recruiter_trust_score}% trust</span>
+            )}
+          </p>
+          <div className="space-y-1.5">
+            {data.trust_signals.slice(0, 4).map((s, i) => (
+              <div key={i} className="flex items-start gap-2">
+                <span
+                  className="shrink-0 w-1.5 h-1.5 rounded-full"
+                  style={{ background: s.impact === 'high' ? '#10b981' : '#f59e0b', marginTop: '5px' }}
+                />
+                <div>
+                  <span className="text-[11px] font-semibold text-slate-300">{s.signal}</span>
+                  <span className="text-[10px] text-slate-500"> — {s.note}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          {data.fastest_trust_gain && (
+            <div
+              className="mt-2.5 px-3 py-2 rounded-xl flex items-start gap-2"
+              style={{ background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.12)' }}
+            >
+              <span className="text-amber-400 shrink-0 text-[11px]" style={{ marginTop: '1px' }}>💡</span>
+              <p className="text-[10px] text-amber-300">{data.fastest_trust_gain}</p>
+            </div>
+          )}
         </div>
       )}
 

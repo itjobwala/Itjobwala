@@ -7,6 +7,7 @@ import {
   hireApplicant,
   submitFeedbackNote,
   bulkRejectApplicants,
+  bulkRejectByScore,
 } from '../../controllers/recruiter/recruiterApplicantController.js';
 import { getApplicantIntelligence } from '../../controllers/recruiter/getApplicantIntelligence.js';
 import { getJobPoolStats }          from '../../controllers/recruiter/getJobPoolStats.js';
@@ -29,6 +30,20 @@ export default async function recruiterApplicantRoutes(fastify, options) {
       },
     },
   }, bulkRejectApplicants);
+
+  fastify.post('/recruiter/applicants/bulk-reject-by-score', {
+    preValidation,
+    schema: {
+      body: {
+        type: 'object',
+        required: ['minScore'],
+        properties: {
+          minScore: { type: 'number', minimum: 1, maximum: 99 },
+          jobId:    { type: 'string' },
+        },
+      },
+    },
+  }, bulkRejectByScore);
 
   fastify.get('/recruiter/applicants/:applicantId', { preValidation }, getApplicantById);
   fastify.put('/recruiter/applicants/:applicantId/status', { preValidation }, updateStatus);

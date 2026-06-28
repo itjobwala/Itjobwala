@@ -5,6 +5,7 @@ import { RecruiterShell } from '@/layout/shell';
 import ErrorBoundary from '@/src/components/ui/ErrorBoundary';
 import DashboardStats from './DashboardStats';
 import RecentApplicants from './RecentApplicants';
+import TopCandidatesCard from './TopCandidatesCard';
 import PostedJobs from './PostedJobs';
 import HiringPipeline from './HiringPipeline';
 import ActivityFeed from './ActivityFeed';
@@ -46,8 +47,11 @@ export default function RecruiterDashboardPage() {
         {/* Stats */}
         <DashboardStats />
 
-        {/* Recent applicants */}
-        <RecentApplicants />
+        {/* Top candidates + Recent applicants side by side on large screens */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <TopCandidatesCard />
+          <RecentApplicants />
+        </div>
 
         {/* Jobs */}
         <PostedJobs />

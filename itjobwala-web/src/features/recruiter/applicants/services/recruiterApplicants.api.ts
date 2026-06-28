@@ -7,6 +7,7 @@ import type {
   ApplicantATSIntelligence,
   PoolIntelligence,
   BulkRejectResponse,
+  TopCandidate,
 } from '@/features/recruiter/types';
 
 export async function getRecruiterApplicants(filters?: {
@@ -16,6 +17,7 @@ export async function getRecruiterApplicants(filters?: {
   limit?:     number;
   sortBy?:    string;
   sortOrder?: 'asc' | 'desc';
+  minScore?:  number;
 }): Promise<RecruiterApplicantsResponse['data']> {
   const res = await recruiterClient.get<RecruiterApplicantsResponse>(
     '/recruiter/applicants',
@@ -78,6 +80,25 @@ export async function getApplicantATSIntelligence(
 export async function getJobPoolStats(jobId: string): Promise<PoolIntelligence> {
   const res = await recruiterClient.get<ApiResponse<PoolIntelligence>>(
     `/recruiter/jobs/${jobId}/pool-stats`,
+  );
+  return res.data.data!;
+}
+
+export async function bulkRejectByScore(params: {
+  minScore: number;
+  jobId?: string;
+}): Promise<BulkRejectResponse> {
+  const res = await recruiterClient.post<ApiResponse<BulkRejectResponse>>(
+    '/recruiter/applicants/bulk-reject-by-score',
+    params,
+  );
+  return res.data.data!;
+}
+
+export async function getTopCandidates(limit?: number): Promise<{ candidates: TopCandidate[] }> {
+  const res = await recruiterClient.get<ApiResponse<{ candidates: TopCandidate[] }>>(
+    '/recruiter/dashboard/top-candidates',
+    { params: limit ? { limit } : undefined },
   );
   return res.data.data!;
 }

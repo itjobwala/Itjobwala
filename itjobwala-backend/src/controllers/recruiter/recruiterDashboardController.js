@@ -256,6 +256,67 @@ export const getPipeline = async (request, reply) => {
   }
 };
 
+export const getTopCandidates = async (request, reply) => {
+  try {
+    const recruiterId = request.user.id;
+    const limit = Math.min(parseInt(request.query.limit, 10) || 5, 20);
+
+    const qaScoreSub       = '(SELECT ri.qa_match_score FROM resume_insights ri WHERE ri.candidate_id = applications.user_id LIMIT 1)';
+    const careerLevelSub   = '(SELECT ri.career_level FROM resume_insights ri WHERE ri.candidate_id = applications.user_id LIMIT 1)';
+    const extractedSkillsSub = '(SELECT ri.extracted_skills::text FROM resume_insights ri WHERE ri.candidate_id = applications.user_id LIMIT 1)';
+
+    const rows = await Application.query()
+      .join('jobs', 'applications.job_id', 'jobs.id')
+      .join('users', 'applications.user_id', 'users.id')
+      .where('jobs.recruiter_id', recruiterId)
+      .whereNotIn('applications.status', ['rejected', 'withdrawn'])
+      .whereRaw(`${qaScoreSub} IS NOT NULL`)
+      .orderByRaw(`${qaScoreSub} DESC`)
+      .limit(limit)
+      .select(
+        'applications.id',
+        'applications.status',
+        'applications.applied_at',
+        'applications.job_id as job_id_raw',
+        'users.full_name as candidate_name',
+        'jobs.title as job_title',
+        Application.knex().raw(`${qaScoreSub} AS qa_match_score`),
+        Application.knex().raw(`${careerLevelSub} AS career_level`),
+        Application.knex().raw(`${extractedSkillsSub} AS extracted_skills_raw`),
+      );
+
+    return reply.status(200).send({
+      success: true,
+      message: 'Top candidates fetched.',
+      data: {
+        candidates: rows.map(app => {
+          let topSkills = [];
+          try {
+            const parsed = typeof app.extracted_skills_raw === 'string'
+              ? JSON.parse(app.extracted_skills_raw)
+              : (app.extracted_skills_raw || []);
+            topSkills = Array.isArray(parsed) ? parsed.slice(0, 3) : [];
+          } catch {}
+          return {
+            id:           `applicant_${app.id}`,
+            candidateName: app.candidate_name,
+            jobTitle:     app.job_title,
+            jobId:        `job_${app.job_id_raw}`,
+            qaMatchScore: app.qa_match_score,
+            careerLevel:  app.career_level || null,
+            status:       app.status,
+            appliedDate:  app.applied_at,
+            topSkills,
+          };
+        }),
+      },
+    });
+  } catch (error) {
+    request.server.log.error(error);
+    return reply.status(500).send({ success: false, message: 'Internal server error' });
+  }
+};
+
 export const getActivityFeed = async (request, reply) => {
   try {
     const recruiterId = request.user.id;

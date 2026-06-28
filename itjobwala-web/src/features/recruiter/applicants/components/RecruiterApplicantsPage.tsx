@@ -10,6 +10,7 @@ import {
   useHireApplicantMutation,
   useUpdateApplicantStatusMutation,
   useBulkRejectMutation,
+  useBulkRejectByScoreMutation,
 } from '@/features/recruiter/hooks';
 import { useToast } from '@/src/hooks/useToast';
 import Toast from '@/src/components/ui/Toast';
@@ -157,21 +158,61 @@ function ConfirmModal({ count, isPending, onConfirm, onCancel }: ConfirmModalPro
   );
 }
 
+interface ScoreRejectModalProps {
+  threshold: number;
+  isPending: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+function ScoreRejectModal({ threshold, isPending, onConfirm, onCancel }: ScoreRejectModalProps) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      <div className="bg-surface rounded-2xl border border-token shadow-2xl p-6 w-full max-w-sm mx-4">
+        <h2 className="text-base font-extrabold text-heading mb-1">Bulk reject below {threshold}?</h2>
+        <p className="text-sm text-subtle mb-5">
+          All active applicants with a QA match score below {threshold} will be rejected. Applicants in a terminal state (hired, rejected, withdrawn) will be skipped automatically.
+        </p>
+        <div className="flex gap-3 justify-end">
+          <button
+            onClick={onCancel}
+            disabled={isPending}
+            className="px-4 py-2 rounded-xl border border-token text-sm font-semibold text-heading hover:bg-surface-alt transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isPending}
+            className="px-4 py-2 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors disabled:opacity-50"
+          >
+            {isPending ? 'Rejecting…' : `Reject below ${threshold}`}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function RecruiterApplicantsPage() {
   const searchParams   = useSearchParams();
   const jobIdParam     = searchParams.get('jobId') ?? undefined;
 
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [sortBy,       setSortBy]       = useState('appliedDate');
-  const [sortOrder,    setSortOrder]    = useState<'asc' | 'desc'>('desc');
-  const [loadingKey,   setLoadingKey]   = useState<string | null>(null);
-  const [selected,     setSelected]     = useState<Set<string>>(new Set());
-  const [showConfirm,  setShowConfirm]  = useState(false);
+  const [filterStatus,      setFilterStatus]      = useState('all');
+  const [sortBy,            setSortBy]            = useState('appliedDate');
+  const [sortOrder,         setSortOrder]         = useState<'asc' | 'desc'>('desc');
+  const [minScoreFilter,    setMinScoreFilter]    = useState(0);
+  const [loadingKey,        setLoadingKey]        = useState<string | null>(null);
+  const [selected,          setSelected]          = useState<Set<string>>(new Set());
+  const [showConfirm,       setShowConfirm]       = useState(false);
+  const [showScoreModal,    setShowScoreModal]    = useState(false);
+  const [scoreThreshold,    setScoreThreshold]    = useState(50);
   const { toast, show: showToast } = useToast();
 
   const filters = {
     ...(jobIdParam ? { jobId: jobIdParam } : {}),
     ...(filterStatus !== 'all' ? { status: filterStatus as ApplicantStatus } : {}),
+    ...(minScoreFilter > 0 ? { minScore: minScoreFilter } : {}),
     sortBy,
     sortOrder,
   };
@@ -181,7 +222,8 @@ export default function RecruiterApplicantsPage() {
   const rejectMutation     = useRejectApplicantMutation();
   const hireMutation       = useHireApplicantMutation();
   const statusMutation     = useUpdateApplicantStatusMutation();
-  const bulkRejectMutation = useBulkRejectMutation();
+  const bulkRejectMutation        = useBulkRejectMutation();
+  const bulkRejectByScoreMutation = useBulkRejectByScoreMutation();
 
   const applicants = data?.applicants ?? [];
 
@@ -285,6 +327,21 @@ export default function RecruiterApplicantsPage() {
     }
   }
 
+  async function handleBulkRejectByScore() {
+    try {
+      const result = await bulkRejectByScoreMutation.mutateAsync({
+        minScore: scoreThreshold,
+        ...(jobIdParam ? { jobId: jobIdParam } : {}),
+      });
+      setShowScoreModal(false);
+      const rejectedCount = result.rejected.length;
+      showSuccess(`${rejectedCount} applicant${rejectedCount !== 1 ? 's' : ''} rejected (score < ${scoreThreshold})`);
+    } catch (e) {
+      setShowScoreModal(false);
+      showError(e instanceof Error ? e.message : 'Bulk reject by score failed');
+    }
+  }
+
   return (
     <RecruiterShell>
       {/* Page header */}
@@ -321,6 +378,20 @@ export default function RecruiterApplicantsPage() {
             ))}
           </div>
 
+          {/* Score filter */}
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-caption text-subtle font-medium">Score:</span>
+            <select
+              value={minScoreFilter}
+              onChange={e => { setMinScoreFilter(Number(e.target.value)); clearSelection(); }}
+              className="text-sm border border-token rounded-lg px-3 py-1.5 bg-surface text-body-secondary focus:outline-none focus:border-primary transition-colors"
+            >
+              <option value={0}>All</option>
+              <option value={50}>50+ Mid</option>
+              <option value={70}>70+ High</option>
+            </select>
+          </div>
+
           {/* Sort controls */}
           <div className="flex items-center gap-2 shrink-0">
             <span className="text-caption text-subtle font-medium">Sort:</span>
@@ -350,6 +421,34 @@ export default function RecruiterApplicantsPage() {
             </button>
           </div>
         </div>
+
+        {/* Score distribution banner */}
+        {!isLoading && data?.score_distribution && data.score_distribution.total > 0 && (
+          <div className="mb-4 flex flex-wrap items-center gap-4 px-4 py-3 bg-surface border border-token rounded-xl">
+            <span className="text-caption font-semibold text-muted">Score pool:</span>
+            <span className="text-caption font-bold" style={{ color: '#10b981' }}>
+              {data.score_distribution.high_count} high ≥70
+            </span>
+            <span className="text-caption font-bold" style={{ color: '#f59e0b' }}>
+              {data.score_distribution.mid_count} mid 50–69
+            </span>
+            <span className="text-caption font-bold" style={{ color: '#ef4444' }}>
+              {data.score_distribution.low_count} low &lt;50
+            </span>
+            {data.score_distribution.unscored_count > 0 && (
+              <span className="text-caption text-muted">{data.score_distribution.unscored_count} unscored</span>
+            )}
+            {data.score_distribution.low_count > 0 && (
+              <button
+                onClick={() => { setScoreThreshold(50); setShowScoreModal(true); }}
+                className="ml-auto text-caption font-bold hover:underline"
+                style={{ color: '#ef4444' }}
+              >
+                Bulk reject below 50
+              </button>
+            )}
+          </div>
+        )}
 
         {isLoading ? (
           <div className="text-center py-12">
@@ -467,6 +566,49 @@ export default function RecruiterApplicantsPage() {
                           </div>
                         )}
 
+                        {/* Risk flags */}
+                        {applicant.riskFlags && applicant.riskFlags.length > 0 && (
+                          <div className="mt-1.5 flex flex-wrap gap-1">
+                            {applicant.riskFlags.slice(0, 2).map(flag => (
+                              <span
+                                key={flag.flag}
+                                className="text-[10px] font-bold px-1.5 py-0.5 rounded-md capitalize"
+                                style={{ background: 'rgba(239,68,68,0.08)', color: '#f87171', border: '1px solid rgba(239,68,68,0.15)' }}
+                              >
+                                ⚠ {flag.flag.replace(/_/g, ' ')}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Skill evidence: proven + missing */}
+                        {(applicant.skillEvidence?.some(e => e.evidence_level === 'strong' || e.evidence_level === 'very_strong') ||
+                          (applicant.missingSkills && applicant.missingSkills.length > 0)) && (
+                          <div className="mt-1.5 flex flex-wrap gap-1">
+                            {applicant.skillEvidence
+                              ?.filter(e => e.evidence_level === 'strong' || e.evidence_level === 'very_strong')
+                              .slice(0, 3)
+                              .map(e => (
+                                <span
+                                  key={e.skill}
+                                  className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md"
+                                  style={{ background: 'rgba(16,185,129,0.1)', color: '#6ee7b7', border: '1px solid rgba(16,185,129,0.2)' }}
+                                >
+                                  ✓ {e.skill}
+                                </span>
+                              ))}
+                            {applicant.missingSkills?.slice(0, 2).map(skill => (
+                              <span
+                                key={skill}
+                                className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md"
+                                style={{ background: 'rgba(239,68,68,0.06)', color: '#f87171', border: '1px solid rgba(239,68,68,0.12)' }}
+                              >
+                                − {skill}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+
                         {/* Resume link */}
                         {applicant.resume && (
                           <a
@@ -540,6 +682,16 @@ export default function RecruiterApplicantsPage() {
           isPending={bulkRejectMutation.isPending}
           onConfirm={handleBulkReject}
           onCancel={() => setShowConfirm(false)}
+        />
+      )}
+
+      {/* ── Score reject modal ────────────────────────────────────────────── */}
+      {showScoreModal && (
+        <ScoreRejectModal
+          threshold={scoreThreshold}
+          isPending={bulkRejectByScoreMutation.isPending}
+          onConfirm={handleBulkRejectByScore}
+          onCancel={() => setShowScoreModal(false)}
         />
       )}
 

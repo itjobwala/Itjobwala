@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getRecruiterCompanyProfile, updateRecruiterCompanyProfile } from '@/features/recruiter/company';
 import { getRecruiterPostedJobs, getRecruiterPostedJobById, createRecruiterJob, updateRecruiterJob, deleteRecruiterJob, submitRecruiterJob } from '@/features/recruiter/jobs';
-import { getRecruiterApplicants, getRecruiterApplicantById, updateApplicantStatus, rejectApplicant, shortlistApplicant, hireApplicant, getApplicantATSIntelligence, getJobPoolStats, bulkRejectApplicants } from '@/features/recruiter/applicants';
+import { getRecruiterApplicants, getRecruiterApplicantById, updateApplicantStatus, rejectApplicant, shortlistApplicant, hireApplicant, getApplicantATSIntelligence, getJobPoolStats, bulkRejectApplicants, bulkRejectByScore, getTopCandidates } from '@/features/recruiter/applicants';
 import { getRecruiterStats, getRecruiterNotifications, getRecruiterNotificationsPaged, markNotificationRead, markAllNotificationsRead } from '@/features/recruiter/dashboard';
 import { getRecruiterInterviews, scheduleRecruiterInterview, cancelRecruiterInterview } from '@/features/recruiter/interviews';
 import { searchCandidates, getCandidateProfile } from '@/features/recruiter/candidates';
@@ -15,11 +15,13 @@ import type {
   UpdateApplicantStatusRequest,
   ScheduleInterviewRequest,
   BulkRejectResponse,
+  TopCandidate,
 } from '@/features/recruiter/types';
 
 export const recruiterKeys = {
   atsIntelligence: (id: string) => ['recruiter', 'ats-intelligence', id] as const,
   poolStats:       (jobId: string) => ['recruiter', 'pool-stats', jobId] as const,
+  topCandidates:   () => ['recruiter', 'top-candidates'] as const,
   company: () => ['recruiter', 'company'] as const,
   stats: () => ['recruiter', 'stats'] as const,
   jobs: () => ['recruiter', 'jobs'] as const,
@@ -138,6 +140,7 @@ export function useRecruiterApplicantsQuery(
     limit?:     number;
     sortBy?:    string;
     sortOrder?: 'asc' | 'desc';
+    minScore?:  number;
   },
   enabled = true
 ) {
@@ -324,5 +327,26 @@ export function useBulkRejectMutation() {
       qc.invalidateQueries({ queryKey: recruiterKeys.applicantsAll() });
       qc.invalidateQueries({ queryKey: recruiterKeys.stats() });
     },
+  });
+}
+
+export function useBulkRejectByScoreMutation() {
+  const qc = useQueryClient();
+  return useMutation<BulkRejectResponse, Error, { minScore: number; jobId?: string }>({
+    mutationFn: (params) => bulkRejectByScore(params),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: recruiterKeys.applicantsAll() });
+      qc.invalidateQueries({ queryKey: recruiterKeys.stats() });
+      qc.invalidateQueries({ queryKey: recruiterKeys.topCandidates() });
+    },
+  });
+}
+
+export function useTopCandidatesQuery(limit?: number, enabled = true) {
+  return useQuery<{ candidates: TopCandidate[] }>({
+    queryKey: recruiterKeys.topCandidates(),
+    queryFn:  () => getTopCandidates(limit),
+    enabled,
+    staleTime: 2 * 60 * 1000,
   });
 }

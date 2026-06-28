@@ -1,5 +1,6 @@
 import Application from '../../models/jobs/Application.js';
 import Job from '../../models/jobs/Job.js';
+import ResumeInsight from '../../models/candidate/ResumeInsight.js';
 import Activity from '../../models/recruiter/Activity.js';
 import User from '../../models/candidate/User.js';
 import Interview from '../../models/recruiter/Interview.js';
@@ -8,6 +9,12 @@ import Recruiter from '../../models/recruiter/Recruiter.js';
 import { notifyCandidate, notifyRecruiter } from '../../utils/notifyHelper.js';
 import { saveFeedbackSignal, saveFeedbackNote } from '../../services/resume/feedbackSignal.service.js';
 import { sendApplicationStatusEmail } from '../../services/email/mailer.service.js';
+
+function safeJson(val) {
+  if (!val) return null;
+  if (typeof val === 'string') { try { return JSON.parse(val); } catch { return null; } }
+  return val;
+}
 
 const SEND_INTERVIEW_ADVANCE_EMAIL = false;
 
@@ -121,6 +128,12 @@ function formatApplicant(app) {
       : (candidate.skills || []),
     experience: candidate.experience_years || 0,
     qaMatchScore: app.qa_match_score ?? null,
+    skillEvidence: safeJson(app.skill_evidence),
+    riskFlags: safeJson(app.risk_flags),
+    weakEvidenceSkills: safeJson(app.weak_evidence_skills),
+    missingSkills: safeJson(app.missing_skills),
+    careerLevel: app.career_level_insight || null,
+    certCount: app.cert_count ?? 0,
     profile: {
       title: candidate.title || null,
       location: candidate.location || null,
@@ -140,17 +153,46 @@ export const getApplicants = async (request, reply) => {
       search,
       sortBy = 'appliedDate',
       sortOrder = 'desc',
+      minScore,
     } = request.query;
 
     const qaScoreSubquery = Application.knex().raw(
       '(SELECT ri.qa_match_score FROM resume_insights ri WHERE ri.candidate_id = applications.user_id LIMIT 1) as qa_match_score'
+    );
+    const skillEvidenceSubquery = Application.knex().raw(
+      '(SELECT ri.skill_evidence FROM resume_insights ri WHERE ri.candidate_id = applications.user_id LIMIT 1) as skill_evidence'
+    );
+    const riskFlagsSubquery = Application.knex().raw(
+      '(SELECT ri.risk_flags FROM resume_insights ri WHERE ri.candidate_id = applications.user_id LIMIT 1) as risk_flags'
+    );
+    const weakEvidenceSubquery = Application.knex().raw(
+      '(SELECT ri.weak_evidence_skills FROM resume_insights ri WHERE ri.candidate_id = applications.user_id LIMIT 1) as weak_evidence_skills'
+    );
+    const missingSkillsSubquery = Application.knex().raw(
+      '(SELECT ri.missing_skills FROM resume_insights ri WHERE ri.candidate_id = applications.user_id LIMIT 1) as missing_skills'
+    );
+    const careerLevelSubquery = Application.knex().raw(
+      '(SELECT ri.career_level FROM resume_insights ri WHERE ri.candidate_id = applications.user_id LIMIT 1) as career_level_insight'
+    );
+    const certCountSubquery = Application.knex().raw(
+      `(SELECT CASE WHEN ri.certification_entries IS NOT NULL THEN jsonb_array_length(ri.certification_entries::jsonb) ELSE 0 END FROM resume_insights ri WHERE ri.candidate_id = applications.user_id LIMIT 1) as cert_count`
     );
 
     const query = Application.query()
       .join('jobs', 'applications.job_id', 'jobs.id')
       .where('jobs.recruiter_id', recruiterId)
       .withGraphFetched('applicant')
-      .select('applications.*', 'jobs.title as job_title', qaScoreSubquery);
+      .select(
+        'applications.*',
+        'jobs.title as job_title',
+        qaScoreSubquery,
+        skillEvidenceSubquery,
+        riskFlagsSubquery,
+        weakEvidenceSubquery,
+        missingSkillsSubquery,
+        careerLevelSubquery,
+        certCountSubquery,
+      );
 
     if (jobId) {
       query.where('applications.job_id', jobId.replace('job_', ''));
@@ -169,6 +211,14 @@ export const getApplicants = async (request, reply) => {
       );
     }
 
+    const parsedMinScore = minScore ? parseInt(minScore, 10) : NaN;
+    if (!isNaN(parsedMinScore) && parsedMinScore > 0) {
+      query.whereRaw(
+        '(SELECT ri.qa_match_score FROM resume_insights ri WHERE ri.candidate_id = applications.user_id LIMIT 1) >= ?',
+        [parsedMinScore]
+      );
+    }
+
     if (sortBy === 'qaScore') {
       const dir = sortOrder === 'asc' ? 'ASC' : 'DESC';
       query.orderByRaw(
@@ -182,7 +232,26 @@ export const getApplicants = async (request, reply) => {
     const pageIndex = Math.max(0, parseInt(page, 10) - 1);
     const pageSize = parseInt(limit, 10);
 
-    const result = await query.page(pageIndex, pageSize);
+    // Score distribution across all matching applicants (without minScore, so recruiter sees the full picture)
+    const scoreDistQuery = Application.query()
+      .join('jobs', 'applications.job_id', 'jobs.id')
+      .leftJoin('resume_insights as ri', 'ri.candidate_id', 'applications.user_id')
+      .where('jobs.recruiter_id', recruiterId)
+      .select(
+        Application.knex().raw(`COUNT(*) FILTER (WHERE ri.qa_match_score >= 70)::int AS high_count`),
+        Application.knex().raw(`COUNT(*) FILTER (WHERE ri.qa_match_score >= 50 AND ri.qa_match_score < 70)::int AS mid_count`),
+        Application.knex().raw(`COUNT(*) FILTER (WHERE ri.qa_match_score IS NOT NULL AND ri.qa_match_score < 50)::int AS low_count`),
+        Application.knex().raw(`COUNT(*) FILTER (WHERE ri.qa_match_score IS NULL)::int AS unscored_count`),
+        Application.knex().raw(`COUNT(*)::int AS total`)
+      );
+
+    if (jobId) scoreDistQuery.where('applications.job_id', jobId.replace('job_', ''));
+    if (status) scoreDistQuery.where('applications.status', status);
+
+    const [result, scoreDist] = await Promise.all([
+      query.page(pageIndex, pageSize),
+      scoreDistQuery.first(),
+    ]);
 
     return reply.status(200).send({
       success: true,
@@ -196,6 +265,13 @@ export const getApplicants = async (request, reply) => {
           pages: Math.ceil(result.total / pageSize),
           hasNextPage: (pageIndex + 1) * pageSize < result.total,
           hasPrevPage: pageIndex > 0,
+        },
+        score_distribution: {
+          high_count:     scoreDist?.high_count     ?? 0,
+          mid_count:      scoreDist?.mid_count      ?? 0,
+          low_count:      scoreDist?.low_count      ?? 0,
+          unscored_count: scoreDist?.unscored_count ?? 0,
+          total:          scoreDist?.total          ?? 0,
         },
       },
     });
@@ -398,6 +474,59 @@ export const bulkRejectApplicants = async (request, reply) => {
       success: true,
       message: `Bulk reject complete: ${rejected.length} rejected, ${skipped.length} skipped.`,
       data: { rejected, skipped },
+    });
+  } catch (error) {
+    request.server.log.error(error);
+    return reply.status(500).send({ success: false, message: 'Internal server error' });
+  }
+};
+
+/**
+ * POST /recruiter/applicants/bulk-reject-by-score
+ * Body: { minScore: number, jobId?: string }
+ * Rejects all active applicants for this recruiter with qa_match_score < minScore.
+ */
+export const bulkRejectByScore = async (request, reply) => {
+  try {
+    const recruiterId = request.user.id;
+    const { minScore, jobId } = request.body;
+
+    if (typeof minScore !== 'number' || minScore < 1 || minScore > 99) {
+      return reply.status(400).send({ success: false, message: 'minScore must be a number between 1 and 99.' });
+    }
+
+    const query = Application.query()
+      .join('jobs', 'applications.job_id', 'jobs.id')
+      .join('resume_insights as ri', 'ri.candidate_id', 'applications.user_id')
+      .where('jobs.recruiter_id', recruiterId)
+      .whereIn('applications.status', ['applied', 'shortlisted', 'interview'])
+      .where('ri.qa_match_score', '<', minScore)
+      .withGraphFetched('applicant')
+      .select('applications.*', 'jobs.title as job_title')
+      .limit(200);
+
+    if (jobId) {
+      query.where('applications.job_id', String(jobId).replace('job_', ''));
+    }
+
+    const applications = await query;
+    const rejected = [];
+    const skipped  = [];
+
+    for (const app of applications) {
+      const allowedNext = VALID_TRANSITIONS[app.status] ?? [];
+      if (!allowedNext.includes('rejected')) {
+        skipped.push({ id: `applicant_${app.id}`, reason: `invalid_transition_from_${app.status}` });
+        continue;
+      }
+      await applyTransition(app, 'rejected', recruiterId, { log: request.log });
+      rejected.push(`applicant_${app.id}`);
+    }
+
+    return reply.status(200).send({
+      success: true,
+      message: `Bulk reject by score complete: ${rejected.length} rejected, ${skipped.length} skipped.`,
+      data: { rejected, skipped, minScore },
     });
   } catch (error) {
     request.server.log.error(error);
