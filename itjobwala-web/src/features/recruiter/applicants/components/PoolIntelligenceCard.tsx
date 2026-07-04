@@ -38,6 +38,37 @@ export default function PoolIntelligenceCard({ data }: Props) {
     );
   }
 
+  if (data.applicants_with_data === 0) {
+    return (
+      <div className="space-y-4">
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: 'Total',    value: data.total_applicants },
+            { label: 'Analysed', value: 0 },
+            { label: 'Avg Score', value: '—' },
+          ].map(({ label, value }) => (
+            <div
+              key={label}
+              className="rounded-2xl px-3 py-3 text-center"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}
+            >
+              <p className="text-[18px] font-black text-slate-200">{value}</p>
+              <p className="text-[9.5px] font-bold uppercase tracking-widest text-slate-500 mt-0.5">{label}</p>
+            </div>
+          ))}
+        </div>
+        <div
+          className="rounded-2xl p-5 text-center"
+          style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.07)' }}
+        >
+          <p className="text-[12px] text-slate-500">
+            No resume analysis available yet. Candidates need to parse their resumes to generate ATS scores.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const maxBucketCount = Math.max(...data.score_distribution.map(b => b.count), 1);
   const specEntries    = Object.entries(data.specialization_breakdown).sort((a, b) => b[1] - a[1]);
   const totalWithSpec  = specEntries.reduce((sum, [, v]) => sum + v, 0) || 1;

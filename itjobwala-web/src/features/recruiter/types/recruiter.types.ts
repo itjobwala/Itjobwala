@@ -239,36 +239,72 @@ export interface RiskFlag {
   recruiter_effect: string;
 }
 
+export interface SkillMetaEntry {
+  skill:          string;
+  evidence_level: string;
+  evidence_score: number;
+  years_used?:    number | null;
+  last_used?:     string | null;
+}
+
+export interface ATSPrioritySkill {
+  skill:            string;
+  score:            number;
+  dimension:        string;
+  reason:           string;
+  recruiter_impact?: string;
+}
+
 export interface ApplicantATSIntelligence {
-  has_data:                   boolean;
-  qa_match_score?:            number | null;
-  qa_specialization?:         string | null;
-  qa_seniority?:              string | null;
-  qa_hiring_label?:           string | null;
-  recruiter_confidence?:      string | null;
-  specialization_confidence?: number | null;
-  shortlist_probability?:     number | null;
-  recruiter_visibility?:      string | null;
-  market_readiness?:          string | null;
-  best_fit_roles:             string[];
-  recruiter_tip?:             string | null;
-  concerns:                   string[];
-  extracted_skills:           string[];
-  missing_skills:             string[];
-  strengths:                  string[];
-  weaknesses:                 string[];
-  skill_evidence?:            SkillEvidenceEntry[];
-  weak_evidence_skills?:      string[];
-  risk_flags?:                RiskFlag[];
-  overall_risk_level?:        string;
-  overall_risk_score?:        number;
-  qa_score_breakdown?:        Record<string, { score: number; max: number }> | null;
-  evidence_density?:          number | null;
-  recruiter_trust_score?:     number | null;
-  has_quantified_impact?:     boolean;
-  has_architecture_depth?:    boolean;
-  trust_signals?:             Array<{ signal: string; note: string; impact: string }>;
-  fastest_trust_gain?:        string | null;
+  has_data:              boolean;
+  eligible?:             boolean;
+  detected_domain?:      string | null;
+  domain_label?:         string | null;
+
+  qa_match_score?:       number | null;
+  capability_score?:     number | null;
+  band_label?:           string;
+  band_color?:           string;
+  career_level?:         string | null;
+  experience_years?:     number | null;
+  certifications?:       Array<{ name: string; issuer?: string }>;
+  certification_count?:  number;
+
+  qa_specialization?:    string | null;
+  qa_seniority?:         string | null;
+  qa_hiring_label?:      string | null;
+  recruiter_confidence?: string | null;
+  qa_score_breakdown?:   Record<string, { score: number; max: number }> | null;
+
+  extracted_skills?:     string[];
+  missing_skills?:       string[];
+  skill_metadata?:       SkillMetaEntry[];
+  skill_evidence?:       SkillEvidenceEntry[];
+  weak_evidence_skills?: string[];
+
+  risk_flags?:           RiskFlag[];
+  overall_risk_level?:   string;
+  overall_risk_score?:   number;
+
+  improvement_priorities?: {
+    high_priority?:   ATSPrioritySkill[];
+    medium_priority?: ATSPrioritySkill[];
+    low_priority?:    ATSPrioritySkill[];
+  } | null;
+
+  evidence_density?:       number | null;
+  recruiter_trust_score?:  number | null;
+  has_quantified_impact?:  boolean;
+  has_architecture_depth?: boolean;
+
+  trust_signals?:          Array<{ signal: string; note: string; impact: string }>;
+  fastest_trust_gain?:     string | null;
+
+  shortlist_probability?:  number | null;
+  automation_maturity?:    string | null;
+  enterprise_readiness?:   string | null;
+  market_readiness?:       string | null;
+  recruiter_visibility?:   string | null;
 }
 
 export interface PoolScoreBucket {

@@ -57,6 +57,7 @@ export const getJobPoolStats = async (request, reply) => {
     .whereIn('candidate_id', candidateIds)
     .select(
       'candidate_id',
+      'eligible',
       'qa_match_score',
       'qa_specialization',
       'qa_seniority',
@@ -66,19 +67,20 @@ export const getJobPoolStats = async (request, reply) => {
 
   const insightMap = new Map(insights.map(i => [i.candidate_id, i]));
 
-  // Build candidate list with scores
+  // Build candidate list with scores — exclude ineligible (non-QA) resumes from stats
   const candidates = applications
     .map(app => {
       const insight = insightMap.get(app.user_id);
       if (!insight) return null;
       return {
-        application_id:   app.id,
-        candidate_id:     app.user_id,
-        status:           app.status,
-        qa_match_score:   insight.qa_match_score,
-        qa_specialization: insight.qa_specialization,
-        qa_seniority:     insight.qa_seniority,
-        qa_hiring_label:  insight.qa_hiring_label,
+        application_id:       app.id,
+        candidate_id:         app.user_id,
+        status:               app.status,
+        eligible:             insight.eligible ?? true,
+        qa_match_score:       insight.qa_match_score,
+        qa_specialization:    insight.qa_specialization,
+        qa_seniority:         insight.qa_seniority,
+        qa_hiring_label:      insight.qa_hiring_label,
         recruiter_confidence: insight.recruiter_confidence,
       };
     })
@@ -86,9 +88,12 @@ export const getJobPoolStats = async (request, reply) => {
 
   const applicantsWithData = candidates.length;
 
+  // Only score eligible candidates in aggregates
+  const scoredCandidates = candidates.filter(c => c.eligible !== false && c.qa_match_score != null);
+
   // Average score
-  const avgScore = applicantsWithData > 0
-    ? Math.round(candidates.reduce((sum, c) => sum + (c.qa_match_score ?? 0), 0) / applicantsWithData)
+  const avgScore = scoredCandidates.length > 0
+    ? Math.round(scoredCandidates.reduce((sum, c) => sum + c.qa_match_score, 0) / scoredCandidates.length)
     : null;
 
   // Score distribution
@@ -96,28 +101,28 @@ export const getJobPoolStats = async (request, reply) => {
     label: bucket.label,
     min:   bucket.min,
     max:   bucket.max,
-    count: candidates.filter(c => (c.qa_match_score ?? 0) >= bucket.min && (c.qa_match_score ?? 0) <= bucket.max).length,
+    count: scoredCandidates.filter(c => c.qa_match_score >= bucket.min && c.qa_match_score <= bucket.max).length,
   }));
 
   // Specialization breakdown
   const specBreakdown = {};
-  for (const c of candidates) {
+  for (const c of scoredCandidates) {
     const spec = c.qa_specialization ?? 'unknown';
     specBreakdown[spec] = (specBreakdown[spec] ?? 0) + 1;
   }
 
-  // Top candidates (up to 5, sorted by score descending)
-  const topCandidates = [...candidates]
-    .sort((a, b) => (b.qa_match_score ?? 0) - (a.qa_match_score ?? 0))
+  // Top candidates (up to 5, eligible + scored, sorted by score descending)
+  const topCandidates = [...scoredCandidates]
+    .sort((a, b) => b.qa_match_score - a.qa_match_score)
     .slice(0, 5)
     .map(c => ({
-      applicant_id:      `applicant_${c.application_id}`,
-      qa_match_score:    c.qa_match_score,
-      qa_specialization: c.qa_specialization,
-      qa_seniority:      c.qa_seniority,
-      qa_hiring_label:   c.qa_hiring_label,
+      applicant_id:         `applicant_${c.application_id}`,
+      qa_match_score:       c.qa_match_score,
+      qa_specialization:    c.qa_specialization,
+      qa_seniority:         c.qa_seniority,
+      qa_hiring_label:      c.qa_hiring_label,
       recruiter_confidence: c.recruiter_confidence,
-      status:            c.status,
+      status:               c.status,
     }));
 
   return reply.send({
