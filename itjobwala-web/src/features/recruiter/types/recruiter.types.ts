@@ -44,6 +44,7 @@ export interface RecruiterPostedJob {
   closesAt?: string | null;
   jobLevel?: string | null;
   applicationCount: number;
+  views?: number;
   postedDate: string | null;
   status: 'active' | 'closed' | 'draft' | 'pending' | 'needs_changes' | 'removed';
   moderationReason: string | null;
@@ -331,6 +332,15 @@ export interface PoolIntelligence {
   score_distribution: PoolScoreBucket[];
   specialization_breakdown: Record<string, number>;
   top_candidates: PoolTopCandidate[];
+}
+
+export interface JobAnalytics {
+  views: number;
+  applications: number;
+  conversion_rate: number;
+  applications_by_status: Record<string, number>;
+  views_last_7d: number;
+  applications_last_7d: number;
 }
 
 // API Response Types

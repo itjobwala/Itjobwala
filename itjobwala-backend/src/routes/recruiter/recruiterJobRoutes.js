@@ -6,6 +6,7 @@ import {
   deleteJob,
   getRecruiterStats,
   submitJob,
+  getJobAnalytics,
 } from '../../controllers/recruiter/recruiterJobController.js';
 
 export default async function recruiterJobRoutes(fastify, options) {
@@ -16,6 +17,7 @@ export default async function recruiterJobRoutes(fastify, options) {
   fastify.get('/recruiter/jobs', { preValidation }, getJobs);
   // Register literal 'prefill' before :jobId to avoid radix router collision
   fastify.get('/recruiter/jobs/:jobId', { preValidation }, getJobById);
+  fastify.get('/recruiter/jobs/:jobId/analytics', { preValidation }, getJobAnalytics);
   fastify.post('/recruiter/jobs', { preValidation }, postJob);
   fastify.put('/recruiter/jobs/:jobId', { preValidation }, updateJob);
   fastify.delete('/recruiter/jobs/:jobId', { preValidation }, deleteJob);

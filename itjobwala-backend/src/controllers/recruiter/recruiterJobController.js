@@ -28,14 +28,9 @@ export const getJobs = async (request, reply) => {
     } else if (sortBy === 'title') {
       query.orderBy('title', sortOrder);
     } else if (sortBy === 'applications') {
-      // Need a subquery or join for application count sorting
-      query.select([
-        'jobs.*',
-        Application.query()
-          .whereColumn('job_id', 'jobs.id')
-          .count()
-          .as('applicationCount')
-      ]).orderBy('applicationCount', sortOrder);
+      query.select('jobs.*')
+        .select(Application.query().whereColumn('job_id', 'jobs.id').count().as('app_sort_count'))
+        .orderBy('app_sort_count', sortOrder);
     }
 
     const pageIndex = Math.max(0, parseInt(page, 10) - 1);
@@ -43,33 +38,48 @@ export const getJobs = async (request, reply) => {
 
     const result = await query.page(pageIndex, pageSize);
 
-    // Get application counts if not already selected
-    const jobsWithCounts = await Promise.all(result.results.map(async (job) => {
-      const appCount = job.applicationCount !== undefined ? 
-        parseInt(job.applicationCount, 10) : 
-        await Application.query().where('job_id', job.id).resultSize();
-      
-      return {
-        id: `job_${job.id}`,
-        title: job.title,
-        description: job.about_role || job.description,
-        location: job.location,
-        jobType: job.job_type,
-        workMode: job.work_mode,
-        salaryMin: job.salary_min,
-        salaryMax: job.salary_max,
-        requiredSkills: Array.isArray(job.skills) ? job.skills : [],
-        experienceLevel: `${job.experience_min || 0}-${job.experience_max || '5+'} years`,
-        applicationCount: appCount,
-        postedDate:       job.status === 'active' ? job.created_at : null,
-        status:           job.status,
-        moderationReason: job.moderation_reason || null,
-        autoFlags:        Array.isArray(job.auto_flags) ? job.auto_flags : [],
-        submittedAt:      job.submitted_at || null,
-        companyId: `company_${job.recruiter_id}`,
-        createdAt: job.created_at,
-        updatedAt: job.updated_at
-      };
+    // Grouped aggregates for app counts + view counts — avoids N+1
+    const countMap = new Map();
+    const viewsMap = new Map();
+    if (result.results.length > 0) {
+      const jobIds = result.results.map(j => j.id);
+      const [appRows, viewRows] = await Promise.all([
+        Application.query()
+          .whereIn('job_id', jobIds)
+          .groupBy('job_id')
+          .select('job_id')
+          .count('* as app_count'),
+        Job.knex()('job_views')
+          .whereIn('job_id', jobIds)
+          .groupBy('job_id')
+          .select('job_id')
+          .count('* as view_count'),
+      ]);
+      for (const row of appRows)  countMap.set(row.job_id, parseInt(row.app_count,  10));
+      for (const row of viewRows) viewsMap.set(row.job_id, parseInt(row.view_count, 10));
+    }
+
+    const jobsWithCounts = result.results.map(job => ({
+      id: `job_${job.id}`,
+      title: job.title,
+      description: job.about_role || job.description,
+      location: job.location,
+      jobType: job.job_type,
+      workMode: job.work_mode,
+      salaryMin: job.salary_min,
+      salaryMax: job.salary_max,
+      requiredSkills: Array.isArray(job.skills) ? job.skills : [],
+      experienceLevel: `${job.experience_min || 0}-${job.experience_max || '5+'} years`,
+      applicationCount: countMap.get(job.id) ?? 0,
+      views:            viewsMap.get(job.id) ?? 0,
+      postedDate:       job.status === 'active' ? job.created_at : null,
+      status:           job.status,
+      moderationReason: job.moderation_reason || null,
+      autoFlags:        Array.isArray(job.auto_flags) ? job.auto_flags : [],
+      submittedAt:      job.submitted_at || null,
+      companyId: `company_${job.recruiter_id}`,
+      createdAt: job.created_at,
+      updatedAt: job.updated_at
     }));
 
     return reply.status(200).send({
@@ -103,7 +113,11 @@ export const getJobById = async (request, reply) => {
       return reply.status(404).send({ success: false, message: 'Job not found', error: 'NOT_FOUND' });
     }
 
-    const appCount = await Application.query().where('job_id', job.id).resultSize();
+    const [appCount, viewRow] = await Promise.all([
+      Application.query().where('job_id', job.id).resultSize(),
+      Job.knex()('job_views').where('job_id', job.id).count('* as total').first(),
+    ]);
+    const views = parseInt(viewRow?.total ?? '0', 10);
 
     function parseJsonArray(val) {
       if (!val) return [];
@@ -133,6 +147,7 @@ export const getJobById = async (request, reply) => {
         closesAt: job.closes_at || null,
         jobLevel: job.job_level || null,
         applicationCount: appCount,
+        views,
         postedDate: job.status === 'active' ? job.created_at : null,
         status:           job.status,
         moderationReason: job.moderation_reason || null,
@@ -579,6 +594,62 @@ export const submitJob = async (request, reply) => {
         flags,
         moderationReason,
       },
+    });
+  } catch (error) {
+    request.server.log.error(error);
+    return reply.status(500).send({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const getJobAnalytics = async (request, reply) => {
+  try {
+    const recruiterId = request.user.id;
+    const jobId = parseInt(request.params.jobId.replace('job_', ''), 10);
+
+    const job = await Job.query().findOne({ id: jobId, recruiter_id: recruiterId }).select('id');
+    if (!job) {
+      return reply.status(404).send({ success: false, message: 'Job not found' });
+    }
+
+    const sevenDaysAgoDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const sevenDaysAgoISO  = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    const [totalViewsRow, weekViewsRow, appsByStatus, weekAppsCount] = await Promise.all([
+      Job.knex()('job_views').where('job_id', jobId).count('* as total').first(),
+      Job.knex()('job_views')
+        .where('job_id', jobId)
+        .where('viewed_date', '>=', sevenDaysAgoDate)
+        .count('* as total').first(),
+      Application.query()
+        .where('job_id', jobId)
+        .groupBy('status')
+        .select('status')
+        .count('* as count'),
+      Application.query()
+        .where('job_id', jobId)
+        .where('applied_at', '>=', sevenDaysAgoISO)
+        .resultSize(),
+    ]);
+
+    const views         = parseInt(totalViewsRow?.total ?? '0', 10);
+    const views_last_7d = parseInt(weekViewsRow?.total  ?? '0', 10);
+    const applications_by_status = Object.fromEntries(
+      appsByStatus.map(r => [r.status, parseInt(r.count, 10)])
+    );
+    const applications    = Object.values(applications_by_status).reduce((s, n) => s + n, 0);
+    const conversion_rate = views > 0 ? Math.round((applications / views) * 1000) / 10 : 0;
+
+    return reply.status(200).send({
+      success: true,
+      message: 'Job analytics fetched.',
+      data: {
+        views,
+        applications,
+        conversion_rate,
+        applications_by_status,
+        views_last_7d,
+        applications_last_7d: weekAppsCount,
+      }
     });
   } catch (error) {
     request.server.log.error(error);

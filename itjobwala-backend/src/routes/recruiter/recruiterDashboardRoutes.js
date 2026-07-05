@@ -13,6 +13,7 @@ export default async function recruiterDashboardRoutes(fastify, options) {
   };
 
   fastify.get('/recruiter/dashboard/stats', authOpts, getDashboardStats);
+  fastify.get('/recruiter/dashboard/jobs', authOpts, getPostedJobs);
   fastify.get('/recruiter/dashboard/recent-applicants', authOpts, getRecentApplicants);
   fastify.get('/recruiter/dashboard/pipeline', authOpts, getPipeline);
   fastify.get('/recruiter/dashboard/activity', authOpts, getActivityFeed);

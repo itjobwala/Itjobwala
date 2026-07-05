@@ -81,6 +81,12 @@ export const env = {
   // prod/QA:   redis://:<password>@<host>:6379
   redisUrl: optional('REDIS_URL', ''),
 
+  // ── Analytics ──────────────────────────────────────────────────────────────
+  // HMAC-SHA256 key used to one-way hash client IPs before storing in job_views.
+  // Generate: openssl rand -hex 32
+  // IMPORTANT: changing this key invalidates all existing daily dedup indexes.
+  ipHashSalt: optional('IP_HASH_SALT', 'itjobwala-dev-salt-change-in-prod'),
+
   // ── CORS ───────────────────────────────────────────────────────────────────
   // Comma-separated list of allowed frontend origins. No trailing slashes.
   // local:   http://localhost:3000

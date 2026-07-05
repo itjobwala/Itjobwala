@@ -5,6 +5,7 @@ import type {
   UpdateJobPostRequest,
   RecruiterJobsResponse,
   RecruiterJobDetailResponse,
+  JobAnalytics,
 } from '@/features/recruiter/types';
 
 export async function getRecruiterPostedJobs(filters?: {
@@ -48,6 +49,13 @@ export async function deleteRecruiterJob(jobId: string): Promise<void> {
 export async function submitRecruiterJob(jobId: string): Promise<RecruiterPostedJob> {
   const res = await recruiterClient.post<RecruiterJobDetailResponse>(
     `/recruiter/jobs/${jobId}/submit`,
+  );
+  return res.data.data;
+}
+
+export async function getJobAnalytics(jobId: string): Promise<JobAnalytics> {
+  const res = await recruiterClient.get<{ success: boolean; data: JobAnalytics }>(
+    `/recruiter/jobs/${jobId}/analytics`,
   );
   return res.data.data;
 }

@@ -1,9 +1,14 @@
+import crypto from 'node:crypto';
 import Job from '../../models/jobs/Job.js';
 import Recruiter from '../../models/recruiter/Recruiter.js';
 import Application from '../../models/jobs/Application.js';
 import SavedJob from '../../models/jobs/SavedJob.js';
 import ResumeInsight from '../../models/candidate/ResumeInsight.js';
 import { ref, raw } from 'objection';
+import { env } from '../../config/env.js';
+
+const hashIp = (ip) =>
+  crypto.createHmac('sha256', env.ipHashSalt).update(ip || '').digest('hex');
 
 // Resolve candidate user ID from request JWT without throwing (optional auth).
 // Tokens are signed as { sub: String(id), role, type } — sub must be mapped to id.
@@ -245,6 +250,23 @@ export const getJobDetails = async (request, reply) => {
 
     if (!job || job.status !== 'active') {
       return reply.status(404).send({ success: false, message: 'Job not found or has been removed.' });
+    }
+
+    // Fire-and-forget: record this page view (deduped per user/IP per day via unique indexes)
+    const today = new Date().toISOString().split('T')[0];
+    if (candidateId) {
+      Job.knex().raw(
+        'INSERT INTO job_views (job_id, viewer_user_id, viewed_date) VALUES (?, ?, ?) ON CONFLICT DO NOTHING',
+        [job.id, candidateId, today],
+      ).catch(() => {});
+    } else {
+      const ip = request.ip;
+      if (ip) {
+        Job.knex().raw(
+          'INSERT INTO job_views (job_id, viewer_ip_hash, viewed_date) VALUES (?, ?, ?) ON CONFLICT DO NOTHING',
+          [job.id, hashIp(ip), today],
+        ).catch(() => {});
+      }
     }
 
     return reply.status(200).send({
