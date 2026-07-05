@@ -1,11 +1,15 @@
 'use client';
 
+import { useState } from 'react';
 import type { CandidateCard } from '../types/candidateSearch.types';
 import Button from '@/src/components/ui/Button';
+import { useSaveCandidateMutation } from '@/features/recruiter/hooks';
 
 interface Props {
   candidate: CandidateCard;
   onView: (id: string) => void;
+  selected?: boolean;
+  onSelect?: (id: string) => void;
 }
 
 function Avatar({ name, photoUrl }: { name: string; photoUrl: string | null }) {
@@ -46,14 +50,79 @@ function seniorityClass(s: string | null) {
   return SENIORITY_COLOR[s.toLowerCase()] ?? 'bg-surface-hover text-muted';
 }
 
-export default function CandidateResultCard({ candidate, onView }: Props) {
+function SavePopover({ candidateId, onClose }: { candidateId: string; onClose: () => void }) {
+  const [listName, setListName] = useState('Shortlist');
+  const [note, setNote]         = useState('');
+  const [saved, setSaved]       = useState(false);
+  const save = useSaveCandidateMutation();
+
+  async function handleSave() {
+    await save.mutateAsync({ candidate_id: candidateId, list_name: listName || 'Shortlist', note: note || undefined });
+    setSaved(true);
+    setTimeout(onClose, 800);
+  }
+
+  if (saved) {
+    return (
+      <div className="absolute right-0 top-full mt-1 z-20 bg-surface border border-token rounded-xl shadow-lg p-3 text-sm text-success font-semibold whitespace-nowrap">
+        Saved!
+      </div>
+    );
+  }
+
+  return (
+    <div className="absolute right-0 top-full mt-1 z-20 bg-surface border border-token rounded-xl shadow-lg p-3 w-52 space-y-2">
+      <p className="text-micro font-extrabold text-subtle uppercase tracking-wide">Save to pool</p>
+      <input
+        autoFocus
+        value={listName}
+        onChange={e => setListName(e.target.value)}
+        placeholder="List name"
+        className="w-full text-sm border border-token rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+      />
+      <input
+        value={note}
+        onChange={e => setNote(e.target.value)}
+        placeholder="Note (optional)"
+        className="w-full text-sm border border-token rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+      />
+      <div className="flex gap-1.5 justify-end">
+        <button onClick={onClose} className="text-xs text-subtle px-2 py-1 rounded-lg hover:bg-surface-hover">Cancel</button>
+        <button
+          onClick={handleSave}
+          disabled={save.isPending}
+          className="text-xs font-bold text-white px-3 py-1 rounded-lg bg-primary hover:bg-primary/90 disabled:opacity-50"
+        >
+          {save.isPending ? 'Saving…' : 'Save'}
+        </button>
+      </div>
+      {save.isError && (
+        <p className="text-micro text-danger">
+          {(save.error as { response?: { data?: { message?: string } } })?.response?.data?.message ?? 'Error saving'}
+        </p>
+      )}
+    </div>
+  );
+}
+
+export default function CandidateResultCard({ candidate, onView, selected, onSelect }: Props) {
+  const [showSave, setShowSave] = useState(false);
   const SKILLS_SHOWN = 4;
   const visibleSkills = candidate.skills.slice(0, SKILLS_SHOWN);
   const extraSkills   = candidate.skills.length - SKILLS_SHOWN;
 
   return (
-    <div className="bg-surface rounded-2xl border border-token shadow-sm p-4 sm:p-5 hover:shadow-md transition-shadow">
+    <div className={`bg-surface rounded-2xl border shadow-sm p-4 sm:p-5 hover:shadow-md transition-shadow ${selected ? 'border-primary ring-1 ring-primary/20' : 'border-token'}`}>
       <div className="flex items-start gap-3">
+        {onSelect && (
+          <input
+            type="checkbox"
+            checked={!!selected}
+            onChange={() => onSelect(candidate.id)}
+            className="mt-1 w-4 h-4 shrink-0 accent-primary cursor-pointer"
+            aria-label={`Select ${candidate.name}`}
+          />
+        )}
         <Avatar name={candidate.name} photoUrl={candidate.profile_photo_url} />
 
         <div className="flex-1 min-w-0">
@@ -128,15 +197,22 @@ export default function CandidateResultCard({ candidate, onView }: Props) {
           )}
         </div>
 
-        {/* CTA */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onView(candidate.id)}
-          className="shrink-0"
-        >
-          View profile
-        </Button>
+        {/* CTAs */}
+        <div className="shrink-0 flex flex-col gap-1.5 items-end relative">
+          <Button variant="ghost" size="sm" onClick={() => onView(candidate.id)}>
+            View profile
+          </Button>
+          <button
+            onClick={() => setShowSave(v => !v)}
+            className="text-micro font-semibold text-subtle hover:text-primary transition-colors px-1"
+            aria-label="Save to talent pool"
+          >
+            + Save
+          </button>
+          {showSave && (
+            <SavePopover candidateId={candidate.id} onClose={() => setShowSave(false)} />
+          )}
+        </div>
       </div>
     </div>
   );

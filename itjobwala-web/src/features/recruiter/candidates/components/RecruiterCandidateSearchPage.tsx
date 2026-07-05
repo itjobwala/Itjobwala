@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { RecruiterShell } from '@/layout/shell';
 import Button from '@/src/components/ui/Button';
-import { useCandidateSearchQuery } from '@/features/recruiter/hooks';
+import { useCandidateSearchQuery, useBulkMessageMutation } from '@/features/recruiter/hooks';
 import type { CandidateSearchFilters } from '../types/candidateSearch.types';
 import CandidateResultCard from './CandidateResultCard';
 import CandidateProfileDrawer from './CandidateProfileDrawer';
@@ -93,6 +93,70 @@ function EmptyState({ hasFilters }: { hasFilters: boolean }) {
   );
 }
 
+function BulkMessageModal({
+  selectedIds,
+  onClose,
+}: {
+  selectedIds: string[];
+  onClose: () => void;
+}) {
+  const [message, setMessage] = useState('');
+  const [result, setResult]   = useState<{ sent: number; skipped: number } | null>(null);
+  const bulk = useBulkMessageMutation();
+
+  async function handleSend() {
+    const data = await bulk.mutateAsync({ candidate_ids: selectedIds, message });
+    setResult({ sent: data.sent.length, skipped: data.skipped.length });
+  }
+
+  return (
+    <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <div className="bg-surface rounded-2xl shadow-xl w-full max-w-lg p-6 space-y-4">
+        <div className="flex items-start justify-between">
+          <div>
+            <h2 className="text-base font-extrabold text-heading">Message candidates</h2>
+            <p className="text-sm text-subtle mt-0.5">{selectedIds.length} recipient{selectedIds.length !== 1 ? 's' : ''} selected</p>
+          </div>
+          <button onClick={onClose} className="text-subtle hover:text-muted" aria-label="Close">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6 6 18M6 6l12 12" /></svg>
+          </button>
+        </div>
+        {result ? (
+          <div className="text-center space-y-3 py-4">
+            <p className="text-2xl font-black text-heading">{result.sent} sent</p>
+            {result.skipped > 0 && <p className="text-sm text-subtle">{result.skipped} skipped</p>}
+            <button onClick={onClose} className="px-5 py-2 rounded-xl text-sm font-bold bg-primary text-white hover:brightness-110">Done</button>
+          </div>
+        ) : (
+          <>
+            <textarea
+              autoFocus
+              value={message}
+              onChange={e => setMessage(e.target.value)}
+              placeholder="Write your message here…"
+              rows={5}
+              maxLength={4000}
+              className="w-full text-sm border border-token rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none"
+            />
+            <p className="text-micro text-subtle text-right">{message.length}/4000</p>
+            {bulk.isError && <p className="text-sm text-danger">Failed to send. Please try again.</p>}
+            <div className="flex gap-3 justify-end">
+              <button onClick={onClose} className="px-4 py-2 rounded-xl text-sm font-semibold border border-token text-muted">Cancel</button>
+              <button
+                onClick={handleSend}
+                disabled={!message.trim() || bulk.isPending}
+                className="px-5 py-2 rounded-xl text-sm font-bold bg-primary text-white hover:brightness-110 disabled:opacity-50"
+              >
+                {bulk.isPending ? 'Sending…' : `Send to ${selectedIds.length}`}
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function RecruiterCandidateSearchPage() {
   const [qInput, setQInput]             = useState('');
   const [q, setQ]                       = useState('');
@@ -108,6 +172,12 @@ export default function RecruiterCandidateSearchPage() {
   const [sort, setSort]                 = useState<CandidateSearchFilters['sort']>('relevance');
   const [page, setPage]                 = useState(1);
   const [activeCandidateId, setActiveCandidateId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds]   = useState<Set<string>>(new Set());
+  const [showBulkModal, setShowBulkModal] = useState(false);
+
+  function toggleSelect(id: string) {
+    setSelectedIds(prev => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
+  }
 
   useEffect(() => {
     const t = setTimeout(() => { setQ(qInput); setPage(1); }, 400);
@@ -250,9 +320,14 @@ export default function RecruiterCandidateSearchPage() {
           {/* Toolbar */}
           <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
             <div>
-              <h1 className="text-xl font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
-                Find Candidates
-              </h1>
+              <div className="flex items-center gap-3">
+                <h1 className="text-xl font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
+                  Find Candidates
+                </h1>
+                <a href="/recruiter/talent-pool" className="text-xs font-semibold text-primary hover:underline">
+                  Talent Pool →
+                </a>
+              </div>
               {pagination && (
                 <p className="text-sm text-subtle mt-0.5">
                   {pagination.total.toLocaleString()} candidate{pagination.total !== 1 ? 's' : ''} found
@@ -260,15 +335,25 @@ export default function RecruiterCandidateSearchPage() {
               )}
             </div>
 
-            <select
-              value={sort}
-              onChange={e => { setSort(e.target.value as CandidateSearchFilters['sort']); resetPage(); }}
-              className="text-sm border border-token rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-surface"
-            >
-              {SORT_OPTIONS.map(o => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2">
+              {[...selectedIds].length > 0 && (
+                <button
+                  onClick={() => setShowBulkModal(true)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-primary text-white hover:brightness-110 transition-all"
+                >
+                  Message {[...selectedIds].length}
+                </button>
+              )}
+              <select
+                value={sort}
+                onChange={e => { setSort(e.target.value as CandidateSearchFilters['sort']); resetPage(); }}
+                className="text-sm border border-token rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-surface"
+              >
+                {SORT_OPTIONS.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Loading skeletons */}
@@ -310,6 +395,8 @@ export default function RecruiterCandidateSearchPage() {
                   key={c.id}
                   candidate={c}
                   onView={setActiveCandidateId}
+                  selected={selectedIds.has(c.id)}
+                  onSelect={toggleSelect}
                 />
               ))}
             </div>
@@ -341,6 +428,13 @@ export default function RecruiterCandidateSearchPage() {
           )}
         </div>
       </div>
+
+      {showBulkModal && (
+        <BulkMessageModal
+          selectedIds={[...selectedIds]}
+          onClose={() => { setShowBulkModal(false); setSelectedIds(new Set()); }}
+        />
+      )}
 
       {/* Profile drawer */}
       <CandidateProfileDrawer

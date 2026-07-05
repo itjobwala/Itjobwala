@@ -95,6 +95,8 @@ fastify.register((await import('./src/routes/candidate/resumeBuilderRoutes.js'))
 fastify.register((await import('./src/routes/admin/adminRoutes.js')).default, { prefix: '/api' });
 fastify.register((await import('./src/routes/reports/reportRoutes.js')).default, { prefix: '/api' });
 fastify.register((await import('./src/routes/recruiter/recruiterCandidateRoutes.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/recruiter/talentPoolRoutes.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/recruiter/bulkMessageRoutes.js')).default, { prefix: '/api' });
 fastify.register((await import('./src/routes/candidate/jobAlertRoutes.js')).default, { prefix: '/api' });
 
 // Centralized Error Handler

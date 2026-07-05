@@ -74,3 +74,17 @@ export interface CandidateSearchResult {
   candidates:  CandidateCard[];
   pagination:  CandidateSearchPagination;
 }
+
+export type SavedCandidateEntry = {
+  save_id:   number;
+  list_name: string;
+  note:      string | null;
+  saved_at:  string;
+  candidate: (CandidateCard & { available: true }) | { id: string; available: false };
+};
+
+export interface TalentPoolResult {
+  candidates:  SavedCandidateEntry[];
+  list_names:  string[];
+  pagination:  CandidateSearchPagination;
+}

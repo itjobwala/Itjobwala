@@ -8,6 +8,8 @@ import { getRecruiterStats, getDashboardStats, getRecruiterNotifications, getRec
 import { getRecruiterInterviews, scheduleRecruiterInterview, cancelRecruiterInterview } from '@/features/recruiter/interviews';
 import { searchCandidates, getCandidateProfile } from '@/features/recruiter/candidates';
 import type { CandidateSearchFilters } from '@/features/recruiter/candidates';
+import { getTalentPool, saveCandidate, removeFromPool, bulkMessageCandidates } from '@/features/recruiter/candidates/services/talentPool.api';
+import type { SaveCandidateBody } from '@/features/recruiter/candidates/services/talentPool.api';
 import type {
   UpdateCompanyProfileRequest,
   CreateJobPostRequest,
@@ -35,6 +37,7 @@ export const recruiterKeys = {
   notifications: () => ['recruiter', 'notifications'] as const,
   candidates: (filters?: CandidateSearchFilters) => ['recruiter', 'candidates', filters] as const,
   candidateDetail: (id: string) => ['recruiter', 'candidates', 'detail', id] as const,
+  talentPool: (params?: object) => ['recruiter', 'talent-pool', params] as const,
 };
 
 export function useRecruiterStatsQuery(enabled = true) {
@@ -368,5 +371,40 @@ export function useTopCandidatesQuery(limit?: number, enabled = true) {
     queryFn:  () => getTopCandidates(limit),
     enabled,
     staleTime: 2 * 60 * 1000,
+  });
+}
+
+export function useTalentPoolQuery(params: { list_name?: string; page?: number; limit?: number } = {}) {
+  return useQuery({
+    queryKey: recruiterKeys.talentPool(params),
+    queryFn:  () => getTalentPool(params),
+  });
+}
+
+export function useSaveCandidateMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: SaveCandidateBody) => saveCandidate(body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['recruiter', 'talent-pool'] });
+    },
+  });
+}
+
+export function useRemoveFromPoolMutation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ candidateId, listName }: { candidateId: string; listName?: string }) =>
+      removeFromPool(candidateId, listName),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['recruiter', 'talent-pool'] });
+    },
+  });
+}
+
+export function useBulkMessageMutation() {
+  return useMutation({
+    mutationFn: (body: { candidate_ids: string[]; message: string }) =>
+      bulkMessageCandidates(body),
   });
 }

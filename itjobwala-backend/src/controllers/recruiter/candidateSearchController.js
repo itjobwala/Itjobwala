@@ -3,7 +3,7 @@ import ProfileView from '../../models/recruiter/ProfileView.js';
 import { upsertProfileViewNotification } from '../../utils/notifyHelper.js';
 
 // Safe list fields — NO email, NO mobile
-function formatCandidateCard(row) {
+export function formatCandidateCard(row) {
   const skills = typeof row.skills === 'string' ? JSON.parse(row.skills) : (row.skills ?? []);
   return {
     id:               `candidate_${row.id}`,
@@ -42,7 +42,7 @@ function formatCandidateDetail(row) {
   };
 }
 
-function buildBaseQuery(knex) {
+export function buildBaseQuery(knex) {
   return knex('users as u')
     .join('candidate_recruiter_visibility as crv', 'crv.user_id', 'u.id')
     .leftJoin(

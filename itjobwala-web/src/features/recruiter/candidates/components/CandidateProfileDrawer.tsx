@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useCandidateDetailQuery } from '@/features/recruiter/hooks';
+import { useCandidateDetailQuery, useSaveCandidateMutation } from '@/features/recruiter/hooks';
 import type { CandidateDetail } from '../types/candidateSearch.types';
 
 interface Props {
@@ -55,6 +55,23 @@ function ScoreBar({ label, value }: { label: string; value: number | null }) {
 
 function DrawerContent({ detail, onClose }: { detail: CandidateDetail; onClose: () => void }) {
   const chatUrl = `/recruiter/chat?candidateId=${detail.id}`;
+  const [listName, setListName] = useState('Shortlist');
+  const [note, setNote]         = useState('');
+  const [showSave, setShowSave] = useState(false);
+  const [savedMsg, setSavedMsg] = useState('');
+  const save = useSaveCandidateMutation();
+
+  async function handleSave() {
+    try {
+      await save.mutateAsync({ candidate_id: detail.id, list_name: listName || 'Shortlist', note: note || undefined });
+      setSavedMsg('Saved to pool!');
+      setShowSave(false);
+      setTimeout(() => setSavedMsg(''), 3000);
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setSavedMsg(msg ?? 'Error saving');
+    }
+  }
 
   return (
     <div className="flex flex-col h-full">
@@ -278,16 +295,57 @@ function DrawerContent({ detail, onClose }: { detail: CandidateDetail; onClose: 
       </div>
 
       {/* Footer CTA */}
-      <div className="p-5 border-t border-token shrink-0">
-        <Link
-          href={chatUrl}
-          className="flex items-center justify-center gap-2 w-full bg-primary text-white font-bold text-base rounded-xl px-5 py-3 hover:brightness-110 transition-all"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
-          Message candidate
-        </Link>
+      <div className="p-5 border-t border-token shrink-0 space-y-3">
+        {savedMsg && (
+          <p className={`text-sm font-semibold text-center ${savedMsg.startsWith('Error') || savedMsg.startsWith('Already') ? 'text-danger' : 'text-success'}`}>
+            {savedMsg}
+          </p>
+        )}
+        {showSave && (
+          <div className="border border-token rounded-xl p-3 space-y-2">
+            <p className="text-micro font-extrabold text-subtle uppercase tracking-wide">Save to talent pool</p>
+            <input
+              autoFocus
+              value={listName}
+              onChange={e => setListName(e.target.value)}
+              placeholder="List name (e.g. Shortlist)"
+              className="w-full text-sm border border-token rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+            />
+            <input
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              placeholder="Note (optional)"
+              className="w-full text-sm border border-token rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+            />
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setShowSave(false)} className="text-xs text-subtle px-3 py-1.5 rounded-lg hover:bg-surface-hover">Cancel</button>
+              <button
+                onClick={handleSave}
+                disabled={save.isPending}
+                className="text-xs font-bold text-white px-4 py-1.5 rounded-lg bg-primary hover:bg-primary/90 disabled:opacity-50"
+              >
+                {save.isPending ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+          </div>
+        )}
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowSave(v => !v)}
+            className="flex-1 text-sm font-semibold px-4 py-3 rounded-xl border border-token hover:border-primary/40 hover:text-primary transition-colors"
+          >
+            {showSave ? 'Cancel save' : '+ Save to pool'}
+          </button>
+          <Link
+            href={chatUrl}
+            className="flex-1 flex items-center justify-center gap-1.5 bg-primary text-white font-bold text-sm rounded-xl px-4 py-3 hover:brightness-110 transition-all"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            Message
+          </Link>
+        </div>
       </div>
     </div>
   );
