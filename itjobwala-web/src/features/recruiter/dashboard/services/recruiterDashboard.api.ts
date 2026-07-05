@@ -1,5 +1,26 @@
 import { recruiterClient } from '@/src/lib/api/client';
 
+export interface RecruiterDashboardStats {
+  active_jobs:          number;
+  active_jobs_change:   number;
+  total_applicants:     number;
+  applicants_change:    number;
+  interviews_scheduled: number;
+  interviews_change:    number;
+  hires_made:           number;
+  hires_change:         number;
+  profile_views:        number;
+  profile_views_change: number;
+  time_to_hire_days:    number | null;
+}
+
+export async function getDashboardStats(): Promise<RecruiterDashboardStats> {
+  const res = await recruiterClient.get<{ success: boolean; data: RecruiterDashboardStats }>(
+    '/recruiter/dashboard/stats',
+  );
+  return res.data.data;
+}
+
 export interface RecruiterStats {
   activeJobs:           number;
   totalApplicants:      number;

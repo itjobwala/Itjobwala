@@ -3,6 +3,7 @@ import Job from '../../models/jobs/Job.js';
 import Application from '../../models/jobs/Application.js';
 import Activity from '../../models/recruiter/Activity.js';
 import ResumeInsight from '../../models/candidate/ResumeInsight.js';
+import ProfileView from '../../models/recruiter/ProfileView.js';
 
 const AVATAR_GRADIENTS = [
   'from-blue-500 to-indigo-600',
@@ -21,8 +22,10 @@ export const getDashboardStats = async (request, reply) => {
     const fourteenDaysAgo  = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
     const sevenDaysAgoISO  = sevenDaysAgo.toISOString();
     const fourteenDaysAgoISO = fourteenDaysAgo.toISOString();
+    const sevenDaysAgoDate   = sevenDaysAgo.toISOString().split('T')[0];
+    const fourteenDaysAgoDate = fourteenDaysAgo.toISOString().split('T')[0];
 
-    const [jobsCount, applications, jobsThisWeek, jobsLastWeek] = await Promise.all([
+    const [jobsCount, applications, jobsThisWeek, jobsLastWeek, pvThisWeek, pvLastWeek] = await Promise.all([
       Job.query().where({ recruiter_id: recruiterId, status: 'active' }).resultSize(),
       Application.query()
         .join('jobs', 'applications.job_id', 'jobs.id')
@@ -38,6 +41,17 @@ export const getDashboardStats = async (request, reply) => {
         .where('created_at', '>=', fourteenDaysAgoISO)
         .where('created_at', '<', sevenDaysAgoISO)
         .resultSize(),
+      ProfileView.query()
+        .where('recruiter_id', recruiterId)
+        .where('viewed_date', '>=', sevenDaysAgoDate)
+        .countDistinct('candidate_user_id as count')
+        .first(),
+      ProfileView.query()
+        .where('recruiter_id', recruiterId)
+        .where('viewed_date', '>=', fourteenDaysAgoDate)
+        .where('viewed_date', '<', sevenDaysAgoDate)
+        .countDistinct('candidate_user_id as count')
+        .first(),
     ]);
 
     // Period deltas computed from the already-fetched applications array
@@ -81,8 +95,8 @@ export const getDashboardStats = async (request, reply) => {
         interviews_change:     thisWeekInterviews - lastWeekInterviews,
         hires_made:            applications.filter(a => a.status === 'hired').length,
         hires_change:          thisWeekHires - lastWeekHires,
-        profile_views:         null,
-        profile_views_change:  null,
+        profile_views:         parseInt(pvThisWeek?.count  ?? '0', 10),
+        profile_views_change:  parseInt(pvThisWeek?.count  ?? '0', 10) - parseInt(pvLastWeek?.count ?? '0', 10),
         time_to_hire_days
       }
     });
@@ -110,19 +124,28 @@ export const getPostedJobs = async (request, reply) => {
 
     const result = await query.page(pageIndex, pageSize);
 
-    // Real per-job applicant counts via a single grouped aggregate query
+    // Real per-job applicant counts and view counts via single grouped aggregate queries
     const countMap = new Map();
+    const viewsMap = new Map();
     if (result.results.length > 0) {
       const jobIds = result.results.map(j => j.id);
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const rows = await Application.query()
-        .whereIn('job_id', jobIds)
-        .groupBy('job_id')
-        .select('job_id')
-        .select(raw('COUNT(*)::int AS total'))
-        .select(raw(`SUM(CASE WHEN status = 'shortlisted' THEN 1 ELSE 0 END)::int AS shortlisted_cnt`))
-        .select(raw(`SUM(CASE WHEN applied_at >= ? THEN 1 ELSE 0 END)::int AS new_cnt`, [sevenDaysAgo]));
+      const [rows, viewRows] = await Promise.all([
+        Application.query()
+          .whereIn('job_id', jobIds)
+          .groupBy('job_id')
+          .select('job_id')
+          .select(raw('COUNT(*)::int AS total'))
+          .select(raw(`SUM(CASE WHEN status = 'shortlisted' THEN 1 ELSE 0 END)::int AS shortlisted_cnt`))
+          .select(raw(`SUM(CASE WHEN applied_at >= ? THEN 1 ELSE 0 END)::int AS new_cnt`, [sevenDaysAgo])),
+        Job.knex()('job_views')
+          .whereIn('job_id', jobIds)
+          .groupBy('job_id')
+          .select('job_id')
+          .count('* as view_count'),
+      ]);
       for (const row of rows) countMap.set(row.job_id, row);
+      for (const row of viewRows) viewsMap.set(row.job_id, parseInt(row.view_count, 10));
     }
 
     return reply.status(200).send({
@@ -141,7 +164,7 @@ export const getPostedJobs = async (request, reply) => {
             applicants_count:     c?.total          ?? 0,
             new_applicants_count: c?.new_cnt        ?? 0,
             shortlisted_count:    c?.shortlisted_cnt ?? 0,
-            views:     null,
+            views:     viewsMap.get(job.id) ?? 0,
             posted_at: job.posted_at || job.created_at,
             closes_at: job.closes_at
           };

@@ -2,9 +2,9 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getRecruiterCompanyProfile, updateRecruiterCompanyProfile } from '@/features/recruiter/company';
-import { getRecruiterPostedJobs, getRecruiterPostedJobById, createRecruiterJob, updateRecruiterJob, deleteRecruiterJob, submitRecruiterJob } from '@/features/recruiter/jobs';
+import { getRecruiterPostedJobs, getRecruiterPostedJobById, createRecruiterJob, updateRecruiterJob, deleteRecruiterJob, submitRecruiterJob, getJobAnalytics } from '@/features/recruiter/jobs';
 import { getRecruiterApplicants, getRecruiterApplicantById, updateApplicantStatus, rejectApplicant, shortlistApplicant, hireApplicant, getApplicantATSIntelligence, getJobPoolStats, bulkRejectApplicants, bulkRejectByScore, getTopCandidates } from '@/features/recruiter/applicants';
-import { getRecruiterStats, getRecruiterNotifications, getRecruiterNotificationsPaged, markNotificationRead, markAllNotificationsRead } from '@/features/recruiter/dashboard';
+import { getRecruiterStats, getDashboardStats, getRecruiterNotifications, getRecruiterNotificationsPaged, markNotificationRead, markAllNotificationsRead } from '@/features/recruiter/dashboard';
 import { getRecruiterInterviews, scheduleRecruiterInterview, cancelRecruiterInterview } from '@/features/recruiter/interviews';
 import { searchCandidates, getCandidateProfile } from '@/features/recruiter/candidates';
 import type { CandidateSearchFilters } from '@/features/recruiter/candidates';
@@ -24,6 +24,8 @@ export const recruiterKeys = {
   topCandidates:   () => ['recruiter', 'top-candidates'] as const,
   company: () => ['recruiter', 'company'] as const,
   stats: () => ['recruiter', 'stats'] as const,
+  dashboardStats: () => ['recruiter', 'dashboard-stats'] as const,
+  jobAnalytics: (id: string) => ['recruiter', 'job-analytics', id] as const,
   jobs: () => ['recruiter', 'jobs'] as const,
   jobDetail: (id: string) => ['recruiter', 'jobs', id] as const,
   applicantsAll: () => ['recruiter', 'applicants'] as const,
@@ -40,6 +42,24 @@ export function useRecruiterStatsQuery(enabled = true) {
     queryKey: recruiterKeys.stats(),
     queryFn: getRecruiterStats,
     enabled,
+  });
+}
+
+export function useDashboardStatsQuery(enabled = true) {
+  return useQuery({
+    queryKey: recruiterKeys.dashboardStats(),
+    queryFn: getDashboardStats,
+    enabled,
+    staleTime: 60_000,
+  });
+}
+
+export function useJobAnalyticsQuery(jobId: string, enabled = true) {
+  return useQuery({
+    queryKey: recruiterKeys.jobAnalytics(jobId),
+    queryFn: () => getJobAnalytics(jobId),
+    enabled: enabled && !!jobId,
+    staleTime: 2 * 60_000,
   });
 }
 
