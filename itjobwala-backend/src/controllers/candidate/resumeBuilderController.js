@@ -1,6 +1,7 @@
 import Resume from '../../models/candidate/Resume.js';
 import User from '../../models/candidate/User.js';
 import ResumeInsight from '../../models/candidate/ResumeInsight.js';
+import { deepSanitize } from '../../utils/sanitize.js';
 
 export const listResumes = async (request, reply) => {
   try {
@@ -20,7 +21,12 @@ export const createResume = async (request, reply) => {
   try {
     const userId = request.user.id;
     const { title = 'Untitled Resume', template = 'modern', content = {} } = request.body ?? {};
-    const resume = await Resume.query().insertAndFetch({ candidate_id: userId, title, template, content });
+    const resume = await Resume.query().insertAndFetch({
+      candidate_id: userId,
+      title,
+      template,
+      content: deepSanitize(content),
+    });
     return reply.status(201).send({ success: true, message: 'Resume created.', data: { resume } });
   } catch (err) {
     request.log.error(err);
@@ -55,7 +61,7 @@ export const updateResume = async (request, reply) => {
     const updates = { updated_at: new Date().toISOString() };
     if (title     !== undefined) updates.title    = title;
     if (template  !== undefined) updates.template = template;
-    if (content   !== undefined) updates.content  = content;
+    if (content   !== undefined) updates.content  = deepSanitize(content);
     const updated = await resume.$query().patchAndFetch(updates);
     return reply.status(200).send({ success: true, message: 'Resume updated.', data: { resume: updated } });
   } catch (err) {

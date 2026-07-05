@@ -42,3 +42,36 @@ export function sanitizeFields(obj) {
   }
   return out;
 }
+
+/**
+ * Recursively sanitize all string values inside any JSON-serialisable value.
+ * Preserves structure (objects, arrays), numbers, booleans, and null unchanged.
+ *
+ * Cycle-safe (WeakSet) and depth-capped at MAX_DEPTH to reject pathological payloads.
+ * Non-plain objects (class instances, Buffers) are returned as-is.
+ */
+const MAX_DEPTH = 6;
+
+export function deepSanitize(value) {
+  return _walk(value, 0, new WeakSet());
+}
+
+function _walk(value, depth, seen) {
+  if (typeof value === 'string') return sanitizeText(value);
+  if (depth >= MAX_DEPTH) return value;
+  if (Array.isArray(value)) {
+    if (seen.has(value)) return value;
+    seen.add(value);
+    return value.map(item => _walk(item, depth + 1, seen));
+  }
+  if (value !== null && typeof value === 'object' && Object.getPrototypeOf(value) === Object.prototype) {
+    if (seen.has(value)) return value;
+    seen.add(value);
+    const out = {};
+    for (const [key, val] of Object.entries(value)) {
+      out[key] = _walk(val, depth + 1, seen);
+    }
+    return out;
+  }
+  return value;
+}

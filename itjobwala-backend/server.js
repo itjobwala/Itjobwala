@@ -60,14 +60,10 @@ fastify.register(fastifyRateLimit, {
 
 fastify.register(jwtPlugin);
 
-import xss from 'xss';
-fastify.addHook('preValidation', async (request, reply) => {
-  if (request.body && typeof request.body === 'object') {
-    for (let key in request.body) {
-      if (typeof request.body[key] === 'string') {
-        request.body[key] = xss(request.body[key]);
-      }
-    }
+import { deepSanitize } from './src/utils/sanitize.js';
+fastify.addHook('preValidation', async (request, _reply) => {
+  if (request.body !== null && typeof request.body === 'object') {
+    request.body = deepSanitize(request.body);
   }
 });
 
