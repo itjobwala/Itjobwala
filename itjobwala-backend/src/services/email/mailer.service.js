@@ -323,6 +323,74 @@ export async function sendJobModerationEmail({ to, name, jobTitle, decision, rea
   }
 }
 
+export async function sendJobAlertDigestEmail({ to, name, alertName, jobs, single = false }) {
+  if (!to || !jobs?.length) return;
+
+  const greeting = name || 'there';
+  const count    = jobs.length;
+  const subject  = single
+    ? `New job match: "${jobs[0].title}" – ITJobwala`
+    : `${count} new job match${count !== 1 ? 'es' : ''} for "${alertName}" – ITJobwala`;
+
+  const jobRows = jobs.map(job => {
+    const meta = [job.company_name, job.location, job.work_mode].filter(Boolean).join(' · ');
+    return `
+    <div style="padding:14px 0;border-bottom:1px solid #e5e7eb">
+      <a href="https://itjobwala.com/jobs/job_${job.id}"
+         style="color:#2563eb;font-weight:bold;text-decoration:none;font-size:15px">
+        ${job.title}
+      </a>
+      ${meta ? `<p style="margin:4px 0 0;color:#6b7280;font-size:13px">${meta}</p>` : ''}
+    </div>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="font-family:Arial,sans-serif;background:#f5f5f5;padding:24px;margin:0">
+  <div style="max-width:540px;margin:0 auto;background:#ffffff;border-radius:8px;padding:36px">
+    <h2 style="color:#2563eb;margin:0 0 16px">ITJobwala</h2>
+    <p style="margin:0 0 8px">Hi ${greeting},</p>
+    <p style="margin:0 0 20px">We found <strong>${count} new job match${count !== 1 ? 'es' : ''}</strong>
+      for your alert <strong>"${alertName}"</strong>.</p>
+    <div style="margin-bottom:24px">${jobRows}</div>
+    <div style="text-align:center;margin:28px 0">
+      <a href="https://itjobwala.com/jobs"
+         style="display:inline-block;padding:12px 28px;background:#2563eb;color:#ffffff;
+                text-decoration:none;border-radius:8px;font-weight:bold;font-size:14px">
+        Browse all jobs
+      </a>
+    </div>
+    <p style="color:#9ca3af;font-size:12px;margin-top:24px">
+      You're receiving this because of an active job alert on ITJobwala.
+      <a href="https://itjobwala.com/candidate/job-alerts" style="color:#6b7280">Manage alerts</a>
+    </p>
+    <p style="color:#9ca3af;font-size:12px;margin:4px 0 0">— The ITJobwala Team</p>
+  </div>
+</body></html>`;
+
+  const textLines = jobs.map(j =>
+    `• ${j.title}\n  ${[j.company_name, j.location].filter(Boolean).join(' · ')}\n  https://itjobwala.com/jobs/job_${j.id}`
+  );
+  const text = [
+    `Hi ${greeting},`,
+    '',
+    `${count} new job match${count !== 1 ? 'es' : ''} for "${alertName}":`,
+    '',
+    textLines.join('\n\n'),
+    '',
+    'Browse all jobs: https://itjobwala.com/jobs',
+    'Manage alerts:   https://itjobwala.com/candidate/job-alerts',
+    '',
+    '— The ITJobwala Team',
+  ].join('\n');
+
+  try {
+    await transporter.sendMail({ from: env.email.from, to, subject, text, html });
+  } catch (err) {
+    console.error('[mailer] sendJobAlertDigestEmail failed:', err?.message ?? err);
+  }
+}
+
 /** Optional boot check — call once at startup to surface SMTP misconfiguration early. */
 export async function verifyMailer() {
   return transporter.verify();

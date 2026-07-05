@@ -3,6 +3,7 @@ import cors from '@fastify/cors';
 import jwtPlugin from './src/plugins/jwt.js';
 import { env } from './src/config/env.js';
 import { runCleanup } from './src/utils/cleanupJob.js';
+import { runJobAlertMatcher } from './src/services/jobs/jobAlertMatcher.js';
 import { initSocketServer } from './src/socket/index.js';
 
 import multipart from '@fastify/multipart';
@@ -94,6 +95,7 @@ fastify.register((await import('./src/routes/candidate/resumeBuilderRoutes.js'))
 fastify.register((await import('./src/routes/admin/adminRoutes.js')).default, { prefix: '/api' });
 fastify.register((await import('./src/routes/reports/reportRoutes.js')).default, { prefix: '/api' });
 fastify.register((await import('./src/routes/recruiter/recruiterCandidateRoutes.js')).default, { prefix: '/api' });
+fastify.register((await import('./src/routes/candidate/jobAlertRoutes.js')).default, { prefix: '/api' });
 
 // Centralized Error Handler
 fastify.setErrorHandler(function (error, request, reply) {
@@ -141,6 +143,10 @@ const start = async () => {
     // Run cleanup once on startup, then every 24 hours
     runCleanup(fastify.log);
     setInterval(() => runCleanup(fastify.log), 24 * 60 * 60 * 1000);
+
+    // Run job alert matcher once on startup, then every 24 hours
+    runJobAlertMatcher(fastify.log);
+    setInterval(() => runJobAlertMatcher(fastify.log), 24 * 60 * 60 * 1000);
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);

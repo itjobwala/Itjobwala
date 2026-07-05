@@ -1,73 +1,99 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '@/src/features/auth/session/auth.store';
+import {
+  listAlerts,
+  createAlert,
+  updateAlert,
+  deleteAlert,
+  type AlertAPI,
+} from '../services/jobAlerts.api';
 
 export interface JobAlert {
-  id: string;
-  name: string;
-  keywords: string;
-  location: string;
+  id:        string;
+  name:      string;
+  keywords:  string;
+  location:  string;
   workModes: string[];
-  jobTypes: string[];
+  jobTypes:  string[];
   frequency: 'instant' | 'daily' | 'weekly';
-  active: boolean;
+  active:    boolean;
   createdAt: string;
 }
 
-const STORAGE_KEY = 'itjobwala_job_alerts';
-
-function load(): JobAlert[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
-  } catch {
-    return [];
-  }
+function toJobAlert(raw: AlertAPI): JobAlert {
+  const c = raw.criteria ?? {};
+  return {
+    id:        raw.id,
+    name:      raw.name,
+    keywords:  typeof c.keywords  === 'string' ? c.keywords  : '',
+    location:  typeof c.location  === 'string' ? c.location  : '',
+    workModes: Array.isArray(c.work_mode) ? c.work_mode : [],
+    jobTypes:  Array.isArray(c.job_type)  ? c.job_type  : [],
+    frequency: raw.frequency,
+    active:    raw.is_active,
+    createdAt: raw.created_at,
+  };
 }
 
-function save(alerts: JobAlert[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(alerts));
-}
+const ALERTS_KEY = ['candidate', 'job-alerts'] as const;
 
 export function useJobAlerts() {
-  const [alerts, setAlerts] = useState<JobAlert[]>([]);
-  const [hydrated, setHydrated] = useState(false);
+  const isAuthenticated = useAuthStore(s => s.isAuthenticated);
+  const qc = useQueryClient();
 
-  useEffect(() => {
-    setAlerts(load());
-    setHydrated(true);
-  }, []);
+  const query = useQuery({
+    queryKey: ALERTS_KEY,
+    queryFn:  listAlerts,
+    enabled:  isAuthenticated,
+    select:   (data) => data.map(toJobAlert),
+  });
 
-  const create = useCallback((data: Omit<JobAlert, 'id' | 'createdAt' | 'active'>) => {
-    const alert: JobAlert = {
-      ...data,
-      id: crypto.randomUUID(),
-      active: true,
-      createdAt: new Date().toISOString(),
-    };
-    setAlerts(prev => {
-      const next = [alert, ...prev];
-      save(next);
-      return next;
+  const createMut = useMutation({
+    mutationFn: createAlert,
+    onSuccess:  () => qc.invalidateQueries({ queryKey: ALERTS_KEY }),
+  });
+
+  const updateMut = useMutation({
+    mutationFn: ({ id, ...body }: { id: string } & Parameters<typeof updateAlert>[1]) =>
+      updateAlert(id, body),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ALERTS_KEY }),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: deleteAlert,
+    onSuccess:  () => qc.invalidateQueries({ queryKey: ALERTS_KEY }),
+  });
+
+  const create = (data: Omit<JobAlert, 'id' | 'createdAt' | 'active'>) => {
+    createMut.mutate({
+      name:      data.name || data.keywords || 'All IT jobs',
+      frequency: data.frequency,
+      criteria: {
+        keywords:  data.keywords  || null,
+        location:  data.location  || null,
+        work_mode: data.workModes,
+        job_type:  data.jobTypes,
+      },
     });
-    return alert;
-  }, []);
+  };
 
-  const toggle = useCallback((id: string) => {
-    setAlerts(prev => {
-      const next = prev.map(a => a.id === id ? { ...a, active: !a.active } : a);
-      save(next);
-      return next;
-    });
-  }, []);
+  const toggle = (id: string) => {
+    const current = query.data?.find(a => a.id === id);
+    if (!current) return;
+    updateMut.mutate({ id, is_active: !current.active });
+  };
 
-  const remove = useCallback((id: string) => {
-    setAlerts(prev => {
-      const next = prev.filter(a => a.id !== id);
-      save(next);
-      return next;
-    });
-  }, []);
+  const remove = (id: string) => {
+    deleteMut.mutate(id);
+  };
 
-  return { alerts, hydrated, create, toggle, remove };
+  return {
+    alerts:   query.data ?? [],
+    hydrated: !query.isLoading,
+    create,
+    toggle,
+    remove,
+  };
 }
