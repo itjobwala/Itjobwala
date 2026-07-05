@@ -5,20 +5,23 @@
  * The client-supplied mimetype/extension is ignored for security; only the actual
  * file bytes are trusted.
  *
- * VIRUS SCANNING GAP
- * ──────────────────
- * VIRUS_SCAN_ENABLED is currently false. No ClamAV / clamd daemon is reachable on
- * this deployment. scanBuffer() is a declared integration point — wire it to clamscan
- * when a scanner becomes available. Do NOT set VIRUS_SCAN_ENABLED = true without a
- * working scanner; doing so would scan nothing while logging a false "configured" state.
+ * VIRUS SCANNING
+ * ──────────────
+ * Controlled by VIRUS_SCAN_ENABLED env var (default: false). When enabled:
+ *   - Uses the `clamscan` npm package to talk to a running clamd daemon via TCP.
+ *   - FAIL CLOSED: if clamd is unreachable or scan errors, the upload is rejected.
+ *   - Set CLAMAV_HOST / CLAMAV_PORT to point at your daemon (default: localhost:3310).
  *
- * KNOWN TRACKED GAP: virus scanning is not active. Mitigation in place: strict
- * allowlist of MIME types + magic-byte verification (no executable-disguised-as-PDF).
+ * Local dev with Docker:
+ *   docker run -d --name clamav -p 3310:3310 clamav/clamav:stable
+ *   # Wait ~60s for signature DB to load, then set VIRUS_SCAN_ENABLED=true.
+ *
+ * Test with EICAR string (safe pseudo-virus for scanner validation):
+ *   echo 'X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*' > eicar.txt
  */
 
 import { fileTypeFromBuffer } from 'file-type';
-
-const VIRUS_SCAN_ENABLED = false;
+import { env } from '../../config/env.js';
 
 // ── Allowlists ────────────────────────────────────────────────────────────────
 
@@ -86,27 +89,56 @@ export async function validateUpload(buffer, allowlist) {
   await scanBuffer(buffer);
 }
 
-// ── Virus scan integration point ──────────────────────────────────────────────
+// ── Virus scan ────────────────────────────────────────────────────────────────
+
+// Cache the initialised scanner so we don't re-init on every upload.
+let _scanner = null;
+let _scannerInitFailed = false;
+
+async function getScanner() {
+  if (_scanner) return _scanner;
+  if (_scannerInitFailed) {
+    throw new UploadError('Virus scanner unavailable. Upload rejected for safety.');
+  }
+  try {
+    const { default: NodeClam } = await import('clamscan');
+    _scanner = await new NodeClam().init({
+      clamdscan: {
+        active: true,
+        host:   env.clamavHost,
+        port:   env.clamavPort,
+        timeout: 5000,
+      },
+      preference: 'clamdscan',
+    });
+    return _scanner;
+  } catch (err) {
+    _scannerInitFailed = true;
+    throw new UploadError(`Virus scanner init failed (${env.clamavHost}:${env.clamavPort}): ${err.message}. Upload rejected.`);
+  }
+}
 
 /**
- * Scan the buffer for malware before uploading.
+ * Scan the buffer for malware via clamd TCP.
  *
- * CURRENTLY NOT CONFIGURED — VIRUS_SCAN_ENABLED is false.
- * To enable: install clamav + clamscan npm package, start clamd, set the flag true.
- * Never set VIRUS_SCAN_ENABLED = true without a working scanner daemon.
+ * FAIL CLOSED: any error (daemon down, timeout, init failure) rejects the upload.
+ * When VIRUS_SCAN_ENABLED=false, this is a no-op.
  */
 async function scanBuffer(buffer) {
-  if (!VIRUS_SCAN_ENABLED) {
-    // KNOWN TRACKED GAP: virus scanning not active. See module JSDoc.
-    return;
+  if (!env.virusScanEnabled) return;
+
+  const scanner = await getScanner();
+
+  let isInfected;
+  try {
+    ({ isInfected } = await scanner.scanBuffer(buffer));
+  } catch (err) {
+    throw new UploadError(`Virus scan error: ${err.message}. Upload rejected.`);
   }
 
-  // Wire clamscan here when a daemon is available:
-  //   const { ClamScan } = await import('clamscan');
-  //   const scanner = await new ClamScan().init({ clamdscan: { active: true } });
-  //   const { isInfected } = await scanner.scanBuffer(buffer);
-  //   if (isInfected) throw new UploadError('File failed security scan. Upload rejected.');
-  throw new Error('scanBuffer: VIRUS_SCAN_ENABLED is true but no scanner is configured.');
+  if (isInfected) {
+    throw new UploadError('File failed security scan. Upload rejected.');
+  }
 }
 
 // ── Error type ────────────────────────────────────────────────────────────────

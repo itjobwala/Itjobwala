@@ -67,6 +67,14 @@ export const env = {
     apiSecret: required('CLOUDINARY_API_SECRET'),
   },
 
+  // ── Virus scanning (optional) ──────────────────────────────────────────────
+  // Requires a running ClamAV daemon (clamd). See src/utils/upload/validateUpload.js
+  // for the integration point and Docker run instructions.
+  // FAIL CLOSED: when enabled and clamd is unreachable, uploads are rejected.
+  virusScanEnabled: optional('VIRUS_SCAN_ENABLED', 'false') === 'true',
+  clamavHost: optional('CLAMAV_HOST', 'localhost'),
+  clamavPort: Number(optional('CLAMAV_PORT', '3310')),
+
   // ── Redis (optional) ───────────────────────────────────────────────────────
   // When set, @fastify/rate-limit uses Redis so limits hold across instances.
   // local dev: leave unset to use in-memory rate limiting.
