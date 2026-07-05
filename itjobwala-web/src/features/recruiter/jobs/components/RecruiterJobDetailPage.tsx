@@ -7,6 +7,7 @@ import {
   useUpdateRecruiterJobMutation,
   useSubmitJobMutation,
   useRecruiterApplicantsQuery,
+  useJobAnalyticsQuery,
 } from '@/features/recruiter/hooks';
 import StatusBadge from '@/src/components/ui/StatusBadge';
 import Avatar from '@/src/components/ui/Avatar';
@@ -58,6 +59,7 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
   const router = useRouter();
   const { data: job, isLoading, error } = useRecruiterPostedJobDetailQuery(jobId, true);
   const { data: applicantsData } = useRecruiterApplicantsQuery({ jobId }, true);
+  const { data: analytics } = useJobAnalyticsQuery(jobId, true);
   const updateMutation = useUpdateRecruiterJobMutation();
   const submitMutation = useSubmitJobMutation();
 
@@ -158,6 +160,30 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
           </div>
         ))}
       </div>
+
+      {/* Analytics panel */}
+      {analytics && (
+        <div className="bg-surface rounded-2xl border border-token p-5">
+          <h2 className="text-sm font-extrabold text-heading mb-4">Analytics</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {[
+              { label: 'Total Views',       value: analytics.views.toLocaleString() },
+              { label: 'Conversion Rate',   value: analytics.views > 0 ? `${analytics.conversion_rate}%` : '—' },
+              { label: 'Views (7 days)',    value: analytics.views_last_7d.toLocaleString() },
+              { label: 'Applied (7 days)',  value: analytics.applications_last_7d.toLocaleString() },
+              { label: 'Shortlisted',       value: (analytics.applications_by_status['shortlisted'] ?? 0).toLocaleString() },
+              { label: 'Interviews',        value: (analytics.applications_by_status['interview'] ?? 0).toLocaleString() },
+            ].map(({ label, value }) => (
+              <div key={label}>
+                <p className="text-micro text-subtle font-medium">{label}</p>
+                <p className="text-xl font-extrabold text-heading mt-0.5" style={{ letterSpacing: '-0.5px' }}>
+                  {value}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Moderation banner */}
       {job.status === 'needs_changes' && job.moderationReason && (
