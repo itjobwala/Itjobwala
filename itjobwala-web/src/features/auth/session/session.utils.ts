@@ -150,58 +150,17 @@ export function clearCookie(name: string): void {
 }
 
 // ── Resolve session state from localStorage ───────────────────────────────────
+// Access tokens are no longer persisted to localStorage (A4 security hardening).
+// Session is restored via silent refresh from the httpOnly refresh cookie.
+// This function is kept for backward-compat with syncFromStorage() but always
+// returns unauthenticated state — real hydration happens in SessionHydrator.
 
 type PartialAuthState = Omit<AuthState, 'isHydrated'>;
 
 export function resolveSessionFromStorage(): PartialAuthState {
-  const empty: PartialAuthState = {
+  return {
     user: null, role: null, accessToken: null, isAuthenticated: false, isLoggingOut: false,
   };
-
-  if (typeof window === 'undefined') return empty;
-
-  // Try candidate token first
-  const candidateToken = readToken(CANDIDATE_TOKEN_KEY);
-  if (candidateToken) {
-    const payload = decodeJwt(candidateToken);
-    if (payload && !isTokenExpired(payload) && String(payload.role ?? '').toLowerCase() === 'candidate') {
-      const stored = readSession();
-      const user = buildCandidateUser(payload, stored);
-      return { accessToken: candidateToken, user, role: 'candidate', isAuthenticated: true, isLoggingOut: false };
-    }
-    authLog('[SESSION]', 'Candidate token expired during hydration — purging');
-    removeToken(CANDIDATE_TOKEN_KEY);
-    removeSession();
-    clearCookie(TOKEN_COOKIE);
-  }
-
-  // Try recruiter token
-  const recruiterToken = readToken(RECRUITER_TOKEN_KEY);
-  if (recruiterToken) {
-    const payload = decodeJwt(recruiterToken);
-    if (payload && !isTokenExpired(payload) && String(payload.role ?? '').toLowerCase() === 'recruiter') {
-      const user = buildRecruiterUser(payload);
-      return { accessToken: recruiterToken, user, role: 'recruiter', isAuthenticated: true, isLoggingOut: false };
-    }
-    authLog('[SESSION]', 'Recruiter token expired during hydration — purging');
-    removeToken(RECRUITER_TOKEN_KEY);
-    clearCookie(RECRUITER_TOKEN_COOKIE);
-  }
-
-  // Try admin token
-  const adminToken = readToken(ADMIN_TOKEN_KEY);
-  if (adminToken) {
-    const payload = decodeJwt(adminToken);
-    if (payload && !isTokenExpired(payload) && String(payload.role ?? '').toLowerCase() === 'admin') {
-      const user = buildAdminUser(payload);
-      return { accessToken: adminToken, user, role: 'admin', isAuthenticated: true, isLoggingOut: false };
-    }
-    authLog('[SESSION]', 'Admin token expired during hydration — purging');
-    removeToken(ADMIN_TOKEN_KEY);
-    clearCookie(ADMIN_TOKEN_COOKIE);
-  }
-
-  return empty;
 }
 
 // ── Events ────────────────────────────────────────────────────────────────────

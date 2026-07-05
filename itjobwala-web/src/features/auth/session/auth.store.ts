@@ -17,9 +17,7 @@ import {
   buildAdminUser,
   writeSession,
   removeSession,
-  writeToken,
   removeToken,
-  setCookie,
   clearCookie,
   resolveSessionFromStorage,
   dispatchAuthChanged,
@@ -56,10 +54,10 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   },
 
   // ── Login actions ────────────────────────────────────────────────────────
+  // Access token is kept in Zustand (memory) only — not in localStorage or
+  // a JS-readable cookie. This prevents XSS from stealing the token.
   loginCandidate: (token: string, user: SessionUser) => {
-    writeToken(CANDIDATE_TOKEN_KEY, token);
-    setCookie(TOKEN_COOKIE, token);
-    writeSession(user);
+    writeSession(user);  // non-sensitive profile data only
     set({ accessToken: token, user, role: 'candidate', isAuthenticated: true });
     authLog('[AUTH]', `Candidate login successful — ${user.email}`);
     dispatchAuthChanged();
@@ -68,16 +66,12 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   loginRecruiter: (token: string) => {
     const payload = decodeJwt(token);
     const user = payload ? buildRecruiterUser(payload) : null;
-    writeToken(RECRUITER_TOKEN_KEY, token);
-    setCookie(RECRUITER_TOKEN_COOKIE, token);
     set({ accessToken: token, user, role: 'recruiter', isAuthenticated: true, isLoggingOut: false });
     authLog('[AUTH]', `Recruiter login successful — ${user?.email ?? 'unknown'}`);
     dispatchAuthChanged();
   },
 
   loginAdmin: (token: string, user: SessionUser) => {
-    writeToken(ADMIN_TOKEN_KEY, token);
-    setCookie(ADMIN_TOKEN_COOKIE, token);
     set({ accessToken: token, user, role: 'admin', isAuthenticated: true, isLoggingOut: false });
     authLog('[AUTH]', `Admin login successful — ${user.email}`);
     dispatchAuthChanged();

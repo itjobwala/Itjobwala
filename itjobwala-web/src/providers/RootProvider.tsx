@@ -5,24 +5,21 @@ import LoadingOverlay from '@/src/components/common/LoadingOverlay';
 import { LoadingProvider } from '@/src/contexts/LoadingContext';
 import SessionExpiredToast from '@/src/features/auth/components/SessionExpiredToast';
 import { useAuthStore } from '@/src/features/auth/session';
+import { queueRefreshRequest } from '@/src/features/auth/session/refresh';
 import QueryProvider from './QueryProvider';
 
 function SessionHydrator() {
-  const hydrate = useAuthStore(s => s.hydrate);
-  const syncFromStorage = useAuthStore(s => s.syncFromStorage);
-
   useEffect(() => {
-    hydrate();
-
-    function onStorageChange(e: StorageEvent) {
-      if (e.key === 'token' || e.key === 'recruiter_token' || e.key === 'itjobwala_auth') {
-        syncFromStorage();
-      }
-    }
-
-    window.addEventListener('storage', onStorageChange);
-    return () => window.removeEventListener('storage', onStorageChange);
-  }, [hydrate, syncFromStorage]);
+    // Attempt silent refresh from the httpOnly refresh cookie.
+    // - Success: store is populated with new access token + role + user
+    // - Failure (no refresh cookie / expired): store stays unauthenticated
+    // isHydrated is set to true only AFTER this settles, so ProtectedRoute
+    // never flashes a redirect while the refresh is in flight.
+    queueRefreshRequest().finally(() => {
+      useAuthStore.setState({ isHydrated: true });
+    });
+    // No storage-event listener: access tokens are no longer in localStorage.
+  }, []);
 
   return null;
 }

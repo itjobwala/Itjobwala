@@ -1,90 +1,19 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// ── Route lists ─────────────────────────────────────────────────────────────
-
-/** Exact-match candidate-protected paths */
-const CANDIDATE_PROTECTED = ['/dashboard', '/profile', '/saved-jobs', '/applications'];
-
-/** Prefix-match candidate-protected paths */
-const CANDIDATE_PROTECTED_PREFIXES = ['/jobs/apply'];
-
-/** Pages that authenticated candidates should not see */
-const CANDIDATE_AUTH_ROUTES = ['/login', '/signup'];
-
-
-// ── JWT helpers (Edge-safe, payload decode only) ─────────────────────────────
-
-interface TokenPayload {
-  role?: string;
-  exp?:  number;
-}
-
-function decodeToken(token: string): TokenPayload | null {
-  try {
-    const segment = token.split('.')[1];
-    if (!segment) return null;
-    const padded  = segment.replace(/-/g, '+').replace(/_/g, '/');
-    const decoded = atob(padded);
-    return JSON.parse(decoded) as TokenPayload;
-  } catch {
-    return null;
-  }
-}
-
-function isTokenExpired(payload: TokenPayload): boolean {
-  if (!payload.exp) return false;
-  return Date.now() / 1000 > payload.exp;
-}
-
 // ── Proxy function ───────────────────────────────────────────────────────────
+// Route protection is handled client-side by ProtectedRoute /
+// ProtectedRecruiterRoute components, which show a loading screen until the
+// silent refresh (A4) settles and redirect to login if unauthenticated.
+//
+// The access token is no longer stored in a JS-readable cookie (A4 hardening),
+// so the middleware cannot inspect it. Real auth enforcement is the backend's
+// fastify.authenticate decorator on every protected API route.
+//
+// This middleware is kept as a pass-through so the matcher config below
+// remains effective for future use (e.g. CSP headers, locale detection).
 
-export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  // ── Candidate auth ───────────────────────────────────────────────────────
-  const rawToken = request.cookies.get('token')?.value;
-  const payload  = rawToken ? decodeToken(rawToken) : null;
-
-  const role             = payload?.role?.toLowerCase() ?? '';
-  const isCandidateToken = !!rawToken && !isTokenExpired(payload ?? {});
-  const isCandidateRole  = role === 'candidate';
-  const isCandidateAuth  = isCandidateToken && isCandidateRole;
-
-  const isCandidateProtected =
-    CANDIDATE_PROTECTED.some(r => pathname === r || pathname.startsWith(r + '/')) ||
-    CANDIDATE_PROTECTED_PREFIXES.some(p => pathname.startsWith(p));
-
-  const isCandidateAuthRoute = CANDIDATE_AUTH_ROUTES.some(r => pathname === r);
-
-  if (isCandidateProtected && !isCandidateAuth) {
-    const url = new URL('/login', request.url);
-    url.searchParams.set('next', pathname);
-    return NextResponse.redirect(url);
-  }
-
-  if (isCandidateAuthRoute && isCandidateAuth) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
-  }
-
-  // ── Recruiter auth ───────────────────────────────────────────────────────
-  const recruiterRawToken = request.cookies.get('recruiter_token')?.value;
-  const recruiterPayload  = recruiterRawToken ? decodeToken(recruiterRawToken) : null;
-  const isRecruiterRole   = recruiterPayload?.role?.toLowerCase() === 'recruiter';
-  const isRecruiterAuth   = !!recruiterRawToken && isRecruiterRole && !isTokenExpired(recruiterPayload ?? {});
-
-  const RECRUITER_PUBLIC_ROUTES = ['/recruiter/login', '/recruiter/signup', '/recruiter/post-job'];
-
-  const isRecruiterProtected =
-    pathname.startsWith('/recruiter') &&
-    !RECRUITER_PUBLIC_ROUTES.some(r => pathname === r || pathname.startsWith(r + '/'));
-
-  if (isRecruiterProtected && !isRecruiterAuth) {
-    const url = new URL('/recruiter/login', request.url);
-    url.searchParams.set('next', pathname);
-    return NextResponse.redirect(url);
-  }
-
+export function proxy(_request: NextRequest) {
   return NextResponse.next();
 }
 

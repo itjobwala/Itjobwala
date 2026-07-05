@@ -1,15 +1,16 @@
 /**
- * Refresh token flow — backend now supports POST /auth/refresh.
+ * Refresh token flow — backend supports POST /auth/refresh.
  *
  * The refresh token lives in an httpOnly cookie (set by the backend).
- * This module never touches the cookie — axios withCredentials: true sends it automatically.
+ * This module never touches localStorage or JS-readable cookies.
+ * axios withCredentials: true sends the httpOnly cookie automatically.
  *
  * Flow:
- *   1. Access token expires (401 received)
- *   2. queueRefreshRequest() — deduplicates concurrent refresh attempts
- *   3. refreshAccessToken() — POSTs /auth/refresh, gets new access token
- *   4. Zustand store updated with new token
- *   5. Original request retried with new token (handled in client.ts interceptor)
+ *   1. App mount (cold start): SessionHydrator fires queueRefreshRequest()
+ *      → if refresh cookie is valid, store is populated with token + user
+ *   2. Access token expires (401 received during normal use):
+ *      → same path, but store already has role/user so only accessToken is updated
+ *   3. Original request retried with new token (handled in client.ts interceptor)
  */
 
 import axios from 'axios';
@@ -22,8 +23,7 @@ let refreshPromise: Promise<string | null> | null = null;
 
 /**
  * Call POST /auth/refresh.
- * The httpOnly refresh cookie is sent automatically (withCredentials: true).
- * Returns the new access token, or null if refresh fails.
+ * Returns the new access token (updated in-memory store), or null if refresh fails.
  */
 export async function refreshAccessToken(): Promise<string | null> {
   try {
@@ -35,15 +35,37 @@ export async function refreshAccessToken(): Promise<string | null> {
     const newToken = res.data?.token ?? null;
 
     if (newToken) {
-      // Update in-memory store without full logout/redirect cycle
       const { useAuthStore } = await import('./auth.store');
       const { role, user } = useAuthStore.getState();
+
       if (role && user) {
-        const { writeToken, setCookie } = await import('./session.utils');
-        const tokenKey = role === 'candidate' ? 'token' : 'recruiter_token';
-        writeToken(tokenKey, newToken);
-        setCookie(tokenKey, newToken);
+        // Mid-session refresh — just update the token in memory
         useAuthStore.setState({ accessToken: newToken });
+      } else {
+        // Cold start — decode JWT to restore role + user from scratch
+        const {
+          decodeJwt,
+          buildCandidateUser,
+          buildRecruiterUser,
+          buildAdminUser,
+          readSession,
+        } = await import('./session.utils');
+
+        const payload = decodeJwt(newToken);
+        if (payload) {
+          const newRole = String(payload.role ?? '').toLowerCase();
+          if (newRole === 'candidate') {
+            const stored = readSession();  // restore name/photo from localStorage
+            const newUser = buildCandidateUser(payload, stored);
+            useAuthStore.setState({ accessToken: newToken, user: newUser, role: 'candidate', isAuthenticated: true });
+          } else if (newRole === 'recruiter') {
+            const newUser = buildRecruiterUser(payload);
+            useAuthStore.setState({ accessToken: newToken, user: newUser, role: 'recruiter', isAuthenticated: true });
+          } else if (newRole === 'admin') {
+            const newUser = buildAdminUser(payload);
+            useAuthStore.setState({ accessToken: newToken, user: newUser, role: 'admin', isAuthenticated: true });
+          }
+        }
       }
     }
 
