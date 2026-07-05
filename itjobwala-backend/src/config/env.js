@@ -67,6 +67,12 @@ export const env = {
     apiSecret: required('CLOUDINARY_API_SECRET'),
   },
 
+  // ── Redis (optional) ───────────────────────────────────────────────────────
+  // When set, @fastify/rate-limit uses Redis so limits hold across instances.
+  // local dev: leave unset to use in-memory rate limiting.
+  // prod/QA:   redis://:<password>@<host>:6379
+  redisUrl: optional('REDIS_URL', ''),
+
   // ── CORS ───────────────────────────────────────────────────────────────────
   // Comma-separated list of allowed frontend origins. No trailing slashes.
   // local:   http://localhost:3000

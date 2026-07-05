@@ -13,7 +13,10 @@ import jobRoutes from './src/routes/jobs/jobRoutes.js';
 import candidateProfileRoutes from './src/routes/candidate/candidateProfileRoutes.js';
 import applicationRoutes from './src/routes/jobs/applicationRoutes.js';
 
-const fastify = Fastify({ logger: true });
+// trustProxy lets Fastify read the real client IP from X-Forwarded-For when
+// running behind a reverse proxy / CDN (Render, Cloudflare, nginx, etc.).
+// Without this the rate-limiter would key on the proxy's IP, not the client's.
+const fastify = Fastify({ logger: true, trustProxy: true });
 
 // Register plugins
 fastify.register(cors, {
@@ -31,9 +34,28 @@ fastify.register(multipart, {
 
 import fastifyRateLimit from '@fastify/rate-limit';
 
+let rateLimitRedis = null;
+if (env.redisUrl) {
+  const { default: Redis } = await import('ioredis');
+  rateLimitRedis = new Redis(env.redisUrl, {
+    // Fail fast so a Redis outage doesn't stall request handling
+    connectTimeout: 2000,
+    maxRetriesPerRequest: 1,
+    lazyConnect: true,
+  });
+  rateLimitRedis.on('error', (err) => {
+    fastify.log.error({ err }, '[rate-limit] Redis connection error');
+  });
+  await rateLimitRedis.connect();
+  fastify.log.info('[rate-limit] Redis-backed distributed rate limiting active');
+} else {
+  fastify.log.info('[rate-limit] No REDIS_URL — using in-memory rate limiting (single instance only)');
+}
+
 fastify.register(fastifyRateLimit, {
-  max: 100, // global max 100 requests per minute
-  timeWindow: '1 minute'
+  max: 100,
+  timeWindow: '1 minute',
+  ...(rateLimitRedis ? { redis: rateLimitRedis } : {}),
 });
 
 fastify.register(jwtPlugin);
