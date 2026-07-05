@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAdminReportsQuery, useResolveReportMutation } from '../hooks/useAdmin';
 import type { AdminReport } from '../types/admin.types';
 import Modal from '@/src/components/ui/Modal';
+import { downloadAdminCsv } from '../services/admin.api';
 
 function ReportStatusBadge({ status }: { status: string }) {
   const map: Record<string, [string, string]> = {
@@ -29,6 +30,20 @@ export default function AdminReportsPage() {
   const [page, setPage]     = useState(1);
   const [confirm, setConfirm] = useState<ConfirmState | null>(null);
   const [note, setNote]     = useState('');
+  const [exporting, setExporting] = useState(false);
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      await downloadAdminCsv(
+        '/admin/export/reports',
+        statusFilter ? { status: statusFilter } : {},
+        `reports_${new Date().toISOString().slice(0, 10)}.csv`,
+      );
+    } finally {
+      setExporting(false);
+    }
+  }
 
   const params = { status: statusFilter || undefined, page };
   const { data, isLoading, isError } = useAdminReportsQuery(params as { status?: 'open' | 'resolved' | 'dismissed'; page?: number });
@@ -51,9 +66,19 @@ export default function AdminReportsPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-white font-bold text-2xl">User Reports</h1>
-        <p className="text-slate-400 text-sm mt-1">Review reports submitted by users about jobs, recruiters, or candidates</p>
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-white font-bold text-2xl">User Reports</h1>
+          <p className="text-slate-400 text-sm mt-1">Review reports submitted by users about jobs, recruiters, or candidates</p>
+        </div>
+        <button
+          onClick={handleExport}
+          disabled={exporting}
+          className="px-4 py-2 rounded-xl text-sm font-semibold border-none cursor-pointer disabled:opacity-50 transition-all"
+          style={{ background: 'rgba(99,102,241,0.15)', color: '#a5b4fc' }}
+        >
+          {exporting ? 'Exporting…' : 'Export CSV'}
+        </button>
       </div>
 
       {/* Status filter */}

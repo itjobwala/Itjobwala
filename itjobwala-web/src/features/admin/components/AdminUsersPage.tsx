@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useAdminUsersQuery, usePatchUserStatusMutation, usePatchRecruiterVerifyMutation } from '../hooks/useAdmin';
 import type { AdminCandidate, AdminRecruiter } from '../types/admin.types';
 import Modal from '@/src/components/ui/Modal';
+import { downloadAdminCsv } from '../services/admin.api';
 
 const ACCENT = '#6366f1';
 
@@ -30,6 +31,20 @@ export default function AdminUsersPage() {
     userId: number;
     userName: string;
   }>(null);
+  const [exporting, setExporting] = useState(false);
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      await downloadAdminCsv(
+        '/admin/export/users',
+        { role, ...(status ? { status } : {}) },
+        `users_${role}_${new Date().toISOString().slice(0, 10)}.csv`,
+      );
+    } finally {
+      setExporting(false);
+    }
+  }
 
   const params = { role, search: search || undefined, status: status || undefined, page };
   const { data, isLoading, isError } = useAdminUsersQuery(params);
@@ -59,9 +74,19 @@ export default function AdminUsersPage() {
   return (
     <div>
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-white font-bold text-2xl">Users</h1>
-        <p className="text-slate-400 text-sm mt-1">Manage candidates and recruiters</p>
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-white font-bold text-2xl">Users</h1>
+          <p className="text-slate-400 text-sm mt-1">Manage candidates and recruiters</p>
+        </div>
+        <button
+          onClick={handleExport}
+          disabled={exporting}
+          className="px-4 py-2 rounded-xl text-sm font-semibold border-none cursor-pointer disabled:opacity-50 transition-all"
+          style={{ background: 'rgba(99,102,241,0.15)', color: '#a5b4fc' }}
+        >
+          {exporting ? 'Exporting…' : 'Export CSV'}
+        </button>
       </div>
 
       {/* Role toggle */}

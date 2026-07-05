@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAdminJobsQuery, usePatchJobStatusMutation } from '../hooks/useAdmin';
 import type { AdminJob } from '../types/admin.types';
 import Modal from '@/src/components/ui/Modal';
+import { downloadAdminCsv } from '../services/admin.api';
 
 const ACCENT = '#6366f1';
 
@@ -25,6 +26,20 @@ export default function AdminJobsPage() {
   const [status, setStatus]     = useState('');
   const [page,   setPage]       = useState(1);
   const [confirm, setConfirm]   = useState<null | { job: AdminJob; newStatus: string }>(null);
+  const [exporting, setExporting] = useState(false);
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      await downloadAdminCsv(
+        '/admin/export/jobs',
+        status ? { status } : {},
+        `jobs_${new Date().toISOString().slice(0, 10)}.csv`,
+      );
+    } finally {
+      setExporting(false);
+    }
+  }
 
   const params = { search: search || undefined, status: status || undefined, page };
   const { data, isLoading, isError } = useAdminJobsQuery(params);
@@ -42,9 +57,19 @@ export default function AdminJobsPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-white font-bold text-2xl">Jobs</h1>
-        <p className="text-slate-400 text-sm mt-1">Moderate job listings — take down or restore</p>
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <h1 className="text-white font-bold text-2xl">Jobs</h1>
+          <p className="text-slate-400 text-sm mt-1">Moderate job listings — take down or restore</p>
+        </div>
+        <button
+          onClick={handleExport}
+          disabled={exporting}
+          className="px-4 py-2 rounded-xl text-sm font-semibold border-none cursor-pointer disabled:opacity-50 transition-all"
+          style={{ background: 'rgba(99,102,241,0.15)', color: '#a5b4fc' }}
+        >
+          {exporting ? 'Exporting…' : 'Export CSV'}
+        </button>
       </div>
 
       {/* Filters */}

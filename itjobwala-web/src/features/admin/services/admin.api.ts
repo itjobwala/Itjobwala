@@ -8,6 +8,9 @@ import type {
   AdminReport,
   AdminAction,
   AdminPaginated,
+  SignupAnalytics,
+  JobsAnalytics,
+  AppAnalytics,
 } from '../types/admin.types';
 
 type AdminLoginResponse = {
@@ -143,4 +146,50 @@ export async function resolveAdminReport(
     { status, resolution_note },
   );
   return res.data;
+}
+
+// ── Analytics ─────────────────────────────────────────────────────────────────
+
+export async function getSignupAnalytics(range = '30d'): Promise<SignupAnalytics> {
+  const res = await adminClient.get<{ success: boolean; data: SignupAnalytics }>(
+    '/admin/analytics/signups',
+    { params: { range } },
+  );
+  return res.data.data;
+}
+
+export async function getJobsAnalytics(range = '30d'): Promise<JobsAnalytics> {
+  const res = await adminClient.get<{ success: boolean; data: JobsAnalytics }>(
+    '/admin/analytics/jobs',
+    { params: { range } },
+  );
+  return res.data.data;
+}
+
+export async function getAppAnalytics(range = '30d'): Promise<AppAnalytics> {
+  const res = await adminClient.get<{ success: boolean; data: AppAnalytics }>(
+    '/admin/analytics/applications',
+    { params: { range } },
+  );
+  return res.data.data;
+}
+
+// ── CSV exports ───────────────────────────────────────────────────────────────
+// Endpoints return raw text/csv — not the JSON envelope.
+// Use adminClient with responseType:'blob' then trigger a browser download.
+
+export async function downloadAdminCsv(
+  path: string,
+  params: Record<string, string>,
+  filename: string,
+): Promise<void> {
+  const res = await adminClient.get(path, { params, responseType: 'blob' });
+  const url = URL.createObjectURL(new Blob([res.data as BlobPart], { type: 'text/csv' }));
+  const a   = document.createElement('a');
+  a.href     = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }

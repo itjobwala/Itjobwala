@@ -14,6 +14,9 @@ import {
   getAdminReports,
   resolveAdminReport,
   getAdminActions,
+  getSignupAnalytics,
+  getJobsAnalytics,
+  getAppAnalytics,
 } from '../services/admin.api';
 
 export const adminKeys = {
@@ -24,6 +27,7 @@ export const adminKeys = {
   jobQueue:   (page: number)                => ['admin', 'job-queue', page] as const,
   reports:    (filters: object)             => ['admin', 'reports', filters] as const,
   actions:    (page: number)                => ['admin', 'actions', page] as const,
+  analytics:  (type: string, range: string) => ['admin', 'analytics', type, range] as const,
 };
 
 export function useAdminStatsQuery() {
@@ -127,5 +131,29 @@ export function useResolveReportMutation() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'reports'] });
     },
+  });
+}
+
+export function useSignupAnalyticsQuery(range = '30d') {
+  return useQuery({
+    queryKey: adminKeys.analytics('signups', range),
+    queryFn:  () => getSignupAnalytics(range),
+    staleTime: 5 * 60_000,
+  });
+}
+
+export function useJobsAnalyticsQuery(range = '30d') {
+  return useQuery({
+    queryKey: adminKeys.analytics('jobs', range),
+    queryFn:  () => getJobsAnalytics(range),
+    staleTime: 5 * 60_000,
+  });
+}
+
+export function useAppAnalyticsQuery(range = '30d') {
+  return useQuery({
+    queryKey: adminKeys.analytics('applications', range),
+    queryFn:  () => getAppAnalytics(range),
+    staleTime: 5 * 60_000,
   });
 }

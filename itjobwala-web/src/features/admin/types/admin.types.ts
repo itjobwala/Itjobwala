@@ -97,3 +97,41 @@ export interface AdminPaginated<T> {
   page: number;
   limit: number;
 }
+
+// ── Analytics ─────────────────────────────────────────────────────────────────
+
+export interface DailySignupPoint {
+  date:       string;
+  candidates: number;
+  recruiters: number;
+}
+
+export interface DailyJobPoint {
+  date:     string;
+  new_jobs: number;
+}
+
+export interface DailyAppPoint {
+  date:         string;
+  applications: number;
+}
+
+export interface SignupAnalytics {
+  range:  string;
+  days:   number;
+  series: DailySignupPoint[];
+}
+
+export interface JobsAnalytics {
+  range:     string;
+  days:      number;
+  series:    DailyJobPoint[];
+  by_status: Record<string, number>;
+}
+
+export interface AppAnalytics {
+  range:  string;
+  days:   number;
+  series: DailyAppPoint[];
+  funnel: Record<string, number>;
+}
