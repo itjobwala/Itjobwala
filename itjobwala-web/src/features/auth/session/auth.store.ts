@@ -10,7 +10,7 @@ import {
 } from './auth.constants';
 import { authLog } from './auth.logger';
 import type { AuthStore, SessionUser } from './auth.types';
-import { clearRefreshState } from './refresh';
+import { clearRefreshState, revokeRefreshToken } from './refresh';
 import {
   decodeJwt,
   buildRecruiterUser,
@@ -80,6 +80,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   // ── Logout actions ───────────────────────────────────────────────────────
   logout: () => {
     authLog('[AUTH]', 'Logout (all roles)');
+    revokeRefreshToken();  // clears httpOnly refresh cookie so silent-refresh can't re-auth
     removeToken(CANDIDATE_TOKEN_KEY);
     removeToken(RECRUITER_TOKEN_KEY);
     removeToken(ADMIN_TOKEN_KEY);
@@ -96,6 +97,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   logoutCandidate: () => {
     if (get().role !== 'candidate') return;
     authLog('[AUTH]', 'Candidate logout');
+    revokeRefreshToken();  // clears httpOnly refresh cookie so silent-refresh can't re-auth
     removeToken(CANDIDATE_TOKEN_KEY);
     removeSession();
     clearCookie(TOKEN_COOKIE);
@@ -108,6 +110,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   logoutRecruiter: () => {
     if (get().role !== 'recruiter') return;
     authLog('[AUTH]', 'Recruiter logout');
+    revokeRefreshToken();  // clears httpOnly refresh cookie so silent-refresh can't re-auth
     set({ isLoggingOut: true });
     removeToken(RECRUITER_TOKEN_KEY);
     clearCookie(RECRUITER_TOKEN_COOKIE);
@@ -120,6 +123,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   logoutAdmin: () => {
     if (get().role !== 'admin') return;
     authLog('[AUTH]', 'Admin logout');
+    revokeRefreshToken();  // clears httpOnly refresh cookie so silent-refresh can't re-auth
     removeToken(ADMIN_TOKEN_KEY);
     clearCookie(ADMIN_TOKEN_COOKIE);
     clearQueryCache();

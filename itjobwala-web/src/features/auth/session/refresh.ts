@@ -96,3 +96,19 @@ export function clearRefreshState(): void {
   isRefreshing = false;
   refreshPromise = null;
 }
+
+/**
+ * Tell the backend to clear the httpOnly refresh cookie.
+ * Must be called on every logout path — without this the silent-refresh on
+ * the next page load would silently re-authenticate the user.
+ * Fire-and-forget: store is cleared synchronously; the cookie clear is best-effort.
+ */
+export function revokeRefreshToken(): void {
+  fetch(`${BASE_URL}/auth/logout`, {
+    method: 'POST',
+    credentials: 'include',
+  }).catch(() => {
+    // Ignore network errors — the access token is already gone from memory.
+    // The refresh cookie will expire naturally after its max-age.
+  });
+}
