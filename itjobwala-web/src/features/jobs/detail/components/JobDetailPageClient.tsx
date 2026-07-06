@@ -104,6 +104,15 @@ export default function JobDetailPageClient({ job }: Props) {
     setSaved(false);
   }
 
+  function handleReportClick() {
+    const token = safeLocalStorageGetItem('token');
+    if (!token) {
+      window.location.href = `/auth/login?next=${encodeURIComponent(`/candidate/jobs/${job.id}`)}&role=candidate`;
+      return;
+    }
+    setShowReportModal(true);
+  }
+
   return (
     <div className="min-h-screen bg-surface-alt">
       <SmartNavbar />
@@ -131,7 +140,7 @@ export default function JobDetailPageClient({ job }: Props) {
                 {/* Report this job */}
                 <div className="flex justify-end">
                   <button
-                    onClick={() => setShowReportModal(true)}
+                    onClick={handleReportClick}
                     className="flex items-center gap-1.5 text-caption text-subtle hover:text-danger transition-colors"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -158,7 +167,7 @@ export default function JobDetailPageClient({ job }: Props) {
         isOpen={showReportModal}
         onClose={() => setShowReportModal(false)}
         targetType="job"
-        targetId={Number(job.id)}
+        targetId={job.numericId ?? 0}
         targetLabel={job.title}
       />
 

@@ -5,6 +5,7 @@ import { hashColor } from '@/src/lib/utils/format';
 
 export interface Job extends CompanyInfo {
   id: string;
+  numericId?: number;
   title: string;
   location: string;
   workMode: 'remote' | 'hybrid' | 'onsite';
@@ -24,6 +25,7 @@ export interface Job extends CompanyInfo {
   hasApplied?: boolean;
   companyVerified?: boolean;
   closesAt?: string | null;
+  jobFitScore?: number | null;
 }
 
 export interface JobDetail extends Job, CompanyDetail, RecruiterInfo {
@@ -64,6 +66,7 @@ export function normalizeJob(j: ApiJob): Job {
 
     return {
       id:                j.id,
+      numericId:         j.numeric_id,
       title:             j.title,
       company:           j.company,
       companyLogo:       j.company_logo ?? '',
@@ -87,6 +90,7 @@ export function normalizeJob(j: ApiJob): Job {
       hasApplied:        j.has_applied,
       companyVerified:   j.company_verified ?? false,
       closesAt:          j.closes_at ?? null,
+      jobFitScore:       j.job_fit_score ?? null,
     };
   } catch (error) {
     console.error('[normalizeJob] Error normalizing job:', { job: j, error });

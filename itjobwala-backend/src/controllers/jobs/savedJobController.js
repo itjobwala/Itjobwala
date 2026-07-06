@@ -1,4 +1,5 @@
 import SavedJob from '../../models/jobs/SavedJob.js';
+import Job from '../../models/jobs/Job.js';
 
 export const getSavedJobs = async (request, reply) => {
   try {
@@ -21,7 +22,7 @@ export const getSavedJobs = async (request, reply) => {
       data: {
         saved_jobs: result.results.map(save => ({
           id: `saved_${save.id}`,
-          job_id: `job_${save.job_id}`,
+          job_id: save.job?.public_id ?? null,
           title: save.job?.title || 'Unknown Position',
           company: save.job?.recruiter?.company_name || save.job?.company_name || 'Unknown Company',
           company_logo: save.job?.recruiter?.logo || null,
@@ -54,12 +55,15 @@ export const getSavedJobs = async (request, reply) => {
 export const saveJob = async (request, reply) => {
   try {
     const userId = request.user.id;
-    const jobId = request.body.job_id.replace('job_', '');
-    const actualJobId = parseInt(jobId, 10);
+    const job = await Job.query().findOne({ public_id: request.body.job_id }).select('id', 'status');
+    // Same 404 for not-found and inactive — don't reveal a job exists but is closed.
+    if (!job || job.status !== 'active') {
+      return reply.status(404).send({ success: false, message: 'Job not found.' });
+    }
 
     const savedJob = await SavedJob.query().insert({
       user_id: userId,
-      job_id: actualJobId
+      job_id: job.id
     });
 
     return reply.status(201).send({
@@ -79,9 +83,12 @@ export const saveJob = async (request, reply) => {
 export const unsaveJob = async (request, reply) => {
   try {
     const userId = request.user.id;
-    const jobId = request.params.job_id.replace('job_', '');
+    const job = await Job.query().findOne({ public_id: request.params.job_id }).select('id');
+    if (!job) {
+      return reply.status(404).send({ success: false, message: 'Job not found.' });
+    }
 
-    await SavedJob.query().delete().where({ user_id: userId, job_id: jobId });
+    await SavedJob.query().delete().where({ user_id: userId, job_id: job.id });
 
     return reply.status(200).send({
       success: true,

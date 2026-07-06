@@ -9,7 +9,7 @@ const signupSchema = {
         full_name: { type: 'string', minLength: 5 },
         email: { type: 'string', format: 'email' },
         mobile: { type: 'string', pattern: '^\\+91\\d{10}$' },
-        password: { type: 'string', minLength: 6 },
+        password: { type: 'string', minLength: 8 },
         work_status: { type: 'string', enum: ['fresher', 'experienced'] },
         terms_accepted: { type: 'boolean', const: true }
       }

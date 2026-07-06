@@ -11,8 +11,10 @@ import { computeEnterpriseProfileScores } from '../../intelligence/scoring/enter
 export const getWeightEngineHandler = async (request, reply) => {
   const candidateId = request.user.id;
 
+  // resume_insights keeps one row per distinct resume upload — order by
+  // last_parsed_at to get the candidate's current resume, not an arbitrary one.
   const insight = await ResumeInsight.query()
-    .findOne({ candidate_id: candidateId })
+    .where({ candidate_id: candidateId })
     .select(
       'qa_match_score',
       'qa_specialization',
@@ -22,7 +24,9 @@ export const getWeightEngineHandler = async (request, reply) => {
       'evidence_strength',
       'word_count',
       'experience_years',
-    );
+    )
+    .orderBy('last_parsed_at', 'desc')
+    .first();
 
   const data = runWeightEngine(insight ?? null);
   const enterprise_profiles = computeEnterpriseProfileScores(insight?.qa_score_breakdown ?? null);

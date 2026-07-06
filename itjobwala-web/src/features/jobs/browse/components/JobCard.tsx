@@ -14,7 +14,6 @@ interface Props {
   onUnsave?:      (jobId: string) => Promise<void>;
   initialSaved?:  boolean;
   matchScore?:    number | null;
-  matchedSkills?: string[];
 }
 
 function MapPinIcon() {
@@ -90,7 +89,7 @@ function expiresInfo(closesAt: string | null | undefined): { label: string; clas
   return { label: `Closes ${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`, className: 'text-subtle' };
 }
 
-export default function JobCard({ job, onSave, onUnsave, initialSaved = false, matchScore, matchedSkills }: Props) {
+export default function JobCard({ job, onSave, onUnsave, initialSaved = false, matchScore }: Props) {
   const router = useRouter();
   const [saved, setSaved] = useState(initialSaved);
   const [saving, setSaving] = useState(false);
@@ -222,13 +221,8 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false, m
                   color:      matchScore >= 70 ? '#10b981' : matchScore >= 45 ? '#f59e0b' : '#ef4444',
                 }}
               >
-                {matchScore}% skill match
+                {matchScore}% job fit
               </span>
-              {matchedSkills && matchedSkills.length > 0 && (
-                <span className="text-[10px] text-subtle truncate">
-                  {matchedSkills.slice(0, 2).join(', ')}{matchedSkills.length > 2 ? ` +${matchedSkills.length - 2}` : ''}
-                </span>
-              )}
             </div>
           )}
         </div>

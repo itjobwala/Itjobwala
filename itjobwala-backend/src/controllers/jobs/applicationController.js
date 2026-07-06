@@ -11,19 +11,19 @@ export const applyToJob = async (request, reply) => {
     const { job_id } = request.params;
     const { cover_letter, resume_id, expected_salary, notice_period_days, answers } = request.body || {};
     const userId = request.user.id;
-    const actualJobId = job_id.replace('job_', '');
 
-    // Check if job exists and is active
-    const job = await Job.query().findById(actualJobId);
+    // Resolve public_id → internal job row
+    const job = await Job.query().findOne({ public_id: job_id });
     if (!job) {
       return reply.status(404).send({ success: false, message: 'Job not found', data: {}, errors: [] });
     }
     if (job.status !== 'active') {
-      return reply.status(410).send({ success: false, message: 'This job is not currently accepting applications.', data: {}, errors: [] });
+      // Return 404 (not 410) — don't reveal that the job exists but is inactive
+      return reply.status(404).send({ success: false, message: 'Job not found', data: {}, errors: [] });
     }
 
     // Prevent duplicate applications
-    const existing = await Application.query().findOne({ job_id: parseInt(actualJobId, 10), user_id: userId });
+    const existing = await Application.query().findOne({ job_id: job.id, user_id: userId });
     if (existing) {
       return reply.status(409).send({ success: false, message: 'You have already applied for this job.', data: {}, errors: [] });
     }
@@ -42,7 +42,7 @@ export const applyToJob = async (request, reply) => {
     }
 
     const application = await Application.query().insert({
-      job_id: parseInt(actualJobId, 10),
+      job_id: job.id,
       user_id: userId,
       cover_letter,
       resume_url,
@@ -111,7 +111,7 @@ export const getMyApplications = async (request, reply) => {
       data: {
         applications: result.results.map(app => ({
           id: `app_${app.id}`,
-          job_id: `job_${app.job_id}`,
+          job_id: app.job?.public_id ?? null,
           title: app.job?.title,
           company: app.job?.recruiter?.company_name || app.job?.company_name,
           company_logo: app.job?.recruiter?.logo,

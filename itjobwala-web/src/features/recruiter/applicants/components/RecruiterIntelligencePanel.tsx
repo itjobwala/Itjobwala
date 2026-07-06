@@ -59,7 +59,7 @@ export default function RecruiterIntelligencePanel({ applicantId, jobId }: Props
               <polyline points="16 7 22 7 22 13"/>
             </svg>
           </div>
-          <div>
+          <div title="General QA capability score — not specific to this job">
             <p className="text-[12px] font-black text-slate-200">ATS Intelligence</p>
             <p className="text-[9.5px] text-slate-500">Powered by dynamic weight engine</p>
           </div>

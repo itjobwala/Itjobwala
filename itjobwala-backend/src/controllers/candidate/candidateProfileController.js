@@ -6,6 +6,21 @@ import Certification from '../../models/candidate/Certification.js';
 import cloudinary from '../../utils/cloudinary.js';
 import { bufferStream, validateUpload, DOCUMENT_TYPES, IMAGE_TYPES, UploadError } from '../../utils/upload/validateUpload.js';
 import { sanitizeText } from '../../utils/sanitize.js';
+import { syncProfileCompletion } from '../../utils/candidate/profileCompletion.js';
+
+/** Build a patch/insert payload from only the given keys — blocks mass-assignment
+ *  of columns like user_id/id via extra request.body properties. */
+function pick(source, keys) {
+  const result = {};
+  for (const key of keys) {
+    if (source[key] !== undefined) result[key] = source[key];
+  }
+  return result;
+}
+
+const EXPERIENCE_FIELDS   = ['company', 'role', 'employment_type', 'location', 'start_date', 'end_date', 'is_current', 'description', 'skills'];
+const EDUCATION_FIELDS    = ['institution', 'degree', 'field_of_study', 'location', 'start_date', 'end_date', 'grade', 'is_current'];
+const CERTIFICATION_FIELDS = ['name', 'issuer', 'issue_date', 'expiry_date', 'credential_id', 'credential_url'];
 
 /** Upload a pre-validated Buffer to Cloudinary and return the result. */
 function uploadBuffer(buffer, options) {
@@ -194,6 +209,7 @@ export const updateProfile = async (request, reply) => {
     }
 
     await User.query().findById(userId).patch(updateData);
+    syncProfileCompletion(userId).catch(() => {});
 
     return reply.status(200).send({
       success: true,
@@ -227,6 +243,7 @@ export const uploadResume = async (request, reply) => {
     const uploaded_at = new Date().toISOString();
 
     await User.query().findById(userId).patch({ resume_file_name: file_name, resume_url: url, resume_uploaded_at: uploaded_at });
+    syncProfileCompletion(userId).catch(() => {});
 
     return reply.status(200).send({ success: true, message: 'Resume uploaded successfully.', data: { file_name, url, uploaded_at } });
   } catch (error) {
@@ -244,6 +261,7 @@ export const updateSkills = async (request, reply) => {
     await User.query().findById(userId).patch({
       skills: JSON.stringify(skills)
     });
+    syncProfileCompletion(userId).catch(() => {});
 
     return reply.status(200).send({
       success: true,
@@ -265,7 +283,7 @@ export const addExperience = async (request, reply) => {
       return reply.status(400).send({ success: false, message: 'End date must be after start date.' });
     }
 
-    const expData = { ...request.body, user_id: userId };
+    const expData = { ...pick(request.body, EXPERIENCE_FIELDS), user_id: userId };
     if (expData.end_date === '') expData.end_date = null;
     if (expData.company) expData.company = sanitizeText(expData.company);
     if (expData.role) expData.role = sanitizeText(expData.role);
@@ -273,6 +291,7 @@ export const addExperience = async (request, reply) => {
     if (expData.location) expData.location = sanitizeText(expData.location);
 
     const exp = await Experience.query().insert(expData);
+    syncProfileCompletion(userId).catch(() => {});
 
     return reply.status(201).send({
       success: true,
@@ -301,7 +320,7 @@ export const updateExperience = async (request, reply) => {
     const exp = await Experience.query().findOne({ id: expId, user_id: userId });
     if (!exp) return reply.status(404).send({ success: false, message: 'Experience entry not found.' });
 
-    const updateData = { ...request.body };
+    const updateData = pick(request.body, EXPERIENCE_FIELDS);
     if (updateData.company) updateData.company = sanitizeText(updateData.company.trim());
     if (updateData.role) updateData.role = sanitizeText(updateData.role.trim());
     if (updateData.description) updateData.description = sanitizeText(updateData.description);
@@ -380,7 +399,7 @@ export const addEducation = async (request, reply) => {
       return reply.status(400).send({ success: false, message: 'end_date must be null when is_current is true.' });
     }
 
-    const eduData = { ...request.body, user_id: userId };
+    const eduData = { ...pick(request.body, EDUCATION_FIELDS), user_id: userId };
     if (eduData.end_date === '') eduData.end_date = null;
     if (eduData.institution) eduData.institution = sanitizeText(eduData.institution);
     if (eduData.degree) eduData.degree = sanitizeText(eduData.degree);
@@ -389,6 +408,7 @@ export const addEducation = async (request, reply) => {
     if (eduData.grade) eduData.grade = sanitizeText(eduData.grade);
 
     const edu = await Education.query().insert(eduData);
+    syncProfileCompletion(userId).catch(() => {});
 
     return reply.status(201).send({
       success: true,
@@ -421,7 +441,7 @@ export const updateEducation = async (request, reply) => {
     const edu = await Education.query().findOne({ id: eduId, user_id: userId });
     if (!edu) return reply.status(404).send({ success: false, message: 'Education not found.' });
 
-    const updateData = { ...request.body };
+    const updateData = pick(request.body, EDUCATION_FIELDS);
     if (updateData.end_date === '' || is_current) updateData.end_date = null;
     if (updateData.institution) updateData.institution = sanitizeText(updateData.institution);
     if (updateData.degree) updateData.degree = sanitizeText(updateData.degree);
@@ -493,8 +513,8 @@ export const addCertification = async (request, reply) => {
       return reply.status(400).send({ success: false, message: 'Issue date cannot be in the future.' });
     }
 
-    const certData = { 
-      ...request.body, 
+    const certData = {
+      ...pick(request.body, CERTIFICATION_FIELDS),
       user_id: userId,
       name: sanitizeText(name.trim()),
       issuer: sanitizeText(issuer.trim())
@@ -538,8 +558,8 @@ export const updateCertification = async (request, reply) => {
     const cert = await Certification.query().findOne({ id: certId, user_id: userId });
     if (!cert) return reply.status(404).send({ success: false, message: 'Certification not found.' });
 
-    const updateData = { 
-      ...request.body,
+    const updateData = {
+      ...pick(request.body, CERTIFICATION_FIELDS),
       name: sanitizeText(name.trim()),
       issuer: sanitizeText(issuer.trim())
     };
@@ -611,6 +631,7 @@ export const uploadProfilePhoto = async (request, reply) => {
     });
 
     await User.query().findById(userId).patch({ profile_photo_url: result.secure_url });
+    syncProfileCompletion(userId).catch(() => {});
 
     return reply.status(200).send({ success: true, message: 'Profile photo uploaded successfully.', data: { url: result.secure_url } });
   } catch (error) {
@@ -683,44 +704,19 @@ export const uploadProfileCover = async (request, reply) => {
 export const getProfileCompletion = async (request, reply) => {
   try {
     const userId = request.user.id;
-    const user = await User.query()
-      .findById(userId)
-      .withGraphFetched('[experience, education]');
 
-    if (!user) {
+    // Recomputes AND persists users.profile_completion in one call, so this
+    // frequently-hit endpoint doubles as a sync point for the column read by
+    // recruiter search/drawer and admin views.
+    const result = await syncProfileCompletion(userId);
+    if (!result) {
       return reply.status(404).send({ success: false, message: 'User not found' });
     }
-
-    let completedFields = 0;
-    const totalFields = 6;
-    
-    const skills = typeof user.skills === 'string' ? JSON.parse(user.skills) : (user.skills || []);
-
-    if (user.resume_url) completedFields++;
-    if (user.experience && user.experience.length > 0) completedFields++;
-    if (skills && skills.length > 0) completedFields++;
-    if (user.profile_photo_url) completedFields++;
-    if (user.education && user.education.length > 0) completedFields++;
-    if (user.linked_in && user.linked_in !== '') completedFields++;
-
-    const percentage = Math.round((completedFields / totalFields) * 100);
 
     return reply.status(200).send({
       success: true,
       message: 'Profile completion fetched.',
-      data: {
-        percentage,
-        completed_count: completedFields,
-        total_count: totalFields,
-        breakdown: {
-          resume: !!user.resume_url,
-          experience: !!(user.experience && user.experience.length > 0),
-          skills: !!(skills && skills.length > 0),
-          photo: !!user.profile_photo_url,
-          education: !!(user.education && user.education.length > 0),
-          linked_in: !!(user.linked_in && user.linked_in !== '')
-        }
-      }
+      data: result,
     });
   } catch (error) {
     request.server.log.error(error);

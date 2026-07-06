@@ -7,6 +7,7 @@ export type JobStatus   = 'active' | 'closed' | 'draft' | 'paused';
 
 export interface Job {
   id:                  string;
+  numeric_id?:         number;
   title:               string;
   company:             string;
   company_logo:        string;
@@ -31,6 +32,7 @@ export interface Job {
   company_verified?:   boolean;
   status?:             string;
   closes_at?:          string | null;
+  job_fit_score?:      number | null;
 }
 
 export interface JobDetail extends Job {

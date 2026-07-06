@@ -207,15 +207,6 @@ const BAND_BG: Record<string, string> = {
   amber: T.amberBg, orange: '#3a1f0a', red: T.redBg,
 };
 
-// ── Hiring label badge color (score-based) ────────────────────────────────────
-
-function hiringLabelStyle(score: number): { bg: string; color: string } {
-  if (score >= 76) return { bg: T.greenBg, color: T.greenInk };
-  if (score >= 61) return { bg: T.blueBg,  color: '#9fbdf0'  };
-  if (score >= 41) return { bg: T.amberBg, color: T.amberInk };
-  return               { bg: T.redBg,   color: T.red       };
-}
-
 // ── Gauge ─────────────────────────────────────────────────────────────────────
 
 const CIRC = 2 * Math.PI * 92;
@@ -584,7 +575,6 @@ function ScoreSection({ insights }: { insights: ResumeInsights }) {
   const { data: benchmarkData } = useBenchmarkingQuery();
   const score    = insights.qa_match_score ?? 0;
   const gc       = score >= 80 ? T.green : score >= 60 ? T.blue : score >= 40 ? T.amber : T.red;
-  const hlStyle  = hiringLabelStyle(score);
   const bandC    = insights.band_color ? BAND_COLOR[insights.band_color] ?? '#9fbdf0' : '#9fbdf0';
   const bandBg   = insights.band_color ? BAND_BG[insights.band_color]   ?? T.blueBg  : T.blueBg;
 
@@ -599,9 +589,6 @@ function ScoreSection({ insights }: { insights: ResumeInsights }) {
 
         {/* Tags */}
         <div style={{ display: 'flex', gap: 12, margin: '18px 0 24px', flexWrap: 'wrap', justifyContent: 'center' }}>
-          {insights.qa_hiring_label && (
-            <Pill bg={hlStyle.bg} color={hlStyle.color}>{insights.qa_hiring_label}</Pill>
-          )}
           {insights.band_label && (
             <Pill bg={bandBg} color={bandC}>{insights.band_label}</Pill>
           )}

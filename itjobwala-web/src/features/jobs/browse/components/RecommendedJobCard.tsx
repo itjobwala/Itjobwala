@@ -33,6 +33,17 @@ export default function RecommendedJobCard({ job }: { job: Job }) {
             <> &middot; ₹{Math.round(job.salaryMin / 100000)}–{Math.round(job.salaryMax / 100000)} LPA</>
           )}
         </p>
+        {job.jobFitScore != null && (
+          <span
+            className="inline-block mt-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+            style={{
+              background: job.jobFitScore >= 70 ? 'rgba(16,185,129,0.12)' : job.jobFitScore >= 45 ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.08)',
+              color:      job.jobFitScore >= 70 ? '#10b981' : job.jobFitScore >= 45 ? '#f59e0b' : '#ef4444',
+            }}
+          >
+            {job.jobFitScore}% job fit
+          </span>
+        )}
       </div>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2.5" className="shrink-0 group-hover:stroke-primary transition-colors">
         <path d="M9 18l6-6-6-6" />

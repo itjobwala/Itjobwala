@@ -1,4 +1,5 @@
 import Notification from '../models/common/Notification.js';
+import ProfileView from '../models/recruiter/ProfileView.js';
 
 /**
  * Fire a notification insert without blocking the calling request.
@@ -19,6 +20,42 @@ export function notifyRecruiter(recruiterId, { type, title, message, actionUrl =
 
 export function notifyCandidate(candidateId, { type, title, message, actionUrl = null, actor = null }) {
   fireNotification({ candidate_id: candidateId, recruiter_id: null, type, title, message, action_url: actionUrl }, actor);
+}
+
+/**
+ * Records a recruiter viewing a candidate's profile (deduped per recruiter/day
+ * via the profile_views unique constraint) and — only on a genuinely new view —
+ * upserts today's "N recruiters viewed your profile" notification.
+ *
+ * Single source of truth for this so every recruiter-side surface that shows a
+ * candidate (search results, applicant detail, talent pool, etc.) notifies the
+ * candidate consistently instead of each call site re-implementing it and some
+ * silently skipping the notification.
+ */
+export async function recordProfileView(candidateUserId, recruiterId) {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const inserted = await ProfileView.knex().raw(
+      `INSERT INTO profile_views (candidate_user_id, recruiter_id, viewed_date)
+       VALUES (?, ?, ?)
+       ON CONFLICT (candidate_user_id, recruiter_id, viewed_date) DO NOTHING
+       RETURNING id`,
+      [candidateUserId, recruiterId, today],
+    );
+    if (inserted.rows.length === 0) return; // same recruiter, same day — already counted
+
+    const countRow = await ProfileView.knex().raw(
+      `SELECT COUNT(DISTINCT recruiter_id) AS count FROM profile_views WHERE candidate_user_id = ? AND viewed_date = ?`,
+      [candidateUserId, today],
+    );
+    const count = parseInt(countRow.rows[0]?.count ?? '1', 10);
+    const message = count === 1
+      ? '1 recruiter viewed your profile today'
+      : `${count} recruiters viewed your profile today`;
+    upsertProfileViewNotification(candidateUserId, { title: 'Profile Viewed', message, viewDate: today, count });
+  } catch {
+    // fire-and-forget; never block the caller
+  }
 }
 
 export function upsertProfileViewNotification(candidateId, { title, message, viewDate, count }) {

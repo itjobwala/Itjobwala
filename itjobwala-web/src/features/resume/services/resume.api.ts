@@ -62,9 +62,14 @@ export async function parseResume(payload: ParseResumePayload = {}): Promise<Par
   }
 }
 
-export async function getResumeInsights(signal?: AbortSignal): Promise<ResumeInsights> {
-  const res = await apiClient.get<ApiResponse<ResumeInsights>>('/resume/insights', { signal });
-  return res.data.data!;
+export async function getResumeInsights(signal?: AbortSignal): Promise<ResumeInsights | null> {
+  try {
+    const res = await apiClient.get<ApiResponse<ResumeInsights>>('/resume/insights', { signal });
+    return res.data.data ?? null;
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return null;
+    throw err;
+  }
 }
 
 export async function matchResumeToJob(jobId: number): Promise<JobMatchResult> {

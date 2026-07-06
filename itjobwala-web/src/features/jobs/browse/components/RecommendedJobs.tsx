@@ -13,7 +13,7 @@ export default function RecommendedJobs({ jobs }: Props) {
   return (
     <Card overflow>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-extrabold text-heading">Recommended for you</h3>
+        <h3 className="text-base font-extrabold text-heading">Recommended Jobs</h3>
         <Link href="/candidate/jobs" className="text-caption font-semibold text-primary hover:underline">
           View all
         </Link>

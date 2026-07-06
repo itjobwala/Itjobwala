@@ -7,6 +7,7 @@ import {
   TOKEN_COOKIE,
   RECRUITER_TOKEN_COOKIE,
   ADMIN_TOKEN_COOKIE,
+  SESSION_ACTIVE_KEY,
 } from './auth.constants';
 import { authLog } from './auth.logger';
 import type { AuthStore, SessionUser } from './auth.types';
@@ -17,6 +18,7 @@ import {
   buildAdminUser,
   writeSession,
   removeSession,
+  writeToken,
   removeToken,
   clearCookie,
   resolveSessionFromStorage,
@@ -58,6 +60,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   // a JS-readable cookie. This prevents XSS from stealing the token.
   loginCandidate: (token: string, user: SessionUser) => {
     writeSession(user);  // non-sensitive profile data only
+    writeToken(SESSION_ACTIVE_KEY, '1');
     set({ accessToken: token, user, role: 'candidate', isAuthenticated: true });
     authLog('[AUTH]', `Candidate login successful — ${user.email}`);
     dispatchAuthChanged();
@@ -66,12 +69,14 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   loginRecruiter: (token: string) => {
     const payload = decodeJwt(token);
     const user = payload ? buildRecruiterUser(payload) : null;
+    writeToken(SESSION_ACTIVE_KEY, '1');
     set({ accessToken: token, user, role: 'recruiter', isAuthenticated: true, isLoggingOut: false });
     authLog('[AUTH]', `Recruiter login successful — ${user?.email ?? 'unknown'}`);
     dispatchAuthChanged();
   },
 
   loginAdmin: (token: string, user: SessionUser) => {
+    writeToken(SESSION_ACTIVE_KEY, '1');
     set({ accessToken: token, user, role: 'admin', isAuthenticated: true, isLoggingOut: false });
     authLog('[AUTH]', `Admin login successful — ${user.email}`);
     dispatchAuthChanged();
@@ -84,6 +89,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     removeToken(CANDIDATE_TOKEN_KEY);
     removeToken(RECRUITER_TOKEN_KEY);
     removeToken(ADMIN_TOKEN_KEY);
+    removeToken(SESSION_ACTIVE_KEY);
     removeSession();
     clearCookie(TOKEN_COOKIE);
     clearCookie(RECRUITER_TOKEN_COOKIE);
@@ -99,6 +105,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     authLog('[AUTH]', 'Candidate logout');
     revokeRefreshToken();  // clears httpOnly refresh cookie so silent-refresh can't re-auth
     removeToken(CANDIDATE_TOKEN_KEY);
+    removeToken(SESSION_ACTIVE_KEY);
     removeSession();
     clearCookie(TOKEN_COOKIE);
     clearQueryCache();
@@ -113,6 +120,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     revokeRefreshToken();  // clears httpOnly refresh cookie so silent-refresh can't re-auth
     set({ isLoggingOut: true });
     removeToken(RECRUITER_TOKEN_KEY);
+    removeToken(SESSION_ACTIVE_KEY);
     clearCookie(RECRUITER_TOKEN_COOKIE);
     clearQueryCache();
     clearRefreshState();
@@ -125,6 +133,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     authLog('[AUTH]', 'Admin logout');
     revokeRefreshToken();  // clears httpOnly refresh cookie so silent-refresh can't re-auth
     removeToken(ADMIN_TOKEN_KEY);
+    removeToken(SESSION_ACTIVE_KEY);
     clearCookie(ADMIN_TOKEN_COOKIE);
     clearQueryCache();
     clearRefreshState();

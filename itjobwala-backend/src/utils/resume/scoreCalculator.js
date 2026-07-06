@@ -11,10 +11,11 @@
  *  76–89   Great       — strong QA hire
  *  90–100  Excellent   — elite QA profile
  *
- * QA dimension weights (base dimensions: 110, optional bonuses: +10, hard cap: 100):
+ * QA dimension weights (base dimensions: 107, optional bonuses: +10, hard cap: 100):
  *   automation_testing       25
  *   api_testing              20  (+ depth bonus up to +3)
- *   framework_expertise      15  (concept-driven; tools are supplementary)
+ *   framework_expertise      12  (concept-only — no tool bonus; every framework-adjacent
+ *                                 tool is already scored under AUTO/performance/api)
  *   test_design_methodology  10  (test techniques + manual QA methodology depth)
  *   qa_experience            15  (+ ownership/impact/complexity signals)
  *   performance_testing      10  (optional enhancement)
@@ -33,7 +34,7 @@ import { skillMatches }     from './skillMatcher.js';
 const QA_WEIGHTS = {
   automation_testing:      25,
   api_testing:             20,
-  framework_expertise:     15,
+  framework_expertise:     12,
   test_design_methodology: 10,
   qa_experience:           15,
   performance_testing:     10,
@@ -105,35 +106,30 @@ export function calculateQaResumeScore({
   const apiDepthBonus = Math.min(3, textHits(text, API_DEPTH));
   const apiS = Math.min(20, apiBase + apiDepthBonus);
 
-  // ── 3. Framework Expertise (max 15) ──────────────────────────────────────────
-  // Concept-driven: framework engineering patterns are the primary signal.
-  // Selenium/Cypress/Playwright/Appium excluded here — they're already in AUTO.
+  // ── 3. Framework Expertise (max 12) — concept-only ───────────────────────────
+  // Framework engineering patterns are the sole signal. There used to be a
+  // "framework-adjacent tools" supplementary bonus (testng/junit/webdriverio/
+  // katalon/jmeter/k6/gatling/rest assured/postman), but every one of those
+  // tools is already scored in another dimension (AUTO, performance_testing,
+  // or api_testing), so it double-counted the same skill listing across two
+  // dimensions. Selenium/Cypress/Playwright/Appium are excluded here too —
+  // they're already in AUTO.
   const FW_CONCEPTS = [
     'page object model', 'page object pattern', 'hybrid framework',
     'data-driven framework', 'keyword-driven testing', 'bdd', 'cucumber',
     'specflow', 'reusable components', 'test listener', 'retry analyzer',
     'parallel execution', 'allure report', 'extent report',
   ];
-  // Framework-adjacent tools (not in AUTO) — minor supplementary credit
-  const FW_TOOLS = [
-    'testng', 'junit', 'webdriverio', 'katalon',
-    'jmeter', 'k6', 'gatling', 'rest assured', 'postman',
-  ];
   // Each concept counts once whether found in skills OR text (deduplicated union).
   const fwConceptH = FW_CONCEPTS.filter(c =>
     text.includes(c) || skills.some(s => skillMatches(s, c))
   ).length;
-  const fwToolH    = hits(skills, FW_TOOLS);
 
-  // Concept base (max 12): engineering patterns drive the score
-  const fwConceptBase = fwConceptH >= 5 ? 12
-                      : fwConceptH >= 3 ? 9
-                      : fwConceptH >= 2 ? 6
-                      : fwConceptH === 1 ? 3
-                      : 0;
-  // Tool supplement (max 3): minor credit for framework-adjacent tools
-  const fwToolSupplement = fwToolH >= 3 ? 3 : fwToolH >= 2 ? 2 : fwToolH >= 1 ? 1 : 0;
-  const fwS = Math.min(15, fwConceptBase + fwToolSupplement);
+  const fwS = fwConceptH >= 5 ? 12
+            : fwConceptH >= 3 ? 9
+            : fwConceptH >= 2 ? 6
+            : fwConceptH === 1 ? 3
+            : 0;
 
   // ── 4. Performance Testing — optional enhancement (max 10) ───────────────────
   const PERF = ['jmeter', 'gatling', 'k6', 'locust', 'blazemeter',
@@ -164,8 +160,11 @@ export function calculateQaResumeScore({
   if (experienceYears >= 3) expS += 3;
   if (experienceYears >= 5) expS += 3;
 
-  const QA_METHODS = ['stlc', 'sdlc', 'test plan', 'test strategy', 'defect tracking',
-    'bug tracking', 'regression testing', 'functional testing', 'agile testing',
+  // 'defect tracking'/'bug tracking' deliberately excluded — they're already
+  // scored in the dedicated bug_tracking dimension below; keeping them here
+  // double-credited the same skill listing in two dimensions.
+  const QA_METHODS = ['stlc', 'sdlc', 'test plan', 'test strategy',
+    'regression testing', 'functional testing', 'agile testing',
     'scrum', 'qa workflows', 'quality assurance', 'uat', 'integration testing'];
   const methodH = hits(skills, QA_METHODS);
   expS += methodH >= 3 ? 4 : methodH >= 2 ? 3 : methodH >= 1 ? 1 : 0;

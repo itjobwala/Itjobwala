@@ -48,12 +48,23 @@ export async function saveFeedbackSignal({ candidateId, jobId, recruiterId, appl
 /**
  * Called by recruiter when submitting an optional feedback note.
  * Upserts the note on the most recent signal for this application.
+ *
+ * Postgres UPDATE has no ORDER BY/LIMIT, so knex silently drops those clauses
+ * on a chained .patch() — .where(...).orderBy(...).limit(1).patch(...) would
+ * patch every matching signal row, not just the latest one. Resolve the
+ * latest row's id first, then patch that single row by id.
  */
 export async function saveFeedbackNote({ applicationId, recruiterId, note }) {
-  await RecruiterFeedbackSignal.query()
+  const latest = await RecruiterFeedbackSignal.query()
     .where({ application_id: applicationId, recruiter_id: recruiterId })
     .orderBy('created_at', 'desc')
-    .limit(1)
+    .select('id')
+    .first();
+
+  if (!latest) return 0;
+
+  return RecruiterFeedbackSignal.query()
+    .findById(latest.id)
     .patch({ feedback_note: note.trim().slice(0, 500) });
 }
 

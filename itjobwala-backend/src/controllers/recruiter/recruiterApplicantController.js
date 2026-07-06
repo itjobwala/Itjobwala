@@ -4,9 +4,8 @@ import ResumeInsight from '../../models/candidate/ResumeInsight.js';
 import Activity from '../../models/recruiter/Activity.js';
 import User from '../../models/candidate/User.js';
 import Interview from '../../models/recruiter/Interview.js';
-import ProfileView from '../../models/recruiter/ProfileView.js';
 import Recruiter from '../../models/recruiter/Recruiter.js';
-import { notifyCandidate, notifyRecruiter } from '../../utils/notifyHelper.js';
+import { notifyCandidate, notifyRecruiter, recordProfileView } from '../../utils/notifyHelper.js';
 import { saveFeedbackSignal, saveFeedbackNote } from '../../services/resume/feedbackSignal.service.js';
 import { sendApplicationStatusEmail } from '../../services/email/mailer.service.js';
 
@@ -298,11 +297,9 @@ export const getApplicantById = async (request, reply) => {
       return reply.status(404).send({ success: false, message: 'Applicant not found', error: 'NOT_FOUND' });
     }
 
-    // Fire-and-forget: track this recruiter viewing the candidate's profile (dedup per day)
-    ProfileView.knex().raw(
-      `INSERT INTO profile_views (candidate_user_id, recruiter_id, viewed_date) VALUES (?, ?, ?) ON CONFLICT (candidate_user_id, recruiter_id, viewed_date) DO NOTHING`,
-      [application.user_id, recruiterId, new Date().toISOString().split('T')[0]]
-    ).catch(() => {});
+    // Fire-and-forget: track this recruiter viewing the candidate's profile and
+    // notify the candidate (same as the candidate-search profile view path).
+    recordProfileView(application.user_id, recruiterId);
 
     const candidate = application.applicant;
 
@@ -547,7 +544,24 @@ export const submitFeedbackNote = async (request, reply) => {
       return reply.status(400).send({ success: false, message: 'Note cannot be empty.' });
     }
 
-    await saveFeedbackNote({ applicationId, recruiterId, note });
+    // Verify ownership before writing — saveFeedbackNote's where({ application_id,
+    // recruiter_id }) can't cross tenants, but without this check a note on an
+    // unowned/nonexistent application silently matches 0 rows and still "succeeds".
+    const owned = await Application.query()
+      .join('jobs', 'applications.job_id', 'jobs.id')
+      .where('applications.id', applicationId)
+      .where('jobs.recruiter_id', recruiterId)
+      .select('applications.id')
+      .first();
+
+    if (!owned) {
+      return reply.status(404).send({ success: false, message: 'Applicant not found.' });
+    }
+
+    const updated = await saveFeedbackNote({ applicationId, recruiterId, note });
+    if (!updated) {
+      return reply.status(404).send({ success: false, message: 'No feedback signal exists yet for this application.' });
+    }
 
     return reply.send({ success: true, message: 'Feedback note saved.' });
   } catch (err) {

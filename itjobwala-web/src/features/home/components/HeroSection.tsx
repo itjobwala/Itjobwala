@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { JobSearchBar } from '@/features/jobs/browse';
+import { JobSearchBar, useHomeStatsQuery } from '@/features/jobs/browse';
 import { PRIMARY } from '@/src/lib/constants';
 import type { SearchState } from '@/features/jobs/shared/types';
 
 export default function HeroSection() {
   const [search, setSearch] = useState<SearchState>({ jobTitle: '', company: '', city: '' });
+  const { data: stats, isLoading: statsLoading } = useHomeStatsQuery();
+  const jobCount = stats?.total_jobs ?? null;
 
   function handleSearch() {
     if (!search.jobTitle && !search.company && !search.city) return;
@@ -43,9 +45,13 @@ export default function HeroSection() {
         {/* Live badge */}
         <div className="inline-flex items-center gap-1.5 bg-white border border-token rounded-full py-1.5 px-3.5 mb-6 shadow-sm">
           <span className="w-[7px] h-[7px] rounded-full bg-[#4ade80] inline-block pulse-dot" />
-          <span className="text-sm font-semibold" style={{ color: PRIMARY, letterSpacing: 0.2 }}>
-            600+ QA roles live right now
-          </span>
+          {statsLoading ? (
+            <span className="inline-block h-3.5 w-40 rounded bg-gray-200 animate-pulse" />
+          ) : (
+            <span className="text-sm font-semibold" style={{ color: PRIMARY, letterSpacing: 0.2 }}>
+              {jobCount !== null ? `${jobCount.toLocaleString()} QA roles live right now` : '600+ QA roles live right now'}
+            </span>
+          )}
         </div>
 
         {/* Headline */}

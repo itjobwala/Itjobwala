@@ -41,6 +41,11 @@ const SENIORITY_SIGNALS = [
 
 const SENIORITY_ORDER = { fresher: 0, junior: 1, mid_level: 2, senior: 3, lead: 4 };
 
+// Tolerates legacy/inconsistent formatting (e.g. 'mid-level' vs the canonical
+// 'mid_level') so a stray hyphen doesn't silently fall through to the '?? 1'
+// default in seniorityFitScore() and understate a candidate's seniority.
+const normalizeSeniority = (s) => (s || '').toLowerCase().trim().replace(/[\s-]+/g, '_');
+
 export function inferJobSpecialization(jobTitle, jobSkills, requirementsText) {
   const haystack = `${jobTitle} ${(jobSkills || []).join(' ')} ${requirementsText || ''}`;
   for (const { spec, patterns } of JOB_SPEC_SIGNALS) {
@@ -89,8 +94,8 @@ function specializationAlignmentScore(candidateSpec, jobSpec) {
 
 function seniorityFitScore(candidateSeniority, jobSeniority) {
   if (!jobSeniority || !candidateSeniority) return 70;
-  const cLevel = SENIORITY_ORDER[candidateSeniority] ?? 1;
-  const jLevel = SENIORITY_ORDER[jobSeniority]       ?? 1;
+  const cLevel = SENIORITY_ORDER[normalizeSeniority(candidateSeniority)] ?? 1;
+  const jLevel = SENIORITY_ORDER[normalizeSeniority(jobSeniority)]       ?? 1;
   const diff   = cLevel - jLevel;
 
   if (diff === 0)  return 100; // exact match

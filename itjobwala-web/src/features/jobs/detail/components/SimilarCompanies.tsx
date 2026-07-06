@@ -19,7 +19,7 @@ export default function SimilarCompanies({ companies }: Props) {
   return (
     <Card overflow>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-extrabold text-heading">Similar companies hiring</h3>
+        <h3 className="text-base font-extrabold text-heading">Similar Companies Hiring</h3>
       </div>
       <div className="flex flex-col gap-1">
         {companies.map(c => (

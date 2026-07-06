@@ -46,6 +46,7 @@ type RecruiterErrors = Partial<Record<keyof RecruiterForm, string>>;
 function validateCandidate(form: CandidateForm): CandidateErrors {
   const e: CandidateErrors = {};
   if (!form.name.trim()) e.name = 'Full name is required';
+  else if (form.name.trim().length < 5) e.name = 'Full name must be at least 5 characters';
   if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
     e.email = 'Enter a valid email address';
   if (!form.mobile.trim() || !/^[6-9]\d{9}$/.test(form.mobile))
@@ -277,6 +278,7 @@ export default function SignUpPage() {
     e.preventDefault();
     const errs: RecruiterErrors = {};
     if (!rForm.fullName.trim()) errs.fullName = 'Full name is required';
+    else if (rForm.fullName.trim().length < 5) errs.fullName = 'Full name must be at least 5 characters';
     if (!rForm.companyName.trim()) errs.companyName = 'Company name is required';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rForm.email)) errs.email = 'Enter a valid work email';
     if (!rForm.password || rForm.password.length < 8) errs.password = 'Password must be at least 8 characters';

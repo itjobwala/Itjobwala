@@ -19,9 +19,9 @@ export const getResumeInsights = async (request, reply) => {
   const insight = await baseQuery.orderBy('last_parsed_at', 'desc').first();
 
   if (!insight) {
-    return reply.status(404).send({
-      success: false,
-      message: 'No resume analysis found. Please parse your resume first.',
+    return reply.send({
+      success: true,
+      message: 'No resume analysis found.',
       data:    null,
     });
   }

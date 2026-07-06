@@ -146,9 +146,15 @@ const start = async () => {
     runCleanup(fastify.log);
     setInterval(() => runCleanup(fastify.log), 24 * 60 * 60 * 1000);
 
-    // Run job alert matcher once on startup, then every 24 hours
-    runJobAlertMatcher(fastify.log);
-    setInterval(() => runJobAlertMatcher(fastify.log), 24 * 60 * 60 * 1000);
+    // Daily/weekly alerts: once on startup, then every 24 hours
+    runJobAlertMatcher(fastify.log, { frequencies: ['daily', 'weekly'] });
+    setInterval(() => runJobAlertMatcher(fastify.log, { frequencies: ['daily', 'weekly'] }), 24 * 60 * 60 * 1000);
+
+    // Instant alerts: poll frequently so "instant" is actually near-real-time
+    // (keep in sync with MINUTES_4 in jobAlertMatcher.js)
+    const INSTANT_POLL_INTERVAL_MS = 5 * 60 * 1000;
+    runJobAlertMatcher(fastify.log, { frequencies: ['instant'] });
+    setInterval(() => runJobAlertMatcher(fastify.log, { frequencies: ['instant'] }), INSTANT_POLL_INTERVAL_MS);
   } catch (err) {
     fastify.log.error(err);
     process.exit(1);

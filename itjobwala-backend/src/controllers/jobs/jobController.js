@@ -6,6 +6,22 @@ import SavedJob from '../../models/jobs/SavedJob.js';
 import ResumeInsight from '../../models/candidate/ResumeInsight.js';
 import { ref, raw } from 'objection';
 import { env } from '../../config/env.js';
+import { calculateJobFitScore } from '../../intelligence/jobFit/fitScoreCalculator.js';
+
+// Fields calculateJobFitScore() needs off a resume_insights row.
+const FIT_SCORE_INSIGHT_FIELDS = ['extracted_skills', 'qa_specialization', 'qa_seniority', 'experience_years', 'qa_match_score'];
+
+// resume_insights keeps one row per distinct resume upload (see parseResume.js),
+// so a candidate can have many rows — must order by last_parsed_at to get the
+// current resume, same as getResumeInsights.js does.
+const getResumeInsightForFit = (candidateId) =>
+  candidateId
+    ? ResumeInsight.query()
+        .where({ candidate_id: candidateId })
+        .select(...FIT_SCORE_INSIGHT_FIELDS)
+        .orderBy('last_parsed_at', 'desc')
+        .first()
+    : Promise.resolve(null);
 
 const hashIp = (ip) =>
   crypto.createHmac('sha256', env.ipHashSalt).update(ip || '').digest('hex');
@@ -24,9 +40,10 @@ const getCandidateId = async (request) => {
 };
 
 // Helper to map DB result to contract shape
-const formatJob = (job, hasApplied = false, isSaved = false) => {
+const formatJob = (job, hasApplied = false, isSaved = false, jobFitScore = null) => {
   return {
-    id: `job_${job.id}`,
+    id: job.public_id,
+    numeric_id: job.id,
     title: job.title,
     company: job.company_name || job.recruiter?.company_name || 'Unknown',
     company_logo: job.recruiter?.logo || null,
@@ -77,6 +94,9 @@ const formatJob = (job, hasApplied = false, isSaved = false) => {
     status:      job.status,
     is_saved: isSaved,
     has_applied: hasApplied,
+    // QA fit-score engine's job-specific score (itjobwala-backend/src/intelligence/jobFit) —
+    // null when the requester isn't a candidate with a scoreable resume (< 3 extracted skills).
+    job_fit_score: jobFitScore,
   };
 };
 
@@ -188,11 +208,19 @@ export const getJobs = async (request, reply) => {
       savedJobIds   = new Set(savedJobs.map(s => s.job_id));
     }
 
+    const resumeInsight  = await getResumeInsightForFit(candidateId);
+    const fitScoreReady  = (resumeInsight?.extracted_skills?.length ?? 0) >= 3;
+
     return reply.status(200).send({
       success: true,
       message: 'Jobs fetched successfully.',
       data: {
-        jobs: result.results.map(j => formatJob(j, appliedJobIds.has(j.id), savedJobIds.has(j.id))),
+        jobs: result.results.map(j => formatJob(
+          j,
+          appliedJobIds.has(j.id),
+          savedJobIds.has(j.id),
+          fitScoreReady ? calculateJobFitScore(resumeInsight, j).job_fit_score : null,
+        )),
         pagination: {
           page: pageIndex + 1,
           limit: pageSize,
@@ -211,48 +239,32 @@ export const getJobs = async (request, reply) => {
 
 export const getJobDetails = async (request, reply) => {
   try {
-    const jobId = request.params.job_id.replace('job_', '');
+    const publicId    = request.params.job_id;
     const candidateId = await getCandidateId(request);
 
-    const [job, existingApplication, savedJob] = await Promise.all([
-      Job.query()
-        .findById(jobId)
-        .withGraphFetched('recruiter')
-        .select('jobs.*')
-        .select(
-          Job.relatedQuery('applications')
-            .count()
-            .as('applicant_count')
-        )
-        .select(
-          Job.relatedQuery('applications')
-            .where('status', 'shortlisted')
-            .count()
-            .as('shortlisted_count')
-        )
-        .select(
-          Job.relatedQuery('applications')
-            .where('status', 'interview')
-            .count()
-            .as('interview_count')
-        ),
-      candidateId
-        ? Application.query()
-            .findOne({ job_id: jobId, user_id: candidateId })
-            .select('id')
-        : Promise.resolve(null),
-      candidateId
-        ? SavedJob.query()
-            .findOne({ job_id: jobId, user_id: candidateId })
-            .select('id')
-        : Promise.resolve(null),
-    ]);
+    const job = await Job.query()
+      .findOne({ public_id: publicId })
+      .withGraphFetched('recruiter')
+      .select('jobs.*')
+      .select(Job.relatedQuery('applications').count().as('applicant_count'))
+      .select(Job.relatedQuery('applications').where('status', 'shortlisted').count().as('shortlisted_count'))
+      .select(Job.relatedQuery('applications').where('status', 'interview').count().as('interview_count'));
 
+    // Always return the same 404 for not-found AND inactive — prevents status enumeration
     if (!job || job.status !== 'active') {
       return reply.status(404).send({ success: false, message: 'Job not found or has been removed.' });
     }
 
-    // Fire-and-forget: record this page view (deduped per user/IP per day via unique indexes)
+    const [existingApplication, savedJob] = await Promise.all([
+      candidateId
+        ? Application.query().findOne({ job_id: job.id, user_id: candidateId }).select('id')
+        : Promise.resolve(null),
+      candidateId
+        ? SavedJob.query().findOne({ job_id: job.id, user_id: candidateId }).select('id')
+        : Promise.resolve(null),
+    ]);
+
+    // Fire-and-forget view tracking (deduped per user/IP per day)
     const today = new Date().toISOString().split('T')[0];
     if (candidateId) {
       Job.knex().raw(
@@ -280,99 +292,67 @@ export const getJobDetails = async (request, reply) => {
   }
 };
 
+// Minimal shape for the "Recommended Jobs" sidebar card — only what
+// RecommendedJobCard.tsx renders. Deliberately excludes recruiter contact
+// info, description, requirements, metrics, etc. that formatJob() carries.
+const formatJobCard = (job, jobFitScore = null) => ({
+  id: job.public_id,
+  title: job.title,
+  company: job.company_name || job.recruiter?.company_name || 'Unknown',
+  company_logo: job.recruiter?.logo || null,
+  company_verified: job.recruiter?.is_verified === true,
+  location: job.location,
+  experience_min: job.experience_min,
+  experience_max: job.experience_max,
+  salary_min: job.salary_min,
+  salary_max: job.salary_max,
+  job_fit_score: jobFitScore,
+});
+
+// Cap on how many recent active jobs get scored in-memory when ranking by fit.
+// Keeps getRecommendedJobs from scanning the whole jobs table as it grows.
+const FIT_RANKING_POOL_SIZE = 200;
+
 export const getRecommendedJobs = async (request, reply) => {
   try {
     const limit      = parseInt(request.query.limit, 10) || 5;
     const excludeRaw = request.query.exclude;
-    const excludeId  = excludeRaw ? excludeRaw.toString().replace('job_', '') : null;
+    const excludeId  = excludeRaw ? excludeRaw.toString() : null;
 
-    const candidateId = await getCandidateId(request);
+    const candidateId   = await getCandidateId(request);
+    const resumeInsight = await getResumeInsightForFit(candidateId);
+    const candidateSkills = resumeInsight?.extracted_skills ?? [];
+    const skillMatched     = candidateSkills.length >= 3;
 
-    let candidateSkills  = [];
-    if (candidateId) {
-      const insight = await ResumeInsight.query()
-        .findOne({ candidate_id: candidateId })
-        .select('extracted_skills', 'qa_specialization');
-      if (insight) {
-        candidateSkills = insight.extracted_skills ?? [];
-      }
-    }
+    const poolQuery = Job.query()
+      .withGraphFetched('recruiter')
+      .select('jobs.*')
+      .where('status', 'active')
+      .orderBy('created_at', 'desc');
+    if (excludeId) poolQuery.whereNot('public_id', excludeId);
 
     let jobs;
 
-    if (candidateSkills.length >= 3) {
-      const lowerSkills = candidateSkills.map(s => s.toLowerCase());
+    if (skillMatched) {
+      // Rank a recent pool of active jobs with the same QA fit-score engine
+      // used by /resume/job-fit/:jobId, instead of raw SQL skill-keyword overlap.
+      const pool = await poolQuery.limit(FIT_RANKING_POOL_SIZE);
 
-      jobs = await Job.query()
-        .withGraphFetched('recruiter')
-        .select('jobs.*')
-        .select(Job.relatedQuery('applications').count().as('applicant_count'))
-        .select(Job.relatedQuery('applications').where('status', 'shortlisted').count().as('shortlisted_count'))
-        .select(Job.relatedQuery('applications').where('status', 'interview').count().as('interview_count'))
-        .where('status', 'active')
-        .whereRaw(
-          `(
-            SELECT COUNT(*)
-            FROM jsonb_array_elements_text(jobs.skills::jsonb) AS job_skill
-            WHERE LOWER(job_skill) = ANY(?)
-          ) >= 2`,
-          [lowerSkills]
-        )
-        .orderByRaw(
-          `(
-            SELECT COUNT(*)
-            FROM jsonb_array_elements_text(jobs.skills::jsonb) AS job_skill
-            WHERE LOWER(job_skill) = ANY(?)
-          ) DESC, jobs.created_at DESC`,
-          [lowerSkills]
-        )
-        .limit(limit);
-
-      if (jobs.length < limit) {
-        const existingIds = jobs.map(j => j.id);
-        const backfill = await Job.query()
-          .withGraphFetched('recruiter')
-          .select('jobs.*')
-          .select(Job.relatedQuery('applications').count().as('applicant_count'))
-          .select(Job.relatedQuery('applications').where('status', 'shortlisted').count().as('shortlisted_count'))
-          .select(Job.relatedQuery('applications').where('status', 'interview').count().as('interview_count'))
-          .where('status', 'active')
-          .whereNotIn('id', existingIds.length ? existingIds : [0])
-          .orderBy('created_at', 'desc')
-          .limit(limit - jobs.length);
-        jobs = [...jobs, ...backfill];
-      }
+      jobs = pool
+        .map(job => ({ job, job_fit_score: calculateJobFitScore(resumeInsight, job).job_fit_score }))
+        .sort((a, b) => b.job_fit_score - a.job_fit_score)
+        .slice(0, limit);
     } else {
-      jobs = await Job.query()
-        .withGraphFetched('recruiter')
-        .select('jobs.*')
-        .select(Job.relatedQuery('applications').count().as('applicant_count'))
-        .select(Job.relatedQuery('applications').where('status', 'shortlisted').count().as('shortlisted_count'))
-        .select(Job.relatedQuery('applications').where('status', 'interview').count().as('interview_count'))
-        .where('status', 'active')
-        .orderBy('created_at', 'desc')
-        .limit(limit);
-    }
-
-    if (excludeId) {
-      jobs = jobs.filter(j => String(j.id) !== String(excludeId));
-    }
-
-    let savedJobIds = new Set();
-    if (candidateId && jobs.length > 0) {
-      const rows = await SavedJob.query()
-        .whereIn('job_id', jobs.map(j => j.id))
-        .where('user_id', candidateId)
-        .select('job_id');
-      savedJobIds = new Set(rows.map(r => r.job_id));
+      const pool = await poolQuery.limit(limit);
+      jobs = pool.map(job => ({ job, job_fit_score: null }));
     }
 
     return reply.status(200).send({
       success: true,
       message: 'Recommended jobs fetched.',
       data: {
-        skill_matched: candidateSkills.length >= 3,
-        jobs: jobs.map(j => formatJob(j, false, savedJobIds.has(j.id))),
+        skill_matched: skillMatched,
+        jobs: jobs.map(({ job, job_fit_score }) => formatJobCard(job, job_fit_score)),
       },
     });
   } catch (error) {
@@ -383,7 +363,7 @@ export const getRecommendedJobs = async (request, reply) => {
 
 export const getSimilarJobs = async (request, reply) => {
   try {
-    const jobId = request.params.job_id.replace('job_', '');
+    const publicId = request.params.job_id;
     const limit = parseInt(request.query.limit, 10) || 5;
 
     const candidateId = await getCandidateId(request);
@@ -393,7 +373,7 @@ export const getSimilarJobs = async (request, reply) => {
       .select(Job.relatedQuery('applications').count().as('applicant_count'))
       .select(Job.relatedQuery('applications').where('status', 'shortlisted').count().as('shortlisted_count'))
       .select(Job.relatedQuery('applications').where('status', 'interview').count().as('interview_count'))
-      .whereNot('id', jobId)
+      .whereNot('public_id', publicId)
       .where('status', 'active')
       .orderBy('created_at', 'desc')
       .limit(limit);
@@ -455,12 +435,17 @@ export const createJob = async (request, reply) => {
   try {
     const jobData = request.body;
     jobData.recruiter_id = request.user.id;
+
+    // Generate a random 12-char hex public_id via DB function
+    const { rows: [{ pid }] } = await Job.knex().raw(`SELECT left(encode(gen_random_bytes(6),'hex'),12) AS pid`);
+    jobData.public_id = pid;
+
     const newJob = await Job.query().insert(jobData).returning('*');
 
     return reply.status(201).send({
       success: true,
       message: 'Job created successfully',
-      data: { job_id: `job_${newJob.id}` }
+      data: { job_id: newJob.public_id }
     });
   } catch (error) {
     request.server.log.error(error);
@@ -542,11 +527,11 @@ export const getJobCategories = async (request, reply) => {
 
 export const getSimilarCompanies = async (request, reply) => {
   try {
-    const jobId = request.params.job_id.replace('job_', '');
+    const publicId = request.params.job_id;
     const limit = Math.min(parseInt(request.query.limit, 10) || 5, 20);
 
     // 1. Find current job and company info
-    const currentJob = await Job.query().findById(jobId).withGraphFetched('recruiter');
+    const currentJob = await Job.query().findOne({ public_id: publicId }).withGraphFetched('recruiter');
     if (!currentJob) {
       return reply.status(404).send({ success: false, error: 'Job not found' });
     }
@@ -603,6 +588,17 @@ export const getSimilarCompanies = async (request, reply) => {
   } catch (error) {
     request.server.log.error(error);
     return reply.status(500).send({ success: false, error: 'Internal server error' });
+  }
+};
+
+// ── GET /jobs/count — public, no auth, used by the hero badge ────────────────
+export const getJobCount = async (request, reply) => {
+  try {
+    const [{ count }] = await Job.query().where('status', 'active').count('id as count');
+    return reply.send({ success: true, data: { count: parseInt(count, 10) } });
+  } catch (error) {
+    request.server.log.error(error);
+    return reply.status(500).send({ success: false, message: 'Internal server error' });
   }
 };
 

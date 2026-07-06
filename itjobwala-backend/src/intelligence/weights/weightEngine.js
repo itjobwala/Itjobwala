@@ -49,15 +49,18 @@ export function runWeightEngine(resumeInsight) {
   // Build per-dimension breakdown
   const dimensions = buildDimensionBreakdown(breakdown, effectiveWeights, rationale);
 
-  // Compute dynamic score (only if breakdown available), then attenuate by credibility
-  const rawDynamicScore = breakdown
+  // Compute dynamic score (only if breakdown available). Deliberately NOT
+  // attenuated by credibilityAdjustment here: staticScore isn't attenuated by
+  // it either, and multiplying only one side before differencing would make
+  // score_delta reflect two different adjustments (reweighting AND evidence
+  // discount) instead of just the specialization-reweighting comparison it's
+  // meant to show. credibility_adjustment is still returned below as its own
+  // informational field for callers who want it separately.
+  const dynamicScore = breakdown
     ? computeDynamicScore(breakdown, effectiveWeights)
     : null;
 
   const credibilityAdjustment = computeCredibilityAdjustment(resumeInsight);
-  const dynamicScore = rawDynamicScore != null
-    ? Math.round(rawDynamicScore * credibilityAdjustment)
-    : null;
 
   const scoreDelta = dynamicScore != null && staticScore != null
     ? dynamicScore - staticScore
@@ -137,12 +140,25 @@ function buildEffectiveWeights(specWeights, seniority) {
     }
   }
 
-  // Normalise back to sum=100
+  // Normalise back to sum=100 using largest-remainder rounding — independently
+  // Math.round()-ing each scaled value can sum to 99 or 101, which breaks the
+  // "weights add to 100%" guarantee this function exists to provide.
   const total = Object.values(weights).reduce((a, b) => a + b, 0);
   const scale = 100 / total;
-  return Object.fromEntries(
-    Object.entries(weights).map(([k, v]) => [k, Math.round(v * scale)])
-  );
+  const scaled = Object.entries(weights).map(([k, v]) => {
+    const exact = v * scale;
+    return { k, floor: Math.floor(exact), remainder: exact - Math.floor(exact) };
+  });
+
+  let remaining = 100 - scaled.reduce((sum, s) => sum + s.floor, 0);
+  const byRemainderDesc = [...scaled].sort((a, b) => b.remainder - a.remainder);
+  for (const s of byRemainderDesc) {
+    if (remaining <= 0) break;
+    s.floor += 1;
+    remaining -= 1;
+  }
+
+  return Object.fromEntries(scaled.map(s => [s.k, s.floor]));
 }
 
 function buildDimensionBreakdown(breakdown, effectiveWeights, rationale) {

@@ -9,3 +9,5 @@ export const ADMIN_TOKEN_COOKIE   = 'admin_token';
 export const COOKIE_MAX_AGE       = 30 * 24 * 60 * 60; // 30 days
 
 export const AUTH_CHANGED_EVENT   = 'auth-changed';
+
+export const SESSION_ACTIVE_KEY   = 'ij_has_session';

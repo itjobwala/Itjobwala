@@ -10,11 +10,12 @@ const recruiterSignupSchema = {
   schema: {
     body: {
       type: 'object',
-      required: ['company_name', 'email', 'password', 'terms_accepted'],
+      required: ['full_name', 'company_name', 'email', 'password', 'terms_accepted'],
       properties: {
+        full_name:    { type: 'string', minLength: 5 },
         company_name: { type: 'string', minLength: 2 },
         email: { type: 'string', format: 'email' },
-        password: { type: 'string', minLength: 6 },
+        password: { type: 'string', minLength: 8 },
         terms_accepted: { type: 'boolean', const: true }
       }
     }

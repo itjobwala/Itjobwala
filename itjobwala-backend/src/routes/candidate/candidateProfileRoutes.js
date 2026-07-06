@@ -143,6 +143,7 @@ export default async function candidateProfileRoutes(fastify, options) {
   const expSchema = {
     body: {
       type: 'object',
+      additionalProperties: false,
       required: ['company', 'role', 'employment_type', 'start_date', 'is_current'],
       properties: {
         company: { type: 'string', minLength: 1, maxLength: 150 },
@@ -183,6 +184,7 @@ export default async function candidateProfileRoutes(fastify, options) {
   const eduSchema = {
     body: {
       type: 'object',
+      additionalProperties: false,
       required: ['institution', 'degree', 'field_of_study', 'start_date', 'is_current'],
       properties: {
         institution: { type: 'string', minLength: 1, maxLength: 200 },
@@ -216,6 +218,7 @@ export default async function candidateProfileRoutes(fastify, options) {
   const certSchema = {
     body: {
       type: 'object',
+      additionalProperties: false,
       required: ['name', 'issuer', 'issue_date'],
       properties: {
         name: { type: 'string', minLength: 1, maxLength: 255 },

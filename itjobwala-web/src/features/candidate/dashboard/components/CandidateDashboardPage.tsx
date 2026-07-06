@@ -3,12 +3,14 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
+import { getInitials } from '@/src/lib/utils/format';
 import { SmartNavbar } from '@/layout/navbar';
 import { ProtectedRoute } from '@/features/auth';
 import { useCandidateProfileQuery, useProfileCompletionQuery } from '@/features/candidate/profile';
 import { fetchCandidateDashboard } from '../services/dashboard.api';
 import type { RecentApplication } from '../services/dashboard.api';
 import { useResumeInsightsQuery } from '@/features/resume';
+import { useHomeStatsQuery } from '@/features/jobs/browse';
 import ProfileCompletionCard from '@/features/candidate/profile/components/ProfileCompletionCard';
 import StatusBadge from '@/src/components/ui/StatusBadge';
 
@@ -40,7 +42,7 @@ function ProfileAvatar({ photo, name, completion, openToWork }: { photo: string 
         {photo ? (
           <Image src={photo} alt={name} width={100} height={100} className="w-full h-full object-cover" />
         ) : (
-          <span className="text-3xl font-extrabold text-white select-none">{name.charAt(0).toUpperCase()}</span>
+          <span className="text-2xl font-extrabold text-white select-none tracking-wide">{getInitials(name)}</span>
         )}
       </div>
       {/* Completion / Open to Work badge */}
@@ -94,7 +96,6 @@ function ATSMiniCard() {
   const { data: insights } = useResumeInsightsQuery();
 
   const score  = insights?.qa_match_score ?? null;
-  const band   = insights?.band_label ?? null;
 
   const scoreColor =
     score === null ? '#6366f1'
@@ -140,8 +141,8 @@ function ATSMiniCard() {
   );
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
-export default function CandidateDashboardPage() {
+// ── Dashboard content (rendered only after ProtectedRoute confirms auth) ──────
+function DashboardContent() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['candidate-dashboard'],
     queryFn:  fetchCandidateDashboard,
@@ -149,17 +150,15 @@ export default function CandidateDashboardPage() {
 
   const { data: profile }     = useCandidateProfileQuery();
   const { data: completion }  = useProfileCompletionQuery();
+  const { data: homeStats, isLoading: statsLoading } = useHomeStatsQuery();
 
-  const firstName     = data?.user.fullName.split(' ')[0] ?? '';
   const candidateRole = profile?.title ?? data?.user.title ?? null;
   const expYears      = profile?.experience_years;
   const workStatus    = profile?.work_status;
   const profileCompletion = completion?.percentage ?? data?.user.profileCompletion ?? 0;
 
   return (
-    <ProtectedRoute>
-      {/* Soft layered page background */}
-      <div className="min-h-screen" style={{ background: 'radial-gradient(ellipse at 60% 0%, #e0e7ff 0%, #f1f5f9 40%, #f8fafc 100%)' }}>
+    <div className="min-h-screen" style={{ background: 'radial-gradient(ellipse at 60% 0%, #e0e7ff 0%, #f1f5f9 40%, #f8fafc 100%)' }}>
         <SmartNavbar />
         <div className="pt-[68px]">
           <div className="max-w-[1160px] mx-auto px-5 sm:px-8 py-8 space-y-5">
@@ -195,30 +194,30 @@ export default function CandidateDashboardPage() {
                       />
                       <div>
                         <h1 className="text-2xl sm:text-[28px] font-bold text-white tracking-tight leading-tight">
-                          Welcome back, {firstName} 👋
+                          {data.user.fullName ? `Hi, ${data.user.fullName}` : 'Your Career Dashboard'}
                         </h1>
-                        {/* Location · Experience · Work status */}
+                        {/* Work status · Experience · Location */}
                         <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1.5">
-                          {data.user.location && (
-                            <span className="flex items-center gap-1 text-white/35 text-caption">
-                              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5 flex-shrink-0">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-                              </svg>
-                              {data.user.location}
-                            </span>
+                          {workStatus && (
+                            <span className="text-white/55 text-caption capitalize">{workStatus}</span>
                           )}
                           {expYears != null && (
                             <>
-                              <span className="text-white/20 text-caption">·</span>
-                              <span className="text-white/35 text-caption">
-                                {expYears === 0 ? 'Fresher' : `${expYears} yr${expYears !== 1 ? 's' : ''} exp`}
+                              {workStatus && <span className="text-white/20 text-caption">·</span>}
+                              <span className="text-white/55 text-caption">
+                                {expYears ? `${expYears} yr${expYears !== 1 ? 's' : ''} exp` : '' }
                               </span>
                             </>
                           )}
-                          {workStatus && expYears == null && (
+                          {data.user.location && (
                             <>
-                              <span className="text-white/20 text-caption">·</span>
-                              <span className="text-white/35 text-caption capitalize">{workStatus}</span>
+                              {(workStatus || expYears != null) && <span className="text-white/20 text-caption">·</span>}
+                              <span className="flex items-center gap-1 text-white/55 text-caption">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5 flex-shrink-0">
+                                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                                </svg>
+                                {data.user.location}
+                              </span>
                             </>
                           )}
                         </div>
@@ -243,7 +242,7 @@ export default function CandidateDashboardPage() {
                         { label: 'Applied',     value: data.stats.totalApplications, color: 'text-blue-300' },
                         { label: 'Shortlisted', value: data.stats.shortlisted,       color: 'text-violet-300' },
                         { label: 'Interviews',  value: data.stats.interviews,         color: 'text-amber-300' },
-                        { label: 'Offers',      value: data.stats.offers,             color: 'text-emerald-300' },
+                        { label: 'Offers & Hires', value: data.stats.offers,          color: 'text-emerald-300' },
                       ].map(s => (
                         <div key={s.label} className="backdrop-blur-sm rounded-2xl px-3 py-2.5 sm:px-4 sm:py-3 text-center" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
                           <p className={`text-3xl font-extrabold tracking-tight ${s.color}`}>{s.value}</p>
@@ -265,7 +264,13 @@ export default function CandidateDashboardPage() {
                       <div className="bg-primary/[0.04] border border-primary/20 rounded-2xl p-5 flex items-center justify-between gap-4">
                         <div>
                           <p className="text-sm font-bold text-heading">Start your QA job search</p>
-                          <p className="text-caption text-muted mt-0.5">600+ QA roles live right now</p>
+                          {statsLoading ? (
+                            <span className="inline-block h-3 w-36 rounded bg-gray-200 animate-pulse mt-0.5" />
+                          ) : (
+                            <p className="text-caption text-muted mt-0.5">
+                              {homeStats?.total_jobs != null ? `${homeStats.total_jobs.toLocaleString()} QA roles live right now` : '0 QA roles live right now'}
+                            </p>
+                          )}
                         </div>
                         <Link href="/candidate/jobs" className="text-sm font-bold text-primary hover:underline whitespace-nowrap">
                           Browse jobs →
@@ -394,6 +399,14 @@ export default function CandidateDashboardPage() {
           </div>
         </div>
       </div>
+  );
+}
+
+// ── Shell — queries only mount after ProtectedRoute confirms auth ─────────────
+export default function CandidateDashboardPage() {
+  return (
+    <ProtectedRoute>
+      <DashboardContent />
     </ProtectedRoute>
   );
 }

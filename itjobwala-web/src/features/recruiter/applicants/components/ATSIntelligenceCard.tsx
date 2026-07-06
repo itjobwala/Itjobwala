@@ -211,15 +211,6 @@ export default function ATSIntelligenceCard({ data }: Props) {
             )}
           </div>
         </div>
-
-        {data.qa_hiring_label && (
-          <span
-            className="text-[10px] font-bold px-2 py-0.5 rounded-lg shrink-0"
-            style={{ background: 'rgba(148,163,184,0.1)', color: '#94a3b8' }}
-          >
-            {data.qa_hiring_label}
-          </span>
-        )}
       </div>
 
       {/* Recruiter readiness */}

@@ -329,7 +329,10 @@ function runRuleBasedAnalysis(parsed, domainResult, profileSkills) {
     evidence_strength:         evidenceResult.evidence_profile.evidence_strength,
     experience_depth_level:    evidenceResult.experienceDepth.level,
     keyword_stuffing_risk:     evidenceResult.inflationResult.risk,
-    evidence_multiplier:       specEvidenceMultiplier,
+    // Real score-pipeline multiplier (matches scoring_trace.evidence_multiplier) —
+    // previously wrongly set to specEvidenceMultiplier, the unrelated
+    // specialization-confidence multiplier used above for specialization_confidence.
+    evidence_multiplier:       evidenceMultiplier,
 
     // ── Phase 4 + 5 intelligence ───────────────────────────────────────────
     trust_breakdown:           evidenceResult.trust_breakdown,

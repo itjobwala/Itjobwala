@@ -184,7 +184,9 @@ describe('Fix 2 — Framework engineering outranks simple tool listing', () => {
       `selenium+playwright+cypress should score >= 14 on automation_testing`);
   });
 
-  test('FW tool supplement adds credit on top of concept base', () => {
+  test('framework-adjacent tools add nothing beyond concept score (no cross-dimension double count)', () => {
+    // testng/junit/webdriverio already score under automation_testing — framework_expertise
+    // must not also credit them, or listing one skill inflates two dimensions.
     const withTools = calculateQaResumeScore({
       extractedSkills: ['page object model', 'testng', 'junit', 'webdriverio'],
       experienceYears: 3,
@@ -197,10 +199,10 @@ describe('Fix 2 — Framework engineering outranks simple tool listing', () => {
       parsedText:      'QA engineer.',
       detectedDomain:  'qa_testing',
     });
-    assert.ok(
-      withTools.qa_score_breakdown.framework_expertise.score >=
+    assert.equal(
+      withTools.qa_score_breakdown.framework_expertise.score,
       withoutTools.qa_score_breakdown.framework_expertise.score,
-      'Tool supplement must not reduce score'
+      'framework_expertise must be concept-only — tools should not add supplementary credit'
     );
   });
 });
