@@ -275,7 +275,7 @@ export default function ScheduleInterviewModal({
           <Button
             variant="secondary"
             size="lg"
-            rounded="xl"
+            rounded="full"
             onClick={onClose}
             className="flex-1"
           >
@@ -284,7 +284,7 @@ export default function ScheduleInterviewModal({
           <Button
             variant="primary"
             size="lg"
-            rounded="xl"
+            rounded="full"
             type="submit"
             form="schedule-interview-form"
             loading={mutation.isPending}

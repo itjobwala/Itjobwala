@@ -187,11 +187,13 @@ export default function JobsPageClient() {
         {/* Hero bar */}
         <div className="bg-surface border-b border-token">
           <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-6">
-            <JobSearchBar
-              search={search}
-              onChange={setSearch}
-              onSearch={() => { setAppliedSearch(search); setPage(1); }}
-            />
+            <div className="max-w-[900px] mx-auto">
+              <JobSearchBar
+                search={search}
+                onChange={setSearch}
+                onSearch={() => { setAppliedSearch(search); setPage(1); }}
+              />
+            </div>
           </div>
         </div>
 
@@ -229,14 +231,12 @@ export default function JobsPageClient() {
           {/* Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
             <div className={`${showFilters ? 'block' : 'hidden'} lg:block`}>
-              <div className="sticky top-24 self-start">
-                <JobFilterSidebar
-                  filters={filters}
-                  onChange={f => { setFilters(f); setPage(1); }}
-                  onReset={() => { setFilters(DEFAULT_FILTERS); setPage(1); }}
-                  activeCount={activeFilterCount}
-                />
-              </div>
+              <JobFilterSidebar
+                filters={filters}
+                onChange={f => { setFilters(f); setPage(1); }}
+                onReset={() => { setFilters(DEFAULT_FILTERS); setPage(1); }}
+                activeCount={activeFilterCount}
+              />
             </div>
 
             <div>
@@ -260,7 +260,7 @@ export default function JobsPageClient() {
               {!isLoading && pagination && pagination.total_pages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-8">
                   <Button
-                    variant="outline"
+                    variant="primary"
                     size="md"
                     disabled={!pagination.has_prev}
                     onClick={() => setPage(p => p - 1)}
@@ -268,10 +268,10 @@ export default function JobsPageClient() {
                     ← Prev
                   </Button>
                   <span className="text-sm text-muted px-2">
-                    Page {pagination.page} of {pagination.total_pages}
+                    {pagination.page} of {pagination.total_pages}
                   </span>
                   <Button
-                    variant="outline"
+                    variant="primary"
                     size="md"
                     disabled={!pagination.has_next}
                     onClick={() => setPage(p => p + 1)}

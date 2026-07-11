@@ -68,7 +68,7 @@ export default function Navbar() {
           {/* Sign up — desktop */}
           <Link
             href="/auth/signup"
-            className="hidden sm:block bg-primary text-white text-sm font-semibold px-3.5 py-2 rounded-lg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 shadow-[0_4px_16px_rgba(21,87,255,0.27)]"
+            className="hidden sm:block bg-primary text-white text-sm font-semibold px-3.5 py-2 rounded-full transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 shadow-[0_4px_16px_rgba(21,87,255,0.27)]"
             onMouseEnter={e => { e.currentTarget.style.background = '#0d3fd4'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-primary)'; }}
           >Sign up</Link>
@@ -112,14 +112,14 @@ export default function Navbar() {
             <Link
               href="/auth/login"
               onClick={() => setMenuOpen(false)}
-              className="text-sm font-semibold text-body py-2.5 text-center border-[1.5px] border-token-mid rounded-lg"
+              className="text-sm font-semibold text-body py-2.5 text-center border-[1.5px] border-token-mid rounded-full"
             >
               Log in
             </Link>
             <Link
               href="/auth/signup"
               onClick={() => setMenuOpen(false)}
-              className="bg-primary text-white text-sm font-bold py-2.5 text-center rounded-lg"
+              className="bg-primary text-white text-sm font-bold py-2.5 text-center rounded-full"
             >
               Sign up free
             </Link>

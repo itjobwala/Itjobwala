@@ -337,7 +337,7 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
             <Button
               variant="primary"
               fullWidth
-              rounded="xl"
+              rounded="full"
               disabled={messageMutation.isPending}
               loading={messageMutation.isPending}
               leftIcon={

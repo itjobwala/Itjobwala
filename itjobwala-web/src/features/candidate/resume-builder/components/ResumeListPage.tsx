@@ -95,7 +95,7 @@ export function ResumeListPage() {
               <Button
                 variant="outline"
                 size="sm"
-                rounded="xl"
+                rounded="full"
                 disabled={busy}
                 onClick={handleCreateBlank}
               >
@@ -104,7 +104,7 @@ export function ResumeListPage() {
               <Button
                 variant="primary"
                 size="sm"
-                rounded="xl"
+                rounded="full"
                 disabled={busy}
                 loading={prefillLoading}
                 onClick={handleCreateFromProfile}

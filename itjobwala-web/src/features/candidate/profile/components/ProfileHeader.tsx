@@ -88,7 +88,7 @@ export default function ProfileHeader({ profile, onEdit, onUploadPhoto, onUpload
           <Button
             variant="primary"
             size="md"
-            rounded="xl"
+            rounded="full"
             leftIcon={
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />

@@ -46,14 +46,14 @@ export default function JobDetailsStep({
 
       <div className="flex gap-3 pt-1">
         <button type="button" onClick={onBack}
-          className="flex-1 bg-surface font-semibold text-base rounded-xl transition-all duration-200"
+          className="flex-1 bg-surface font-semibold text-base rounded-full transition-all duration-200"
           style={{ color: 'var(--color-body)', border: '1.5px solid var(--color-border)', padding: 13 }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = PRIMARY; e.currentTarget.style.color = PRIMARY; }}
           onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-body)'; }}>
           ← Back
         </button>
         <button type="submit" disabled={loading}
-          className="flex-[2] flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-sm transition-all duration-200"
+          className="flex-[2] flex items-center justify-center gap-2.5 text-white border-none rounded-full font-bold text-sm transition-all duration-200"
           style={{
             padding: 14,
             cursor: loading ? 'not-allowed' : 'pointer',

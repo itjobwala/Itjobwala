@@ -243,7 +243,7 @@ export default function CertificateFileUploadModal({
           <Button
             variant="secondary"
             size="lg"
-            rounded="lg"
+            rounded="full"
             disabled={isUploading}
             onClick={onClose}
             className="flex-1"
@@ -253,7 +253,7 @@ export default function CertificateFileUploadModal({
           <Button
             variant="primary"
             size="lg"
-            rounded="lg"
+            rounded="full"
             loading={isUploading}
             disabled={!selectedFile || isUploading}
             onClick={handleUpload}

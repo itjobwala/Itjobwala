@@ -66,7 +66,7 @@ export default function RecruiterCTA() {
           <div className="flex flex-col gap-3.5 items-start lg:items-center relative">
             <Link
               href="/recruiter/post-job"
-              className="bg-white rounded-[14px] py-2.5 px-6 text-base font-bold transition-transform duration-200 hover:scale-[1.04] focus:outline-none focus:ring-4 focus:ring-white/40 focus:ring-offset-2 w-full lg:w-auto text-center"
+              className="bg-white rounded-full py-2.5 px-6 text-base font-bold transition-transform duration-200 hover:scale-[1.04] focus:outline-none focus:ring-4 focus:ring-white/40 focus:ring-offset-2 w-full lg:w-auto text-center"
               style={{ color: PRIMARY, boxShadow: '0 8px 32px rgba(0,0,0,0.2)', textDecoration: 'none', display: 'block' }}
             >Post a job →</Link>
             <span className="text-caption text-white/55">

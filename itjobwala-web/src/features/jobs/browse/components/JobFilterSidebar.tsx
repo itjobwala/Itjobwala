@@ -64,7 +64,7 @@ function Checkbox({
     <label className="flex items-center gap-2.5 cursor-pointer group" onClick={onChange}>
       <span
         className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
-          checked ? 'bg-primary border-primary' : 'border-token group-hover:border-primary/50'
+          checked ? 'bg-primary border-primary' : 'border-body-secondary group-hover:border-primary/50'
         }`}
       >
         {checked && (
@@ -113,7 +113,6 @@ export default function JobFilterSidebar({ filters, onChange, onReset, activeCou
   return (
     <Card as="aside" overflow>
       {/* Header */}
-      <p className="text-caption font-bold text-subtle uppercase tracking-[2px] mb-4">Filter QA roles</p>
       <div className="flex items-center justify-between mb-5">
         <span className="font-bold text-sm text-heading">Filters</span>
         {activeCount > 0 && (

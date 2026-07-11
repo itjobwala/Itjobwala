@@ -76,7 +76,7 @@ export default function ChatInput({ conversationId, myId, disabled }: Props) {
           variant="primary"
           size="lg"
           iconOnly
-          rounded="xl"
+          rounded="full"
           loading={sendMutation.isPending}
           disabled={!text.trim() || sendMutation.isPending || disabled}
           onClick={handleSend}

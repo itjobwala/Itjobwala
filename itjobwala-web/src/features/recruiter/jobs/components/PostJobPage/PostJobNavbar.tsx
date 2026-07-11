@@ -16,7 +16,7 @@ export default function PostJobNavbar() {
         <div className="flex items-center gap-3 sm:gap-5">
           <span className="hidden sm:inline text-sm text-muted">Already a recruiter?</span>
           <Link href="/auth/login?role=recruiter"
-            className="text-sm font-bold rounded-lg px-4 sm:px-[18px] py-2 transition-all duration-200"
+            className="text-sm font-bold rounded-full px-4 sm:px-[18px] py-2 transition-all duration-200"
             style={{ color: PRIMARY, border: `1.5px solid ${PRIMARY}`, textDecoration: 'none' }}
             onMouseEnter={e => { e.currentTarget.style.background = PRIMARY; e.currentTarget.style.color = '#fff'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = PRIMARY; }}>

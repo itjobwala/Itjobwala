@@ -259,7 +259,7 @@ export function ResumeEditorPage({ id }: { id: number }) {
             type="button"
             variant="primary"
             size="sm"
-            rounded="lg"
+            rounded="full"
             onClick={handleDownload}
           >
             ↓ PDF

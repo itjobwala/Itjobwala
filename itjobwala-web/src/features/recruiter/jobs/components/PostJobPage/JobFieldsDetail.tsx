@@ -60,7 +60,7 @@ export default function JobFieldsDetail({
             placeholder="Type to search skills (e.g. React, Node.js)"
             className={`flex-1 rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none ${skillError || errors.requiredSkills ? 'border-danger' : 'border-token'}`} />
           <button type="button" onClick={() => addSkill()}
-            className="px-4 py-2.5 rounded-xl text-sm font-bold text-white shrink-0"
+            className="px-4 py-2.5 rounded-full text-sm font-bold text-white shrink-0"
             style={{ background: PRIMARY }}>Add</button>
         </div>
         {skillError && <p className="text-xs text-danger mb-2">{skillError}</p>}
@@ -68,7 +68,7 @@ export default function JobFieldsDetail({
           <div className="flex flex-wrap gap-1.5 mb-3">
             {skillSuggestions.map(s => (
               <button key={s} type="button" onClick={() => addSkill(s, true)}
-                className="px-2.5 py-1 rounded-lg text-caption font-semibold bg-surface-hover text-muted hover:bg-primary/10 hover:text-primary transition-colors">
+                className="px-2.5 py-1 rounded-full text-caption font-semibold bg-surface-hover text-muted hover:bg-primary/10 hover:text-primary transition-colors">
                 + {s}
               </button>
             ))}

@@ -72,7 +72,7 @@ function NavBar() {
           <span className="hidden sm:inline text-sm text-muted">New here?</span>
           <Link
             href="/auth/signup"
-            className="text-sm font-bold rounded-lg px-4 sm:px-[18px] py-2 transition-all duration-200 no-underline"
+            className="text-sm font-bold rounded-full px-4 sm:px-[18px] py-2 transition-all duration-200 no-underline"
             style={{ color: 'var(--color-primary)', border: '1.5px solid var(--color-primary)' }}
             onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-primary)'; e.currentTarget.style.color = '#fff'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-primary)'; }}
@@ -186,11 +186,11 @@ function LeftPanel({ role }: { role: Role }) {
 
 function RoleToggle({ role, onChange }: { role: Role; onChange: (r: Role) => void }) {
   return (
-    <div className="flex p-1 bg-surface-mid rounded-xl mb-7">
+    <div className="flex p-1 bg-surface-mid rounded-full mb-7">
       <button
         type="button"
         onClick={() => onChange('candidate')}
-        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200"
+        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-sm font-semibold transition-all duration-200"
         style={role === 'candidate'
           ? { background: '#fff', color: 'var(--color-primary)', boxShadow: '0 1px 4px rgba(0,0,0,0.10)' }
           : { background: 'transparent', color: 'var(--color-muted)' }
@@ -205,7 +205,7 @@ function RoleToggle({ role, onChange }: { role: Role; onChange: (r: Role) => voi
       <button
         type="button"
         onClick={() => onChange('recruiter')}
-        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200"
+        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-sm font-semibold transition-all duration-200"
         style={role === 'recruiter'
           ? { background: '#fff', color: 'var(--color-primary)', boxShadow: '0 1px 4px rgba(0,0,0,0.10)' }
           : { background: 'transparent', color: 'var(--color-muted)' }
@@ -453,7 +453,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={forgotLoading}
-                  className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-sm cursor-pointer transition-all duration-200"
+                  className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-full font-bold text-sm cursor-pointer transition-all duration-200"
                   style={{ padding: 14, background: forgotLoading ? '#93aef5' : 'var(--color-primary)', boxShadow: forgotLoading ? 'none' : '0 4px 20px rgba(21,87,255,0.27)' }}
                 >
                   {forgotLoading ? <><Spinner /> Sending…</> : 'Send reset link'}
@@ -486,7 +486,7 @@ export default function LoginPage() {
         <p className="text-sm text-subtle mb-8">Didn&apos;t receive it? Check your spam folder or verify the email you used to sign up.</p>
         <button
           onClick={() => setScreen('reset')}
-          className="w-full text-white border-none rounded-xl font-bold text-sm cursor-pointer mb-3"
+          className="w-full text-white border-none rounded-full font-bold text-sm cursor-pointer mb-3"
           style={{ padding: 13, background: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(21,87,255,0.27)' }}
         >
           Enter reset code
@@ -550,7 +550,7 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={resetLoading}
-                  className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-sm cursor-pointer transition-all duration-200"
+                  className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-full font-bold text-sm cursor-pointer transition-all duration-200"
                   style={{ padding: 14, background: resetLoading ? '#93aef5' : 'var(--color-primary)', boxShadow: resetLoading ? 'none' : '0 4px 20px rgba(21,87,255,0.27)' }}
                 >
                   {resetLoading ? <><Spinner /> Resetting…</> : 'Reset password'}
@@ -578,7 +578,7 @@ export default function LoginPage() {
         </p>
         <button
           onClick={() => { setScreen('email'); setForgotEmail(''); setResetOtp(''); setNewPassword(''); }}
-          className="w-full text-white border-none rounded-xl font-bold text-sm cursor-pointer"
+          className="w-full text-white border-none rounded-full font-bold text-sm cursor-pointer"
           style={{ padding: 13, background: 'var(--color-primary)', boxShadow: '0 4px 20px rgba(21,87,255,0.27)' }}
         >
           Sign in
@@ -673,7 +673,7 @@ export default function LoginPage() {
                     <button
                       type="submit"
                       disabled={passwordLoading}
-                      className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-sm transition-all duration-200"
+                      className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-full font-bold text-sm transition-all duration-200"
                       style={{
                         padding: 14,
                         cursor: passwordLoading ? 'not-allowed' : 'pointer',
@@ -705,7 +705,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => { setApiError(''); setScreen('send-otp'); }}
-                    className="w-full flex items-center justify-center gap-2.5 rounded-xl font-bold text-sm transition-all duration-200"
+                    className="w-full flex items-center justify-center gap-2.5 rounded-full font-bold text-sm transition-all duration-200"
                     style={{
                       padding: 14,
                       cursor: 'pointer',
@@ -774,7 +774,7 @@ export default function LoginPage() {
                     <button
                       type="submit"
                       disabled={sendLoading}
-                      className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-sm transition-all duration-200"
+                      className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-full font-bold text-sm transition-all duration-200"
                       style={{
                         padding: 14,
                         cursor: sendLoading ? 'not-allowed' : 'pointer',
@@ -806,7 +806,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     onClick={() => { setApiError(''); setScreen('email'); }}
-                    className="w-full flex items-center justify-center gap-2.5 rounded-xl font-bold text-sm transition-all duration-200"
+                    className="w-full flex items-center justify-center gap-2.5 rounded-full font-bold text-sm transition-all duration-200"
                     style={{
                       padding: 14,
                       cursor: 'pointer',
@@ -887,7 +887,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => handleVerify()}
                   disabled={verifyLoading || otp.replace(/\s/g, '').length < 6}
-                  className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-sm transition-all duration-200 mb-5"
+                  className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-full font-bold text-sm transition-all duration-200 mb-5"
                   style={{
                     padding: 15,
                     cursor: (verifyLoading || otp.replace(/\s/g, '').length < 6) ? 'not-allowed' : 'pointer',

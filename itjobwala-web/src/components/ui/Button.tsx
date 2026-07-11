@@ -28,8 +28,9 @@ const ICON_SIZE_CLASSES: Record<ButtonSize, string> = {
 };
 
 const ROUNDED_CLASSES = {
-  lg: 'rounded-lg',
-  xl: 'rounded-xl',
+  lg:   'rounded-lg',
+  xl:   'rounded-xl',
+  full: 'rounded-full',
 } as const;
 
 function Spinner({ size }: { size: ButtonSize }) {
@@ -65,12 +66,12 @@ export function buttonVariants(options: {
     variant   = 'primary',
     size      = 'md',
     fullWidth = false,
-    rounded   = 'xl',
+    rounded   = 'full',
     className,
   } = options;
 
   return cn(
-    'inline-flex items-center justify-center gap-1.5 shrink-0',
+    'inline-flex items-center justify-center gap-1.5 shrink-0 cursor-pointer',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-primary/40',
     ROUNDED_CLASSES[rounded],
     VARIANT_CLASSES[variant],
@@ -90,7 +91,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       rightIcon,
       iconOnly  = false,
       fullWidth = false,
-      rounded   = 'xl',
+      rounded   = 'full',
       disabled,
       className,
       children,
@@ -105,7 +106,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         type={type}
         disabled={disabled || loading}
         className={cn(
-          'inline-flex items-center justify-center gap-1.5 shrink-0',
+          'inline-flex items-center justify-center gap-1.5 shrink-0 cursor-pointer',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-primary/40',
           'disabled:opacity-50 disabled:cursor-not-allowed',
           ROUNDED_CLASSES[rounded],

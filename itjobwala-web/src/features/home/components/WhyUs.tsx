@@ -69,7 +69,7 @@ export default function WhyUs() {
                   border: '1px solid rgba(255,255,255,0.08)',
                 }}
               >
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4 text-[#93c5fd]" style={{ background: 'rgba(147,197,253,0.10)' }}>
+                <div className="w-11 h-11 rounded-full flex items-center justify-center mb-4 text-[#93c5fd]" style={{ background: 'rgba(147,197,253,0.10)' }}>
                   {WHY_ICONS[item.icon]}
                 </div>
                 <h4 className="font-bold text-[16px] text-slate-100 mb-2">{item.title}</h4>

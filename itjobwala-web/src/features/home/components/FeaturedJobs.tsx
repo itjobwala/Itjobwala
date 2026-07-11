@@ -65,7 +65,7 @@ export default function
 
             <Link
               href="/candidate/jobs"
-              className="inline-flex items-center gap-2 text-sm font-bold text-white rounded-[10px] py-[13px] px-6 transition-[filter] hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2"
+              className="inline-flex items-center gap-2 text-sm font-bold text-white rounded-full py-[13px] px-6 transition-[filter] hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:ring-offset-2"
               style={{ background: PRIMARY, color: '#fff' }}
             >
               Browse all jobs
@@ -200,7 +200,7 @@ export default function
                     </div>
  
                     <span
-                      className="py-[9px] px-5 rounded-lg text-sm font-bold border-[1.5px] transition-all duration-200 whitespace-nowrap self-start sm:self-auto"
+                      className="py-[9px] px-5 rounded-full text-sm font-bold border-[1.5px] transition-all duration-200 whitespace-nowrap self-start sm:self-auto"
                       style={{
                         background:
                           hovered === i ? PRIMARY : 'transparent',

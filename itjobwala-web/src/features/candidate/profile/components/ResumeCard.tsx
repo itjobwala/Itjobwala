@@ -90,7 +90,7 @@ export default function ResumeCard({ fileName, uploadDate, fileUrl, onEdit }: Pr
             <Button
               variant="outline"
               size="sm"
-              rounded="lg"
+              rounded="full"
               disabled={isViewing}
               leftIcon={
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -105,7 +105,7 @@ export default function ResumeCard({ fileName, uploadDate, fileUrl, onEdit }: Pr
             <Button
               variant="outline"
               size="sm"
-              rounded="lg"
+              rounded="full"
               disabled={isDownloading}
               onClick={handleDownload}
               leftIcon={

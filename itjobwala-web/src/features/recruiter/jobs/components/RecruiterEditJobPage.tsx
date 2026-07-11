@@ -509,7 +509,7 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
           <Button
             variant="secondary"
             size="lg"
-            rounded="xl"
+            rounded="full"
             type="button"
             onClick={() => router.back()}
             className="flex-1 py-3"
@@ -519,7 +519,7 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
           <Button
             variant="primary"
             size="lg"
-            rounded="xl"
+            rounded="full"
             type="submit"
             loading={updateMutation.isPending}
             className="flex-[2] py-3 text-base"

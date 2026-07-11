@@ -146,7 +146,7 @@ export default function RecruiterJobForm() {
               type="submit"
               variant="primary"
               fullWidth
-              rounded="xl"
+              rounded="full"
               loading={loading}
               className="py-3.5"
             >

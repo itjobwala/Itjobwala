@@ -119,9 +119,6 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false, m
     <div onClick={() => router.push(`/candidate/jobs/${job.id}`)} className="group relative overflow-hidden bg-white rounded-2xl border border-token hover:border-primary/40 hover:shadow-lg transition-all duration-200 cursor-pointer p-5 sm:p-6">
       {job.hasApplied && <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-success" />}
       <div className="flex items-start gap-4">
-        {/* Company logo */}
-        <CompanyLogo name={job.company} logo={job.companyLogo} colorClass={job.companyColorClass} />
-
         {/* Main content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-3">
@@ -151,24 +148,8 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false, m
               </p>
             </div>
 
-            {/* Save button */}
-            <button
-              onClick={handleSaveClick}
-              disabled={saving}
-              className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors disabled:opacity-50 ${saved ? 'bg-primary/10 text-primary' : 'bg-surface-alt text-subtle hover:bg-primary/10 hover:text-primary'}`}
-              aria-label={saved ? 'Unsave job' : 'Save job'}
-            >
-              {saving ? (
-                <svg width="16" height="16" viewBox="0 0 24 24" className="animate-spin" fill="none" stroke="currentColor" strokeWidth="2.2">
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M12 2a10 10 0 0 1 0 20" />
-                </svg>
-              ) : (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2.2">
-                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                </svg>
-              )}
-            </button>
+            {/* Company logo */}
+            <CompanyLogo name={job.company} logo={job.companyLogo} colorClass={job.companyColorClass} />
           </div>
 
           {/* Meta row */}
@@ -184,9 +165,6 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false, m
             </span>
             <span className="flex items-center gap-1.5 bg-success-bg text-success font-semibold rounded-full px-3 py-1">
               <IndianRupeeIcon /> {salaryLabel(job.salaryLpaMin, job.salaryLpaMax)}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <ClockIcon /> {postedLabel(job.postedDaysAgo)}
             </span>
           </div>
 
@@ -229,9 +207,11 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false, m
       </div>
 
       {/* Footer */}
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-token">
+      <div className="flex items-center justify-between mt-2 pt-2 border-t border-token">
         <div className="flex items-center gap-3">
-          <span className="text-caption text-subtle">{job.applicants} applicants</span>
+          <span className="text-caption text-subtle flex items-center gap-1.5">
+            <ClockIcon /> {postedLabel(job.postedDaysAgo)}
+          </span>
           {(() => {
             const exp = expiresInfo(job.closesAt);
             return exp ? (
@@ -244,9 +224,25 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false, m
             ) : null;
           })()}
         </div>
-        <span className="text-[13px] font-bold text-primary hover:bg-primary/10 rounded-lg px-4 py-2 transition-colors">
-          View job →
-        </span>
+
+        {/* Save button */}
+        <button
+          onClick={handleSaveClick}
+          disabled={saving}
+          className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors disabled:opacity-50 ${saved ? 'bg-primary/10 text-primary' : 'bg-surface-alt text-subtle hover:bg-primary/10 hover:text-primary'}`}
+          aria-label={saved ? 'Unsave job' : 'Save job'}
+        >
+          {saving ? (
+            <svg width="16" height="16" viewBox="0 0 24 24" className="animate-spin" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 2a10 10 0 0 1 0 20" />
+            </svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2.2">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+            </svg>
+          )}
+        </button>
       </div>
     </div>
   );

@@ -31,10 +31,15 @@ export default function HowItWorks() {
 
         {/* Steps */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-2 relative">
-          {/* Dashed connector — only visible on md+ */}
+          {/* Dashed connectors — only visible on md+; gap at each circle so the
+              line doesn't cross behind circle 02's semi-transparent fill */}
           <div
             className="hidden md:block absolute h-px border-t-2 border-dashed border-token z-0"
-            style={{ top: 36, left: 'calc(16.6% + 36px)', right: 'calc(16.6% + 36px)' }}
+            style={{ top: 36, left: 'calc(16.6% + 36px)', right: 'calc(50% + 36px)' }}
+          />
+          <div
+            className="hidden md:block absolute h-px border-t-2 border-dashed border-token z-0"
+            style={{ top: 36, left: 'calc(50% + 36px)', right: 'calc(16.6% + 36px)' }}
           />
 
           {HOW_STEPS.map((s, i) => (

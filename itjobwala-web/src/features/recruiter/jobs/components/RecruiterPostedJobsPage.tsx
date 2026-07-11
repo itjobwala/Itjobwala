@@ -216,7 +216,7 @@ export default function RecruiterPostedJobsPage() {
                               <Button
                                 variant="primary"
                                 size="sm"
-                                rounded="lg"
+                                rounded="full"
                                 loading={publishingId === job.id}
                                 disabled={publishingId === job.id}
                                 onClick={() => handleSubmit(job.id)}
@@ -251,7 +251,7 @@ export default function RecruiterPostedJobsPage() {
                   <Button
                     variant="outline"
                     size="md"
-                    rounded="lg"
+                    rounded="full"
                     disabled={page === 1}
                     onClick={() => setPage(p => Math.max(1, p - 1))}
                   >
@@ -263,7 +263,7 @@ export default function RecruiterPostedJobsPage() {
                   <Button
                     variant="outline"
                     size="md"
-                    rounded="lg"
+                    rounded="full"
                     disabled={page === totalPages}
                     onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   >

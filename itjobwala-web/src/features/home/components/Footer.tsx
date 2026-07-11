@@ -81,7 +81,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={s.label}
-                  className="w-9 h-9 rounded-lg bg-surface-hover border border-token flex items-center justify-center text-muted hover:bg-primary hover:text-white hover:border-primary transition-colors"
+                  className="w-9 h-9 rounded-full bg-surface-hover border border-token flex items-center justify-center text-muted hover:bg-primary hover:text-white hover:border-primary transition-colors"
                 >
                   {s.icon}
                 </a>
@@ -135,7 +135,7 @@ export default function Footer() {
             />
             <button
               disabled
-              className="w-full text-white border-none rounded-[10px] py-3 text-sm font-bold cursor-not-allowed opacity-50"
+              className="w-full text-white border-none rounded-full py-3 text-sm font-bold cursor-not-allowed opacity-50"
               style={{ background: PRIMARY }}
             >
               Coming soon
