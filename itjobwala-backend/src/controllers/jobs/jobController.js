@@ -457,7 +457,6 @@ export const getJobCategories = async (request, reply) => {
   try {
     const config = [
       { type: 'work_mode', table: 'jobs', column: 'work_mode', filter_key: 'work_mode' },
-      { type: 'company_type', table: 'recruiters', column: 'company_type', filter_key: 'company_type' },
       { type: 'company_industry', table: 'recruiters', column: 'industry', filter_key: 'company_industry' },
       { type: 'job_category', table: 'jobs', column: 'category', filter_key: 'category' }
     ];

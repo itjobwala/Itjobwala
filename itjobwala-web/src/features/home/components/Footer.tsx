@@ -140,7 +140,6 @@ export default function Footer() {
             >
               Coming soon
             </button>
-            <p className="text-[11px] text-[#9ca3af] mt-1.5">Email sign-ups are not yet active.</p>
           </div>
 
         </div>

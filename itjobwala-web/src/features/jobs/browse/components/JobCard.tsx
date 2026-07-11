@@ -149,7 +149,7 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false, m
             </div>
 
             {/* Company logo */}
-            <CompanyLogo name={job.company} logo={job.companyLogo} colorClass={job.companyColorClass} />
+            <CompanyLogo name={job.company} logo={job.companyLogo} colorClass={job.companyColorClass} className="w-12 h-12 rounded-full" />
           </div>
 
           {/* Meta row */}

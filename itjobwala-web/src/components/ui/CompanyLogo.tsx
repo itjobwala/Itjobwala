@@ -27,8 +27,8 @@ export default function CompanyLogo({
 
   return (
     <div
-      className={`${className} flex items-center justify-center overflow-hidden text-white font-extrabold shrink-0 ${
-        showLogoImage ? 'bg-surface border border-token' : colorClass
+      className={`${className} flex items-center justify-center overflow-hidden text-white font-extrabold shrink-0 border ${
+        showLogoImage ? 'bg-surface border-token' : `${colorClass} border-black/10`
       } ${textClassName}`}
     >
       {showLogoImage ? (

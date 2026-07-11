@@ -102,7 +102,18 @@ export default function JobsPageClient() {
   const [sort, setSort]         = useState('newest');
   const [page, setPage]         = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  const [sortOpen, setSortOpen] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
   const { toast, show: showToast } = useToast();
+
+  useEffect(() => {
+    if (!sortOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) setSortOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [sortOpen]);
 
   const canLoadSavedJobs  = isHydrated && !authLoading && session?.userRole === 'candidate';
   const { data: savedData } = useSavedJobsQuery({ limit: 100 }, canLoadSavedJobs);
@@ -200,31 +211,51 @@ export default function JobsPageClient() {
         {/* Main content */}
         <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
           {/* Top bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-4">
-            <button
-              onClick={() => setShowFilters(v => !v)}
-              className="lg:hidden self-start flex items-center gap-2 text-sm font-semibold text-body-secondary bg-surface border border-token rounded-xl px-4 py-2.5 hover:border-primary/40 transition-colors"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
-              </svg>
-              Filters
-              {activeFilterCount > 0 && (
-                <span className="bg-primary text-white text-[11px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                  {activeFilterCount}
-                </span>
-              )}
-            </button>
+          <div className="flex items-center justify-between mb-5 gap-2 sm:gap-3 flex-nowrap">
+            <p className="text-xs sm:text-sm text-muted font-medium truncate min-w-0">{isLoading || isError ? '–' : total} QA roles found</p>
 
-            <div className="flex items-center justify-between w-full mb-4 gap-3">
-              <p className="text-sm text-muted font-medium">{isLoading || isError ? '–' : total} QA roles found</p>
-              <select
-                value={sort}
-                onChange={e => { setSort(e.target.value); setPage(1); }}
-                className="text-sm font-semibold border border-token rounded-lg px-3 py-1.5 bg-surface text-heading outline-none focus:border-primary/50"
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <button
+                onClick={() => setShowFilters(v => !v)}
+                className="lg:hidden flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-heading bg-surface border border-token rounded-xl px-2.5 sm:px-4 py-2 sm:py-2.5 hover:border-primary/40 transition-colors shrink-0"
               >
-                {SORT_OPTIONS.map(o => (<option key={o.value} value={o.value}>{o.label}</option>))}
-              </select>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
+                  <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
+                </svg>
+                Filters
+                {activeFilterCount > 0 && (
+                  <span className="bg-primary text-white text-[11px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
+
+              <div className="relative shrink-0" ref={sortRef}>
+                <button
+                  type="button"
+                  onClick={() => setSortOpen(v => !v)}
+                  className="flex items-center justify-between gap-2 w-[112px] sm:w-[124px] text-xs sm:text-sm font-semibold border border-token rounded-lg pl-2.5 sm:pl-3 pr-2.5 py-2 sm:py-1.5 bg-surface text-heading outline-none focus:border-primary/50"
+                >
+                  <span className="truncate">{SORT_OPTIONS.find(o => o.value === sort)?.label}</span>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={`shrink-0 text-muted transition-transform ${sortOpen ? 'rotate-180' : ''}`}>
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </button>
+                {sortOpen && (
+                  <div className="absolute right-0 top-full mt-1.5 w-44 bg-surface border border-token rounded-lg shadow-lg py-1 z-20">
+                    {SORT_OPTIONS.map(o => (
+                      <button
+                        key={o.value}
+                        type="button"
+                        onClick={() => { setSort(o.value); setPage(1); setSortOpen(false); }}
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-surface-alt transition-colors ${o.value === sort ? 'font-semibold text-primary' : 'text-heading'}`}
+                      >
+                        {o.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

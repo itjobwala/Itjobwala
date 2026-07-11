@@ -67,7 +67,7 @@ function GoogleBtn({ onHover }: { onHover?: string }) {
   return (
     <button
       type="button"
-      className="w-full flex items-center justify-center gap-2.5 bg-white rounded-xl font-semibold text-sm text-body cursor-pointer transition-all duration-200"
+      className="w-full flex items-center justify-center gap-2.5 bg-white rounded-full font-semibold text-sm text-body cursor-pointer transition-all duration-200"
       style={{ border: '1.5px solid var(--color-border-mid)', padding: 13 }}
       onMouseEnter={e => { e.currentTarget.style.borderColor = onHover ?? 'var(--color-primary)'; e.currentTarget.style.background = '#f8faff'; }}
       onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border-mid)'; e.currentTarget.style.background = '#fff'; }}
@@ -85,11 +85,11 @@ function GoogleBtn({ onHover }: { onHover?: string }) {
 
 function RoleToggle({ role, onChange }: { role: Role; onChange: (r: Role) => void }) {
   return (
-    <div className="flex p-1 bg-surface-mid rounded-xl mb-7">
+    <div className="flex p-1 bg-surface-mid rounded-full mb-7">
       <button
         type="button"
         onClick={() => onChange('candidate')}
-        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200"
+        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-sm font-semibold transition-all duration-200"
         style={role === 'candidate'
           ? { background: '#fff', color: 'var(--color-primary)', boxShadow: '0 1px 4px rgba(0,0,0,0.10)' }
           : { background: 'transparent', color: 'var(--color-muted)' }
@@ -104,7 +104,7 @@ function RoleToggle({ role, onChange }: { role: Role; onChange: (r: Role) => voi
       <button
         type="button"
         onClick={() => onChange('recruiter')}
-        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200"
+        className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-sm font-semibold transition-all duration-200"
         style={role === 'recruiter'
           ? { background: '#fff', color: 'var(--color-primary)', boxShadow: '0 1px 4px rgba(0,0,0,0.10)' }
           : { background: 'transparent', color: 'var(--color-muted)' }
@@ -321,7 +321,7 @@ export default function SignUpPage() {
           <div className="flex items-center gap-3 sm:gap-5">
             <span className="hidden sm:inline text-sm text-muted">Already have an account?</span>
             <Link href="/auth/login"
-              className="text-sm font-bold rounded-lg px-4 sm:px-[18px] py-2 transition-all duration-200 no-underline"
+              className="text-sm font-bold rounded-full px-4 sm:px-[18px] py-2 transition-all duration-200 no-underline"
               style={{ color: 'var(--color-primary)', border: '1.5px solid var(--color-primary)' }}
               onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-primary)'; e.currentTarget.style.color = '#fff'; }}
               onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-primary)'; }}
@@ -412,7 +412,7 @@ export default function SignUpPage() {
                 )}
                 <div className="fade-up delay-7">
                   <button type="submit" disabled={cLoading}
-                    className="w-full border-none rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2.5 transition-all duration-200"
+                    className="w-full border-none rounded-full text-sm font-bold text-white flex items-center justify-center gap-2.5 transition-all duration-200"
                     style={{ padding: 15, background: cLoading ? '#93aef5' : 'var(--color-primary)', cursor: cLoading ? 'not-allowed' : 'pointer', boxShadow: cLoading ? 'none' : '0 4px 20px rgba(21,87,255,0.27)' }}
                     onMouseEnter={e => { if (!cLoading) e.currentTarget.style.background = '#0d3fd4'; }}
                     onMouseLeave={e => { if (!cLoading) e.currentTarget.style.background = 'var(--color-primary)'; }}
@@ -480,7 +480,7 @@ export default function SignUpPage() {
                 )}
                 <div className="fade-up d7">
                   <button type="submit" disabled={rLoading}
-                    className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-xl font-bold text-sm transition-all duration-200"
+                    className="w-full flex items-center justify-center gap-2.5 text-white border-none rounded-full font-bold text-sm transition-all duration-200"
                     style={{
                       padding: 15,
                       cursor: rLoading ? 'not-allowed' : 'pointer',

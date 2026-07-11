@@ -83,15 +83,6 @@ export default function JobDetailsHeader({ job, applied, saved, loading = false,
       </Link>
 
       <div className="flex flex-col sm:flex-row sm:items-start gap-5">
-        {/* Logo */}
-        <CompanyLogo
-          name={job.company}
-          logo={job.companyLogo}
-          colorClass={colorClass}
-          className="w-16 h-16 rounded-2xl"
-          textClassName="text-2xl"
-        />
-
         {/* Info */}
         <div className="flex-1 min-w-0">
           {/* Badges */}
@@ -207,6 +198,15 @@ export default function JobDetailsHeader({ job, applied, saved, loading = false,
             </Button>
           </div>
         </div>
+
+        {/* Logo */}
+        <CompanyLogo
+          name={job.company}
+          logo={job.companyLogo}
+          colorClass={colorClass}
+          className="w-16 h-16 rounded-full shrink-0"
+          textClassName="text-2xl"
+        />
       </div>
     </Card>
   );

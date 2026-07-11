@@ -48,7 +48,7 @@ export default function JobDescription({ job }: Props) {
             name={job.company}
             logo={job.companyLogo}
             colorClass={colorClass}
-            className="w-10 h-10 rounded-xl"
+            className="w-10 h-10 rounded-full"
             textClassName="text-base"
           />
           <div>

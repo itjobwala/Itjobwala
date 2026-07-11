@@ -150,11 +150,11 @@ export default function FeaturedJobs() {
                         <img
                           src={logoUrl}
                           alt={job?.company}
-                          className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-contain bg-surface border border-token shrink-0"
+                          className="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-contain bg-surface border border-token shrink-0"
                         />
                       ) : (
                         <div
-                          className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-white font-extrabold text-lg shrink-0 bg-gradient-to-br ${job?.companyColorClass}`}
+                          className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-white font-extrabold text-lg shrink-0 bg-gradient-to-br ${job?.companyColorClass}`}
                         >
                           {logoFallback}
                         </div>

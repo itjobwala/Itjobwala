@@ -14,9 +14,9 @@ export default function HowItWorks() {
     >
       <div className="max-w-[1440px] mx-auto">
         {/* Header */}
-        <div className="text-center mb-3">
+        <div className="text-center mb-[8px]">
           <div
-            className="reveal text-caption font-bold uppercase mb-1"
+            className="reveal text-caption font-bold uppercase mb-[8px]"
             style={{ color: PRIMARY, letterSpacing: 1.5 }}
           >
             Built for QA careers

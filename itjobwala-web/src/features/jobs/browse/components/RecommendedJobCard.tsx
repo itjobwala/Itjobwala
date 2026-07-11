@@ -13,7 +13,7 @@ export default function RecommendedJobCard({ job }: { job: Job }) {
         name={job.company}
         logo={job.companyLogo}
         colorClass={job.companyColorClass}
-        className="w-9 h-9 rounded-lg"
+        className="w-9 h-9 rounded-full"
         textClassName="text-sm"
       />
       <div className="flex-1 min-w-0">
