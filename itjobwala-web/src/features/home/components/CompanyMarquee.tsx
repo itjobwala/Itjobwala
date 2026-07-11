@@ -29,7 +29,7 @@ export default function CompanyMarquee() {
         <p className="text-caption font-bold text-subtle uppercase tracking-[1.5px] mb-3">
           QA teams hiring on itJobwala
         </p>
-        <p className="text-sm text-muted">
+        <p className="text-sm text-[#474d6a]">
           Companies posting QA roles — from early-stage startups to large product companies across India.
         </p>
       </div>

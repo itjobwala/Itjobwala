@@ -60,7 +60,7 @@ export default function PeerComparisonCard({ data }: Props) {
             label="Platform Average"
             value={data.platform_avg_score}
             max={maxScore}
-            color="#64748b"
+            color="#474d6a"
           />
         )}
         <BarRow

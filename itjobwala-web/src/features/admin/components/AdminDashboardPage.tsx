@@ -112,7 +112,7 @@ function JobsChart({ range }: { range: Range }) {
 
   const statusColors: Record<string, string> = {
     active: '#22c55e', draft: '#94a3b8', pending: '#f59e0b',
-    removed: '#ef4444', closed: '#64748b', needs_changes: '#f97316',
+    removed: '#ef4444', closed: '#474d6a', needs_changes: '#f97316',
   };
 
   return (

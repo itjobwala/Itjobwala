@@ -14,9 +14,9 @@ export default function HowItWorks() {
     >
       <div className="max-w-[1440px] mx-auto">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-3">
           <div
-            className="reveal text-caption font-bold uppercase mb-3"
+            className="reveal text-caption font-bold uppercase mb-1"
             style={{ color: PRIMARY, letterSpacing: 1.5 }}
           >
             Built for QA careers
@@ -63,7 +63,7 @@ export default function HowItWorks() {
                 </span>
               </div>
               <h3 className="text-xl font-bold text-[#0f172a] mb-3">{s.title}</h3>
-              <p className="text-sm text-muted leading-[1.7]">{s.desc}</p>
+              <p className="text-sm text-[#474d6a] leading-[1.3]">{s.desc}</p>
             </div>
           ))}
         </div>

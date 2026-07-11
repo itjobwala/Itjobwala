@@ -63,7 +63,7 @@ export default function HeroSection() {
           <span style={{ color: PRIMARY }}> match your skills.</span>
         </h1>
 
-        <p className="text-lg text-muted leading-[1.7] max-w-[620px] mx-auto mb-8">
+        <p className="text-lg text-[#474d6a] leading-[1.7] max-w-[620px] mx-auto mb-8">
           Manual, automation, SDET — find the right QA role in India.<br />No consultants. No spam. Just real opportunities.
         </p>
 
@@ -79,7 +79,7 @@ export default function HeroSection() {
         {/* Risk-reversal microcopy */}
         <div className="flex justify-center gap-6 mb-6 flex-wrap">
           {['Free for candidates', 'QA roles only', '2-min setup'].map((t) => (
-            <div key={t} className="flex items-center gap-1.5 text-sm text-muted font-medium">
+            <div key={t} className="flex items-center gap-1.5 text-sm text-[#474d6a] font-medium">
               <svg width="14" height="14" fill="none" stroke="#16a34a" strokeWidth="3" viewBox="0 0 24 24">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
@@ -95,7 +95,7 @@ export default function HeroSection() {
             <Link
               key={role}
               href={`/candidate/jobs?q=${encodeURIComponent(role)}`}
-              className="inline-flex items-center justify-center text-[12px] font-semibold bg-white/80 rounded-full h-7 px-3 border border-token text-muted hover:text-primary hover:border-primary/40 transition-colors"
+              className="inline-flex items-center justify-center text-[12px] font-semibold bg-white/80 rounded-full h-7 px-3 border border-token text-[#474d6a] hover:text-primary hover:border-primary/40 transition-colors"
             >
               {role}
             </Link>

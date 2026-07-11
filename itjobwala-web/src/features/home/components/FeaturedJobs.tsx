@@ -7,8 +7,7 @@ import { useFeaturedJobsQuery } from '@/features/jobs/browse/hooks';
 import { normalizeJob } from '@/features/jobs/shared/types';
 import { PRIMARY } from '@/src/lib/constants';
 
-export default function 
-() {
+export default function FeaturedJobs() {
   const ref = useReveal();
   const [hovered, setHovered] = useState<number | null>(null);
 
@@ -59,7 +58,7 @@ export default function
               Featured jobs
             </h2>
 
-            <p className="text-sm text-muted leading-[1.7] mb-8">
+            <p className="text-sm text-[#474d6a] leading-[1.7] mb-8">
               Hand-picked roles from the best companies in India&apos;s tech ecosystem.
             </p>
 
@@ -97,7 +96,7 @@ export default function
             ) : normalizationError ? (
               <div className="py-12 text-center text-[14px] text-red-500">
                 <div className="font-semibold mb-2">Error processing featured jobs</div>
-                <div className="text-xs text-muted">{String(normalizationError)}</div>
+                <div className="text-xs text-[#474d6a]">{String(normalizationError)}</div>
               </div>
             ) : isError ? (
               <div className="py-12 text-center text-[14px] text-red-400">
@@ -181,7 +180,7 @@ export default function
                           )}
                         </div>
  
-                        <div className="text-sm text-subtle flex gap-2 flex-wrap">
+                        <div className="text-sm text-[#474d6a] flex gap-2 flex-wrap">
                           <span>{job?.company}</span>
                           <span>·</span>
                           <span>{job?.location}</span>

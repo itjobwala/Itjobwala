@@ -40,7 +40,7 @@ function deadlineInfo(closesAt: string): { label: string; className: string } {
   if (daysLeft <= 7)  return { label: `Closes in ${daysLeft}d`,   className: 'text-warning' };
   return {
     label: `Closes ${new Date(closesAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`,
-    className: 'text-subtle',
+    className: 'text-[#474d6a]',
   };
 }
 
@@ -77,7 +77,7 @@ export default function JobDetailsHeader({ job, applied, saved, loading = false,
       {/* Back */}
       <Link
         href="/candidate/jobs"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-subtle hover:text-primary transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#474d6a] hover:text-primary transition-colors mb-6"
       >
         ← Back to QA jobs
       </Link>
@@ -104,7 +104,7 @@ export default function JobDetailsHeader({ job, applied, saved, loading = false,
             {job.title}
           </h1>
 
-          <p className="text-sm font-semibold text-muted mb-4 flex items-center gap-2 flex-wrap">
+          <p className="text-sm font-semibold text-[#474d6a] mb-4 flex items-center gap-2 flex-wrap">
             <span>{job.company}</span>
             {job.companyVerified && <VerifiedBadge />}
             <span>&middot; {job.location}</span>
@@ -138,7 +138,7 @@ export default function JobDetailsHeader({ job, applied, saved, loading = false,
           </div>
 
           {/* Secondary meta */}
-          <div className="flex flex-wrap items-center gap-4 text-caption text-subtle mb-6">
+          <div className="flex flex-wrap items-center gap-4 text-caption text-[#474d6a] mb-6">
             <span className="flex items-center gap-1.5">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />

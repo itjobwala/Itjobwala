@@ -111,7 +111,7 @@ function EnterpriseProfilesCard({
       <div className="space-y-2">
         {Object.entries(profiles).map(([key, p]) => {
           const isBest = key === bestFit;
-          const color  = isBest ? '#a78bfa' : '#64748b';
+          const color  = isBest ? '#a78bfa' : '#474d6a';
           const barPct = `${p.score}%`;
 
           return (

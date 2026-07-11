@@ -20,12 +20,12 @@ export default function RecommendedJobCard({ job }: { job: Job }) {
         <p className="text-sm font-bold text-heading truncate group-hover:text-primary transition-colors">
           {job.title}
         </p>
-        <p className="text-caption text-subtle flex items-center gap-1 flex-wrap">
+        <p className="text-caption text-[#474d6a] flex items-center gap-1 flex-wrap">
           <span className="truncate">{job.company}</span>
           {job.companyVerified && <VerifiedBadge />}
           <span>&middot; {job.location}</span>
         </p>
-        <p className="text-micro text-subtle mt-0.5">
+        <p className="text-micro text-[#474d6a] mt-0.5">
           {job.experienceMin === job.experienceMax
             ? `${job.experienceMin} yrs`
             : `${job.experienceMin}–${job.experienceMax} yrs`}

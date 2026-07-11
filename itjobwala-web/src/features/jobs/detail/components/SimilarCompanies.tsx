@@ -35,7 +35,7 @@ export default function SimilarCompanies({ companies }: Props) {
             />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-heading group-hover:text-primary transition-colors">{c.name}</p>
-              <p className="text-micro text-subtle">{c.industry}</p>
+              <p className="text-micro text-[#474d6a]">{c.industry}</p>
             </div>
             <span className="text-micro font-semibold text-primary bg-primary/10 rounded-full px-2 py-0.5 shrink-0">
               {c.open_roles} jobs

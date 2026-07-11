@@ -73,7 +73,7 @@ function Checkbox({
           </svg>
         )}
       </span>
-      <span className={`text-sm transition-colors ${checked ? 'text-heading font-semibold' : 'text-body-secondary group-hover:text-heading'}`}>
+      <span className={`text-sm transition-colors ${checked ? 'text-heading font-semibold' : 'text-[#474d6a] group-hover:text-heading'}`}>
         {label}
       </span>
     </label>

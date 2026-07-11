@@ -116,7 +116,7 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false, m
   };
 
   return (
-    <div onClick={() => router.push(`/candidate/jobs/${job.id}`)} className="group relative overflow-hidden bg-white rounded-2xl border border-token hover:border-primary/40 hover:shadow-lg transition-all duration-200 cursor-pointer p-5 sm:p-6">
+    <div onClick={() => router.push(`/candidate/jobs/${job.id}`)} className="group relative overflow-hidden bg-white rounded-2xl border border-token hover:border-primary/40 hover:shadow-lg transition-all duration-200 cursor-pointer p-5 sm:p-6 pb-3 sm:pb-3">
       {job.hasApplied && <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-success" />}
       <div className="flex items-start gap-4">
         {/* Main content */}
@@ -142,7 +142,7 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false, m
               <h3 className="font-bold text-sm text-heading leading-snug group-hover:text-primary transition-colors">
                 {job.title}
               </h3>
-              <p className="text-sm text-muted mt-0.5 flex items-center gap-1.5 flex-wrap">
+              <p className="text-sm text-[#474d6a] mt-0.5 flex items-center gap-1.5 flex-wrap">
                 {job.company}
                 {job.companyVerified && <VerifiedBadge />}
               </p>
@@ -153,7 +153,7 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false, m
           </div>
 
           {/* Meta row */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 text-sm text-muted">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3 text-sm text-[#474d6a]">
             <span className="flex items-center gap-1.5">
               <MapPinIcon /> {job.location}
             </span>
@@ -209,7 +209,7 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false, m
       {/* Footer */}
       <div className="flex items-center justify-between mt-2 pt-2 border-t border-token">
         <div className="flex items-center gap-3">
-          <span className="text-caption text-subtle flex items-center gap-1.5">
+          <span className="text-caption text-[#474d6a] flex items-center gap-1.5">
             <ClockIcon /> {postedLabel(job.postedDaysAgo)}
           </span>
           {(() => {

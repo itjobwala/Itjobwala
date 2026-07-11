@@ -309,7 +309,7 @@ export async function sendJobModerationEmail({ to, name, jobTitle, decision, rea
     <div style="text-align:center;padding:28px 0">
       <a href="${link}" style="background:${accentColor};color:#fff;padding:13px 28px;text-decoration:none;border-radius:6px;font-weight:bold;font-size:15px">${btnLabel}</a>
     </div>
-    <p style="color:#64748b;font-size:13px">If you have questions, contact our support team.<br>— The ITJobwala Team</p>
+    <p style="color:#474d6a;font-size:13px">If you have questions, contact our support team.<br>— The ITJobwala Team</p>
   </div>
 </body>
 </html>`;

@@ -70,7 +70,7 @@ export default function Footer() {
                 it<span style={{ color: PRIMARY }}>Jobwala</span>
               </span>
             </button>
-            <p className="text-sm text-[#475569] leading-[1.8] mb-7">
+            <p className="text-sm text-[#474d6a] leading-[1.8] mb-7">
               Find IT jobs without the noise.<br />Apply directly. No middlemen.
             </p>
             <div className="flex gap-2.5">
@@ -81,7 +81,7 @@ export default function Footer() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={s.label}
-                  className="w-9 h-9 rounded-full bg-surface-hover border border-token flex items-center justify-center text-muted hover:bg-primary hover:text-white hover:border-primary transition-colors"
+                  className="w-9 h-9 rounded-full bg-surface-hover border border-token flex items-center justify-center text-[#474d6a] hover:bg-primary hover:text-white hover:border-primary transition-colors"
                 >
                   {s.icon}
                 </a>
@@ -93,7 +93,7 @@ export default function Footer() {
           {FOOTER_COLS.map((col) => (
             <div key={col.title}>
               <div
-                className="font-bold text-caption text-[#475569] mb-4 uppercase"
+                className="font-bold text-caption text-[#474d6a] mb-4 uppercase"
                 style={{ letterSpacing: 1.5 }}
               >
                 {col.title}
@@ -104,9 +104,9 @@ export default function Footer() {
                     key={l.label}
                     href={l.href}
                     className="text-sm"
-                    style={{ color: '#6b7280', textDecoration: 'none' }}
+                    style={{ color: '#474d6a', textDecoration: 'none' }}
                     onMouseEnter={e => { e.currentTarget.style.color = '#1557FF'; }}
-                    onMouseLeave={e => { e.currentTarget.style.color = '#6b7280'; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = '#474d6a'; }}
                   >
                     {l.label}
                   </Link>
@@ -118,12 +118,12 @@ export default function Footer() {
           {/* Newsletter */}
           <div className="col-span-2 md:col-span-1">
             <div
-              className="font-bold text-caption text-[#475569] mb-4 uppercase"
+              className="font-bold text-caption text-[#474d6a] mb-4 uppercase"
               style={{ letterSpacing: 1.5 }}
             >
               Top jobs, weekly
             </div>
-            <p className="text-sm text-[#475569] mb-4 leading-[1.7]">
+            <p className="text-sm text-[#474d6a] mb-4 leading-[1.7]">
               5 hand-picked IT roles every Monday. No spam, unsubscribe in one click.
             </p>
             <input

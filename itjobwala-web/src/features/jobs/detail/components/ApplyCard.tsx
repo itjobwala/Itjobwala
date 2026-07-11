@@ -36,7 +36,7 @@ export default function ApplyCard({ job, applied = false, saved = false, onSave,
         {saved ? 'Saved ✓' : 'Save job'}
       </Button>
 
-      <div className="flex items-center justify-between mt-1 pt-4 border-t border-token text-xs text-muted">
+      <div className="flex items-center justify-between mt-1 pt-4 border-t border-token text-xs text-[#474d6a]">
         <span>{job.applicants} applicants</span>
         <span>Posted {job.postedDaysAgo === 0 ? 'today' : `${job.postedDaysAgo}d ago`}</span>
       </div>

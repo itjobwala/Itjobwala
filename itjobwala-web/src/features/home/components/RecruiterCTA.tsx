@@ -18,9 +18,9 @@ export default function RecruiterCTA() {
       ref={ref}
       className="bg-[#f9fafb] py-[88px] px-5 sm:px-8 lg:px-10"
     >
-      <div className="max-w-[1440px] mx-auto">
+      <div className="max-w-[1000px] mx-auto">
         <div
-          className="reveal rounded-[28px] p-10 md:p-16 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-12 items-center relative overflow-hidden"
+          className="reveal rounded-[28px] p-10 md:p-16 grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 items-center relative overflow-hidden"
           style={{ background: `linear-gradient(130deg, ${PRIMARY} 0%, #4f46e5 100%)` }}
         >
           {/* Decorative circles */}

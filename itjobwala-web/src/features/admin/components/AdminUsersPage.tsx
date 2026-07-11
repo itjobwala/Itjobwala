@@ -270,7 +270,7 @@ export default function AdminUsersPage() {
             <div className="flex gap-3 justify-end">
               <button onClick={() => setConfirmAction(null)}
                 className="px-4 py-2 rounded-xl text-sm font-semibold border-none cursor-pointer"
-                style={{ background: '#f1f5f9', color: '#64748b' }}>
+                style={{ background: '#f1f5f9', color: '#474d6a' }}>
                 Cancel
               </button>
               <button

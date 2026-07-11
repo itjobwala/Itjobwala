@@ -30,7 +30,7 @@ export default function AccountStep({ account, errors, setField, onSubmit }: Pro
       <Field
         label="Work Email" id="email" type="email" placeholder="you@company.com"
         value={account.email} onChange={v => setField('email', v)} error={errors.email}
-        hint={<span className="text-micro text-subtle font-normal">Use your official company email</span>}
+        hint={<span className="text-micro text-[#474d6a] font-normal">Use your official company email</span>}
         icon={<svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>}
       />
       <PasswordField
@@ -65,7 +65,7 @@ export default function AccountStep({ account, errors, setField, onSubmit }: Pro
         Continue to post your job →
       </button>
 
-      <p className="text-center text-sm text-subtle mt-5">
+      <p className="text-center text-sm text-[#474d6a] mt-5">
         Looking for a job?{' '}
         <Link href="/auth/signup" className="font-bold" style={{ color: PRIMARY, textDecoration: 'none' }}>Sign up as candidate</Link>
       </p>

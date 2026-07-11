@@ -47,7 +47,12 @@ export default function StatsStrip() {
       className="bg-white py-14 px-5 sm:px-8 lg:px-10"
     >
       <div className="max-w-[1440px] mx-auto grid grid-cols-2 md:grid-cols-4">
-        {stats.map((s, i) => (
+        {stats.map((s, i) => {
+          const signMatch = s.value.match(/^(.*?)([+%])$/);
+          const mainValue = signMatch ? signMatch[1] : s.value;
+          const sign = signMatch ? signMatch[2] : '';
+
+          return (
           <div
             key={i}
             className={[
@@ -61,12 +66,14 @@ export default function StatsStrip() {
               className="text-[40px] md:text-[44px] font-extrabold leading-none mb-2.5"
               style={{ color: PRIMARY, letterSpacing: '-2px' }}
             >
-              {s.value}
+              {mainValue}
+              {sign && <span style={{ letterSpacing: 'normal', marginLeft: 2 }}>{sign}</span>}
             </div>
             <div className="text-sm font-semibold text-heading mb-1">{s.label}</div>
-            <div className="text-xs text-subtle font-medium">{s.sub}</div>
+            <div className="text-xs text-[#474d6a] font-medium">{s.sub}</div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

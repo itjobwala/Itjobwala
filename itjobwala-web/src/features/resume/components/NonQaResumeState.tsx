@@ -16,7 +16,7 @@ export default function NonQaResumeState({ domainLabel, domainConfidence, messag
       {/* Icon */}
       <div
         className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg"
-        style={{ background: isInvalidDoc ? 'linear-gradient(135deg, #64748b, #475569)' : 'linear-gradient(135deg, #f59e0b, #ef4444)' }}
+        style={{ background: isInvalidDoc ? 'linear-gradient(135deg, #474d6a, #475569)' : 'linear-gradient(135deg, #f59e0b, #ef4444)' }}
       >
         {isInvalidDoc ? (
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8">

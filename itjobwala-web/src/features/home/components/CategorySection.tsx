@@ -45,7 +45,7 @@ const TYPE_THEME: Record<string, {
 const DEFAULT_THEME = {
   bg: '#f8fafc', bgHover: '#f1f5f9',
   border: '#e2e8f0', borderHover: '#cbd5e1',
-  accent: '#64748b', textAccent: '#475569',
+  accent: '#474d6a', textAccent: '#475569',
   badge: '#f1f5f9', badgeText: '#475569',
   label: 'Category',
 };
@@ -186,7 +186,7 @@ export default function CategorySection() {
                   </div>
                   <div
                     className="text-[12px] font-semibold mb-4"
-                    style={{ color: highlighted ? theme.accent : 'var(--color-subtle)' }}
+                    style={{ color: highlighted ? theme.accent : '#474d6a' }}
                   >
                     open positions
                   </div>

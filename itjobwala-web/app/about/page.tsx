@@ -47,10 +47,10 @@ const VALUES = [
 ];
 
 const STATS = [
-  { value: '4,000+', label: 'Active IT jobs' },
-  { value: '500+',   label: 'Companies hiring' },
-  { value: '12,000+', label: 'Registered candidates' },
-  { value: '92%',    label: 'Recruiter reply rate' },
+  { value: '4,000 +', label: 'Active IT jobs' },
+  { value: '500 +',   label: 'Companies hiring' },
+  { value: '12,000 +', label: 'Registered candidates' },
+  { value: '92 %',    label: 'Recruiter reply rate' },
 ];
 
 const TEAM = [

@@ -13,7 +13,7 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
 
 function BulletItem({ text }: { text: string }) {
   return (
-    <li className="flex items-start gap-3 text-sm text-body-secondary leading-[1.65]">
+    <li className="flex items-start gap-3 text-sm text-[#474d6a] leading-[1.65]">
       <span className="mt-[6.5px] w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
       {text}
     </li>
@@ -34,7 +34,7 @@ export default function JobDescription({ job }: Props) {
         <>
           <section>
             <SectionHeading>Overview</SectionHeading>
-            <p className="text-sm text-body-secondary leading-[1.75]">{job.description}</p>
+            <p className="text-sm text-[#474d6a] leading-[1.75]">{job.description}</p>
           </section>
           <div className="h-px bg-token" />
         </>
@@ -53,10 +53,10 @@ export default function JobDescription({ job }: Props) {
           />
           <div>
             <p className="text-sm font-bold text-heading">{job.company}</p>
-            <p className="text-caption text-subtle">{job.companyIndustry} &middot; {job.companySize} &middot; Est. {job.companyFounded}</p>
+            <p className="text-caption text-[#474d6a]">{job.companyIndustry} &middot; {job.companySize} &middot; Est. {job.companyFounded}</p>
           </div>
         </div>
-        <p className="text-sm text-body-secondary leading-[1.75]">{job.aboutCompany}</p>
+        <p className="text-sm text-[#474d6a] leading-[1.75]">{job.aboutCompany}</p>
       </section>
 
       <div className="h-px bg-token" />
@@ -86,7 +86,7 @@ export default function JobDescription({ job }: Props) {
             <SectionHeading>Nice to have</SectionHeading>
             <ul className="flex flex-col gap-2.5">
               {job.niceToHave.map((r, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm text-muted leading-[1.65]">
+                <li key={i} className="flex items-start gap-3 text-sm text-[#474d6a] leading-[1.65]">
                   <span className="mt-[6.5px] w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0" />
                   {r}
                 </li>

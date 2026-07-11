@@ -53,7 +53,7 @@ export default function RecruiterPostJobPage() {
               <h1 className="font-extrabold text-heading mb-1 text-2xl sm:text-4xl" style={{ letterSpacing: -0.8 }}>
                 {heading}
               </h1>
-              <p className="text-sm text-muted">{sub}</p>
+              <p className="text-sm text-[#474d6a]">{sub}</p>
             </div>
 
             <div className="my-6">
