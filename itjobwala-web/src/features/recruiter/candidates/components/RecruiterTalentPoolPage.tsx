@@ -8,10 +8,10 @@ import type { SavedCandidateEntry, CandidateCard } from '../types/candidateSearc
 import CandidateProfileDrawer from './CandidateProfileDrawer';
 
 function Avatar({ name, photoUrl }: { name: string; photoUrl: string | null }) {
-  if (photoUrl) return <img src={photoUrl} alt={name} className="w-10 h-10 rounded-xl object-cover border border-token shrink-0" />;
+  if (photoUrl) return <img src={photoUrl} alt={name} className="w-9 h-9 rounded-full object-cover border border-token shrink-0" />;
   const initials = name.split(' ').slice(0, 2).map(p => p[0] ?? '').join('').toUpperCase();
   return (
-    <div className="w-10 h-10 rounded-xl shrink-0 flex items-center justify-center bg-primary/10 text-primary font-extrabold">
+    <div className="w-9 h-9 rounded-full shrink-0 flex items-center justify-center bg-primary/10 text-primary font-extrabold text-sm">
       {initials}
     </div>
   );
@@ -91,7 +91,7 @@ function BulkMessageModal({
   );
 }
 
-function PoolCard({
+function PoolRow({
   entry,
   selected,
   onSelect,
@@ -108,87 +108,103 @@ function PoolCard({
 }) {
   if (!entry.candidate.available) {
     return (
-      <div className="bg-surface rounded-2xl border border-token p-4 opacity-60">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-surface-hover shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-muted">Candidate no longer available</p>
-            <p className="text-micro text-subtle mt-0.5">This candidate has turned off recruiter visibility or been suspended.</p>
+      <tr className="border-b border-token last:border-0 opacity-60">
+        <td className="px-4 py-3.5" />
+        <td className="px-4 py-3.5" colSpan={4}>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-surface-hover shrink-0" />
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-muted">Candidate no longer available</p>
+              <p className="text-micro text-subtle mt-0.5">Turned off recruiter visibility or was suspended.</p>
+            </div>
           </div>
+        </td>
+        <td className="px-4 py-3.5 text-center">
           <button
             onClick={onRemove}
             disabled={removing}
-            className="text-xs text-danger font-semibold hover:underline disabled:opacity-50"
+            className="text-caption font-bold text-danger hover:underline disabled:opacity-50 whitespace-nowrap"
           >
             Remove
           </button>
-        </div>
-      </div>
+        </td>
+      </tr>
     );
   }
 
   const c = entry.candidate as CandidateCard & { available: true };
 
   return (
-    <div className={`bg-surface rounded-2xl border shadow-sm p-4 hover:shadow-md transition-shadow ${selected ? 'border-primary ring-1 ring-primary/20' : 'border-token'}`}>
-      <div className="flex items-start gap-3">
+    <tr className={`border-b border-token last:border-0 hover:bg-surface-alt transition-colors ${selected ? 'bg-primary/5' : ''}`}>
+      <td className="text-center px-2 py-3.5 w-[32px]">
         <input
           type="checkbox"
           checked={selected}
           onChange={() => onSelect(c.id)}
-          className="mt-1 w-4 h-4 shrink-0 accent-primary cursor-pointer"
+          className="w-4 h-4 shrink-0 accent-primary cursor-pointer"
           aria-label={`Select ${c.name}`}
         />
-        <Avatar name={c.name} photoUrl={c.profile_photo_url} />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-bold text-heading truncate">{c.name}</span>
-            {c.open_to_work && (
-              <span className="text-[10px] font-bold rounded-full py-[2px] px-2 bg-green-50 text-green-700 shrink-0">Open to work</span>
-            )}
-          </div>
-          {c.title && <p className="text-xs text-muted mt-0.5 truncate">{c.title}</p>}
-          <div className="flex flex-wrap gap-2 mt-1 text-micro text-subtle">
-            {c.location && <span>{c.location}</span>}
-            <span>{c.experience_years === 0 ? 'Fresher' : `${c.experience_years} yrs`}</span>
-          </div>
-          {entry.note && (
-            <p className="text-micro text-subtle mt-1 italic truncate">Note: {entry.note}</p>
-          )}
-          {c.skills.slice(0, 3).length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-2">
-              {c.skills.slice(0, 3).map(s => (
-                <span key={s} className="text-micro font-semibold rounded-full py-[2px] px-2 bg-surface-hover text-body-secondary">{s}</span>
-              ))}
-              {c.skills.length > 3 && (
-                <span className="text-micro font-semibold rounded-full py-[2px] px-2 bg-surface-alt text-subtle">+{c.skills.length - 3}</span>
+      </td>
+      <td className="px-3 py-3.5 w-[30%]">
+        <div className="flex items-center gap-3 min-w-0">
+          <Avatar name={c.name} photoUrl={c.profile_photo_url} />
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-sm font-bold text-heading truncate">{c.name}</span>
+              {c.open_to_work && (
+                <span className="text-[10px] font-bold rounded-full py-[2px] px-2 bg-green-50 text-green-700 shrink-0">Open to work</span>
               )}
             </div>
-          )}
+            {c.title && <p className="text-xs text-muted truncate">{c.title}</p>}
+          </div>
         </div>
-        <div className="shrink-0 flex flex-col gap-1.5 items-end">
+      </td>
+      <td className="px-2 py-3.5 text-sm text-body-secondary whitespace-nowrap w-[8%]">
+        {c.experience_years === 0 ? 'Fresher' : `${c.experience_years} yrs`}
+      </td>
+      <td className="px-2 py-3.5 text-center w-[26%]">
+        {c.skills.length > 0 ? (
+          <div className="flex flex-wrap items-center justify-center gap-1">
+            {c.skills.slice(0, 3).map(s => (
+              <span key={s} className="text-micro font-semibold rounded-full py-[2px] px-2 bg-surface-hover text-body-secondary whitespace-nowrap">
+                {s}
+              </span>
+            ))}
+            {c.skills.length > 3 && (
+              <span className="text-micro font-semibold rounded-full py-[2px] px-2 bg-surface-alt text-subtle whitespace-nowrap">
+                +{c.skills.length - 3}
+              </span>
+            )}
+          </div>
+        ) : (
+          <span className="text-subtle">—</span>
+        )}
+      </td>
+      <td className="px-2 py-3.5 text-sm text-body-secondary text-center truncate w-[14%]">{c.location || '—'}</td>
+      <td className="px-3 py-3.5 w-[18%]">
+        <div className="flex items-center justify-center gap-1.5 flex-wrap">
           <button
             onClick={() => onView(c.id)}
-            className="text-xs font-semibold text-primary hover:underline"
+            className="shrink-0 text-caption font-bold text-primary hover:underline text-center"
           >
             View
           </button>
           <Link
             href={`/recruiter/chat?candidateId=${c.id}`}
-            className="text-micro text-subtle hover:text-primary transition-colors"
+            className="shrink-0 text-caption font-bold text-primary hover:underline text-center"
           >
             Message
           </Link>
           <button
             onClick={onRemove}
             disabled={removing}
-            className="text-micro text-danger hover:underline disabled:opacity-50"
+            className="shrink-0 text-caption font-bold text-danger hover:underline disabled:opacity-50 text-center"
           >
             Remove
           </button>
         </div>
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 }
 
@@ -252,7 +268,18 @@ export default function RecruiterTalentPoolPage() {
   return (
     <RecruiterShell>
       <div className="min-h-screen bg-surface-alt">
-        <div className="max-w-4xl mx-auto px-4 py-7">
+        <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-7">
+
+          {/* Back */}
+          <Link
+            href="/recruiter/candidates"
+            className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-body transition-colors mb-4"
+          >
+            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            Back
+          </Link>
 
           {/* Header */}
           <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
@@ -296,25 +323,6 @@ export default function RecruiterTalentPoolPage() {
             </div>
           )}
 
-          {/* Select all row */}
-          {entries.length > 0 && (
-            <div className="flex items-center gap-3 mb-3 px-1">
-              <input
-                type="checkbox"
-                checked={allSelected}
-                onChange={toggleSelectAll}
-                className="w-4 h-4 accent-primary cursor-pointer"
-                aria-label="Select all"
-              />
-              <span className="text-xs text-subtle font-semibold">
-                {allSelected ? 'Deselect all' : 'Select all visible'}
-              </span>
-              {selectedArr.length > 0 && (
-                <span className="text-xs text-primary font-bold ml-auto">{selectedArr.length} selected</span>
-              )}
-            </div>
-          )}
-
           {/* Loading */}
           {isLoading && (
             <div className="space-y-3">
@@ -355,20 +363,44 @@ export default function RecruiterTalentPoolPage() {
             </div>
           )}
 
-          {/* Cards */}
+          {/* Table */}
           {!isLoading && !isError && entries.length > 0 && (
-            <div className="space-y-3">
-              {entries.map(entry => (
-                <PoolCard
-                  key={entry.save_id}
-                  entry={entry}
-                  selected={selectedIds.has(entry.candidate.id)}
-                  onSelect={toggleSelect}
-                  onView={setActiveCandidateId}
-                  onRemove={() => handleRemove(entry)}
-                  removing={removingId === entry.save_id}
-                />
-              ))}
+            <div className="bg-surface rounded-2xl border border-token shadow-sm overflow-x-auto">
+              <table className="w-full table-fixed min-w-[760px]">
+                <thead className="bg-surface-alt/60">
+                  <tr>
+                    <th className="text-center px-2 py-3 w-[32px]">
+                      <input
+                        type="checkbox"
+                        checked={allSelected}
+                        onChange={toggleSelectAll}
+                        className="w-4 h-4 accent-primary cursor-pointer"
+                        aria-label="Select all"
+                      />
+                    </th>
+                    <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-3 py-3 w-[30%]">Candidate</th>
+                    <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[8%]">Level</th>
+                    <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[26%]">Skill</th>
+                    <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[14%]">Location</th>
+                    <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-3 py-3 w-[18%]">
+                      {selectedArr.length > 0 ? `${selectedArr.length} selected` : 'Actions'}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {entries.map(entry => (
+                    <PoolRow
+                      key={entry.save_id}
+                      entry={entry}
+                      selected={selectedIds.has(entry.candidate.id)}
+                      onSelect={toggleSelect}
+                      onView={setActiveCandidateId}
+                      onRemove={() => handleRemove(entry)}
+                      removing={removingId === entry.save_id}
+                    />
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 

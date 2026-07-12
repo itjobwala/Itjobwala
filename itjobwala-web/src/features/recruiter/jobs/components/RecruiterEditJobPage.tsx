@@ -271,8 +271,8 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
             value={form.title}
             onChange={e => set('title', e.target.value)}
             disabled={isActive}
-            placeholder="e.g. Senior React Developer"
-            className="w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-subtle disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed"
+            placeholder="e.g. Senior QA Automation Engineer"
+            className="w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-muted disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed"
             style={{ borderColor: errors.title ? 'var(--color-danger)' : 'var(--color-border)' }}
           />
           {errors.title && <p className="text-xs text-danger mt-1">{errors.title}</p>}
@@ -289,7 +289,7 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
             disabled={isActive}
             rows={6}
             placeholder="Describe the role (min. 50 characters)..."
-            className="w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-subtle resize-none disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed"
+            className="w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-muted resize-none disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed"
             style={{ borderColor: errors.description ? 'var(--color-danger)' : 'var(--color-border)' }}
           />
           <div className="flex items-center justify-between mt-1">
@@ -314,58 +314,76 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
           {errors.location && <p className="text-xs text-danger mt-1">{errors.location}</p>}
         </div>
 
-        {/* Experience slider */}
-        <ExperienceSlider
-          minVal={form.experienceMin} maxVal={form.experienceMax}
-          onChange={(min, max) => { set('experienceMin', min); set('experienceMax', max); }}
-        />
-
-        {/* Job type + Work mode */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
+        {/* Job type, Work mode, Experience, Salary — inline */}
+        <div className="flex flex-col lg:flex-row lg:items-start gap-4">
+          <div className="lg:w-[180px] shrink-0">
             <label className="block text-sm font-bold text-body-secondary mb-1.5">Job type</label>
-            <select
-              value={form.jobType}
-              onChange={e => set('jobType', e.target.value)}
-              disabled={isActive}
-              className="w-full rounded-xl border border-token px-3.5 py-2.5 text-sm font-medium text-heading outline-none bg-surface disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed"
-            >
-              {JOB_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
+            <div className="relative">
+              <select
+                value={form.jobType}
+                onChange={e => set('jobType', e.target.value)}
+                disabled={isActive}
+                className="w-full appearance-none rounded-xl border border-token pl-3.5 pr-9 py-2.5 text-sm font-medium text-heading outline-none bg-surface disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed"
+              >
+                {JOB_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-subtle">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
           </div>
-          <div>
+          <div className="lg:w-[180px] shrink-0">
             <label className="block text-sm font-bold text-body-secondary mb-1.5">Work mode</label>
-            <select
-              value={form.workMode}
-              onChange={e => set('workMode', e.target.value)}
-              disabled={isActive}
-              className="w-full rounded-xl border border-token px-3.5 py-2.5 text-sm font-medium text-heading outline-none bg-surface disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed"
-            >
-              {WORK_MODES.map(m => <option key={m} value={m}>{m}</option>)}
-            </select>
+            <div className="relative">
+              <select
+                value={form.workMode}
+                onChange={e => set('workMode', e.target.value)}
+                disabled={isActive}
+                className="w-full appearance-none rounded-xl border border-token pl-3.5 pr-9 py-2.5 text-sm font-medium text-heading outline-none bg-surface disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed"
+              >
+                {WORK_MODES.map(m => <option key={m} value={m}>{m}</option>)}
+              </select>
+              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-subtle">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
+          </div>
+          <div className="flex-1 min-w-0">
+            <ExperienceSlider
+              minVal={form.experienceMin} maxVal={form.experienceMax}
+              onChange={(min, max) => { set('experienceMin', min); set('experienceMax', max); }}
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <SalaryRangeSlider
+              minLpa={form.salaryMinLpa}
+              maxLpa={form.salaryMaxLpa}
+              minAllowed={1}
+              onChange={(min, max) => { set('salaryMinLpa', min); set('salaryMaxLpa', max); }}
+            />
           </div>
         </div>
-
-        {/* Salary */}
-        <SalaryRangeSlider
-          minLpa={form.salaryMinLpa}
-          maxLpa={form.salaryMaxLpa}
-          minAllowed={1}
-          onChange={(min, max) => { set('salaryMinLpa', min); set('salaryMaxLpa', max); }}
-        />
 
         {/* Level + Vacancies + Deadline */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-bold text-body-secondary mb-1.5">Job level</label>
-            <select
-              value={form.jobLevel}
-              onChange={e => set('jobLevel', e.target.value)}
-              className="w-full rounded-xl border border-token px-3.5 py-2.5 text-sm font-medium text-heading outline-none bg-surface"
-            >
-              <option value="">Select level</option>
-              {JOB_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-            </select>
+            <div className="relative">
+              <select
+                value={form.jobLevel}
+                onChange={e => set('jobLevel', e.target.value)}
+                className="w-full appearance-none rounded-xl border border-token pl-3.5 pr-9 py-2.5 text-sm font-medium text-heading outline-none bg-surface"
+              >
+                <option value="">Select level</option>
+                {JOB_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+              </select>
+              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-subtle">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </div>
           </div>
           <div>
             <label className="block text-sm font-bold text-body-secondary mb-1.5">Vacancies</label>
@@ -401,7 +419,7 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
               value={skillInput}
               onChange={e => { setSkillInput(e.target.value); setSkillError(''); }}
               onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }}
-              placeholder="Type to search skills (e.g. React, Node.js)"
+              placeholder="Type to search skills (e.g. Selenium, Postman)"
               className="flex-1 rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none"
               style={{ borderColor: skillError ? 'var(--color-danger)' : 'var(--color-border)' }}
             />
@@ -446,8 +464,8 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
             value={form.responsibilities}
             onChange={e => set('responsibilities', e.target.value)}
             rows={5}
-            placeholder={"Build and maintain scalable APIs\nCollaborate with cross-functional teams"}
-            className="w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none placeholder:text-subtle resize-none"
+            placeholder={"Design and execute test cases for web and mobile releases\nAutomate regression suites using Selenium/Playwright"}
+            className="w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none placeholder:text-muted resize-none"
             style={{ borderColor: errors.responsibilities ? 'var(--color-danger)' : 'var(--color-border)' }}
           />
           <p className="text-micro text-subtle mt-1">One item per line.</p>
@@ -463,8 +481,8 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
             value={form.requirements}
             onChange={e => set('requirements', e.target.value)}
             rows={5}
-            placeholder={"3+ years of experience with React\nStrong understanding of REST APIs"}
-            className="w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none placeholder:text-subtle resize-none"
+            placeholder={"3+ years of experience in manual or automation testing\nStrong understanding of API testing tools like Postman or Rest Assured"}
+            className="w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none placeholder:text-muted resize-none"
             style={{ borderColor: errors.requirements ? 'var(--color-danger)' : 'var(--color-border)' }}
           />
           <p className="text-micro text-subtle mt-1">One item per line.</p>
@@ -480,8 +498,8 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
             value={form.niceToHave}
             onChange={e => set('niceToHave', e.target.value)}
             rows={3}
-            placeholder={"Experience with Docker/Kubernetes\nFamiliarity with GraphQL"}
-            className="w-full rounded-xl border border-token px-3.5 py-2.5 text-sm font-medium text-heading outline-none placeholder:text-subtle resize-none"
+            placeholder={"ISTQB certification\nExperience with CI/CD pipelines (Jenkins, GitHub Actions)"}
+            className="w-full rounded-xl border border-token px-3.5 py-2.5 text-sm font-medium text-heading outline-none placeholder:text-muted resize-none"
           />
           <p className="text-micro text-subtle mt-1">One item per line.</p>
         </div>
@@ -496,7 +514,7 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
             onChange={e => set('benefits', e.target.value)}
             rows={3}
             placeholder={"Health insurance\nFlexible working hours"}
-            className="w-full rounded-xl border border-token px-3.5 py-2.5 text-sm font-medium text-heading outline-none placeholder:text-subtle resize-none"
+            className="w-full rounded-xl border border-token px-3.5 py-2.5 text-sm font-medium text-heading outline-none placeholder:text-muted resize-none"
           />
           <p className="text-micro text-subtle mt-1">One item per line.</p>
         </div>

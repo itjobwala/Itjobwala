@@ -27,7 +27,7 @@ export default function ApplicantsTable({ applicants }: Props) {
             <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-5 py-3">
               Candidate
             </th>
-            <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3 hidden sm:table-cell">
+            <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3 hidden sm:table-cell min-w-[220px]">
               Role Applied
             </th>
             <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3 hidden md:table-cell">
@@ -39,25 +39,30 @@ export default function ApplicantsTable({ applicants }: Props) {
             <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3">
               Status
             </th>
-            <th className="px-4 py-3" />
+            <th className="text-right text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3">
+              Action
+            </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-50">
           {applicants.map(a => (
             <tr key={a.id} className="hover:bg-surface-alt/60 transition-colors group">
-              <td className="px-5 py-3.5">
-                <div className="flex items-center gap-3">
+              <td className="px-5 py-3.5 max-w-[160px]">
+                <div className="flex items-center gap-3 min-w-0">
                   <div
                     className={`w-8 h-8 rounded-xl bg-gradient-to-br ${a.avatarColor} flex items-center justify-center text-white font-bold text-micro shrink-0`}
                   >
                     {a.initials}
                   </div>
-                  <span className="text-sm font-semibold text-heading group-hover:text-primary transition-colors">
+                  <span
+                    title={a.name}
+                    className="flex-1 min-w-0 text-sm font-semibold text-heading group-hover:text-primary transition-colors truncate"
+                  >
                     {a.name}
                   </span>
                 </div>
               </td>
-              <td className="px-4 py-3.5 hidden sm:table-cell">
+              <td className="px-4 py-3.5 hidden sm:table-cell min-w-[220px]">
                 <span className="text-sm text-body-secondary">{a.role}</span>
               </td>
               <td className="px-4 py-3.5 hidden md:table-cell">
@@ -72,7 +77,7 @@ export default function ApplicantsTable({ applicants }: Props) {
               <td className="px-4 py-3.5 text-right">
                 <Link
                   href={`/recruiter/applicants/${a.id}`}
-                  className="text-caption font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity hover:underline"
+                  className="text-caption font-bold text-primary hover:underline whitespace-nowrap"
                 >
                   View →
                 </Link>

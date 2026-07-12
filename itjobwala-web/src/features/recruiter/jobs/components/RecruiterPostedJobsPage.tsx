@@ -16,7 +16,6 @@ const STATUS_FILTERS = [
   { value: 'active',        label: 'Active' },
   { value: 'draft',         label: 'Draft' },
   { value: 'pending',       label: 'Pending Review' },
-  { value: 'needs_changes', label: 'Needs Changes' },
   { value: 'closed',        label: 'Closed' },
   { value: 'removed',       label: 'Removed' },
 ];
@@ -101,12 +100,12 @@ export default function RecruiterPostedJobsPage() {
         {/* Filters + Search row */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
           {/* Status tabs */}
-          <div className="flex gap-2 flex-wrap">
+          <div className="grid grid-cols-3 sm:flex gap-2 sm:flex-wrap">
             {STATUS_FILTERS.map(({ value, label }) => (
               <button
                 key={value}
                 onClick={() => handleStatusFilter(value)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-4 py-2 rounded-lg text-sm font-medium text-center transition-colors ${
                   statusFilter === value
                     ? 'bg-primary text-white'
                     : 'bg-surface text-body-secondary border border-token hover:border-primary'
@@ -183,12 +182,12 @@ export default function RecruiterPostedJobsPage() {
           <>
             <Card padding="none">
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full min-w-[760px]">
                   <thead className="bg-surface-alt border-b border-token">
                     <tr>
-                      <th className="px-6 py-4 text-left text-caption font-semibold text-body-secondary">Job Title</th>
+                      <th className="px-6 py-4 text-left text-caption font-semibold text-body-secondary min-w-[220px]">Job Title</th>
                       <th className="px-6 py-4 text-left text-caption font-semibold text-body-secondary">Location</th>
-                      <th className="px-6 py-4 text-left text-caption font-semibold text-body-secondary">Applications</th>
+                      <th className="px-6 py-4 text-center text-caption font-semibold text-body-secondary">Applications</th>
                       <th className="px-6 py-4 text-left text-caption font-semibold text-body-secondary">Status</th>
                       <th className="px-6 py-4 text-left text-caption font-semibold text-body-secondary">Posted</th>
                       <th className="px-6 py-4 text-left text-caption font-semibold text-body-secondary">Actions</th>
@@ -205,7 +204,7 @@ export default function RecruiterPostedJobsPage() {
                           )}
                         </td>
                         <td className="px-6 py-4 text-sm text-body-secondary">{job.location}</td>
-                        <td className="px-6 py-4 text-sm text-body-secondary">{job.applicationCount ?? 0}</td>
+                        <td className="px-6 py-4 text-sm text-body-secondary text-center">{job.applicationCount ?? 0}</td>
                         <td className="px-6 py-4">
                           <StatusBadge status={job.status} size="md" />
                         </td>

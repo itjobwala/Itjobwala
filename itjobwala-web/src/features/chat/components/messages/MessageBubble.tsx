@@ -33,7 +33,7 @@ export default function MessageBubble({ message, isMine, isLast }: Props) {
               </span>
             ) : (
               /* Single grey tick — sent, not yet read */
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#474d6a" strokeWidth="2.5">
                 <path d="M20 6 9 17l-5-5" />
               </svg>
             )

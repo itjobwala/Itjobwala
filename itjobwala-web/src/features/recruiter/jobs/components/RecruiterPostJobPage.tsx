@@ -1,8 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { safeLocalStorageGetItem } from '@/src/lib/hydration-safe';
-import { decodeJwtPayload } from '@/src/lib/auth';
+import { useSession } from '@/src/features/auth/session';
 import { usePostJobWizard } from '../hooks/usePostJobWizard';
 import RecruiterJobForm from './PostJobPage/RecruiterJobForm';
 import PostJobLeftPanel from './PostJobPage/PostJobLeftPanel';
@@ -14,22 +12,12 @@ import JobBasicsStep from './PostJobPage/steps/JobBasicsStep';
 import JobDetailsStep from './PostJobPage/steps/JobDetailsStep';
 
 export default function RecruiterPostJobPage() {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const token = safeLocalStorageGetItem('recruiter_token');
-    const payload = token ? decodeJwtPayload(token) : null;
-    const valid = Boolean(
-      token && payload &&
-      payload.role?.toLowerCase() === 'recruiter' &&
-      !(payload.exp && Date.now() / 1000 >= payload.exp)
-    );
-    setIsLoggedIn(valid);
-  }, []);
+  const { isHydrated, isAuthenticated, isRecruiter } = useSession();
+  const isLoggedIn = isAuthenticated && isRecruiter;
 
   const wizard = usePostJobWizard();
 
-  if (isLoggedIn === null) return null;
+  if (!isHydrated) return null;
   if (isLoggedIn) return <RecruiterJobForm />;
   if (wizard.postedJobId) return <PostJobSuccessScreen jobId={wizard.postedJobId} />;
 

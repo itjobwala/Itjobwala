@@ -13,21 +13,30 @@ interface Props {
 }
 
 const inputCls = (hasError: boolean) =>
-  `w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-subtle ${hasError ? 'border-danger' : 'border-token'}`;
+  `w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-muted ${hasError ? 'border-danger' : 'border-token'}`;
 
 export default function JobFieldsBasic({ form, errors, setField }: Props) {
   return (
     <>
-      <div>
-        <label className="block text-sm font-bold text-body-secondary mb-1.5">Job title <span style={{ color: PRIMARY }}>*</span></label>
-        <input value={form.title} onChange={e => setField('title', e.target.value)}
-          placeholder="e.g. Senior React Developer" className={inputCls(!!errors.title)} />
-        {errors.title && <p className="text-xs text-danger mt-1">{errors.title}</p>}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-bold text-body-secondary mb-1.5">Job title <span style={{ color: PRIMARY }}>*</span></label>
+          <input value={form.title} onChange={e => setField('title', e.target.value)}
+            placeholder="e.g. Senior QA Automation Engineer" className={inputCls(!!errors.title)} />
+          {errors.title && <p className="text-xs text-danger mt-1">{errors.title}</p>}
+        </div>
+
+        <div>
+          <label className="block text-sm font-bold text-body-secondary mb-1.5">Location <span style={{ color: PRIMARY }}>*</span></label>
+          <input value={form.location} onChange={e => setField('location', e.target.value)}
+            placeholder="e.g. Bengaluru / Remote" className={inputCls(!!errors.location)} />
+          {errors.location && <p className="text-xs text-danger mt-1">{errors.location}</p>}
+        </div>
       </div>
 
       <div>
         <label className="block text-sm font-bold text-body-secondary mb-1.5">Job description <span style={{ color: PRIMARY }}>*</span></label>
-        <textarea value={form.description} onChange={e => setField('description', e.target.value)} rows={6}
+        <textarea value={form.description} onChange={e => setField('description', e.target.value)} rows={5}
           placeholder="Describe the role, responsibilities, and requirements (min. 50 characters)..."
           className={`${inputCls(!!errors.description)} resize-none`} />
         <div className="flex items-center justify-between mt-1">
@@ -36,36 +45,43 @@ export default function JobFieldsBasic({ form, errors, setField }: Props) {
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-bold text-body-secondary mb-1.5">Location <span style={{ color: PRIMARY }}>*</span></label>
-        <input value={form.location} onChange={e => setField('location', e.target.value)}
-          placeholder="e.g. Bengaluru / Remote" className={inputCls(!!errors.location)} />
-        {errors.location && <p className="text-xs text-danger mt-1">{errors.location}</p>}
-      </div>
-
-      <ExperienceSlider minVal={form.experienceMin} maxVal={form.experienceMax}
-        onChange={(min, max) => { setField('experienceMin', min); setField('experienceMax', max); }} />
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
+      <div className="flex flex-col lg:flex-row lg:items-start gap-4">
+        <div className="lg:w-[180px] shrink-0">
           <label className="block text-sm font-bold text-body-secondary mb-1.5">Job type</label>
-          <select value={form.jobType} onChange={e => setField('jobType', e.target.value)}
-            className="w-full rounded-xl border border-token px-3.5 py-2.5 text-sm font-medium text-heading outline-none bg-surface">
-            {JOB_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-          </select>
+          <div className="relative">
+            <select value={form.jobType} onChange={e => setField('jobType', e.target.value)}
+              className="w-full appearance-none rounded-xl border border-token pl-3.5 pr-9 py-2.5 text-sm font-medium text-heading outline-none bg-surface">
+              {JOB_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-subtle">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
         </div>
-        <div>
+        <div className="lg:w-[180px] shrink-0">
           <label className="block text-sm font-bold text-body-secondary mb-1.5">Work mode</label>
-          <select value={form.workMode} onChange={e => setField('workMode', e.target.value)}
-            className="w-full rounded-xl border border-token px-3.5 py-2.5 text-sm font-medium text-heading outline-none bg-surface">
-            {WORK_MODES.map(m => <option key={m} value={m}>{m}</option>)}
-          </select>
+          <div className="relative">
+            <select value={form.workMode} onChange={e => setField('workMode', e.target.value)}
+              className="w-full appearance-none rounded-xl border border-token pl-3.5 pr-9 py-2.5 text-sm font-medium text-heading outline-none bg-surface">
+              {WORK_MODES.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-subtle">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
+        </div>
+        <div className="flex-1 min-w-0">
+          <ExperienceSlider minVal={form.experienceMin} maxVal={form.experienceMax}
+            onChange={(min, max) => { setField('experienceMin', min); setField('experienceMax', max); }} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <SalaryRangeSlider minLpa={form.salaryMinLpa} maxLpa={form.salaryMaxLpa}
+            minAllowed={1}
+            onChange={(min, max) => { setField('salaryMinLpa', min); setField('salaryMaxLpa', max); }} />
         </div>
       </div>
-
-      <SalaryRangeSlider minLpa={form.salaryMinLpa} maxLpa={form.salaryMaxLpa}
-        minAllowed={1}
-        onChange={(min, max) => { setField('salaryMinLpa', min); setField('salaryMaxLpa', max); }} />
     </>
   );
 }

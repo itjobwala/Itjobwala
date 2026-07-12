@@ -108,8 +108,9 @@ export default function RecruiterJobForm() {
 
   return (
     <RecruiterShell>
-      <div className="max-w-[680px] mx-auto px-5 py-10 sm:py-14">
-        <div className="mb-8">
+      <form onSubmit={handleSubmit} className="flex flex-col min-h-full bg-surface">
+        {/* Header */}
+        <div className="px-6 sm:px-10 pt-8 pb-6 border-b border-token">
           <button type="button" onClick={() => router.back()}
             className="flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-body transition-colors mb-4">
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -117,47 +118,58 @@ export default function RecruiterJobForm() {
             </svg>
             Back
           </button>
-          <h1 className="font-extrabold text-heading text-2xl sm:text-4xl mb-1" style={{ letterSpacing: -0.8 }}>
+          <h1 className="font-extrabold text-heading text-2xl sm:text-3xl mb-1" style={{ letterSpacing: -0.8 }}>
             Post a new job
           </h1>
           <p className="text-sm text-muted">Fill in the details below. You can edit the job after posting.</p>
         </div>
 
-        <form onSubmit={handleSubmit}
-          className="bg-surface rounded-2xl border border-token p-6 sm:p-8 flex flex-col gap-5"
-          style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
-          <JobFieldsBasic form={form} errors={errors} setField={set} />
-          <JobFieldsDetail
-            form={form} errors={errors} setField={set}
-            skillInput={skillInput} setSkillInput={setSkillInput}
-            skillError={skillError} setSkillError={setSkillError}
-            skillSuggestions={skillSuggestions}
-            addSkill={addSkill} removeSkill={removeSkill}
-          />
+        {/* Body */}
+        <div className="flex-1 px-6 sm:px-10 py-8 flex flex-col gap-8">
+          <section>
+            <p className="text-caption font-bold text-subtle uppercase tracking-wider mb-5">Job details</p>
+            <div className="flex flex-col gap-5">
+              <JobFieldsBasic form={form} errors={errors} setField={set} />
+            </div>
+          </section>
+
+          <div className="border-t border-token" />
+
+          <section>
+            <p className="text-caption font-bold text-subtle uppercase tracking-wider mb-5">Additional details</p>
+            <div className="flex flex-col gap-5">
+              <JobFieldsDetail
+                form={form} errors={errors} setField={set}
+                skillInput={skillInput} setSkillInput={setSkillInput}
+                skillError={skillError} setSkillError={setSkillError}
+                skillSuggestions={skillSuggestions}
+                addSkill={addSkill} removeSkill={removeSkill}
+              />
+            </div>
+          </section>
 
           {error && (
             <div className="rounded-xl px-4 py-3 text-sm font-medium text-danger bg-danger-bg border border-danger">
               {error}
             </div>
           )}
+        </div>
 
-          <div>
-            <Button
-              type="submit"
-              variant="primary"
-              fullWidth
-              rounded="full"
-              loading={loading}
-              className="py-3.5"
-            >
+        {/* Footer action bar */}
+        <div className="sticky bottom-0 bg-surface border-t border-token px-6 sm:px-10 py-4 flex items-center justify-between gap-4 flex-wrap">
+          <p className="text-caption text-subtle">
+            Saved as draft — you can review and publish from the next screen.
+          </p>
+          <div className="flex items-center gap-3 shrink-0">
+            <Button type="button" variant="outline" onClick={() => router.back()}>
+              Close
+            </Button>
+            <Button type="submit" variant="primary" loading={loading}>
               Save as Draft →
             </Button>
-            <p className="text-center text-caption text-subtle mt-2">
-              Saved as draft — you can review and publish from the next screen.
-            </p>
           </div>
-        </form>
-      </div>
+        </div>
+      </form>
     </RecruiterShell>
   );
 }

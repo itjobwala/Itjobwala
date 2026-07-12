@@ -15,11 +15,11 @@ function ScoreBadge({ score }: { score: number }) {
 }
 
 export default function TopCandidatesCard() {
-  const { data, isLoading } = useTopCandidatesQuery(5);
+  const { data, isLoading } = useTopCandidatesQuery(3);
   const candidates = data?.candidates ?? [];
 
   return (
-    <Card padding="none" className="shadow-sm">
+    <Card padding="none" className="shadow-sm h-[350px] flex flex-col overflow-hidden">
       <div className="px-5 py-4 border-b border-token flex items-center justify-between">
         <div>
           <h2 className="text-base font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>

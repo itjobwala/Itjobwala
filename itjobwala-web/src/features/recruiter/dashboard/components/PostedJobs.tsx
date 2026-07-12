@@ -20,7 +20,7 @@ export default function PostedJobs() {
 
   return (
     <Card padding="none" className="shadow-sm">
-      <div className="px-5 py-4 border-b border-token flex items-center justify-between">
+      <div className="px-5 py-4 border-b border-token flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h2 className="text-base font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
             Posted Jobs
@@ -47,8 +47,21 @@ export default function PostedJobs() {
       ) : jobs.length === 0 ? (
         <div className="px-5 py-8 text-center text-sm text-subtle">No active jobs posted yet.</div>
       ) : (
-        <div className="divide-y divide-gray-50">
-          {jobs.map(job => <JobStatusCard key={job.id} job={job} />)}
+        <div className="overflow-x-auto">
+          <table className="w-full table-fixed min-w-[760px]">
+            <thead className="bg-surface-alt/60">
+              <tr>
+                <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3 w-[30%]">Job</th>
+                <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3 w-[16%]">Location</th>
+                <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3 w-[15%]">Posted</th>
+                <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3 w-[15%]">Applicants</th>
+                <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3 w-[24%]">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {jobs.map(job => <JobStatusCard key={job.id} job={job} />)}
+            </tbody>
+          </table>
         </div>
       )}
 

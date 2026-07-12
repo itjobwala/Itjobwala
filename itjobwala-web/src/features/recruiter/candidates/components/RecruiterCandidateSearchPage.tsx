@@ -174,6 +174,7 @@ export default function RecruiterCandidateSearchPage() {
   const [activeCandidateId, setActiveCandidateId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds]   = useState<Set<string>>(new Set());
   const [showBulkModal, setShowBulkModal] = useState(false);
+  const [showFilters, setShowFilters]   = useState(false);
 
   function toggleSelect(id: string) {
     setSelectedIds(prev => { const next = new Set(prev); if (next.has(id)) next.delete(id); else next.add(id); return next; });
@@ -224,10 +225,77 @@ export default function RecruiterCandidateSearchPage() {
   return (
     <RecruiterShell>
     <div className="min-h-screen bg-surface-alt">
-      <div className="max-w-7xl mx-auto px-4 py-7 flex flex-col lg:flex-row gap-6">
+      <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-7">
+
+        {/* Title + toolbar — always at top */}
+        <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
+                Find Candidates
+              </h1>
+              <a href="/recruiter/talent-pool" className="text-xs font-semibold text-primary hover:underline">
+                Talent Pool →
+              </a>
+            </div>
+            {pagination && (
+              <p className="text-sm text-subtle mt-0.5">
+                {pagination.total.toLocaleString()} candidate{pagination.total !== 1 ? 's' : ''} found
+              </p>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            {[...selectedIds].length > 0 && (
+              <button
+                onClick={() => setShowBulkModal(true)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-primary text-white hover:brightness-110 transition-all"
+              >
+                Message {[...selectedIds].length}
+              </button>
+            )}
+            <div className="relative shrink-0">
+              <select
+                value={sort}
+                onChange={e => { setSort(e.target.value as CandidateSearchFilters['sort']); resetPage(); }}
+                className="appearance-none text-sm border border-token rounded-xl pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-surface"
+              >
+                {SORT_OPTIONS.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile filter toggle */}
+        <button
+          onClick={() => setShowFilters(v => !v)}
+          className="lg:hidden mb-4 flex items-center justify-between w-full gap-2 text-sm font-semibold text-body-secondary bg-surface border border-token rounded-xl px-4 py-2.5 hover:border-primary/40 transition-colors"
+        >
+          <span className="flex items-center gap-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
+            </svg>
+            Filters
+            {hasFilters && (
+              <span className="bg-primary text-white text-[11px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {[q, skills, location, expMin, expMax, qaSpec, qaSeniority, minQaScore, openToWork ? '1' : ''].filter(Boolean).length}
+              </span>
+            )}
+          </span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={`transition-transform ${showFilters ? 'rotate-180' : ''}`}>
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </button>
+
+      <div className="flex flex-col lg:flex-row gap-6">
 
         {/* Filter sidebar */}
-        <aside className="w-full lg:w-64 shrink-0">
+        <aside className={`${showFilters ? 'block' : 'hidden'} lg:block w-full lg:w-64 shrink-0`}>
           <div className="bg-surface rounded-2xl border border-token shadow-sm p-5 space-y-5 lg:sticky lg:top-6">
             <div className="flex items-center justify-between">
               <p className="text-sm font-extrabold text-heading">Filters</p>
@@ -317,52 +385,13 @@ export default function RecruiterCandidateSearchPage() {
 
         {/* Results */}
         <div className="flex-1 min-w-0">
-          {/* Toolbar */}
-          <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-xl font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
-                  Find Candidates
-                </h1>
-                <a href="/recruiter/talent-pool" className="text-xs font-semibold text-primary hover:underline">
-                  Talent Pool →
-                </a>
-              </div>
-              {pagination && (
-                <p className="text-sm text-subtle mt-0.5">
-                  {pagination.total.toLocaleString()} candidate{pagination.total !== 1 ? 's' : ''} found
-                </p>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2">
-              {[...selectedIds].length > 0 && (
-                <button
-                  onClick={() => setShowBulkModal(true)}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-primary text-white hover:brightness-110 transition-all"
-                >
-                  Message {[...selectedIds].length}
-                </button>
-              )}
-              <select
-                value={sort}
-                onChange={e => { setSort(e.target.value as CandidateSearchFilters['sort']); resetPage(); }}
-                className="text-sm border border-token rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 bg-surface"
-              >
-                {SORT_OPTIONS.map(o => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
           {/* Loading skeletons */}
           {isLoading && (
             <div className="space-y-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="bg-surface rounded-2xl border border-token p-5 animate-pulse">
                   <div className="flex gap-3">
-                    <div className="w-11 h-11 rounded-xl bg-surface-hover shrink-0" />
+                    <div className="w-9 h-9 rounded-full bg-surface-hover shrink-0" />
                     <div className="flex-1 space-y-2">
                       <div className="h-3.5 bg-surface-hover rounded-full w-1/3" />
                       <div className="h-3 bg-surface-hover rounded-full w-1/2" />
@@ -387,18 +416,32 @@ export default function RecruiterCandidateSearchPage() {
             <EmptyState hasFilters={hasFilters} />
           )}
 
-          {/* Cards */}
+          {/* Table */}
           {!isLoading && !isError && candidates.length > 0 && (
-            <div className="space-y-3">
-              {candidates.map(c => (
-                <CandidateResultCard
-                  key={c.id}
-                  candidate={c}
-                  onView={setActiveCandidateId}
-                  selected={selectedIds.has(c.id)}
-                  onSelect={toggleSelect}
-                />
-              ))}
+            <div className="bg-surface rounded-2xl border border-token shadow-sm overflow-x-auto">
+              <table className="w-full table-fixed min-w-[640px]">
+                <thead className="bg-surface-alt/60">
+                  <tr>
+                    <th className="px-2 py-3 w-[5%]" />
+                    <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-3 py-3 w-[30%]">Candidate</th>
+                    <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[10%]">Level</th>
+                    <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[16%]">Skill</th>
+                    <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[11%]">Location</th>
+                    <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-3 py-3 w-[28%]">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {candidates.map(c => (
+                    <CandidateResultCard
+                      key={c.id}
+                      candidate={c}
+                      onView={setActiveCandidateId}
+                      selected={selectedIds.has(c.id)}
+                      onSelect={toggleSelect}
+                    />
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
 
@@ -427,6 +470,7 @@ export default function RecruiterCandidateSearchPage() {
             </div>
           )}
         </div>
+      </div>
       </div>
 
       {showBulkModal && (

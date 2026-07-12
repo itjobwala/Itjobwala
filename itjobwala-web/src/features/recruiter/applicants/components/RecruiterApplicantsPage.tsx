@@ -83,44 +83,53 @@ function ActionButtons({ applicant, loadingKey, onShortlist, onInterview, onHire
   const anyLoading     = isShortlisting || isInterviewing || isHiring || isRejecting;
 
   const finalStatuses = new Set(['hired', 'rejected', 'withdrawn', 'selected']);
-  if (finalStatuses.has(status)) return null;
 
   return (
-    <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-token">
-      {status === 'applied' && (
-        <button
-          onClick={() => onShortlist(id)}
-          disabled={anyLoading}
-          className="px-3 py-1.5 text-caption font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors"
-        >
-          {isShortlisting ? 'Loading…' : 'Shortlist'}
-        </button>
-      )}
-      {status === 'shortlisted' && (
-        <button
-          onClick={() => onInterview(id)}
-          disabled={anyLoading}
-          className="px-3 py-1.5 text-caption font-semibold bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 transition-colors"
-        >
-          {isInterviewing ? 'Loading…' : 'Schedule Interview'}
-        </button>
-      )}
-      {status === 'interview' && (
-        <button
-          onClick={() => onHire(id)}
-          disabled={anyLoading}
-          className="px-3 py-1.5 text-caption font-semibold bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors"
-        >
-          {isHiring ? 'Loading…' : 'Hire'}
-        </button>
-      )}
-      <button
-        onClick={() => onReject(id)}
-        disabled={anyLoading}
-        className="px-3 py-1.5 text-caption font-semibold bg-surface text-danger border border-danger rounded-lg hover:bg-danger-bg disabled:opacity-50 transition-colors"
+    <div className="flex items-center justify-start gap-1.5 flex-wrap">
+      <Link
+        href={`/recruiter/applicants/${id}`}
+        className="w-10 shrink-0 text-caption font-bold text-primary hover:underline whitespace-nowrap"
       >
-        {isRejecting ? 'Loading…' : 'Reject'}
-      </button>
+        View
+      </Link>
+      {!finalStatuses.has(status) && (
+        <>
+          {status === 'applied' && (
+            <button
+              onClick={() => onShortlist(id)}
+              disabled={anyLoading}
+              className="w-[92px] shrink-0 px-2 py-1.5 text-caption font-semibold bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors whitespace-nowrap text-center"
+            >
+              {isShortlisting ? 'Loading…' : 'Shortlist'}
+            </button>
+          )}
+          {status === 'shortlisted' && (
+            <button
+              onClick={() => onInterview(id)}
+              disabled={anyLoading}
+              className="w-[92px] shrink-0 px-2 py-1.5 text-caption font-semibold bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-50 transition-colors whitespace-nowrap text-center"
+            >
+              {isInterviewing ? 'Loading…' : 'Interview'}
+            </button>
+          )}
+          {status === 'interview' && (
+            <button
+              onClick={() => onHire(id)}
+              disabled={anyLoading}
+              className="w-[92px] shrink-0 px-2 py-1.5 text-caption font-semibold bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors whitespace-nowrap text-center"
+            >
+              {isHiring ? 'Loading…' : 'Hire'}
+            </button>
+          )}
+          <button
+            onClick={() => onReject(id)}
+            disabled={anyLoading}
+            className="w-[76px] shrink-0 px-2 py-1.5 text-caption font-semibold bg-surface text-danger border border-danger rounded-lg hover:bg-danger-bg disabled:opacity-50 transition-colors whitespace-nowrap text-center"
+          >
+            {isRejecting ? 'Loading…' : 'Reject'}
+          </button>
+        </>
+      )}
     </div>
   );
 }
@@ -364,13 +373,16 @@ export default function RecruiterApplicantsPage() {
 
         {/* ── Filter + Sort bar ──────────────────────────────────────────── */}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          {/* Mobile-only section label */}
+          <p className="w-full sm:hidden text-caption font-semibold text-muted mb-1">Filters</p>
+
           {/* Status filter pills */}
-          <div className="flex flex-wrap gap-2">
+          <div className="w-full sm:w-auto grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
             {STATUS_FILTERS.map(({ value, label }) => (
               <button
                 key={value}
                 onClick={() => { setFilterStatus(value); clearSelection(); }}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                className={`px-4 py-2 rounded-lg font-medium text-sm text-center transition-colors ${
                   filterStatus === value
                     ? 'bg-primary text-white'
                     : 'bg-surface text-body-secondary border border-token hover:border-primary'
@@ -398,15 +410,20 @@ export default function RecruiterApplicantsPage() {
           {/* Sort controls */}
           <div className="flex items-center gap-2 shrink-0">
             <span className="text-caption text-subtle font-medium">Sort:</span>
-            <select
-              value={sortBy}
-              onChange={e => { setSortBy(e.target.value); clearSelection(); }}
-              className="text-sm border border-token rounded-lg px-3 py-1.5 bg-surface text-body-secondary focus:outline-none focus:border-primary transition-colors"
-            >
-              {SORT_OPTIONS.map(o => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
+            <div className="relative shrink-0">
+              <select
+                value={sortBy}
+                onChange={e => { setSortBy(e.target.value); clearSelection(); }}
+                className="appearance-none text-sm border border-token rounded-lg pl-3 pr-8 py-1.5 bg-surface text-body-secondary focus:outline-none focus:border-primary transition-colors"
+              >
+                {SORT_OPTIONS.map(o => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </div>
             <button
               onClick={() => setSortOrder(o => o === 'desc' ? 'asc' : 'desc')}
               title={sortOrder === 'desc' ? 'Descending' : 'Ascending'}
@@ -427,24 +444,24 @@ export default function RecruiterApplicantsPage() {
 
         {/* Score distribution banner */}
         {!isLoading && data?.score_distribution && data.score_distribution.total > 0 && (
-          <div className="mb-4 flex flex-wrap items-center gap-4 px-4 py-3 bg-surface border border-token rounded-xl">
-            <span className="text-caption font-semibold text-muted">Score pool:</span>
-            <span className="text-caption font-bold" style={{ color: '#10b981' }}>
+          <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3 bg-surface border border-token rounded-xl">
+            <span className="text-caption font-semibold text-muted shrink-0">Score pool:</span>
+            <span className="text-caption font-bold shrink-0" style={{ color: '#10b981' }}>
               {data.score_distribution.high_count} high ≥70
             </span>
-            <span className="text-caption font-bold" style={{ color: '#f59e0b' }}>
+            <span className="text-caption font-bold shrink-0" style={{ color: '#f59e0b' }}>
               {data.score_distribution.mid_count} mid 50–69
             </span>
-            <span className="text-caption font-bold" style={{ color: '#ef4444' }}>
+            <span className="text-caption font-bold shrink-0" style={{ color: '#ef4444' }}>
               {data.score_distribution.low_count} low &lt;50
             </span>
             {data.score_distribution.unscored_count > 0 && (
-              <span className="text-caption text-muted">{data.score_distribution.unscored_count} unscored</span>
+              <span className="text-caption text-muted shrink-0">{data.score_distribution.unscored_count} unscored</span>
             )}
             {data.score_distribution.low_count > 0 && (
               <button
                 onClick={() => { setScoreThreshold(50); setShowScoreModal(true); }}
-                className="ml-auto text-caption font-bold hover:underline"
+                className="w-full sm:w-auto sm:ml-auto text-caption font-bold hover:underline text-left sm:text-right"
                 style={{ color: '#ef4444' }}
               >
                 Bulk reject below 50
@@ -467,168 +484,84 @@ export default function RecruiterApplicantsPage() {
         ) : !data || applicants.length === 0 ? (
           <EmptyState emoji="📨" title="No applicants yet" description="Applications for your jobs will appear here" />
         ) : (
-          <>
-            {/* ── Select-all header ───────────────────────────────────────── */}
-            {selectableIds.length > 0 && (
-              <div className="flex items-center gap-3 mb-3 px-1">
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={allSelected}
-                    onChange={toggleAll}
-                    className="w-4 h-4 rounded border-token accent-primary cursor-pointer"
-                  />
-                  <span className="text-caption text-muted font-medium">
-                    {allSelected ? 'Deselect all' : `Select all (${selectableIds.length})`}
-                  </span>
-                </label>
-                {someSelected && (
-                  <span className="text-caption text-primary font-semibold">
-                    {selected.size} selected
-                  </span>
-                )}
-              </div>
-            )}
-
-            {/* ── Applicant list ──────────────────────────────────────────── */}
-            <div className="space-y-3">
-              {applicants.map((applicant) => {
-                const isSelectable = rejectableStatuses.has(applicant.status);
-                const isChecked    = selected.has(applicant.id);
-                return (
-                  <div
-                    key={applicant.id}
-                    className={`bg-surface rounded-2xl border transition-colors p-5 hover:border-token-mid ${
-                      isChecked ? 'border-primary/40 bg-primary/[0.01]' : 'border-token'
-                    }`}
-                  >
-                    <div className="flex items-start gap-4">
-                      {/* Checkbox */}
-                      <div className="pt-0.5 shrink-0">
-                        {isSelectable ? (
+          <div className="bg-surface rounded-2xl border border-token shadow-sm overflow-x-auto">
+            <table className="w-full table-fixed">
+              <thead className="bg-surface-alt/60">
+                <tr>
+                  <th className="text-center px-1.5 py-3 w-[32px]">
+                    {selectableIds.length > 0 && (
+                      <input
+                        type="checkbox"
+                        checked={allSelected}
+                        onChange={toggleAll}
+                        className="w-4 h-4 rounded border-token accent-primary cursor-pointer"
+                        aria-label="Select all"
+                      />
+                    )}
+                  </th>
+                  <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-3 py-3 w-[270px]">Candidate</th>
+                  <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-3 py-3 w-[160px]">Applied For</th>
+                  <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[70px]">Exp.</th>
+                  <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[100px]">Score</th>
+                  <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[120px]">Status</th>
+                  <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[100px]">Applied</th>
+                  <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-3 py-3 w-[250px]">
+                    {someSelected ? `${selected.size} selected` : 'Actions'}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {applicants.map((applicant) => {
+                  const isSelectable = rejectableStatuses.has(applicant.status);
+                  const isChecked    = selected.has(applicant.id);
+                  return (
+                    <tr
+                      key={applicant.id}
+                      className={`border-b border-token last:border-0 hover:bg-surface-alt transition-colors ${isChecked ? 'bg-primary/5' : ''}`}
+                    >
+                      <td className="text-center px-1.5 py-3.5">
+                        {isSelectable && (
                           <input
                             type="checkbox"
                             checked={isChecked}
                             onChange={() => toggleOne(applicant.id)}
                             className="w-4 h-4 rounded border-token accent-primary cursor-pointer"
+                            aria-label={`Select ${applicant.candidateName}`}
                           />
-                        ) : (
-                          <div className="w-4 h-4" />
                         )}
-                      </div>
-
-                      <Avatar name={applicant.candidateName} photo={applicant.profilePhoto} size="lg" />
-
-                      <div className="flex-1 min-w-0">
-                        {/* Top row: name + badges + view link */}
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
+                      </td>
+                      <td className="px-3 py-3.5 w-[270px]">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <Avatar name={applicant.candidateName} photo={applicant.profilePhoto} size="sm" />
+                          <div className="min-w-0">
                             <Link
                               href={`/recruiter/applicants/${applicant.id}`}
-                              className="text-base font-semibold text-heading hover:text-primary transition-colors"
+                              className="text-sm font-bold text-heading hover:text-primary transition-colors truncate block"
                             >
                               {applicant.candidateName}
                             </Link>
-                            {applicant.profile?.title && (
-                              <p className="text-caption text-muted mt-0.5">{applicant.profile.title}</p>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-2 flex-wrap mt-1 sm:mt-0 sm:justify-end sm:shrink-0">
-                            <QAScoreBadge score={applicant.qaMatchScore} />
-                            <StatusBadge status={applicant.status} />
-                            <Link
-                              href={`/recruiter/applicants/${applicant.id}`}
-                              className="text-caption font-semibold text-primary hover:underline"
-                            >
-                              View
-                            </Link>
+                            <p className="text-caption text-subtle truncate">{applicant.candidateEmail}</p>
                           </div>
                         </div>
-
-                        {/* Meta row */}
-                        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-caption text-muted">
-                          <span className="truncate max-w-[180px] sm:max-w-none">{applicant.candidateEmail}</span>
-                          <span>Applied for: <span className="font-medium text-body">{applicant.jobTitle || 'Unknown Position'}</span></span>
-                          {applicant.experience !== undefined && applicant.experience > 0 && (
-                            <span>{applicant.experience} yr{applicant.experience !== 1 ? 's' : ''} experience</span>
-                          )}
-                          <span className="text-subtle">{formatDate(applicant.appliedDate)}</span>
-                        </div>
-
-                        {/* Skills */}
-                        {applicant.skills && applicant.skills.length > 0 && (
-                          <div className="mt-2.5 flex flex-wrap gap-1.5">
-                            {applicant.skills.slice(0, 5).map((skill) => (
-                              <span key={skill} className="px-2 py-0.5 bg-surface-hover text-body-secondary text-micro font-medium rounded-md">
-                                {skill}
-                              </span>
-                            ))}
-                            {applicant.skills.length > 5 && (
-                              <span className="px-2 py-0.5 text-subtle text-micro">+{applicant.skills.length - 5} more</span>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Risk flags */}
-                        {applicant.riskFlags && applicant.riskFlags.length > 0 && (
-                          <div className="mt-1.5 flex flex-wrap gap-1">
-                            {applicant.riskFlags.slice(0, 2).map(flag => (
-                              <span
-                                key={flag.flag}
-                                className="text-[10px] font-bold px-1.5 py-0.5 rounded-md capitalize"
-                                style={{ background: 'rgba(239,68,68,0.08)', color: '#f87171', border: '1px solid rgba(239,68,68,0.15)' }}
-                              >
-                                ⚠ {flag.flag.replace(/_/g, ' ')}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Skill evidence: proven + missing */}
-                        {(applicant.skillEvidence?.some(e => e.evidence_level === 'strong' || e.evidence_level === 'very_strong') ||
-                          (applicant.missingSkills && applicant.missingSkills.length > 0)) && (
-                          <div className="mt-1.5 flex flex-wrap gap-1">
-                            {applicant.skillEvidence
-                              ?.filter(e => e.evidence_level === 'strong' || e.evidence_level === 'very_strong')
-                              .slice(0, 3)
-                              .map(e => (
-                                <span
-                                  key={e.skill}
-                                  className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md"
-                                  style={{ background: 'rgba(16,185,129,0.1)', color: '#6ee7b7', border: '1px solid rgba(16,185,129,0.2)' }}
-                                >
-                                  ✓ {e.skill}
-                                </span>
-                              ))}
-                            {applicant.missingSkills?.slice(0, 2).map(skill => (
-                              <span
-                                key={skill}
-                                className="text-[10px] font-semibold px-1.5 py-0.5 rounded-md"
-                                style={{ background: 'rgba(239,68,68,0.06)', color: '#f87171', border: '1px solid rgba(239,68,68,0.12)' }}
-                              >
-                                − {skill}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Resume link */}
-                        {applicant.resume && (
-                          <a
-                            href={applicant.resume}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 mt-2 text-caption text-primary font-medium hover:underline"
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                              <polyline points="14 2 14 8 20 8" />
-                            </svg>
-                            View Resume
-                          </a>
-                        )}
-
-                        {/* Action buttons */}
+                      </td>
+                      <td className="px-3 py-3.5 text-sm text-body-secondary truncate w-[160px]">
+                        {applicant.jobTitle || 'Unknown Position'}
+                      </td>
+                      <td className="px-2 py-3.5 text-sm text-body-secondary text-center whitespace-nowrap w-[70px]">
+                        {applicant.experience !== undefined && applicant.experience > 0
+                          ? `${applicant.experience} yr${applicant.experience !== 1 ? 's' : ''}`
+                          : '—'}
+                      </td>
+                      <td className="px-2 py-3.5 text-center w-[100px]">
+                        <QAScoreBadge score={applicant.qaMatchScore} />
+                      </td>
+                      <td className="px-2 py-3.5 text-center w-[120px]">
+                        <StatusBadge status={applicant.status} />
+                      </td>
+                      <td className="px-2 py-3.5 text-sm text-body-secondary whitespace-nowrap w-[100px]">
+                        {formatDate(applicant.appliedDate)}
+                      </td>
+                      <td className="px-3 py-3.5 w-[250px]">
                         <ActionButtons
                           applicant={applicant}
                           loadingKey={loadingKey}
@@ -637,13 +570,13 @@ export default function RecruiterApplicantsPage() {
                           onHire={handleHire}
                           onReject={handleReject}
                         />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

@@ -10,6 +10,7 @@ import { searchCandidates, getCandidateProfile } from '@/features/recruiter/cand
 import type { CandidateSearchFilters } from '@/features/recruiter/candidates';
 import { getTalentPool, saveCandidate, removeFromPool, bulkMessageCandidates } from '@/features/recruiter/candidates/services/talentPool.api';
 import type { SaveCandidateBody } from '@/features/recruiter/candidates/services/talentPool.api';
+import { chatKeys } from '@/features/chat';
 import type {
   UpdateCompanyProfileRequest,
   CreateJobPostRequest,
@@ -403,8 +404,17 @@ export function useRemoveFromPoolMutation() {
 }
 
 export function useBulkMessageMutation() {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (body: { candidate_ids: string[]; message: string }) =>
       bulkMessageCandidates(body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: recruiterKeys.stats() });
+      qc.invalidateQueries({ queryKey: recruiterKeys.dashboardStats() });
+      qc.invalidateQueries({ queryKey: recruiterKeys.notifications() });
+      qc.invalidateQueries({ queryKey: ['recruiter', 'talent-pool'] });
+      qc.invalidateQueries({ queryKey: ['recruiter', 'candidates'] });
+      qc.invalidateQueries({ queryKey: chatKeys.conversations() });
+    },
   });
 }

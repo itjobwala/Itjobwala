@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Button from '@/src/components/ui/Button';
 import StatusBadge from '@/src/components/ui/StatusBadge';
 
 export interface Job {
@@ -20,55 +19,44 @@ interface Props {
 
 export default function JobStatusCard({ job }: Props) {
   return (
-    <div className="px-5 py-4 hover:bg-surface-alt/40 transition-colors group">
-      <div className="flex items-start sm:items-center justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-2 mb-1">
-            <h3 className="text-base font-bold text-heading group-hover:text-primary transition-colors">
-              {job.title}
-            </h3>
-            <StatusBadge status={job.status} size="sm" showDot className="text-[10px]" />
-            <span className="text-[10px] font-semibold text-subtle bg-surface-hover px-2 py-0.5 rounded-full">
+    <tr className="border-b border-token last:border-0 hover:bg-surface-alt transition-colors group">
+      <td className="px-4 py-3.5 w-[30%]">
+        <div className="min-w-0">
+          <Link
+            href={`/recruiter/posted-jobs/${job.id}`}
+            className="text-sm font-bold text-heading hover:text-primary transition-colors truncate block"
+          >
+            {job.title}
+          </Link>
+          <div className="flex items-center gap-2 flex-wrap mt-1.5">
+            <StatusBadge status={job.status} size="sm" showDot className="text-[10px] shrink-0" />
+            <span className="text-[10px] font-semibold text-subtle bg-surface-hover px-2 py-0.5 rounded-full shrink-0">
               {job.type}
             </span>
           </div>
-          <div className="flex items-center gap-3 text-caption text-subtle">
-            <span className="flex items-center gap-1">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-              {job.location}
-            </span>
-            <span>·</span>
-            <span>{job.posted}</span>
-            <span>·</span>
-            <span className="font-semibold text-body">{job.applications} applicants</span>
-          </div>
         </div>
-
-        <div className="flex items-center gap-2 shrink-0">
+      </td>
+      <td className="px-4 py-3.5 text-sm text-body-secondary truncate overflow-hidden w-[16%]">{job.location}</td>
+      <td className="px-4 py-3.5 text-sm text-body-secondary whitespace-nowrap truncate overflow-hidden w-[15%]">{job.posted}</td>
+      <td className="px-4 py-3.5 text-sm text-body-secondary text-center whitespace-nowrap truncate overflow-hidden w-[15%]">
+        {job.applications} applicants
+      </td>
+      <td className="px-4 py-3.5 w-[24%]">
+        <div className="flex items-center justify-start gap-1.5">
           <Link
             href={`/recruiter/applicants?jobId=${job.id}`}
-            className="text-caption font-semibold text-primary border border-primary/25 bg-primary/5 px-3 py-1.5 rounded-lg hover:bg-primary/10 transition-colors hidden sm:block"
+            className="w-[86px] shrink-0 text-caption font-semibold text-primary border border-primary/25 bg-primary/5 px-2 py-1.5 rounded-lg hover:bg-primary/10 transition-colors text-center whitespace-nowrap"
           >
             Applicants
           </Link>
           <Link
             href={`/recruiter/posted-jobs/${job.id}/edit`}
-            className="text-caption font-semibold text-muted border border-token px-3 py-1.5 rounded-lg hover:bg-surface-alt transition-colors hidden sm:block"
+            className="w-[56px] shrink-0 text-caption font-semibold text-muted border border-token px-2 py-1.5 rounded-lg hover:bg-surface-alt transition-colors text-center whitespace-nowrap"
           >
             Edit
           </Link>
-          <Button variant="outline" size="sm" iconOnly aria-label="More options">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <circle cx="12" cy="5"  r="1" fill="currentColor" />
-              <circle cx="12" cy="12" r="1" fill="currentColor" />
-              <circle cx="12" cy="19" r="1" fill="currentColor" />
-            </svg>
-          </Button>
         </div>
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 }

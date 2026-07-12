@@ -1,11 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { useRecruiterNotificationsQuery } from '@/features/recruiter/hooks';
 import Card from '@/src/components/ui/Card';
 
-const PREVIEW = 5;
+const PREVIEW = 3;
 
 const TYPE_CONFIG: Record<string, { dotColor: string; icon: React.ReactNode }> = {
   application: {
@@ -76,9 +75,8 @@ function relativeTime(iso: string): string {
 }
 
 export default function ActivityFeed() {
-  const [showAll, setShowAll] = useState(false);
   const { data: notifications, isLoading } = useRecruiterNotificationsQuery(10);
-  const visible = showAll ? notifications : notifications?.slice(0, PREVIEW);
+  const visible = notifications?.slice(0, PREVIEW);
 
   return (
     <Card className="shadow-sm" overflow>
@@ -138,37 +136,13 @@ export default function ActivityFeed() {
       )}
 
       {notifications && notifications.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-token flex items-center justify-center gap-4">
-          {!showAll && notifications.length > PREVIEW ? (
-            <button
-              onClick={() => setShowAll(true)}
-              className="text-caption font-bold text-primary hover:text-primary/80 transition-colors"
-            >
-              View all activity ({notifications.length}) →
-            </button>
-          ) : showAll ? (
-            <>
-              <button
-                onClick={() => setShowAll(false)}
-                className="text-caption font-bold text-subtle hover:text-muted transition-colors"
-              >
-                Show less
-              </button>
-              <Link
-                href="/recruiter/activity"
-                className="text-caption font-bold text-primary hover:text-primary/80 transition-colors"
-              >
-                Open activity page →
-              </Link>
-            </>
-          ) : (
-            <Link
-              href="/recruiter/activity"
-              className="text-caption font-bold text-primary hover:text-primary/80 transition-colors"
-            >
-              View all activity →
-            </Link>
-          )}
+        <div className="mt-4 pt-4 border-t border-token flex items-center justify-center">
+          <Link
+            href="/recruiter/activity"
+            className="text-caption font-bold text-primary hover:text-primary/80 transition-colors"
+          >
+            View all activity ({notifications.length}) →
+          </Link>
         </div>
       )}
     </Card>

@@ -18,11 +18,11 @@ export default function PostJobStepBar({ current }: { current: number }) {
                 }}>
                 {done
                   ? <svg width="14" height="14" fill="none" stroke="#fff" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
-                  : <span className="text-xs font-bold" style={{ color: active ? PRIMARY : '#9ca3af' }}>{i + 1}</span>
+                  : <span className="text-xs font-bold" style={{ color: active ? PRIMARY : '#474d6a' }}>{i + 1}</span>
                 }
               </div>
               <span className="text-[11px] whitespace-nowrap"
-                style={{ fontWeight: active ? 700 : 500, color: active ? PRIMARY : done ? '#374151' : '#9ca3af' }}>
+                style={{ fontWeight: active ? 700 : 500, color: active ? PRIMARY : done ? '#374151' : '#474d6a' }}>
                 {s}
               </span>
             </div>

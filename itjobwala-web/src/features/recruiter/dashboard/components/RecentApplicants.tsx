@@ -36,7 +36,7 @@ export default function RecentApplicants() {
   }));
 
   return (
-    <Card padding="none" className="shadow-sm">
+    <Card padding="none" className="shadow-sm h-[350px] flex flex-col overflow-hidden">
       <div className="px-5 py-4 border-b border-token flex items-center justify-between">
         <div>
           <h2 className="text-base font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
@@ -56,7 +56,7 @@ export default function RecentApplicants() {
       ) : applicants.length === 0 ? (
         <div className="px-5 py-8 text-center text-sm text-subtle">No recent applicants.</div>
       ) : (
-        <ApplicantsTable applicants={applicants} />
+        <ApplicantsTable applicants={applicants.slice(0, 3)} />
       )}
     </Card>
   );

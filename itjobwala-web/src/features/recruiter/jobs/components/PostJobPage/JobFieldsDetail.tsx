@@ -18,7 +18,7 @@ interface Props {
 }
 
 const inputCls = (hasError: boolean) =>
-  `w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-subtle ${hasError ? 'border-danger' : 'border-token'}`;
+  `w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-muted ${hasError ? 'border-danger' : 'border-token'}`;
 
 export default function JobFieldsDetail({
   form, errors, setField,
@@ -27,14 +27,20 @@ export default function JobFieldsDetail({
 }: Props) {
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-bold text-body-secondary mb-1.5">Job level</label>
-          <select value={form.jobLevel} onChange={e => setField('jobLevel', e.target.value)}
-            className="w-full rounded-xl border border-token px-3.5 py-2.5 text-sm font-medium text-heading outline-none bg-surface">
-            <option value="">Select level</option>
-            {JOB_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-          </select>
+          <div className="relative">
+            <select value={form.jobLevel} onChange={e => setField('jobLevel', e.target.value)}
+              className="w-full appearance-none rounded-xl border border-token pl-3.5 pr-9 py-2.5 text-sm font-medium text-heading outline-none bg-surface">
+              <option value="">Select level</option>
+              {JOB_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
+            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-subtle">
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </div>
         </div>
         <div>
           <label className="block text-sm font-bold text-body-secondary mb-1.5">Vacancies</label>
@@ -57,7 +63,7 @@ export default function JobFieldsDetail({
           <input value={skillInput}
             onChange={e => { setSkillInput(e.target.value); setSkillError(''); }}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }}
-            placeholder="Type to search skills (e.g. React, Node.js)"
+            placeholder="Type to search skills (e.g. Selenium, Postman)"
             className={`flex-1 rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none ${skillError || errors.requiredSkills ? 'border-danger' : 'border-token'}`} />
           <button type="button" onClick={() => addSkill()}
             className="px-4 py-2.5 rounded-full text-sm font-bold text-white shrink-0"
@@ -88,42 +94,46 @@ export default function JobFieldsDetail({
         {errors.requiredSkills && <p className="text-xs text-danger mt-1">{errors.requiredSkills}</p>}
       </div>
 
-      <div>
-        <label className="block text-sm font-bold text-body-secondary mb-1.5">Responsibilities <span style={{ color: PRIMARY }}>*</span></label>
-        <textarea value={form.responsibilities} onChange={e => setField('responsibilities', e.target.value)} rows={5}
-          placeholder={"Build and maintain scalable APIs\nCollaborate with cross-functional teams\nWrite unit and integration tests"}
-          className={`${inputCls(!!errors.responsibilities)} resize-none`} />
-        <p className="text-micro text-subtle mt-1">One item per line. Each line becomes a bullet point.</p>
-        {errors.responsibilities && <p className="text-xs text-danger mt-1">{errors.responsibilities}</p>}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-bold text-body-secondary mb-1.5">Responsibilities <span style={{ color: PRIMARY }}>*</span></label>
+          <textarea value={form.responsibilities} onChange={e => setField('responsibilities', e.target.value)} rows={5}
+            placeholder={"Design and execute test cases for web and mobile releases\nAutomate regression suites using Selenium/Playwright\nLog, triage, and verify bug fixes in JIRA"}
+            className={`${inputCls(!!errors.responsibilities)} resize-none`} />
+          <p className="text-micro text-subtle mt-1">One item per line. Each line becomes a bullet point.</p>
+          {errors.responsibilities && <p className="text-xs text-danger mt-1">{errors.responsibilities}</p>}
+        </div>
+
+        <div>
+          <label className="block text-sm font-bold text-body-secondary mb-1.5">Requirements <span style={{ color: PRIMARY }}>*</span></label>
+          <textarea value={form.requirements} onChange={e => setField('requirements', e.target.value)} rows={5}
+            placeholder={"3+ years of experience in manual or automation testing\nStrong understanding of API testing tools like Postman or Rest Assured\nExperience with test management tools like JIRA or TestRail"}
+            className={`${inputCls(!!errors.requirements)} resize-none`} />
+          <p className="text-micro text-subtle mt-1">One item per line.</p>
+          {errors.requirements && <p className="text-xs text-danger mt-1">{errors.requirements}</p>}
+        </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-bold text-body-secondary mb-1.5">Requirements <span style={{ color: PRIMARY }}>*</span></label>
-        <textarea value={form.requirements} onChange={e => setField('requirements', e.target.value)} rows={5}
-          placeholder={"3+ years of experience with React\nStrong understanding of REST APIs\nExperience with PostgreSQL or similar"}
-          className={`${inputCls(!!errors.requirements)} resize-none`} />
-        <p className="text-micro text-subtle mt-1">One item per line.</p>
-        {errors.requirements && <p className="text-xs text-danger mt-1">{errors.requirements}</p>}
-      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-bold text-body-secondary mb-1.5">
+            Nice to have <span className="text-subtle font-normal text-micro">(optional)</span>
+          </label>
+          <textarea value={form.niceToHave} onChange={e => setField('niceToHave', e.target.value)} rows={3}
+            placeholder={"ISTQB certification\nExperience with CI/CD pipelines (Jenkins, GitHub Actions)"}
+            className="w-full rounded-xl border border-token px-3.5 py-2.5 text-sm font-medium text-heading outline-none placeholder:text-muted resize-none" />
+          <p className="text-micro text-subtle mt-1">One item per line.</p>
+        </div>
 
-      <div>
-        <label className="block text-sm font-bold text-body-secondary mb-1.5">
-          Nice to have <span className="text-subtle font-normal text-micro">(optional)</span>
-        </label>
-        <textarea value={form.niceToHave} onChange={e => setField('niceToHave', e.target.value)} rows={3}
-          placeholder={"Experience with Docker/Kubernetes\nFamiliarity with GraphQL"}
-          className="w-full rounded-xl border border-token px-3.5 py-2.5 text-sm font-medium text-heading outline-none placeholder:text-subtle resize-none" />
-        <p className="text-micro text-subtle mt-1">One item per line.</p>
-      </div>
-
-      <div>
-        <label className="block text-sm font-bold text-body-secondary mb-1.5">
-          Perks &amp; benefits <span className="text-subtle font-normal text-micro">(optional)</span>
-        </label>
-        <textarea value={form.benefits} onChange={e => setField('benefits', e.target.value)} rows={3}
-          placeholder={"Health insurance\nFlexible working hours\nAnnual learning budget"}
-          className="w-full rounded-xl border border-token px-3.5 py-2.5 text-sm font-medium text-heading outline-none placeholder:text-subtle resize-none" />
-        <p className="text-micro text-subtle mt-1">One item per line.</p>
+        <div>
+          <label className="block text-sm font-bold text-body-secondary mb-1.5">
+            Perks &amp; benefits <span className="text-subtle font-normal text-micro">(optional)</span>
+          </label>
+          <textarea value={form.benefits} onChange={e => setField('benefits', e.target.value)} rows={3}
+            placeholder={"Health insurance\nFlexible working hours\nAnnual learning budget"}
+            className="w-full rounded-xl border border-token px-3.5 py-2.5 text-sm font-medium text-heading outline-none placeholder:text-muted resize-none" />
+          <p className="text-micro text-subtle mt-1">One item per line.</p>
+        </div>
       </div>
     </>
   );

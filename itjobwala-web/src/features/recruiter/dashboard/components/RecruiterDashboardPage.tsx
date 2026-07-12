@@ -28,7 +28,7 @@ export default function RecruiterDashboardPage() {
               className="text-3xl sm:text-4xl font-extrabold text-heading leading-tight"
               style={{ letterSpacing: '-0.6px' }}
             >
-              Welcome back, {firstName} 👋
+              Welcome, {firstName} 👋
             </h1>
             <p className="text-base text-muted mt-1">
               {companyName} &middot; Here&apos;s what&apos;s happening today.
@@ -48,7 +48,7 @@ export default function RecruiterDashboardPage() {
         <DashboardStats />
 
         {/* Top candidates + Recent applicants side by side on large screens */}
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 items-start">
           <TopCandidatesCard />
           <RecentApplicants />
         </div>

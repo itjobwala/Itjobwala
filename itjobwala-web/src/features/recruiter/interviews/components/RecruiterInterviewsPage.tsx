@@ -110,7 +110,7 @@ export default function RecruiterInterviewsPage() {
     <RecruiterShell>
       {/* Page header */}
       <div className="bg-surface border-b border-token">
-        <div className="max-w-[1100px] mx-auto px-5 sm:px-8 py-6">
+        <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-6">
           <h1 className="text-3xl font-extrabold text-heading" style={{ letterSpacing: '-0.5px' }}>
             Interviews
           </h1>
@@ -120,7 +120,7 @@ export default function RecruiterInterviewsPage() {
         </div>
       </div>
 
-      <div className="max-w-[1100px] mx-auto px-5 sm:px-8 py-6 space-y-5">
+      <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-6 space-y-5">
 
         {/* Stats strip — intentional semantic colors */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -139,14 +139,14 @@ export default function RecruiterInterviewsPage() {
 
         {/* Filter tabs + search */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <div className="flex gap-1.5 flex-wrap">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-1.5">
             {TABS.map(tab => {
               const active = filter === tab.key;
               return (
                 <button
                   key={tab.key}
                   onClick={() => setFilter(tab.key)}
-                  className="px-3.5 py-1.5 rounded-lg text-caption font-bold whitespace-nowrap transition-all"
+                  className="px-3.5 py-1.5 rounded-lg text-caption font-bold text-center whitespace-nowrap transition-all"
                   style={{
                     background: active ? PRIMARY : 'var(--color-surface)',
                     color: active ? '#fff' : 'var(--color-muted)',
@@ -200,40 +200,72 @@ export default function RecruiterInterviewsPage() {
             className="py-16"
           />
         ) : (
-          <div className="space-y-3">
-            {filtered.map(interview => {
-              const mode = interview.interviewType ? MODE_CONFIG[interview.interviewType] : null;
-              const isPast = interview.status === 'past';
-              return (
-                <div
-                  key={interview.id}
-                  className="bg-surface rounded-2xl border border-token p-4 sm:p-5 hover:border-token-mid hover:shadow-sm transition-all"
-                >
-                  <div className="flex items-start gap-3.5">
-                    <Avatar name={interview.candidateName} photo={interview.candidatePhoto} size="md" />
-
-                    <div className="flex-1 min-w-0">
-                      {/* Top row: name + actions */}
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
+          <div className="bg-surface rounded-2xl border border-token shadow-sm overflow-x-auto">
+            <table className="w-full table-fixed">
+              <thead className="bg-surface-alt/60">
+                <tr>
+                  <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3 w-[330px]">Candidate</th>
+                  <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-3 py-3 w-[190px]">Job</th>
+                  <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[110px]">Status</th>
+                  <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-3 py-3 w-[155px]">Scheduled</th>
+                  <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[90px]">Mode</th>
+                  <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[100px]">Location</th>
+                  <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3 w-[150px]">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map(interview => {
+                  const mode = interview.interviewType ? MODE_CONFIG[interview.interviewType] : null;
+                  const isPast = interview.status === 'past';
+                  return (
+                    <tr key={interview.id} className="border-b border-token last:border-0 hover:bg-surface-alt transition-colors">
+                      <td className="px-4 py-3.5 w-[330px]">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <Avatar name={interview.candidateName} photo={interview.candidatePhoto} size="sm" />
+                          <div className="min-w-0">
                             <Link
                               href={`/recruiter/applicants/${interview.applicationId}`}
-                              className="text-base font-extrabold text-heading hover:text-primary transition-colors"
+                              className="text-sm font-bold text-heading hover:text-primary transition-colors truncate block"
                             >
                               {interview.candidateName}
                             </Link>
-                            <StatusBadge status={interview.status} showDot />
+                            <p className="text-caption text-subtle truncate">{interview.candidateEmail}</p>
                           </div>
-                          <p className="text-sm text-muted mt-0.5 truncate">{interview.jobTitle}</p>
-                          <p className="text-caption text-subtle truncate">{interview.candidateEmail}</p>
                         </div>
-
-                        <div className="flex items-center gap-2 shrink-0 mt-0.5 flex-wrap justify-end">
+                      </td>
+                      <td className="px-3 py-3.5 text-sm text-body-secondary truncate w-[190px]">{interview.jobTitle}</td>
+                      <td className="px-2 py-3.5 text-center w-[110px]">
+                        <StatusBadge status={interview.status} showDot />
+                      </td>
+                      <td className="px-3 py-3.5 w-[155px]">
+                        {interview.scheduledAt ? (
+                          <div className="text-caption text-muted">
+                            <span className="font-semibold">{formatDateTime(interview.scheduledAt)}</span>
+                            {interview.durationMinutes && (
+                              <span className="text-subtle"> · {interview.durationMinutes} min</span>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-caption text-amber-600 font-semibold whitespace-nowrap">No time set yet</span>
+                        )}
+                      </td>
+                      <td className="px-2 py-3.5 text-center w-[90px]">
+                        {mode ? (
+                          <div className="inline-flex items-center gap-1.5 text-caption text-muted whitespace-nowrap">
+                            <span className="text-subtle">{mode.icon}</span>
+                            <span>{mode.label}</span>
+                          </div>
+                        ) : (
+                          <span className="text-subtle">—</span>
+                        )}
+                      </td>
+                      <td className="px-2 py-3.5 text-sm text-body-secondary text-center truncate w-[100px]">{interview.location || '—'}</td>
+                      <td className="px-4 py-3.5 w-[150px]">
+                        <div className="flex items-center justify-center gap-1.5 flex-wrap">
                           {!isPast && (
                             <button
                               onClick={() => setSchedulingFor(interview)}
-                              className="px-3 py-1.5 text-caption font-bold rounded-lg transition-colors"
+                              className="w-[92px] shrink-0 px-2 py-1.5 text-caption font-bold rounded-lg transition-colors whitespace-nowrap text-center"
                               style={{
                                 border: `1.5px solid ${PRIMARY}`,
                                 color: PRIMARY,
@@ -248,7 +280,7 @@ export default function RecruiterInterviewsPage() {
                           {interview.scheduledAt && !isPast && (
                             <button
                               onClick={() => setCancelTarget(interview)}
-                              className="px-3 py-1.5 text-caption font-bold rounded-lg border border-danger text-danger hover:bg-danger-bg transition-colors"
+                              className="w-[70px] shrink-0 px-2 py-1.5 text-caption font-bold rounded-lg border border-danger text-danger hover:bg-danger-bg transition-colors whitespace-nowrap text-center"
                             >
                               Cancel
                             </button>
@@ -258,59 +290,19 @@ export default function RecruiterInterviewsPage() {
                               href={interview.meetingLink}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-3 py-1.5 text-caption font-bold rounded-lg text-white transition-opacity hover:opacity-90"
+                              className="w-[60px] shrink-0 px-2 py-1.5 text-caption font-bold rounded-lg text-white transition-opacity hover:opacity-90 whitespace-nowrap text-center"
                               style={{ background: PRIMARY }}
                             >
                               Join
                             </a>
                           )}
                         </div>
-                      </div>
-
-                      {/* Meta row */}
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2.5">
-                        {interview.scheduledAt ? (
-                          <div className="flex items-center gap-1.5 text-caption text-muted">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                              <rect x="3" y="4" width="20" height="20" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
-                            </svg>
-                            <span className="font-semibold">{formatDateTime(interview.scheduledAt)}</span>
-                            {interview.durationMinutes && (
-                              <span className="text-subtle">· {interview.durationMinutes} min</span>
-                            )}
-                          </div>
-                        ) : (
-                          <span className="text-caption text-amber-600 font-semibold">No time set yet</span>
-                        )}
-
-                        {mode && (
-                          <div className="flex items-center gap-1.5 text-caption text-muted">
-                            <span className="text-subtle">{mode.icon}</span>
-                            <span>{mode.label}</span>
-                          </div>
-                        )}
-
-                        {interview.location && (
-                          <div className="flex items-center gap-1.5 text-caption text-muted">
-                            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
-                            </svg>
-                            <span className="truncate max-w-[160px]">{interview.location}</span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Notes */}
-                      {interview.notes && (
-                        <div className="mt-2.5 px-3 py-2 rounded-xl bg-amber-50 border border-amber-100">
-                          <p className="text-caption text-amber-700 font-medium leading-snug">{interview.notes}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         )}
       </div>
