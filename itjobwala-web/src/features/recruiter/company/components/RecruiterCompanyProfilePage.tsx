@@ -181,7 +181,7 @@ export default function RecruiterCompanyProfilePage() {
         {/* Page header */}
         <div className="bg-surface border-b border-token">
           <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
-            <h1 className="text-4xl font-extrabold text-heading" style={{ letterSpacing: '-0.5px' }}>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-heading" style={{ letterSpacing: '-0.5px' }}>
               Company Profile
             </h1>
             <p className="text-sm text-subtle mt-1">
@@ -208,7 +208,8 @@ export default function RecruiterCompanyProfilePage() {
               <input ref={logoInputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={handleLogoChange} />
 
               {/* Logo + name header — shared by both modes */}
-              <div className="flex items-center gap-4 mb-6 pb-6 border-b border-token justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6 pb-6 border-b border-token sm:justify-between">
+              <div className="flex items-center gap-4 min-w-0 flex-1">
                 {/* Logo */}
                 {editing ? (
                   <div className="relative group shrink-0 cursor-pointer" onClick={() => !logoUploading && logoInputRef.current?.click()}>
@@ -272,6 +273,7 @@ export default function RecruiterCompanyProfilePage() {
                     )}
                   </div>
                 )}
+              </div>
 
                 {/* Actions — only Edit Profile button in header */}
                 {!editing && (
@@ -279,7 +281,7 @@ export default function RecruiterCompanyProfilePage() {
                     <Button
                       variant="primary"
                       size="lg"
-                      className="px-6"
+                      className="px-6 w-full sm:w-auto"
                       onClick={() => setEditing(true)}
                     >
                       Edit Profile
@@ -368,8 +370,8 @@ export default function RecruiterCompanyProfilePage() {
                   </FormField>
 
                   {/* Form action buttons at the bottom */}
-                  <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
-                    <Button variant="secondary" size="lg" onClick={handleCancel}>
+                  <div className="flex flex-col-reverse sm:flex-row items-center sm:justify-end gap-3 pt-4 border-t border-gray-100">
+                    <Button variant="secondary" size="lg" className="w-full sm:w-auto" onClick={handleCancel}>
                       Cancel
                     </Button>
                     <Button
@@ -377,7 +379,7 @@ export default function RecruiterCompanyProfilePage() {
                       size="lg"
                       loading={updateMutation.isPending}
                       disabled={!isDirty}
-                      className="px-6"
+                      className="px-6 w-full sm:w-auto"
                       onClick={handleSave}
                     >
                       Save Changes
@@ -386,7 +388,7 @@ export default function RecruiterCompanyProfilePage() {
                 </form>
               ) : (
                 <div className="space-y-6">
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
                       <p className="text-caption text-muted mb-1">Industry</p>
                       <p className="text-base text-heading">{profile?.industry || 'Not specified'}</p>
