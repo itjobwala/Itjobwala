@@ -8,8 +8,6 @@ import { useToast } from '@/src/hooks/useToast';
 import Toast from '@/src/components/ui/Toast';
 import StatusBadge from '@/src/components/ui/StatusBadge';
 import Avatar from '@/src/components/ui/Avatar';
-import PageHeader from '@/src/components/ui/PageHeader';
-import Card from '@/src/components/ui/Card';
 import ConfirmationDialog from '@/src/components/common/ConfirmationDialog';
 import {
   useRecruiterApplicantDetailQuery,
@@ -133,16 +131,16 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
 
   if (isLoading) {
     return (
-      <div className="max-w-[860px] mx-auto px-5 sm:px-8 py-12 text-center">
+      <div className="px-5 py-20 text-center">
         <div className="w-8 h-8 border-4 border-token border-t-primary rounded-full animate-spin mx-auto" />
-        <p className="mt-4 text-muted">Loading applicant details...</p>
+        <p className="mt-4 text-muted">Loading applicant details…</p>
       </div>
     );
   }
 
   if (error || !applicant) {
     return (
-      <div className="max-w-[860px] mx-auto px-5 sm:px-8 py-8">
+      <div className="px-6 sm:px-10 py-8">
         <div className="bg-danger-bg border border-danger rounded-xl p-4 text-danger">
           {error instanceof Error ? error.message : 'Applicant not found'}
         </div>
@@ -157,18 +155,24 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
   const isFinal = finalStatuses.has(applicant.status);
 
   return (
-    <div className="max-w-[860px] mx-auto px-5 sm:px-8 py-8 space-y-6">
-      <PageHeader backLabel="Back to Applicants" onBack={() => router.back()} />
+    <div className="flex flex-col min-h-full bg-surface">
+      {/* Header */}
+      <div className="px-6 sm:px-10 pt-8 pb-6 border-b border-token">
+        <button type="button" onClick={() => router.back()}
+          className="flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-body transition-colors mb-4">
+          <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          Back
+        </button>
 
-      {/* Header card */}
-      <Card padding="lg" overflow>
         <div className="flex flex-col sm:flex-row sm:items-start gap-5">
           <Avatar name={applicant.candidateName} photo={applicant.profilePhoto} size="xl" />
 
           <div className="flex-1 min-w-0">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div>
-                <h1 className="text-3xl font-extrabold text-heading" style={{ letterSpacing: '-0.4px' }}>
+                <h1 className="font-extrabold text-heading text-2xl sm:text-3xl" style={{ letterSpacing: -0.8 }}>
                   {applicant.candidateName}
                 </h1>
                 {applicant.profile?.title && (
@@ -247,169 +251,169 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
                 </a>
               )}
             </div>
+
+            {/* Action buttons */}
+            <div className="mt-5 flex gap-2 flex-wrap">
+              <Button
+                variant="primary"
+                rounded="full"
+                disabled={messageMutation.isPending}
+                loading={messageMutation.isPending}
+                leftIcon={
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                }
+                onClick={handleMessage}
+              >
+                Message Candidate
+              </Button>
+
+              {!isFinal && (
+                <>
+                  {applicant.status === 'applied' && (
+                    <button
+                      onClick={handleShortlist}
+                      disabled={actionLoading}
+                      className="px-4 py-2.5 text-sm font-semibold bg-green-600 text-white rounded-full hover:bg-green-700 disabled:opacity-50 transition-colors"
+                    >
+                      {actionLoading ? 'Loading…' : 'Shortlist'}
+                    </button>
+                  )}
+                  {applicant.status === 'shortlisted' && (
+                    <button
+                      onClick={handleMoveToInterview}
+                      disabled={actionLoading}
+                      className="px-4 py-2.5 text-sm font-semibold bg-amber-500 text-white rounded-full hover:bg-amber-600 disabled:opacity-50 transition-colors"
+                    >
+                      {actionLoading ? 'Loading…' : 'Move to Interview Stage'}
+                    </button>
+                  )}
+                  {applicant.status === 'interview' && (
+                    <>
+                      <button
+                        onClick={() => setScheduleOpen(true)}
+                        className="px-4 py-2.5 text-sm font-semibold bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+                      >
+                        {applicant.interview?.scheduled_at ? 'Reschedule Interview' : 'Schedule Interview'}
+                      </button>
+                      {applicant.interview?.id && (
+                        <button
+                          onClick={() => setCancelConfirmOpen(true)}
+                          className="px-4 py-2.5 text-sm font-semibold bg-surface text-orange-600 border border-orange-200 rounded-full hover:bg-orange-50 transition-colors"
+                        >
+                          Cancel Interview
+                        </button>
+                      )}
+                      <button
+                        onClick={handleHire}
+                        disabled={actionLoading}
+                        className="px-4 py-2.5 text-sm font-semibold bg-purple-600 text-white rounded-full hover:bg-purple-700 disabled:opacity-50 transition-colors"
+                      >
+                        {actionLoading ? 'Loading…' : 'Hire'}
+                      </button>
+                    </>
+                  )}
+                  <button
+                    onClick={handleReject}
+                    disabled={actionLoading}
+                    className="px-4 py-2.5 text-sm font-semibold bg-surface text-danger border border-danger rounded-full hover:bg-danger-bg disabled:opacity-50 transition-colors"
+                  >
+                    {actionLoading ? 'Loading…' : 'Reject'}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
-      </Card>
+      </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        {/* Left column: main content */}
-        <div className="sm:col-span-2 space-y-5">
+      {/* Body */}
+      <div className="flex-1 px-6 sm:px-10 py-8 flex flex-col gap-8">
 
-          {/* About */}
-          {applicant.profile?.about && (
-            <Card padding="lg" overflow>
-              <h2 className="text-base font-bold text-heading mb-3">About</h2>
-              <p className="text-sm text-body leading-relaxed whitespace-pre-wrap">
-                {applicant.profile.about}
-              </p>
-            </Card>
-          )}
-
-          {/* Cover letter */}
-          {applicant.coverLetter && (
-            <Card padding="lg" overflow>
-              <h2 className="text-base font-bold text-heading mb-3">Cover Letter</h2>
-              <p className="text-sm text-body leading-relaxed whitespace-pre-wrap">
-                {applicant.coverLetter}
-              </p>
-            </Card>
-          )}
-
-          {/* Skills */}
-          {applicant.skills && applicant.skills.length > 0 && (
-            <Card padding="lg" overflow>
-              <h2 className="text-base font-bold text-heading mb-3">Skills</h2>
-              <div className="flex flex-wrap gap-2">
-                {applicant.skills.map((skill) => (
-                  <span key={skill} className="px-3 py-1 bg-surface-hover text-body text-caption font-medium rounded-lg">
-                    {skill}
-                  </span>
-                ))}
-              </div>
-            </Card>
-          )}
-
-          {/* Phase 8: ATS Intelligence Panel */}
-          <RecruiterIntelligencePanel
-            applicantId={applicantId}
-            jobId={applicant.jobId}
-          />
-        </div>
-
-        {/* Right column: meta + actions */}
-        <div className="space-y-5">
-
-          {/* Application info */}
-          <Card overflow>
-            <h2 className="text-sm font-bold text-heading mb-4">Application Info</h2>
-            <div className="space-y-3">
-              <div>
-                <p className="text-micro text-subtle font-medium uppercase tracking-wide mb-0.5">Applied For</p>
-                <Link
-                  href={`/recruiter/posted-jobs/${applicant.jobId}`}
-                  className="text-sm font-semibold text-primary hover:underline"
-                >
-                  {applicant.jobTitle}
-                </Link>
-              </div>
-              <div>
-                <p className="text-micro text-subtle font-medium uppercase tracking-wide mb-0.5">Applied On</p>
-                <p className="text-sm text-body">{formatDate(applicant.appliedDate)}</p>
-              </div>
-              {(applicant.experience ?? 0) > 0 && (
-                <div>
-                  <p className="text-micro text-subtle font-medium uppercase tracking-wide mb-0.5">Experience</p>
-                  <p className="text-sm text-body">
-                    {applicant.experience} yr{applicant.experience !== 1 ? 's' : ''}
-                  </p>
-                </div>
-              )}
-              <div>
-                <p className="text-micro text-subtle font-medium uppercase tracking-wide mb-0.5">Status</p>
-                <StatusBadge status={applicant.status} />
-              </div>
+        {/* Application */}
+        <section>
+          <p className="text-caption font-bold text-subtle uppercase tracking-wider mb-5">Application</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+            <div>
+              <span className="text-muted">Applied For</span>
+              <Link
+                href={`/recruiter/posted-jobs/${applicant.jobId}`}
+                className="block font-semibold text-primary hover:underline mt-0.5 truncate"
+              >
+                {applicant.jobTitle}
+              </Link>
             </div>
-          </Card>
-
-          {/* Message */}
-          <Card overflow>
-            <h2 className="text-sm font-bold text-heading mb-3">Contact</h2>
-            <Button
-              variant="primary"
-              fullWidth
-              rounded="full"
-              disabled={messageMutation.isPending}
-              loading={messageMutation.isPending}
-              leftIcon={
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                </svg>
-              }
-              onClick={handleMessage}
-            >
-              Message Candidate
-            </Button>
-          </Card>
-
-          {/* Actions */}
-          {!isFinal && (
-            <Card overflow>
-              <h2 className="text-sm font-bold text-heading mb-4">Actions</h2>
-              <div className="flex flex-col gap-2">
-                {applicant.status === 'applied' && (
-                  <button
-                    onClick={handleShortlist}
-                    disabled={actionLoading}
-                    className="w-full px-4 py-2.5 text-sm font-semibold bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 transition-colors"
-                  >
-                    {actionLoading ? 'Loading…' : 'Shortlist'}
-                  </button>
-                )}
-                {applicant.status === 'shortlisted' && (
-                  <button
-                    onClick={handleMoveToInterview}
-                    disabled={actionLoading}
-                    className="w-full px-4 py-2.5 text-sm font-semibold bg-amber-500 text-white rounded-xl hover:bg-amber-600 disabled:opacity-50 transition-colors"
-                  >
-                    {actionLoading ? 'Loading…' : 'Move to Interview Stage'}
-                  </button>
-                )}
-                {applicant.status === 'interview' && (
-                  <>
-                    <button
-                      onClick={() => setScheduleOpen(true)}
-                      className="w-full px-4 py-2.5 text-sm font-semibold bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
-                    >
-                      {applicant.interview?.scheduled_at ? 'Reschedule Interview' : 'Schedule Interview'}
-                    </button>
-                    {applicant.interview?.id && (
-                      <button
-                        onClick={() => setCancelConfirmOpen(true)}
-                        className="w-full px-4 py-2.5 text-sm font-semibold bg-surface text-orange-600 border border-orange-200 rounded-xl hover:bg-orange-50 transition-colors"
-                      >
-                        Cancel Interview
-                      </button>
-                    )}
-                    <button
-                      onClick={handleHire}
-                      disabled={actionLoading}
-                      className="w-full px-4 py-2.5 text-sm font-semibold bg-purple-600 text-white rounded-xl hover:bg-purple-700 disabled:opacity-50 transition-colors"
-                    >
-                      {actionLoading ? 'Loading…' : 'Hire'}
-                    </button>
-                  </>
-                )}
-                <button
-                  onClick={handleReject}
-                  disabled={actionLoading}
-                  className="w-full px-4 py-2.5 text-sm font-semibold bg-surface text-danger border border-danger rounded-xl hover:bg-danger-bg disabled:opacity-50 transition-colors"
-                >
-                  {actionLoading ? 'Loading…' : 'Reject'}
-                </button>
+            <div>
+              <span className="text-muted">Applied On</span>
+              <p className="font-semibold text-heading mt-0.5">{formatDate(applicant.appliedDate)}</p>
+            </div>
+            {(applicant.experience ?? 0) > 0 && (
+              <div>
+                <span className="text-muted">Experience</span>
+                <p className="font-semibold text-heading mt-0.5">
+                  {applicant.experience} yr{applicant.experience !== 1 ? 's' : ''}
+                </p>
               </div>
-            </Card>
-          )}
-        </div>
+            )}
+            <div>
+              <span className="text-muted">Status</span>
+              <div className="mt-0.5"><StatusBadge status={applicant.status} /></div>
+            </div>
+          </div>
+        </section>
+
+        {(applicant.profile?.about || applicant.coverLetter || (applicant.skills && applicant.skills.length > 0)) && (
+          <div className="border-t border-token" />
+        )}
+
+        {/* About */}
+        {applicant.profile?.about && (
+          <section>
+            <p className="text-caption font-bold text-subtle uppercase tracking-wider mb-5">About</p>
+            <p className="text-sm text-body leading-relaxed whitespace-pre-wrap">
+              {applicant.profile.about}
+            </p>
+          </section>
+        )}
+
+        {applicant.profile?.about && applicant.coverLetter && <div className="border-t border-token" />}
+
+        {/* Cover letter */}
+        {applicant.coverLetter && (
+          <section>
+            <p className="text-caption font-bold text-subtle uppercase tracking-wider mb-5">Cover Letter</p>
+            <p className="text-sm text-body leading-relaxed whitespace-pre-wrap">
+              {applicant.coverLetter}
+            </p>
+          </section>
+        )}
+
+        {(applicant.profile?.about || applicant.coverLetter) && applicant.skills && applicant.skills.length > 0 && (
+          <div className="border-t border-token" />
+        )}
+
+        {/* Skills */}
+        {applicant.skills && applicant.skills.length > 0 && (
+          <section>
+            <p className="text-caption font-bold text-subtle uppercase tracking-wider mb-5">Skills</p>
+            <div className="flex flex-wrap gap-2">
+              {applicant.skills.map((skill) => (
+                <span key={skill} className="px-3 py-1 bg-surface-hover text-body text-caption font-medium rounded-lg">
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <div className="border-t border-token" />
+
+        {/* ATS Intelligence */}
+        <RecruiterIntelligencePanel
+          applicantId={applicantId}
+          jobId={applicant.jobId}
+        />
       </div>
 
       <Toast message={toast.message} variant={toast.variant} visible={toast.visible} />
