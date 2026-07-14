@@ -7,55 +7,18 @@ import {
   useUpdateRecruiterJobMutation,
 } from '@/features/recruiter/hooks';
 
-import SalaryRangeSlider from '@/src/components/ui/SalaryRangeSlider';
 import Button from '@/src/components/ui/Button';
 import { validateSkill } from '@/src/lib/skillValidation';
 import { useSkillSuggestions } from '@/src/hooks/useSkillSuggestions';
 import { validateSkillsRemote } from '@/features/jobs/shared';
-
-const PRIMARY = '#1557FF';
-
-const JOB_TYPES = ['Full-time', 'Part-time', 'Contract', 'Internship', 'Freelance'];
-const WORK_MODES = ['Remote', 'On-site', 'Hybrid'];
-const JOB_LEVELS = ['Junior', 'Mid', 'Senior', 'Lead', 'Manager'];
-
-function ExperienceSlider({ minVal, maxVal, onChange }: {
-  minVal: number; maxVal: number;
-  onChange: (min: number, max: number) => void;
-}) {
-  const minPct = (minVal / 20) * 100;
-  const maxPct = (maxVal / 20) * 100;
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-3">
-        <label className="text-sm font-bold text-body-secondary">Experience required</label>
-        <span className="text-sm font-bold" style={{ color: PRIMARY }}>
-          {minVal === 0 ? 'Any' : `${minVal} yrs`} – {maxVal === 20 ? '20+ yrs' : `${maxVal} yrs`}
-        </span>
-      </div>
-      <div className="relative h-5 flex items-center">
-        <div className="absolute inset-x-0 h-1.5 rounded-full bg-surface-mid pointer-events-none" />
-        <div className="absolute h-1.5 rounded-full pointer-events-none"
-          style={{ left: `${minPct}%`, right: `${100 - maxPct}%`, background: PRIMARY }} />
-        <input type="range" min={0} max={20} step={1} value={minVal}
-          onChange={e => onChange(Math.min(+e.target.value, maxVal - 1), maxVal)}
-          className="salary-thumb absolute w-full"
-          style={{ zIndex: minVal >= maxVal - 1 ? 5 : 3 }} />
-        <input type="range" min={0} max={20} step={1} value={maxVal}
-          onChange={e => onChange(minVal, Math.max(+e.target.value, minVal + 1))}
-          className="salary-thumb absolute w-full" style={{ zIndex: 4 }} />
-      </div>
-      <div className="flex justify-between mt-2 text-micro text-subtle select-none">
-        <span>0</span><span>5 yrs</span><span>10 yrs</span><span>15 yrs</span><span>20 yrs</span>
-      </div>
-    </div>
-  );
-}
-
-function parseBullets(text: string): string[] {
-  return text.split('\n').map(l => l.trim()).filter(Boolean);
-}
-
+import {
+  type JobForm,
+  type JobErrors,
+  DEFAULT_JOB_FORM,
+  parseBullets,
+} from '../schemas/postJob.schema';
+import JobFieldsBasic from './PostJobPage/JobFieldsBasic';
+import JobFieldsDetail from './PostJobPage/JobFieldsDetail';
 
 interface Props {
   jobId: string;
@@ -70,27 +33,8 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
   const [skillInput, setSkillInput] = useState('');
   const [skillError, setSkillError] = useState('');
   const [apiError, setApiError] = useState('');
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const [form, setFormState] = useState({
-    title: '',
-    description: '',
-    location: '',
-    jobType: 'Full-time',
-    workMode: 'On-site',
-    salaryMinLpa: 5,
-    salaryMaxLpa: 20,
-    requiredSkills: [] as string[],
-    experienceMin: 0,
-    experienceMax: 5,
-    jobLevel: '',
-    vacancies: '',
-    closesAt: '',
-    responsibilities: '',
-    requirements: '',
-    niceToHave: '',
-    benefits: '',
-  });
+  const [errors, setErrors] = useState<JobErrors>({});
+  const [form, setFormState] = useState<JobForm>(DEFAULT_JOB_FORM);
   const skillSuggestions = useSkillSuggestions(skillInput, form.requiredSkills);
 
   // Prefill once job loads
@@ -118,7 +62,7 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
     setReady(true);
   }, [job, ready]);
 
-  function set(k: string, v: any) {
+  function set(k: keyof JobForm, v: any) {
     setFormState(f => ({ ...f, [k]: v }));
     setErrors(e => ({ ...e, [k]: '' }));
     setApiError('');
@@ -148,8 +92,8 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
     set('requiredSkills', form.requiredSkills.filter(s => s !== skill));
   }
 
-  function validate(isActiveLocked: boolean): Record<string, string> {
-    const e: Record<string, string> = {};
+  function validate(isActiveLocked: boolean): JobErrors {
+    const e: JobErrors = {};
     // Skip locked-field validation when the job is active with applications
     if (!isActiveLocked) {
       if (!form.title.trim() || form.title.trim().length < 5) e.title = 'Title must be at least 5 characters';
@@ -218,7 +162,7 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
 
   if (loadingJob || !ready) {
     return (
-      <div className="max-w-[680px] mx-auto px-5 py-20 text-center">
+      <div className="px-5 py-20 text-center">
         <div className="w-8 h-8 border-4 border-token border-t-primary rounded-full animate-spin mx-auto" />
         <p className="mt-4 text-muted">Loading job details…</p>
       </div>
@@ -226,9 +170,9 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
   }
 
   return (
-    <div className="max-w-[680px] mx-auto px-5 py-10">
+    <form onSubmit={handleSubmit} className="flex flex-col min-h-full bg-surface">
       {/* Header */}
-      <div className="mb-8">
+      <div className="px-6 sm:px-10 pt-8 pb-6 border-b border-token">
         <button type="button" onClick={() => router.back()}
           className="flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-body transition-colors mb-4">
           <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
@@ -236,7 +180,7 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
           </svg>
           Back
         </button>
-        <h1 className="font-extrabold text-heading text-2xl sm:text-4xl mb-1" style={{ letterSpacing: -0.8 }}>
+        <h1 className="font-extrabold text-heading text-2xl sm:text-3xl mb-1" style={{ letterSpacing: -0.8 }}>
           Edit Job
         </h1>
         <p className="text-sm text-muted">
@@ -247,7 +191,7 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
       </div>
 
       {isActive && (
-        <div className="mb-6 flex gap-3 items-start rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
+        <div className="mx-6 sm:mx-10 mt-6 flex gap-3 items-start rounded-xl bg-amber-50 border border-amber-200 px-4 py-3">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2.2" className="shrink-0 mt-0.5">
             <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
             <line x1="12" y1="9" x2="12" y2="13" />
@@ -260,292 +204,49 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-surface rounded-2xl border border-token p-6 sm:p-8 flex flex-col gap-5" style={{ boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
-
-        {/* Title */}
-        <div>
-          <label className="block text-sm font-bold text-body-secondary mb-1.5">
-            Job title <span style={{ color: PRIMARY }}>*</span>
-          </label>
-          <input
-            value={form.title}
-            onChange={e => set('title', e.target.value)}
-            disabled={isActive}
-            placeholder="e.g. Senior QA Automation Engineer"
-            className="w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-muted disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed"
-            style={{ borderColor: errors.title ? 'var(--color-danger)' : 'var(--color-border)' }}
-          />
-          {errors.title && <p className="text-xs text-danger mt-1">{errors.title}</p>}
-        </div>
-
-        {/* Description */}
-        <div>
-          <label className="block text-sm font-bold text-body-secondary mb-1.5">
-            Job description <span style={{ color: PRIMARY }}>*</span>
-          </label>
-          <textarea
-            value={form.description}
-            onChange={e => set('description', e.target.value)}
-            disabled={isActive}
-            rows={6}
-            placeholder="Describe the role (min. 50 characters)..."
-            className="w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-muted resize-none disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed"
-            style={{ borderColor: errors.description ? 'var(--color-danger)' : 'var(--color-border)' }}
-          />
-          <div className="flex items-center justify-between mt-1">
-            {errors.description ? <p className="text-xs text-danger">{errors.description}</p> : <span />}
-            <span className="text-micro text-subtle">{form.description.length} chars</span>
+      {/* Body */}
+      <div className="flex-1 px-6 sm:px-10 py-8 flex flex-col gap-8">
+        <section>
+          <p className="text-caption font-bold text-subtle uppercase tracking-wider mb-5">Job details</p>
+          <div className="flex flex-col gap-5">
+            <JobFieldsBasic form={form} errors={errors} setField={set} disabled={isActive} />
           </div>
-        </div>
+        </section>
 
-        {/* Location */}
-        <div>
-          <label className="block text-sm font-bold text-body-secondary mb-1.5">
-            Location <span style={{ color: PRIMARY }}>*</span>
-          </label>
-          <input
-            value={form.location}
-            onChange={e => set('location', e.target.value)}
-            disabled={isActive}
-            placeholder="e.g. Bengaluru / Remote"
-            className="w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed"
-            style={{ borderColor: errors.location ? 'var(--color-danger)' : 'var(--color-border)' }}
-          />
-          {errors.location && <p className="text-xs text-danger mt-1">{errors.location}</p>}
-        </div>
+        <div className="border-t border-token" />
 
-        {/* Job type, Work mode, Experience, Salary — inline */}
-        <div className="flex flex-col lg:flex-row lg:items-start gap-4">
-          <div className="lg:w-[180px] shrink-0">
-            <label className="block text-sm font-bold text-body-secondary mb-1.5">Job type</label>
-            <div className="relative">
-              <select
-                value={form.jobType}
-                onChange={e => set('jobType', e.target.value)}
-                disabled={isActive}
-                className="w-full appearance-none rounded-xl border border-token pl-3.5 pr-9 py-2.5 text-sm font-medium text-heading outline-none bg-surface disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed"
-              >
-                {JOB_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-subtle">
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </div>
-          </div>
-          <div className="lg:w-[180px] shrink-0">
-            <label className="block text-sm font-bold text-body-secondary mb-1.5">Work mode</label>
-            <div className="relative">
-              <select
-                value={form.workMode}
-                onChange={e => set('workMode', e.target.value)}
-                disabled={isActive}
-                className="w-full appearance-none rounded-xl border border-token pl-3.5 pr-9 py-2.5 text-sm font-medium text-heading outline-none bg-surface disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed"
-              >
-                {WORK_MODES.map(m => <option key={m} value={m}>{m}</option>)}
-              </select>
-              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-subtle">
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </div>
-          </div>
-          <div className="flex-1 min-w-0">
-            <ExperienceSlider
-              minVal={form.experienceMin} maxVal={form.experienceMax}
-              onChange={(min, max) => { set('experienceMin', min); set('experienceMax', max); }}
+        <section>
+          <p className="text-caption font-bold text-subtle uppercase tracking-wider mb-5">Additional details</p>
+          <div className="flex flex-col gap-5">
+            <JobFieldsDetail
+              form={form} errors={errors} setField={set}
+              skillInput={skillInput} setSkillInput={setSkillInput}
+              skillError={skillError} setSkillError={setSkillError}
+              skillSuggestions={skillSuggestions}
+              addSkill={addSkill} removeSkill={removeSkill}
             />
           </div>
-          <div className="flex-1 min-w-0">
-            <SalaryRangeSlider
-              minLpa={form.salaryMinLpa}
-              maxLpa={form.salaryMaxLpa}
-              minAllowed={1}
-              onChange={(min, max) => { set('salaryMinLpa', min); set('salaryMaxLpa', max); }}
-            />
-          </div>
-        </div>
-
-        {/* Level + Vacancies + Deadline */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-bold text-body-secondary mb-1.5">Job level</label>
-            <div className="relative">
-              <select
-                value={form.jobLevel}
-                onChange={e => set('jobLevel', e.target.value)}
-                className="w-full appearance-none rounded-xl border border-token pl-3.5 pr-9 py-2.5 text-sm font-medium text-heading outline-none bg-surface"
-              >
-                <option value="">Select level</option>
-                {JOB_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-              </select>
-              <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-subtle">
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-bold text-body-secondary mb-1.5">Vacancies</label>
-            <input
-              type="number"
-              min="1"
-              value={form.vacancies}
-              onChange={e => set('vacancies', e.target.value)}
-              placeholder="e.g. 2"
-              className="w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none"
-              style={{ borderColor: errors.vacancies ? 'var(--color-danger)' : 'var(--color-border)' }}
-            />
-            {errors.vacancies && <p className="text-xs text-danger mt-1">{errors.vacancies}</p>}
-          </div>
-          <div>
-            <label className="block text-sm font-bold text-body-secondary mb-1.5">Application deadline</label>
-            <input
-              type="date"
-              value={form.closesAt}
-              onChange={e => set('closesAt', e.target.value)}
-              className="w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none"
-              style={{ borderColor: errors.closesAt ? 'var(--color-danger)' : 'var(--color-border)' }}
-            />
-            {errors.closesAt && <p className="text-xs text-danger mt-1">{errors.closesAt}</p>}
-          </div>
-        </div>
-
-        {/* Skills */}
-        <div>
-          <label className="block text-sm font-bold text-body-secondary mb-1.5">Required skills</label>
-          <div className="flex gap-2 mb-2">
-            <input
-              value={skillInput}
-              onChange={e => { setSkillInput(e.target.value); setSkillError(''); }}
-              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkill(); } }}
-              placeholder="Type to search skills (e.g. Selenium, Postman)"
-              className="flex-1 rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none"
-              style={{ borderColor: skillError ? 'var(--color-danger)' : 'var(--color-border)' }}
-            />
-            <button type="button" onClick={() => addSkill()}
-              className="px-4 py-2.5 rounded-xl text-sm font-bold text-white shrink-0"
-              style={{ background: PRIMARY }}>
-              Add
-            </button>
-          </div>
-          {skillError && <p className="text-xs text-danger mb-2">{skillError}</p>}
-          {skillSuggestions.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-3">
-              {skillSuggestions.map(s => (
-                <button key={s} type="button"
-                  onClick={() => addSkill(s, true)}
-                  className="px-2.5 py-1 rounded-lg text-caption font-semibold bg-surface-hover text-muted hover:bg-primary/10 hover:text-primary transition-colors">
-                  + {s}
-                </button>
-              ))}
-            </div>
-          )}
-          {form.requiredSkills.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {form.requiredSkills.map(s => (
-                <span key={s}
-                  className="flex items-center gap-1.5 px-3 py-1 rounded-full text-caption font-semibold"
-                  style={{ background: `${PRIMARY}12`, color: PRIMARY, border: `1.5px solid ${PRIMARY}30` }}>
-                  {s}
-                  <button type="button" onClick={() => removeSkill(s)} className="hover:text-red-500 transition-colors">×</button>
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Responsibilities */}
-        <div>
-          <label className="block text-sm font-bold text-body-secondary mb-1.5">
-            Responsibilities <span style={{ color: PRIMARY }}>*</span>
-          </label>
-          <textarea
-            value={form.responsibilities}
-            onChange={e => set('responsibilities', e.target.value)}
-            rows={5}
-            placeholder={"Design and execute test cases for web and mobile releases\nAutomate regression suites using Selenium/Playwright"}
-            className="w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none placeholder:text-muted resize-none"
-            style={{ borderColor: errors.responsibilities ? 'var(--color-danger)' : 'var(--color-border)' }}
-          />
-          <p className="text-micro text-subtle mt-1">One item per line.</p>
-          {errors.responsibilities && <p className="text-xs text-danger mt-1">{errors.responsibilities}</p>}
-        </div>
-
-        {/* Requirements */}
-        <div>
-          <label className="block text-sm font-bold text-body-secondary mb-1.5">
-            Requirements <span style={{ color: PRIMARY }}>*</span>
-          </label>
-          <textarea
-            value={form.requirements}
-            onChange={e => set('requirements', e.target.value)}
-            rows={5}
-            placeholder={"3+ years of experience in manual or automation testing\nStrong understanding of API testing tools like Postman or Rest Assured"}
-            className="w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none placeholder:text-muted resize-none"
-            style={{ borderColor: errors.requirements ? 'var(--color-danger)' : 'var(--color-border)' }}
-          />
-          <p className="text-micro text-subtle mt-1">One item per line.</p>
-          {errors.requirements && <p className="text-xs text-danger mt-1">{errors.requirements}</p>}
-        </div>
-
-        {/* Nice to have */}
-        <div>
-          <label className="block text-sm font-bold text-body-secondary mb-1.5">
-            Nice to have <span className="text-subtle font-normal text-micro">(optional)</span>
-          </label>
-          <textarea
-            value={form.niceToHave}
-            onChange={e => set('niceToHave', e.target.value)}
-            rows={3}
-            placeholder={"ISTQB certification\nExperience with CI/CD pipelines (Jenkins, GitHub Actions)"}
-            className="w-full rounded-xl border border-token px-3.5 py-2.5 text-sm font-medium text-heading outline-none placeholder:text-muted resize-none"
-          />
-          <p className="text-micro text-subtle mt-1">One item per line.</p>
-        </div>
-
-        {/* Benefits */}
-        <div>
-          <label className="block text-sm font-bold text-body-secondary mb-1.5">
-            Perks &amp; benefits <span className="text-subtle font-normal text-micro">(optional)</span>
-          </label>
-          <textarea
-            value={form.benefits}
-            onChange={e => set('benefits', e.target.value)}
-            rows={3}
-            placeholder={"Health insurance\nFlexible working hours"}
-            className="w-full rounded-xl border border-token px-3.5 py-2.5 text-sm font-medium text-heading outline-none placeholder:text-muted resize-none"
-          />
-          <p className="text-micro text-subtle mt-1">One item per line.</p>
-        </div>
+        </section>
 
         {apiError && (
           <div className="rounded-xl px-4 py-3 text-sm font-medium text-danger bg-danger-bg border border-danger">{apiError}</div>
         )}
+      </div>
 
-        <div className="flex gap-3 pt-2">
-          <Button
-            variant="secondary"
-            size="lg"
-            rounded="full"
-            type="button"
-            onClick={() => router.back()}
-            className="flex-1 py-3"
-          >
+      {/* Footer action bar */}
+      <div className="sticky bottom-0 bg-surface border-t border-token px-6 sm:px-10 py-4 flex items-center justify-between gap-4 flex-wrap">
+        <p className="text-caption text-subtle">
+          Changes are saved immediately when you click Save changes.
+        </p>
+        <div className="flex items-center gap-3 shrink-0">
+          <Button type="button" variant="outline" onClick={() => router.back()}>
             Cancel
           </Button>
-          <Button
-            variant="primary"
-            size="lg"
-            rounded="full"
-            type="submit"
-            loading={updateMutation.isPending}
-            className="flex-[2] py-3 text-base"
-          >
+          <Button type="submit" variant="primary" loading={updateMutation.isPending}>
             Save changes
           </Button>
         </div>
-      </form>
-    </div>
+      </div>
+    </form>
   );
 }

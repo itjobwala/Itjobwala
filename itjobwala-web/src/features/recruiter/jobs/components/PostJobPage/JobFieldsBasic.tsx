@@ -10,25 +10,26 @@ interface Props {
   form: JobForm;
   errors: JobErrors;
   setField: (k: keyof JobForm, v: any) => void;
+  disabled?: boolean;
 }
 
 const inputCls = (hasError: boolean) =>
-  `w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-muted ${hasError ? 'border-danger' : 'border-token'}`;
+  `w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-muted disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed ${hasError ? 'border-danger' : 'border-token'}`;
 
-export default function JobFieldsBasic({ form, errors, setField }: Props) {
+export default function JobFieldsBasic({ form, errors, setField, disabled = false }: Props) {
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-bold text-body-secondary mb-1.5">Job title <span style={{ color: PRIMARY }}>*</span></label>
-          <input value={form.title} onChange={e => setField('title', e.target.value)}
+          <input value={form.title} onChange={e => setField('title', e.target.value)} disabled={disabled}
             placeholder="e.g. Senior QA Automation Engineer" className={inputCls(!!errors.title)} />
           {errors.title && <p className="text-xs text-danger mt-1">{errors.title}</p>}
         </div>
 
         <div>
           <label className="block text-sm font-bold text-body-secondary mb-1.5">Location <span style={{ color: PRIMARY }}>*</span></label>
-          <input value={form.location} onChange={e => setField('location', e.target.value)}
+          <input value={form.location} onChange={e => setField('location', e.target.value)} disabled={disabled}
             placeholder="e.g. Bengaluru / Remote" className={inputCls(!!errors.location)} />
           {errors.location && <p className="text-xs text-danger mt-1">{errors.location}</p>}
         </div>
@@ -36,7 +37,7 @@ export default function JobFieldsBasic({ form, errors, setField }: Props) {
 
       <div>
         <label className="block text-sm font-bold text-body-secondary mb-1.5">Job description <span style={{ color: PRIMARY }}>*</span></label>
-        <textarea value={form.description} onChange={e => setField('description', e.target.value)} rows={5}
+        <textarea value={form.description} onChange={e => setField('description', e.target.value)} disabled={disabled} rows={5}
           placeholder="Describe the role, responsibilities, and requirements (min. 50 characters)..."
           className={`${inputCls(!!errors.description)} resize-none`} />
         <div className="flex items-center justify-between mt-1">
@@ -49,8 +50,8 @@ export default function JobFieldsBasic({ form, errors, setField }: Props) {
         <div className="lg:w-[180px] shrink-0">
           <label className="block text-sm font-bold text-body-secondary mb-1.5">Job type</label>
           <div className="relative">
-            <select value={form.jobType} onChange={e => setField('jobType', e.target.value)}
-              className="w-full appearance-none rounded-xl border border-token pl-3.5 pr-9 py-2.5 text-sm font-medium text-heading outline-none bg-surface">
+            <select value={form.jobType} onChange={e => setField('jobType', e.target.value)} disabled={disabled}
+              className="w-full appearance-none rounded-xl border border-token pl-3.5 pr-9 py-2.5 text-sm font-medium text-heading outline-none bg-surface disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed">
               {JOB_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
@@ -62,8 +63,8 @@ export default function JobFieldsBasic({ form, errors, setField }: Props) {
         <div className="lg:w-[180px] shrink-0">
           <label className="block text-sm font-bold text-body-secondary mb-1.5">Work mode</label>
           <div className="relative">
-            <select value={form.workMode} onChange={e => setField('workMode', e.target.value)}
-              className="w-full appearance-none rounded-xl border border-token pl-3.5 pr-9 py-2.5 text-sm font-medium text-heading outline-none bg-surface">
+            <select value={form.workMode} onChange={e => setField('workMode', e.target.value)} disabled={disabled}
+              className="w-full appearance-none rounded-xl border border-token pl-3.5 pr-9 py-2.5 text-sm font-medium text-heading outline-none bg-surface disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed">
               {WORK_MODES.map(m => <option key={m} value={m}>{m}</option>)}
             </select>
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"

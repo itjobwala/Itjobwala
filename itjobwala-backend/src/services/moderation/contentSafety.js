@@ -79,6 +79,7 @@ const MIN_DESCRIPTION_CHARS     = 100;
 function collectText(job) {
   return {
     title:           String(job.title           ?? ''),
+    location:        String(job.location        ?? ''),
     description:     String(job.description     ?? ''),
     responsibilities: (Array.isArray(job.responsibilities) ? job.responsibilities.join(' ') : String(job.responsibilities ?? '')),
     requirements:    (Array.isArray(job.requirements)     ? job.requirements.join(' ')     : String(job.requirements     ?? '')),
@@ -117,16 +118,27 @@ function vowelRatio(word) {
 const GIBBERISH_RATIO_THRESHOLD = 0.25;
 const GIBBERISH_MIN_WORDS = 5;
 
-// Fraction of 4+ letter "words" that look like keyboard mash: either a long
-// consonant run (>=5) or an abnormally low vowel ratio (<0.15).
-// Returns null when there isn't enough text to judge reliably.
-function gibberishWordRatio(text) {
+// A 4+ letter "word" that looks like keyboard mash: either a long consonant
+// run (>=5), or — for words of 5+ letters, to avoid tripping on short tech
+// acronyms like "gRPC"/"HTTP" — essentially no vowels at all.
+function isSuspiciousWord(word) {
+  return longestConsonantRun(word) >= 5 || (word.length >= 5 && vowelRatio(word) < 0.15);
+}
+
+// A field reads as gibberish if either:
+//  - it has enough words (>=5) to judge a ratio, and over 25% look suspicious
+//    (avoids false positives from a single odd/technical word in prose), or
+//  - it's short (title, location, a single bullet item) and contains ANY
+//    suspicious word — a ratio isn't meaningful with only 1-4 words, but a
+//    single keyboard-mash word in a field that's supposed to be a whole
+//    title/location/bullet is already a strong signal on its own.
+function isFieldGibberish(text) {
   const words = text.match(/[a-zA-Z]{4,}/g) || [];
-  if (words.length < GIBBERISH_MIN_WORDS) return null;
-  const suspicious = words.filter(
-    (w) => longestConsonantRun(w) >= 5 || vowelRatio(w) < 0.15
-  ).length;
-  return suspicious / words.length;
+  if (words.length === 0) return false;
+  if (words.length < GIBBERISH_MIN_WORDS) {
+    return words.some(isSuspiciousWord);
+  }
+  return words.filter(isSuspiciousWord).length / words.length > GIBBERISH_RATIO_THRESHOLD;
 }
 
 // ── Main export ───────────────────────────────────────────────────────────────
@@ -252,10 +264,13 @@ export function checkJobContent(job) {
     });
   }
 
-  // 11. Gibberish / nonsensical content — checked per field so the flag points
-  // at the actual offending field, not just "description" (a garbage
-  // requirements/benefits list shouldn't hide behind a clean description).
+  // 11. Gibberish / nonsensical content — checked per field (including short
+  // fields like title/location) so the flag points at the actual offending
+  // field, and so a single garbage bullet/title/location can't hide behind
+  // a long, otherwise-legitimate description.
   const GIBBERISH_FIELDS = [
+    { key: 'title',            label: 'title',            dbField: 'title' },
+    { key: 'location',         label: 'location',         dbField: 'location' },
     { key: 'description',      label: 'description',      dbField: 'description' },
     { key: 'responsibilities', label: 'responsibilities', dbField: 'responsibilities' },
     { key: 'requirements',     label: 'requirements',     dbField: 'requirements' },
@@ -264,21 +279,8 @@ export function checkJobContent(job) {
   ];
 
   const gibberishFieldLabels = GIBBERISH_FIELDS
-    .filter(({ key }) => {
-      const ratio = gibberishWordRatio(fields[key]);
-      return ratio !== null && ratio > GIBBERISH_RATIO_THRESHOLD;
-    })
+    .filter(({ key }) => isFieldGibberish(fields[key]))
     .map(({ label }) => label);
-
-  // Fallback: some fields (e.g. short bullet lists) may each have too few
-  // words to judge alone, but together clearly read as nonsense.
-  if (gibberishFieldLabels.length === 0) {
-    const contentBlob = GIBBERISH_FIELDS.map(({ key }) => fields[key]).join(' ');
-    const combinedRatio = gibberishWordRatio(contentBlob);
-    if (combinedRatio !== null && combinedRatio > GIBBERISH_RATIO_THRESHOLD) {
-      gibberishFieldLabels.push('description, responsibilities, requirements, nice to have, and/or benefits');
-    }
-  }
 
   if (gibberishFieldLabels.length > 0) {
     flags.push({
