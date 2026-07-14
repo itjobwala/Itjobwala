@@ -20,7 +20,7 @@ import JobFieldsDetail from './JobFieldsDetail';
 
 function scrollToFirstError() {
   requestAnimationFrame(() => {
-    const firstErr = document.querySelector<HTMLElement>('p.text-red-500:not(:empty)');
+    const firstErr = document.querySelector<HTMLElement>('p.text-danger:not(:empty)');
     if (!firstErr) return;
     const container = firstErr.closest<HTMLElement>('div');
     const input = container?.querySelector<HTMLElement>(

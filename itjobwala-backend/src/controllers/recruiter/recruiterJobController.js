@@ -214,7 +214,11 @@ export const postJob = async (request, reply) => {
     const recruiter = await Recruiter.query().findById(recruiterId).select('company_name');
     const companyName = recruiter?.company_name ?? 'Unknown Company';
 
+    // Generate a random 12-char hex public_id via DB function
+    const { rows: [{ pid }] } = await Job.knex().raw(`SELECT left(encode(gen_random_bytes(6),'hex'),12) AS pid`);
+
     const newJob = await Job.query().insert({
+      public_id: pid,
       title: sanitizeText(title),
       company_name: companyName,
       description: sanitizeText(description || ''),

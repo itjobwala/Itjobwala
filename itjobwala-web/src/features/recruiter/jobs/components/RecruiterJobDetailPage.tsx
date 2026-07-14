@@ -96,6 +96,7 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
   }
 
   const applicants = applicantsData?.applicants ?? [];
+  const isLive = job.status === 'active' || job.status === 'closed';
 
   return (
     <div className="max-w-[900px] mx-auto px-5 sm:px-8 py-8 space-y-6">
@@ -134,12 +135,14 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
             >
               Edit
             </Link>
-            <Link
-              href={`/recruiter/applicants?jobId=${job.id}`}
-              className={buttonVariants({ variant: 'secondary', className: 'text-primary' })}
-            >
-              View All Applicants
-            </Link>
+            {isLive && (
+              <Link
+                href={`/recruiter/applicants?jobId=${job.id}`}
+                className={buttonVariants({ variant: 'secondary', className: 'text-primary' })}
+              >
+                View All Applicants
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -162,7 +165,7 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
       </div>
 
       {/* Analytics panel */}
-      {analytics && (
+      {isLive && analytics && (
         <div className="bg-surface rounded-2xl border border-token p-5">
           <h2 className="text-sm font-extrabold text-heading mb-4">Analytics</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">

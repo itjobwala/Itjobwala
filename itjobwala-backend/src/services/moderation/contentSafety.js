@@ -93,6 +93,42 @@ function capsRatio(str) {
   return (str.replace(/[^A-Z]/g, '').length) / letters.length;
 }
 
+// Longest run of consecutive consonants in a word (real English rarely exceeds ~4-5).
+function longestConsonantRun(word) {
+  let max = 0;
+  let current = 0;
+  for (const ch of word) {
+    if (/[aeiouAEIOU]/.test(ch)) {
+      current = 0;
+    } else {
+      current += 1;
+      if (current > max) max = current;
+    }
+  }
+  return max;
+}
+
+function vowelRatio(word) {
+  if (!word.length) return 0;
+  const vowels = (word.match(/[aeiouAEIOU]/g) || []).length;
+  return vowels / word.length;
+}
+
+const GIBBERISH_RATIO_THRESHOLD = 0.25;
+const GIBBERISH_MIN_WORDS = 5;
+
+// Fraction of 4+ letter "words" that look like keyboard mash: either a long
+// consonant run (>=5) or an abnormally low vowel ratio (<0.15).
+// Returns null when there isn't enough text to judge reliably.
+function gibberishWordRatio(text) {
+  const words = text.match(/[a-zA-Z]{4,}/g) || [];
+  if (words.length < GIBBERISH_MIN_WORDS) return null;
+  const suspicious = words.filter(
+    (w) => longestConsonantRun(w) >= 5 || vowelRatio(w) < 0.15
+  ).length;
+  return suspicious / words.length;
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 
 export function checkJobContent(job) {
@@ -213,6 +249,43 @@ export function checkJobContent(job) {
       severity: 'block',
       message:  'Job description is required.',
       field:    'description',
+    });
+  }
+
+  // 11. Gibberish / nonsensical content — checked per field so the flag points
+  // at the actual offending field, not just "description" (a garbage
+  // requirements/benefits list shouldn't hide behind a clean description).
+  const GIBBERISH_FIELDS = [
+    { key: 'description',      label: 'description',      dbField: 'description' },
+    { key: 'responsibilities', label: 'responsibilities', dbField: 'responsibilities' },
+    { key: 'requirements',     label: 'requirements',     dbField: 'requirements' },
+    { key: 'niceToHave',       label: 'nice to have',     dbField: 'nice_to_have' },
+    { key: 'benefits',         label: 'benefits',         dbField: 'benefits' },
+  ];
+
+  const gibberishFieldLabels = GIBBERISH_FIELDS
+    .filter(({ key }) => {
+      const ratio = gibberishWordRatio(fields[key]);
+      return ratio !== null && ratio > GIBBERISH_RATIO_THRESHOLD;
+    })
+    .map(({ label }) => label);
+
+  // Fallback: some fields (e.g. short bullet lists) may each have too few
+  // words to judge alone, but together clearly read as nonsense.
+  if (gibberishFieldLabels.length === 0) {
+    const contentBlob = GIBBERISH_FIELDS.map(({ key }) => fields[key]).join(' ');
+    const combinedRatio = gibberishWordRatio(contentBlob);
+    if (combinedRatio !== null && combinedRatio > GIBBERISH_RATIO_THRESHOLD) {
+      gibberishFieldLabels.push('description, responsibilities, requirements, nice to have, and/or benefits');
+    }
+  }
+
+  if (gibberishFieldLabels.length > 0) {
+    flags.push({
+      code:     'GIBBERISH_CONTENT',
+      severity: 'block',
+      message:  `Job content appears to contain random or nonsensical text in: ${gibberishFieldLabels.join(', ')}. Rewrite with clear, meaningful content.`,
+      field:    GIBBERISH_FIELDS.find(f => gibberishFieldLabels.includes(f.label))?.dbField ?? 'description',
     });
   }
 
