@@ -169,17 +169,17 @@ export default function JobDetailsHeader({ job, applied, saved, loading = false,
           {/* CTA row */}
           <div className="flex flex-wrap items-center gap-3">
             {applied ? (
-              <Button variant="primary" size="md" disabled>
+              <Button variant="primary" size="sm" disabled>
                 Applied ✓
               </Button>
             ) : (
-              <Button variant="primary" size="md" onClick={onApply} loading={loading}>
+              <Button variant="primary" size="sm" onClick={onApply} loading={loading}>
                 Apply now
               </Button>
             )}
             <Button
               variant="outline"
-              size="md"
+              size="sm"
               onClick={handleSaveToggle}
               disabled={savingState}
               className={saved ? 'border-primary text-primary bg-primary/10' : ''}

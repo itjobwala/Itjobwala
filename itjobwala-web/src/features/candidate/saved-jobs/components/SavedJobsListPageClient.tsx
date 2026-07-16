@@ -99,22 +99,13 @@ export default function SavedJobsListPageClient() {
           {/* Header bar */}
           <div className="bg-surface border-b border-token">
             <div className="container-responsive mx-auto px-5 sm:px-8 py-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-h3 text-heading" style={{ letterSpacing: '-0.3px' }}>
-                    Saved Jobs
-                  </h3>
-                  <p className="text-small-text text-subtle mt-0.5">
-                    Browse and manage your saved job listings
-                  </p>
-                </div>
-                <Link
-                  href="/candidate/jobs"
-                  className="text-sm font-bold text-white bg-primary rounded-sm px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
-                  style={{ color: '#fff' }}
-                >
-                  Find More Jobs
-                </Link>
+              <div>
+                <h3 className="text-h3 text-heading" style={{ letterSpacing: '-0.3px' }}>
+                  Saved Jobs
+                </h3>
+                <p className="text-small-text text-subtle mt-0.5">
+                  Browse and manage your saved job listings
+                </p>
               </div>
             </div>
           </div>

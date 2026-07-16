@@ -11,7 +11,8 @@ export default async function applicationRoutes(fastify, options) {
         type: 'object',
         required: ['job_id'],
         properties: {
-          job_id: { type: 'string', pattern: '^job_\\d+$' }
+          // public_id: 12-char lowercase hex — matches jobRoutes.js's paramSchema
+          job_id: { type: 'string', pattern: '^[0-9a-f]{12}$' }
         }
       },
       body: {

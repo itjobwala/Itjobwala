@@ -45,7 +45,7 @@ export default function ReportModal({ isOpen, onClose, targetType, targetId, tar
             </div>
             <h2 id="report-modal-title" className="text-base font-bold text-heading">Report submitted</h2>
             <p className="text-sm text-muted">Thank you — our team will review it shortly.</p>
-            <Button variant="primary" fullWidth onClick={handleClose}>
+            <Button variant="primary" size="sm" fullWidth onClick={handleClose}>
               Done
             </Button>
           </div>
@@ -98,6 +98,7 @@ export default function ReportModal({ isOpen, onClose, targetType, targetId, tar
             <div className="flex gap-3">
               <Button
                 variant="secondary"
+                size="sm"
                 onClick={handleClose}
                 className="flex-1"
               >
@@ -105,6 +106,7 @@ export default function ReportModal({ isOpen, onClose, targetType, targetId, tar
               </Button>
               <Button
                 variant="primary"
+                size="sm"
                 loading={mutation.isPending}
                 disabled={!reason || mutation.isPending}
                 onClick={() => mutation.mutate()}

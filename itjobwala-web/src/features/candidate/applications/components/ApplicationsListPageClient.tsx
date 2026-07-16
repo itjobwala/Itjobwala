@@ -101,21 +101,13 @@ export default function ApplicationsListPageClient() {
           {/* Header bar */}
           <div className="bg-surface border-b border-token">
             <div className="container-responsive mx-auto px-5 sm:px-8 py-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-h3 text-heading" style={{ letterSpacing: '-0.3px' }}>
-                    My Applications
-                  </h3>
-                  <p className="text-small-text text-subtle mt-0.5">
-                    Track and manage your job applications
-                  </p>
-                </div>
-                <Link
-                  href="/candidate/jobs"
-                  className="text-sm font-semibold text-white bg-primary rounded-xl px-4 py-2 hover:opacity-90 active:opacity-80 transition-opacity"
-                >
-                  Find More Jobs
-                </Link>
+              <div>
+                <h3 className="text-h3 text-heading" style={{ letterSpacing: '-0.3px' }}>
+                  My Applications
+                </h3>
+                <p className="text-small-text text-subtle mt-0.5">
+                  Track and manage your job applications
+                </p>
               </div>
             </div>
           </div>

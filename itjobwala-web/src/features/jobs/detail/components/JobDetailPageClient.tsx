@@ -14,7 +14,7 @@ import { useSaveJobMutation, useUnsaveJobMutation } from '@/features/candidate/a
 import { useRecommendedJobsQuery, useSimilarCompaniesQuery } from '@/features/jobs/browse/hooks';
 import { applyToJob, getMyApplications } from '@/features/candidate/applications';
 import { getSavedJobs } from '@/features/candidate/saved-jobs';
-import { safeLocalStorageGetItem } from '@/src/lib/hydration-safe';
+import { useAuthHydration } from '@/src/hooks/useAuthHydration';
 import { normalizeJob } from '../../shared/types';
 import type { JobDetail } from '../../shared/types';
 import { ReportModal }          from '@/src/features/reports';
@@ -26,6 +26,7 @@ interface Props {
 export default function JobDetailPageClient({ job }: Props) {
   const saveJobMutation = useSaveJobMutation();
   const unsaveJobMutation = useUnsaveJobMutation();
+  const { isHydrated, session } = useAuthHydration();
   const [loading, setLoading] = useState(true);
   const [applied, setApplied] = useState(job.hasApplied ?? false);
   const [saved, setSaved] = useState(job.isSaved ?? false);
@@ -41,35 +42,30 @@ export default function JobDetailPageClient({ job }: Props) {
     return () => clearTimeout(t);
   }, []);
 
-  // Client-side applied check — SSR doesn't have candidate's token, so we verify after mount
+  // Client-side applied check — SSR doesn't have candidate's session, so we verify after mount
   useEffect(() => {
-    if (applied) return;
-    const token = safeLocalStorageGetItem('token');
-    if (!token) return;
+    if (applied || !isHydrated || !session) return;
     getMyApplications({ limit: 200 })
       .then(data => {
         const alreadyApplied = data.applications.some(a => a.job_id === String(job.id));
         if (alreadyApplied) setApplied(true);
       })
       .catch(() => {});
-  }, [job.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [job.id, isHydrated, session]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Client-side saved check — same reason as applied check above
   useEffect(() => {
-    if (saved) return;
-    const token = safeLocalStorageGetItem('token');
-    if (!token) return;
+    if (saved || !isHydrated || !session) return;
     getSavedJobs({ limit: 200 })
       .then(data => {
         const alreadySaved = data.saved_jobs.some(j => j.job_id === String(job.id));
         if (alreadySaved) setSaved(true);
       })
       .catch(() => {});
-  }, [job.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [job.id, isHydrated, session]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleApply() {
-    const token = safeLocalStorageGetItem('token');
-    if (!token) {
+    if (isHydrated && !session) {
       window.location.href = `/auth/login?next=${encodeURIComponent(`/candidate/jobs/${job.id}`)}&role=candidate`;
       return;
     }
@@ -90,8 +86,7 @@ export default function JobDetailPageClient({ job }: Props) {
   }
 
   async function handleSave() {
-    const token = safeLocalStorageGetItem('token');
-    if (!token) {
+    if (isHydrated && !session) {
       window.location.href = `/auth/login?next=${encodeURIComponent(`/candidate/jobs/${job.id}`)}&role=candidate`;
       return;
     }
@@ -105,8 +100,7 @@ export default function JobDetailPageClient({ job }: Props) {
   }
 
   function handleReportClick() {
-    const token = safeLocalStorageGetItem('token');
-    if (!token) {
+    if (isHydrated && !session) {
       window.location.href = `/auth/login?next=${encodeURIComponent(`/candidate/jobs/${job.id}`)}&role=candidate`;
       return;
     }

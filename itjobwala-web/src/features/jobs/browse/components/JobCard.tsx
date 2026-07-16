@@ -137,6 +137,17 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false, m
                 {job.isHot && (
                   <span className="text-micro font-bold rounded-full py-[2px] px-2 bg-danger-bg text-danger">Hot</span>
                 )}
+                {matchScore != null && (
+                  <span
+                    className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+                    style={{
+                      background: matchScore >= 70 ? 'rgba(16,185,129,0.12)' : matchScore >= 45 ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.08)',
+                      color:      matchScore >= 70 ? '#10b981' : matchScore >= 45 ? '#f59e0b' : '#ef4444',
+                    }}
+                  >
+                    {matchScore}% job fit
+                  </span>
+                )}
               </div>
               {/* Title */}
               <h3 className="font-bold text-sm text-heading leading-snug group-hover:text-primary transition-colors">
@@ -189,20 +200,6 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false, m
               <span className="text-caption text-subtle">+{job.skills.length - 3} more</span>
             )}
           </div>
-
-          {matchScore != null && (
-            <div className="flex items-center gap-1.5 mt-1.5">
-              <span
-                className="text-[11px] font-bold px-2 py-0.5 rounded-full"
-                style={{
-                  background: matchScore >= 70 ? 'rgba(16,185,129,0.12)' : matchScore >= 45 ? 'rgba(245,158,11,0.12)' : 'rgba(239,68,68,0.08)',
-                  color:      matchScore >= 70 ? '#10b981' : matchScore >= 45 ? '#f59e0b' : '#ef4444',
-                }}
-              >
-                {matchScore}% job fit
-              </span>
-            </div>
-          )}
         </div>
       </div>
 
