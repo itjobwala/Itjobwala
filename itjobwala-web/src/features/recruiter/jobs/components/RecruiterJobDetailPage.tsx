@@ -110,9 +110,9 @@ export default function RecruiterJobDetailPage({ jobId }: Props) {
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-h1 text-heading" style={{ letterSpacing: -0.8 }}>
+              <h3 className="text-h3 text-heading" style={{ letterSpacing: -0.8 }}>
                 {job.title}
-              </h1>
+              </h3>
               <StatusBadge status={job.status} size="md" />
             </div>
             <p className="text-sm text-muted mt-1">

@@ -118,9 +118,9 @@ export default function RecruiterJobForm() {
             </svg>
             Back
           </button>
-          <h1 className="text-h1 text-heading mb-1" style={{ letterSpacing: -0.8 }}>
+          <h3 className="text-h3 text-heading mb-1" style={{ letterSpacing: -0.8 }}>
             Post a new job
-          </h1>
+          </h3>
           <p className="text-small-text text-muted">Fill in the details below. You can edit the job after posting.</p>
         </div>
 
@@ -161,10 +161,10 @@ export default function RecruiterJobForm() {
             Saved as draft — you can review and publish from the next screen.
           </p>
           <div className="flex items-center gap-3 shrink-0">
-            <Button type="button" variant="outline" onClick={() => router.back()}>
+            <Button type="button" variant="outline" size="sm" onClick={() => router.back()}>
               Close
             </Button>
-            <Button type="submit" variant="primary" loading={loading}>
+            <Button type="submit" variant="primary" size="sm" loading={loading}>
               Save as Draft →
             </Button>
           </div>

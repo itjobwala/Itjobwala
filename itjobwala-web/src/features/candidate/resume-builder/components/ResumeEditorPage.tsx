@@ -18,7 +18,7 @@ import { BLANK_CONTENT } from '../types/resumeBuilder.types';
 
 const SAVE_DELAY    = 1500;
 const PREVIEW_DELAY = 500;
-const INP = 'w-full border border-token rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-surface';
+const INP = 'w-full border border-token rounded-xl px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-surface';
 const LBL = 'block text-micro font-semibold text-muted mb-1 mt-3 first:mt-0';
 
 function mkExp(): ResumeExperience {
@@ -85,7 +85,7 @@ function SkillsEditor({ skills, onChange }: { skills: string[]; onChange: (v: st
         onKeyDown={handleKey}
         onBlur={() => { if (val.trim()) { addSkill(val); setVal(''); } }}
         placeholder={skills.length === 0 ? 'Type a skill, press Enter or comma' : 'Add more…'}
-        className="flex-1 min-w-[140px] text-caption outline-none bg-transparent"
+        className="flex-1 min-w-[140px] text-caption placeholder:text-muted outline-none bg-transparent"
       />
     </div>
   );
@@ -240,7 +240,7 @@ export function ResumeEditorPage({ id }: { id: number }) {
           <input
             value={title}
             onChange={e => changeTitle(e.target.value)}
-            className="flex-1 min-w-0 text-sm font-bold text-heading bg-transparent outline-none border-none truncate"
+            className="flex-1 min-w-0 text-sm font-bold text-heading placeholder:text-muted bg-transparent outline-none border-none truncate"
             placeholder="Resume title"
           />
           <span className={`text-[10px] shrink-0 ${saveStatus === 'unsaved' ? 'text-amber-500' : 'text-subtle'}`}>
@@ -259,7 +259,6 @@ export function ResumeEditorPage({ id }: { id: number }) {
             type="button"
             variant="primary"
             size="sm"
-            rounded="full"
             onClick={handleDownload}
           >
             ↓ PDF
@@ -314,7 +313,7 @@ export function ResumeEditorPage({ id }: { id: number }) {
               value={content.summary}
               onChange={e => setC('summary', e.target.value)}
               rows={4}
-              className="w-full border border-token rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-surface resize-none"
+              className="w-full border border-token rounded-xl px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-surface resize-none"
               placeholder="A brief professional summary…"
             />
           </SectionCard>
@@ -371,7 +370,7 @@ export function ResumeEditorPage({ id }: { id: number }) {
                       value={exp.bullets.join('\n')}
                       onChange={e => patchExp(i, { bullets: e.target.value.split('\n') })}
                       rows={3}
-                      className="w-full border border-token rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-surface resize-none"
+                      className="w-full border border-token rounded-xl px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-surface resize-none"
                       placeholder="Describe your key contributions…"
                     />
                   </div>
@@ -453,7 +452,7 @@ export function ResumeEditorPage({ id }: { id: number }) {
                     value={proj.bullets.join('\n')}
                     onChange={e => patchProj(i, { bullets: e.target.value.split('\n') })}
                     rows={3}
-                    className="w-full border border-token rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-surface resize-none mt-1"
+                    className="w-full border border-token rounded-xl px-3 py-2 text-sm placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-surface resize-none mt-1"
                     placeholder="Key highlights…"
                   />
                 </div>

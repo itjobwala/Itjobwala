@@ -89,7 +89,7 @@ function TextField({ label, value, onChange, onBlur, placeholder = '', type = 't
         placeholder={placeholder}
         maxLength={maxLength}
         aria-invalid={!!error}
-        className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors focus:border-primary/50 placeholder:text-subtle ${error ? 'border-danger' : 'border-token'}`}
+        className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors focus:border-primary/50 placeholder:text-muted ${error ? 'border-danger' : 'border-token'}`}
       />
       {error && <p className="text-micro text-danger mt-1 font-medium">{error}</p>}
     </label>
@@ -175,7 +175,7 @@ export default function EditCareerProfileSection({ profile, onChange }: Props) {
             onBlur={() => handleBlur('expected_salary')}
             placeholder="e.g. 100000"
             aria-invalid={!!errors.expected_salary}
-            className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-subtle ${
+            className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-muted ${
               errors.expected_salary ? 'border-danger focus:border-danger' : 'border-token focus:border-primary/50'
             }`}
           />

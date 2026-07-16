@@ -111,9 +111,9 @@ export default function RecruiterInterviewsPage() {
       {/* Page header */}
       <div className="bg-surface border-b border-token">
         <div className="container-responsive mx-auto px-5 sm:px-8 py-6">
-          <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.5px' }}>
+          <h3 className="text-h3 text-heading" style={{ letterSpacing: '-0.5px' }}>
             Interviews
-          </h1>
+          </h3>
           <p className="text-small-text text-subtle mt-0.5">
             {counts.scheduled} upcoming · {counts.not_scheduled} to schedule
           </p>
@@ -171,7 +171,7 @@ export default function RecruiterInterviewsPage() {
               placeholder="Search candidate or job..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="pl-9 pr-4 py-2 text-sm border border-token rounded-xl outline-none focus:border-primary w-full sm:w-[240px] transition-colors"
+              className="pl-9 pr-4 py-2 text-sm border border-token rounded-xl outline-none placeholder:text-muted focus:border-primary w-full sm:w-[240px] transition-colors"
             />
           </div>
         </div>

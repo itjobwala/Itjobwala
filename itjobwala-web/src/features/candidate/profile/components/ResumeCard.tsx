@@ -56,7 +56,7 @@ export default function ResumeCard({ fileName, uploadDate, fileUrl, onEdit }: Pr
       <div className="flex items-center justify-between mb-5">
         <h2 className="text-lg font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>Resume</h2>
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           onClick={onEdit}
           leftIcon={
@@ -88,9 +88,8 @@ export default function ResumeCard({ fileName, uploadDate, fileUrl, onEdit }: Pr
           <p className="text-caption text-subtle mt-0.5">{uploadDate}</p>
           <div className="flex items-center gap-2 mt-3">
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              rounded="full"
               disabled={isViewing}
               leftIcon={
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -103,9 +102,8 @@ export default function ResumeCard({ fileName, uploadDate, fileUrl, onEdit }: Pr
               {isViewing ? 'Opening...' : 'View'}
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              rounded="full"
               disabled={isDownloading}
               onClick={handleDownload}
               leftIcon={

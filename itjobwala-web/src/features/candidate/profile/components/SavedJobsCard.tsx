@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import type { SavedJob } from '@/features/candidate/applications';
 import Card from '@/src/components/ui/Card';
+import { buttonVariants } from '@/src/components/ui/Button';
 import { hashColor, formatSalary } from '@/src/lib/utils/format';
 
 interface Props {
@@ -35,8 +36,7 @@ export default function SavedJobsCard({ jobs: initialJobs, total, hasMore, onUns
           <p className="text-sm text-subtle mb-3">You haven't saved any jobs yet.</p>
           <Link
             href="/candidate/jobs"
-            className="inline-block text-sm font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
-            style={{ color: '#fff' }}
+            className={buttonVariants({ variant: 'ghost', size: 'sm' })}
           >
             Browse Jobs
           </Link>

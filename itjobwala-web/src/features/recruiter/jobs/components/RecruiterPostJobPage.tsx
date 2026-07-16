@@ -38,9 +38,9 @@ export default function RecruiterPostJobPage() {
         <div className="flex-1 flex items-start justify-center overflow-y-auto px-5 py-10 sm:px-10 sm:py-12 lg:px-14 lg:py-14">
           <div className="w-full max-w-[520px]">
             <div className="mb-2">
-              <h1 className="text-h1 text-heading mb-1" style={{ letterSpacing: -0.8 }}>
+              <h3 className="text-h3 text-heading mb-1" style={{ letterSpacing: -0.8 }}>
                 {heading}
-              </h1>
+              </h3>
               <p className="text-small-text text-[#474d6a]">{sub}</p>
             </div>
 

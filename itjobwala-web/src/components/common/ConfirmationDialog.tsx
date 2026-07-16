@@ -43,7 +43,6 @@ export default function ConfirmationDialog({
         <Button
           variant="secondary"
           size="md"
-          rounded="full"
           disabled={isLoading}
           onClick={onCancel}
         >
@@ -52,7 +51,6 @@ export default function ConfirmationDialog({
         <Button
           variant={isDangerous ? 'danger' : 'primary'}
           size="md"
-          rounded="full"
           loading={isLoading}
           className="font-bold"
           onClick={onConfirm}

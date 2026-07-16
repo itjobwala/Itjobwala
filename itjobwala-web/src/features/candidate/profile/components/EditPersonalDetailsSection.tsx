@@ -115,7 +115,7 @@ function TextField({ label, value, onChange, onBlur, placeholder = '', type = 't
         placeholder={placeholder}
         max={max}
         aria-invalid={!!error}
-        className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors focus:border-primary/50 placeholder:text-subtle ${error ? 'border-danger focus:border-danger' : 'border-token'}`}
+        className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors focus:border-primary/50 placeholder:text-muted ${error ? 'border-danger focus:border-danger' : 'border-token'}`}
       />
       {error && <p className="mt-1 text-micro font-semibold text-danger">{error}</p>}
     </label>
@@ -296,7 +296,7 @@ export default function EditPersonalDetailsSection({ profile, onChange }: Props)
               rows={2}
               placeholder="e.g. H.No 5493, Sector 12, New Delhi – 110001"
               aria-invalid={!!errors.address}
-              className={`w-full resize-none rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-subtle ${errors.address ? 'border-danger focus:border-danger' : 'border-token focus:border-primary/50'}`}
+              className={`w-full resize-none rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-muted ${errors.address ? 'border-danger focus:border-danger' : 'border-token focus:border-primary/50'}`}
             />
             <div className="flex items-center justify-between mt-1">
               {errors.address ? <p className="text-micro font-semibold text-danger">{errors.address}</p> : <span />}
@@ -352,7 +352,7 @@ export default function EditPersonalDetailsSection({ profile, onChange }: Props)
                       placeholder="e.g. English"
                       maxLength={MAX_LANG_NAME}
                       aria-invalid={!!errors[`lang_name_${lang.id}`]}
-                      className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors focus:border-primary/50 placeholder:text-subtle ${errors[`lang_name_${lang.id}`] ? 'border-danger focus:border-danger' : 'border-token'}`}
+                      className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors focus:border-primary/50 placeholder:text-muted ${errors[`lang_name_${lang.id}`] ? 'border-danger focus:border-danger' : 'border-token'}`}
                     />
                     {errors[`lang_name_${lang.id}`] && (
                       <p className="mt-1 text-micro font-semibold text-danger">{errors[`lang_name_${lang.id}`]}</p>

@@ -79,7 +79,7 @@ export default function AdminJobsPage() {
           value={search}
           onChange={e => { setSearch(e.target.value); setPage(1); }}
           placeholder="Search title or company…"
-          className="rounded-xl px-4 py-2 text-sm text-white outline-none transition-all"
+          className="rounded-xl px-4 py-2 text-sm text-white placeholder:text-white/40 outline-none transition-all"
           style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', minWidth: 220 }}
           onFocus={e => { e.currentTarget.style.borderColor = ACCENT; }}
           onBlur={e  => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; }}

@@ -60,7 +60,7 @@ function Field({
         placeholder={placeholder}
         min={min}
         max={max}
-        className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-subtle ${
+        className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-muted ${
           type === 'date' ? 'max-w-xs' : ''
         } ${
           error ? 'border-danger focus:border-danger' : 'border-token focus:border-primary/50'
@@ -162,7 +162,7 @@ export default function EditProfileHeader({ profile, onChange, profilePhotoUrl }
               value={profile.currentSalary || ''}
               onChange={e => update('currentSalary', e.target.value)}
               placeholder="e.g. 80000"
-              className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-subtle ${
+              className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-muted ${
                 profile.currentSalary !== '' && profile.currentSalary != null && Number(profile.currentSalary) <= 0
                   ? 'border-danger focus:border-danger'
                   : 'border-token focus:border-primary/50'

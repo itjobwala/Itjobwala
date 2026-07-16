@@ -85,9 +85,9 @@ export default function RecruiterPostedJobsPage() {
       {/* Page header */}
       <div className="bg-surface border-b border-token">
         <div className="container-responsive mx-auto px-5 sm:px-8 py-8">
-          <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.5px' }}>
+          <h3 className="text-h3 text-heading" style={{ letterSpacing: '-0.5px' }}>
             Posted Jobs
-          </h1>
+          </h3>
           <p className="text-small-text text-subtle mt-1">
             Manage your active job listings
           </p>
@@ -127,7 +127,7 @@ export default function RecruiterPostedJobsPage() {
                   value={searchInput}
                   onChange={e => setSearchInput(e.target.value)}
                   placeholder="Search by title..."
-                  className="pl-9 pr-4 py-2 rounded-xl border border-token text-sm text-body outline-none focus:border-primary transition-colors w-full sm:w-[200px]"
+                  className="pl-9 pr-4 py-2 rounded-xl border border-token text-sm text-body placeholder:text-muted outline-none focus:border-primary transition-colors w-full sm:w-[200px]"
                 />
                 {searchInput && (
                   <button type="button" onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-subtle hover:text-muted">
@@ -137,14 +137,14 @@ export default function RecruiterPostedJobsPage() {
                   </button>
                 )}
               </div>
-              <Button variant="outline" type="submit" className="shrink-0">
+              <Button variant="outline" size="sm" type="submit" className="shrink-0">
                 Search
               </Button>
             </form>
             {(!data || data.jobs.length > 0 || search || statusFilter) && (
               <Link
                 href="/recruiter/post-job"
-                className={buttonVariants({ variant: 'primary', size: 'md', className: 'px-4 shrink-0' })}
+                className={buttonVariants({ variant: 'primary', size: 'sm', className: 'px-4 shrink-0' })}
               >
                 + Post a Job
               </Link>
@@ -190,7 +190,7 @@ export default function RecruiterPostedJobsPage() {
                       <th className="px-6 py-4 text-center text-lg font-semibold text-body-secondary">Applications</th>
                       <th className="px-6 py-4 text-left text-lg font-semibold text-body-secondary">Status</th>
                       <th className="px-6 py-4 text-left text-lg font-semibold text-body-secondary">Posted</th>
-                      <th className="px-6 py-4 text-left text-lg font-semibold text-body-secondary">Actions</th>
+                      <th className="px-6 py-4 text-center text-lg font-semibold text-body-secondary">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -203,19 +203,18 @@ export default function RecruiterPostedJobsPage() {
                             <p className="text-micro text-amber-600 mt-1 font-medium">⚠ {job.moderationReason}</p>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-small-text text-body-secondary">{job.location}</td>
-                        <td className="px-6 py-4 text-small-text text-body-secondary text-center">{job.applicationCount ?? 0}</td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4 text-small-text text-body-secondary align-middle">{job.location}</td>
+                        <td className="px-6 py-4 text-small-text text-body-secondary text-center align-middle">{job.applicationCount ?? 0}</td>
+                        <td className="px-6 py-4 align-middle">
                           <StatusBadge status={job.status} size="md" />
                         </td>
-                        <td className="px-6 py-4 text-small-text text-body-secondary">{formatDate(job.postedDate ?? job.createdAt)}</td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3 flex-wrap">
+                        <td className="px-6 py-4 text-small-text text-body-secondary align-middle">{formatDate(job.postedDate ?? job.createdAt)}</td>
+                        <td className="px-6 py-4 align-middle">
+                          <div className="flex items-center justify-center gap-3 flex-wrap">
                             {(job.status === 'draft' || job.status === 'needs_changes') && (
                               <Button
                                 variant="primary"
                                 size="sm"
-                                rounded="full"
                                 loading={publishingId === job.id}
                                 disabled={publishingId === job.id}
                                 onClick={() => handleSubmit(job.id)}
@@ -250,7 +249,6 @@ export default function RecruiterPostedJobsPage() {
                   <Button
                     variant="outline"
                     size="md"
-                    rounded="full"
                     disabled={page === 1}
                     onClick={() => setPage(p => Math.max(1, p - 1))}
                   >
@@ -262,7 +260,6 @@ export default function RecruiterPostedJobsPage() {
                   <Button
                     variant="outline"
                     size="md"
-                    rounded="full"
                     disabled={page === totalPages}
                     onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                   >

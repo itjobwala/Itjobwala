@@ -63,13 +63,13 @@ function SavePopover({ candidateId, onClose }: { candidateId: string; onClose: (
         value={listName}
         onChange={e => setListName(e.target.value)}
         placeholder="List name"
-        className="w-full text-sm border border-token rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+        className="w-full text-sm border border-token rounded-lg px-2 py-1.5 placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
       />
       <input
         value={note}
         onChange={e => setNote(e.target.value)}
         placeholder="Note (optional)"
-        className="w-full text-sm border border-token rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+        className="w-full text-sm border border-token rounded-lg px-2 py-1.5 placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
       />
       <div className="flex gap-1.5 justify-end">
         <button onClick={onClose} className="text-xs text-subtle px-2 py-1 rounded-lg hover:bg-surface-hover">Cancel</button>
@@ -144,10 +144,10 @@ export default function CandidateResultCard({ candidate, onView, selected, onSel
       <td className="px-2 py-3.5 text-small-text text-body-secondary text-center truncate w-[11%]">{candidate.location || '—'}</td>
       <td className="px-3 py-3.5 w-[28%] relative">
         <div className="flex items-center justify-center gap-1.5">
-          <Button variant="ghost" size="sm" onClick={() => onView(candidate.id)} className="shrink-0 whitespace-nowrap cursor-pointer bg-primary/10 hover:bg-primary/15">
+          <Button variant="primary" size="sm" onClick={() => onView(candidate.id)} className="shrink-0 whitespace-nowrap cursor-pointer">
             View profile
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => setShowSave(v => !v)} className="shrink-0 whitespace-nowrap cursor-pointer bg-primary/10 hover:bg-primary/15" aria-label="Save to talent pool">
+          <Button variant="primary" size="sm" onClick={() => setShowSave(v => !v)} className="shrink-0 whitespace-nowrap cursor-pointer" aria-label="Save to talent pool">
             + Save
           </Button>
           {showSave && (

@@ -193,9 +193,9 @@ function DashboardContent() {
                         openToWork={data.user.openToWork}
                       />
                       <div>
-                        <h1 className="text-h1 text-white tracking-tight">
+                        <h3 className="text-h3 text-white tracking-tight">
                           {data.user.fullName ? `Hi, ${data.user.fullName}` : 'Your Career Dashboard'}
-                        </h1>
+                        </h3>
                         {/* Work status · Experience · Location */}
                         <div className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1.5">
                           {workStatus && (

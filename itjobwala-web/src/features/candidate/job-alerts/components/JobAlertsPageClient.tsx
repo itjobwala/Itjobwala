@@ -127,7 +127,7 @@ function CreateAlertModal({ onClose, onCreate }: {
               placeholder="e.g. QA Engineer, Selenium, React"
               value={form.keywords}
               onChange={e => { setForm(f => ({ ...f, keywords: e.target.value })); setErrors({}); }}
-              className="w-full bg-surface-alt border border-token rounded-xl px-4 py-3 text-sm text-heading placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all"
+              className="w-full bg-surface-alt border border-token rounded-xl px-4 py-3 text-sm text-heading placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all"
             />
             {errors.keywords && <p className="text-xs text-danger mt-1.5">{errors.keywords}</p>}
           </div>
@@ -142,7 +142,7 @@ function CreateAlertModal({ onClose, onCreate }: {
               placeholder="e.g. Bangalore, Mumbai, Remote"
               value={form.location}
               onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
-              className="w-full bg-surface-alt border border-token rounded-xl px-4 py-3 text-sm text-heading placeholder:text-subtle focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all"
+              className="w-full bg-surface-alt border border-token rounded-xl px-4 py-3 text-sm text-heading placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all"
             />
           </div>
 
@@ -325,9 +325,9 @@ export default function JobAlertsPageClient() {
                     ← Dashboard
                   </Link>
                 </div>
-                <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.5px' }}>
+                <h3 className="text-h3 text-heading" style={{ letterSpacing: '-0.5px' }}>
                   Job Alerts
-                </h1>
+                </h3>
                 <p className="text-small-text text-muted mt-1">
                   Get notified when new jobs match your criteria.
                 </p>

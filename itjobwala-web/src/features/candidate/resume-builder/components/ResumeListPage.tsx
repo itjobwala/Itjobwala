@@ -86,16 +86,15 @@ export function ResumeListPage() {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-extrabold text-heading" style={{ letterSpacing: '-0.5px' }}>
+              <h3 className="text-h3 text-heading" style={{ letterSpacing: '-0.5px' }}>
                 Resume Builder
-              </h1>
+              </h3>
               <p className="text-sm text-muted mt-1">Create ATS-friendly PDF resumes from your profile data.</p>
             </div>
             <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                rounded="full"
                 disabled={busy}
                 onClick={handleCreateBlank}
               >
@@ -104,7 +103,6 @@ export function ResumeListPage() {
               <Button
                 variant="primary"
                 size="sm"
-                rounded="full"
                 disabled={busy}
                 loading={prefillLoading}
                 onClick={handleCreateFromProfile}

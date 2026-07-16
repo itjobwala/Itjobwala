@@ -73,7 +73,7 @@ export default function PasswordField({ label, id, placeholder, value, onChange,
           onChange={e => onChange(e.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          className="flex-1 h-full border-none outline-none text-lg text-heading bg-transparent"
+          className="flex-1 h-full border-none outline-none text-lg text-heading bg-transparent placeholder:text-muted"
         />
         <button
           type="button"

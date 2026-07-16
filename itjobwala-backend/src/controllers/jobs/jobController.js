@@ -606,13 +606,13 @@ export const getSitemapJobs = async (request, reply) => {
   try {
     const jobs = await Job.query()
       .where('status', 'active')
-      .select('id', 'updated_at')
+      .select('public_id', 'updated_at')
       .orderBy('id', 'asc');
 
     return reply.status(200).send({
       success: true,
       message: 'OK',
-      data: jobs.map(j => ({ id: `job_${j.id}`, updated_at: j.updated_at })),
+      data: jobs.map(j => ({ id: j.public_id, updated_at: j.updated_at })),
     });
   } catch (error) {
     request.server.log.error(error);

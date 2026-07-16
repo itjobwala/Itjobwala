@@ -79,7 +79,7 @@ export default function CertificationsSection({ certifications, onEdit, onAdd }:
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-12">
                 <ReadOnlyField label="Certification name" value={cert.name} />
                 <ReadOnlyField label="Issuing organization" value={cert.issuer ?? ''} />
                 <ReadOnlyField label="Issue date" value={cert.issue_date} />

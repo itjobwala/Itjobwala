@@ -67,9 +67,9 @@ export default function ApplicationDetailPageClient() {
               >
                 <BackIcon /> My Applications
               </Link>
-              <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.3px' }}>
+              <h3 className="text-h3 text-heading" style={{ letterSpacing: '-0.3px' }}>
                 Application Details
-              </h1>
+              </h3>
             </div>
           </div>
 

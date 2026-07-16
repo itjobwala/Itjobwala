@@ -11,6 +11,7 @@ import { useAuthHydration } from '@/src/hooks/useAuthHydration';
 import { useToast } from '@/src/hooks/useToast';
 import Toast from '@/src/components/ui/Toast';
 import Card from '@/src/components/ui/Card';
+import { buttonVariants } from '@/src/components/ui/Button';
 import { hashColor, relativeDate } from '@/src/lib/utils/format';
 
 export default function SavedJobsListPageClient() {
@@ -100,16 +101,16 @@ export default function SavedJobsListPageClient() {
             <div className="container-responsive mx-auto px-5 sm:px-8 py-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.3px' }}>
+                  <h3 className="text-h3 text-heading" style={{ letterSpacing: '-0.3px' }}>
                     Saved Jobs
-                  </h1>
+                  </h3>
                   <p className="text-small-text text-subtle mt-0.5">
                     Browse and manage your saved job listings
                   </p>
                 </div>
                 <Link
                   href="/candidate/jobs"
-                  className="text-sm font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
+                  className="text-sm font-bold text-white bg-primary rounded-sm px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
                   style={{ color: '#fff' }}
                 >
                   Find More Jobs
@@ -166,8 +167,7 @@ export default function SavedJobsListPageClient() {
                 </p>
                 <Link
                   href="/candidate/jobs"
-                  className="inline-block text-sm font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
-                  style={{ color: '#fff' }}
+                  className={buttonVariants({ variant: 'ghost', size: 'sm' })}
                 >
                   Browse Jobs
                 </Link>

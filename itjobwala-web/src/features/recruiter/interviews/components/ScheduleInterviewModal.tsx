@@ -127,10 +127,10 @@ export default function ScheduleInterviewModal({
 
   // Design-spec Input Field: 44px mobile -> 48px desktop, 16px font, 8px radius
   const inputCls = (err?: string) =>
-    `w-full h-11 lg:h-12 rounded-sm border px-3.5 lg:px-4 text-lg font-medium text-heading outline-none bg-surface transition-colors focus:border-primary focus:shadow-[0_0_0_3px_rgba(21,87,255,0.09)] ${err ? 'border-danger' : 'border-token'}`;
+    `w-full h-11 lg:h-12 rounded-sm border px-3.5 lg:px-4 text-lg font-medium text-heading placeholder:text-muted outline-none bg-surface transition-colors focus:border-primary focus:shadow-[0_0_0_3px_rgba(21,87,255,0.09)] ${err ? 'border-danger' : 'border-token'}`;
 
   const textareaCls = () =>
-    `w-full rounded-sm border px-3.5 py-3 text-lg font-medium text-heading outline-none bg-surface transition-colors focus:border-primary focus:shadow-[0_0_0_3px_rgba(21,87,255,0.09)] border-token`;
+    `w-full rounded-sm border px-3.5 py-3 text-lg font-medium text-heading placeholder:text-muted outline-none bg-surface transition-colors focus:border-primary focus:shadow-[0_0_0_3px_rgba(21,87,255,0.09)] border-token`;
 
   return (
     <div className="fixed inset-0 z-[400] flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -278,8 +278,7 @@ export default function ScheduleInterviewModal({
         <div className="px-6 py-4 border-t border-token shrink-0 flex gap-3">
           <Button
             variant="secondary"
-            size="lg"
-            rounded="full"
+            size="md"
             onClick={onClose}
             className="flex-1"
           >
@@ -287,8 +286,7 @@ export default function ScheduleInterviewModal({
           </Button>
           <Button
             variant="primary"
-            size="lg"
-            rounded="full"
+            size="md"
             type="submit"
             form="schedule-interview-form"
             loading={mutation.isPending}

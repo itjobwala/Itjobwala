@@ -172,9 +172,9 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
           <div className="flex-1 min-w-0">
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div>
-                <h1 className="text-h1 text-heading" style={{ letterSpacing: -0.8 }}>
+                <h3 className="text-h3 text-heading" style={{ letterSpacing: -0.8 }}>
                   {applicant.candidateName}
-                </h1>
+                </h3>
                 {applicant.profile?.title && (
                   <p className="text-sm text-muted mt-0.5">{applicant.profile.title}</p>
                 )}
@@ -256,7 +256,6 @@ export default function RecruiterApplicantDetailPage({ applicantId }: Props) {
             <div className="mt-5 flex gap-2 flex-wrap">
               <Button
                 variant="primary"
-                rounded="full"
                 disabled={messageMutation.isPending}
                 loading={messageMutation.isPending}
                 leftIcon={

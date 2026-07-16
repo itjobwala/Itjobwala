@@ -200,7 +200,7 @@ export default function AdminReportsPage() {
                 onChange={e => setNote(e.target.value)}
                 placeholder="Add an internal note about how this was resolved…"
                 rows={2}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 outline-none focus:border-indigo-500 resize-none"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 placeholder:text-gray-400 outline-none focus:border-indigo-500 resize-none"
               />
             </div>
             <div className="flex gap-3 justify-end">

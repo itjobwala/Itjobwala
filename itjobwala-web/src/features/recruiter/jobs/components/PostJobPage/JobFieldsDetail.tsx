@@ -70,7 +70,7 @@ export default function JobFieldsDetail({
             placeholder="Type to search skills (e.g. Selenium, Postman)"
             className={`flex-1 h-11 lg:h-12 rounded-sm border px-3.5 lg:px-4 text-lg font-medium text-heading outline-none ${skillError || errors.requiredSkills ? 'border-danger' : 'border-token'}`} />
           <button type="button" onClick={() => addSkill()}
-            className="px-4 py-2.5 rounded-full text-sm font-bold text-white shrink-0"
+            className="self-center h-9 px-4 rounded-sm text-sm font-bold text-white shrink-0"
             style={{ background: PRIMARY }}>Add</button>
         </div>
         {skillError && <p className="text-xs text-danger mb-2">{skillError}</p>}

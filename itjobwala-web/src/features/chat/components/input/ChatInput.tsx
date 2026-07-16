@@ -69,14 +69,13 @@ export default function ChatInput({ conversationId, myId, disabled }: Props) {
           placeholder="Type a message..."
           rows={1}
           disabled={disabled}
-          className="flex-1 bg-transparent text-[13.5px] text-heading resize-none focus:outline-none placeholder:text-subtle max-h-32 overflow-y-auto leading-[1.5]"
+          className="flex-1 bg-transparent text-[13.5px] text-heading resize-none focus:outline-none placeholder:text-muted max-h-32 overflow-y-auto leading-[1.5]"
           style={{ fieldSizing: 'content' } as any}
         />
         <Button
           variant="primary"
           size="lg"
           iconOnly
-          rounded="full"
           loading={sendMutation.isPending}
           disabled={!text.trim() || sendMutation.isPending || disabled}
           onClick={handleSend}

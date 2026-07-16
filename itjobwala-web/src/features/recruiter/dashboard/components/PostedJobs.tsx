@@ -4,6 +4,7 @@ import Link from 'next/link';
 import JobStatusCard, { type Job } from './JobStatusCard';
 import { useRecruiterPostedJobsQuery } from '@/features/recruiter/hooks';
 import Card from '@/src/components/ui/Card';
+import { buttonVariants } from '@/src/components/ui/Button';
 import { relativeTime } from '@/src/lib/utils/format';
 
 export default function PostedJobs() {
@@ -29,10 +30,9 @@ export default function PostedJobs() {
         </div>
         <Link
           href="/recruiter/post-job"
-          className="flex items-center gap-1.5 text-caption font-bold text-white bg-primary px-3.5 py-1.5 rounded-xl hover:bg-primary/90 transition-colors"
-          style={{ color: '#fff' }}
+          className={buttonVariants({ variant: 'primary', size: 'sm', className: 'gap-1.5 px-3.5' })}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5"  y1="12" x2="19" y2="12" />
           </svg>

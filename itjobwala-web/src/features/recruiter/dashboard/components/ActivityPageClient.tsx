@@ -182,9 +182,9 @@ export default function ActivityPageClient() {
                   <path d="M19 12H5M12 19l-7-7 7-7" />
                 </svg>
               </Link>
-              <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.4px' }}>
+              <h3 className="text-h3 text-heading" style={{ letterSpacing: '-0.4px' }}>
                 Activity Feed
-              </h1>
+              </h3>
               {unreadCount > 0 && (
                 <span className="text-micro font-bold text-white bg-primary rounded-full px-2 py-0.5">
                   {unreadCount} unread

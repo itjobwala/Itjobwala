@@ -42,7 +42,7 @@ function ExperienceCard({ exp, onEdit }: { exp: WorkExperience; onEdit?: (id: st
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-12">
         <ReadOnlyField label="Company" value={exp.company} />
         <ReadOnlyField label="Role" value={exp.title ?? exp.role} />
         <ReadOnlyField label="Employment type" value={exp.employment_type} />

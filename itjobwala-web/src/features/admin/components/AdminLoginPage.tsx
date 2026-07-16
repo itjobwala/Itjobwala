@@ -108,7 +108,7 @@ export default function AdminLoginPage() {
                 onChange={e => { setEmail(e.target.value); setError(''); }}
                 placeholder="admin@example.com"
                 required
-                className="w-full rounded-xl px-4 py-3 text-sm text-white outline-none transition-all"
+                className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/40 outline-none transition-all"
                 style={{
                   background: 'rgba(255,255,255,0.07)',
                   border: '1px solid rgba(255,255,255,0.12)',
@@ -125,7 +125,7 @@ export default function AdminLoginPage() {
                 onChange={e => { setPassword(e.target.value); setError(''); }}
                 placeholder="••••••••"
                 required
-                className="w-full rounded-xl px-4 py-3 text-sm text-white outline-none transition-all"
+                className="w-full rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/40 outline-none transition-all"
                 style={{
                   background: 'rgba(255,255,255,0.07)',
                   border: '1px solid rgba(255,255,255,0.12)',

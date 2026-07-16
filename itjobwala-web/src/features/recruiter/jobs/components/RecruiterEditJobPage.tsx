@@ -180,9 +180,9 @@ export default function RecruiterEditJobPage({ jobId }: Props) {
           </svg>
           Back
         </button>
-        <h1 className="text-h1 text-heading mb-1" style={{ letterSpacing: -0.8 }}>
+        <h3 className="text-h3 text-heading mb-1" style={{ letterSpacing: -0.8 }}>
           Edit Job
-        </h1>
+        </h3>
         <p className="text-small-text text-muted">
           {isActive
             ? 'This job is active with applications — only salary, skills, deadline, and optional fields can be changed.'

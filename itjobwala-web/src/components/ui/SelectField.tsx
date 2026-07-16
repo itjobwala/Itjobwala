@@ -38,7 +38,7 @@ export default function SelectField({ label, id, value, onChange, options, error
           onChange={e => onChange(e.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          className={`w-full h-full appearance-none border-none outline-none text-lg bg-transparent cursor-pointer pl-3.5 lg:pl-4 pr-11 ${value ? 'text-heading' : 'text-subtle'}`}
+          className={`w-full h-full appearance-none border-none outline-none text-lg bg-transparent cursor-pointer pl-3.5 lg:pl-4 pr-11 ${value ? 'text-heading' : 'text-muted'}`}
         >
           {options.map(o => (
             <option key={o.value} value={o.value} disabled={o.value === ''} className="text-heading">

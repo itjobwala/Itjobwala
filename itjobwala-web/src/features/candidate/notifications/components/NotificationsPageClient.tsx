@@ -52,9 +52,9 @@ export default function NotificationsPageClient() {
           {/* ── Header ──────────────────────────────────────────────────── */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.5px' }}>
+              <h3 className="text-h3 text-heading" style={{ letterSpacing: '-0.5px' }}>
                 Notifications
-              </h1>
+              </h3>
               {pagination && (
                 <p className="text-small-text text-subtle mt-0.5">{pagination.total} total</p>
               )}

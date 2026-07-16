@@ -359,9 +359,9 @@ export default function RecruiterApplicantsPage() {
       {/* Page header */}
       <div className="bg-surface border-b border-token">
         <div className="container-responsive mx-auto px-5 sm:px-8 py-8">
-          <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.5px' }}>
+          <h3 className="text-h3 text-heading" style={{ letterSpacing: '-0.5px' }}>
             Applicants
-          </h1>
+          </h3>
           <p className="text-small-text text-subtle mt-1">
             Review and manage applications for your job postings
           </p>

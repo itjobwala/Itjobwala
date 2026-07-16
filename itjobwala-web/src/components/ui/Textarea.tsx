@@ -40,7 +40,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             SIZE_CLASSES[inputSize],
             'text-sm font-medium text-heading',
             'outline-none transition-colors leading-relaxed',
-            'placeholder:text-subtle',
+            'placeholder:text-muted',
             'disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed',
             hasError
               ? 'border-danger bg-danger-bg focus:border-danger'

@@ -57,7 +57,7 @@ export default function Field({
           onChange={e => onChange(e.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          className={`flex-1 h-full border-none outline-none text-lg text-heading bg-transparent placeholder:text-subtle ${icon ? 'pr-3.5 pl-0' : 'px-3.5 lg:px-4'}`}
+          className={`flex-1 h-full border-none outline-none text-lg text-heading bg-transparent placeholder:text-muted ${icon ? 'pr-3.5 pl-0' : 'px-3.5 lg:px-4'}`}
         />
         {suffix && <div className="px-3.5 shrink-0">{suffix}</div>}
       </div>

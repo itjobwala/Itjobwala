@@ -205,7 +205,7 @@ export default function JobFilterSidebar({ filters, onChange, onReset, activeCou
             placeholder="Type to search skills…"
             onChange={e => { setSkillInput(e.target.value); setSkillError(''); }}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addSkillFromFilter(); } }}
-            className={`w-full px-2.5 py-2 text-caption border rounded-lg focus:outline-none ${skillError ? 'border-danger' : 'border-token focus:border-primary'}`}
+            className={`w-full px-2.5 py-2 text-caption border rounded-lg placeholder:text-muted focus:outline-none ${skillError ? 'border-danger' : 'border-token focus:border-primary'}`}
           />
           {skillError && <p className="text-micro text-danger mt-1">{skillError}</p>}
           {skillSuggestions.length > 0 && (

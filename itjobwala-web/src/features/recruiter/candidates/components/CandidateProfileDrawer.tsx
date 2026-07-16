@@ -309,13 +309,13 @@ function DrawerContent({ detail, onClose }: { detail: CandidateDetail; onClose: 
               value={listName}
               onChange={e => setListName(e.target.value)}
               placeholder="List name (e.g. Shortlist)"
-              className="w-full text-sm border border-token rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+              className="w-full text-sm border border-token rounded-lg px-2 py-1.5 placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
             />
             <input
               value={note}
               onChange={e => setNote(e.target.value)}
               placeholder="Note (optional)"
-              className="w-full text-sm border border-token rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+              className="w-full text-sm border border-token rounded-lg px-2 py-1.5 placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
             />
             <div className="flex gap-2 justify-end">
               <button onClick={() => setShowSave(false)} className="text-xs text-subtle px-3 py-1.5 rounded-lg hover:bg-surface-hover">Cancel</button>

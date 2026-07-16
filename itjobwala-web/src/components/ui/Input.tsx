@@ -39,7 +39,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             SIZE_CLASSES[inputSize],
             'font-medium text-heading',
             'outline-none transition-colors',
-            'placeholder:text-subtle',
+            'placeholder:text-muted',
             'disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed',
             error
               ? 'border-danger bg-danger-bg focus:border-danger'

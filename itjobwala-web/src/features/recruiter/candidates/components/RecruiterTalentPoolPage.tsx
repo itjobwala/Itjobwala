@@ -68,7 +68,7 @@ function BulkMessageModal({
               placeholder="Write your message here…"
               rows={5}
               maxLength={4000}
-              className="w-full text-sm border border-token rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none"
+              className="w-full text-sm border border-token rounded-xl px-3 py-2.5 placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none"
             />
             <p className="text-micro text-subtle text-right">{message.length}/4000</p>
             {bulk.isError && (
@@ -284,7 +284,7 @@ export default function RecruiterTalentPoolPage() {
           {/* Header */}
           <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
             <div>
-              <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.3px' }}>Talent Pool</h1>
+              <h3 className="text-h3 text-heading" style={{ letterSpacing: '-0.3px' }}>Talent Pool</h3>
               {pagination && (
                 <p className="text-small-text text-subtle mt-0.5">{pagination.total} saved candidate{pagination.total !== 1 ? 's' : ''}</p>
               )}

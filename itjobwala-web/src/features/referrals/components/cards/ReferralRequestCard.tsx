@@ -312,7 +312,7 @@ export default function ReferralRequestCard({ request, isReceived }: Props) {
                 value={applyLink}
                 onChange={e => { setApplyLink(e.target.value); setApplyLinkErr(''); }}
                 placeholder="https://careers.yourcompany.com/apply?ref=..."
-                className={`w-full text-caption border rounded-xl px-3 py-2 focus:outline-none focus:ring-1 transition-all placeholder:text-subtle ${
+                className={`w-full text-caption border rounded-xl px-3 py-2 focus:outline-none focus:ring-1 transition-all placeholder:text-muted ${
                   applyLinkErr ? 'border-red-400 focus:border-red-400 focus:ring-red-200' : 'border-token focus:border-primary/50 focus:ring-primary/20'
                 }`}
               />
@@ -329,7 +329,7 @@ export default function ReferralRequestCard({ request, isReceived }: Props) {
                 onChange={e => setNotes(e.target.value)}
                 placeholder='e.g. "Mention my name as referrer. HR will reach out in 1–2 weeks."'
                 rows={2}
-                className="w-full text-caption border border-token rounded-xl px-3 py-2 resize-none focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-subtle"
+                className="w-full text-caption border border-token rounded-xl px-3 py-2 resize-none focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-muted"
               />
             </div>
 

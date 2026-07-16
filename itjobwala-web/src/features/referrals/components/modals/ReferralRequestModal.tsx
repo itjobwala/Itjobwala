@@ -67,7 +67,7 @@ export default function ReferralRequestModal({ job, isOpen, onClose, onSuccess }
               maxLength={2000}
               rows={4}
               placeholder="Briefly explain your background and why you're a great fit..."
-              className="w-full text-sm border border-token rounded-2xl px-4 py-3 resize-none focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-subtle"
+              className="w-full text-sm border border-token rounded-2xl px-4 py-3 resize-none focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/10 transition-all placeholder:text-muted"
             />
           </div>
 
@@ -78,7 +78,7 @@ export default function ReferralRequestModal({ job, isOpen, onClose, onSuccess }
               value={resumeUrl}
               onChange={e => setResumeUrl(e.target.value)}
               placeholder="https://drive.google.com/..."
-              className={`w-full text-sm border rounded-2xl px-4 py-2.5 focus:outline-none focus:ring-2 transition-all placeholder:text-subtle ${resumeUrlErr ? 'border-danger focus:border-danger focus:ring-danger/10' : 'border-token focus:border-primary/60 focus:ring-primary/10'}`}
+              className={`w-full text-sm border rounded-2xl px-4 py-2.5 focus:outline-none focus:ring-2 transition-all placeholder:text-muted ${resumeUrlErr ? 'border-danger focus:border-danger focus:ring-danger/10' : 'border-token focus:border-primary/60 focus:ring-primary/10'}`}
             />
             {resumeUrlErr && <p className="mt-1 text-micro font-semibold text-danger">{resumeUrlErr}</p>}
           </div>
@@ -90,7 +90,7 @@ export default function ReferralRequestModal({ job, isOpen, onClose, onSuccess }
               value={linkedinUrl}
               onChange={e => setLinkedinUrl(e.target.value)}
               placeholder="https://linkedin.com/in/..."
-              className={`w-full text-sm border rounded-2xl px-4 py-2.5 focus:outline-none focus:ring-2 transition-all placeholder:text-subtle ${linkedinUrlErr ? 'border-danger focus:border-danger focus:ring-danger/10' : 'border-token focus:border-primary/60 focus:ring-primary/10'}`}
+              className={`w-full text-sm border rounded-2xl px-4 py-2.5 focus:outline-none focus:ring-2 transition-all placeholder:text-muted ${linkedinUrlErr ? 'border-danger focus:border-danger focus:ring-danger/10' : 'border-token focus:border-primary/60 focus:ring-primary/10'}`}
             />
             {linkedinUrlErr && <p className="mt-1 text-micro font-semibold text-danger">{linkedinUrlErr}</p>}
           </div>

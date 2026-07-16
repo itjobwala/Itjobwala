@@ -27,7 +27,7 @@ function FilterLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-const inputCls = 'w-full text-sm border border-token rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors placeholder:text-subtle';
+const inputCls = 'w-full text-sm border border-token rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors placeholder:text-muted';
 
 function FilterInput({
   placeholder,
@@ -136,7 +136,7 @@ function BulkMessageModal({
               placeholder="Write your message here…"
               rows={5}
               maxLength={4000}
-              className="w-full text-sm border border-token rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none"
+              className="w-full text-sm border border-token rounded-xl px-3 py-2.5 placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none"
             />
             <p className="text-micro text-subtle text-right">{message.length}/4000</p>
             {bulk.isError && <p className="text-sm text-danger">Failed to send. Please try again.</p>}
@@ -230,9 +230,9 @@ export default function RecruiterCandidateSearchPage() {
       <div className="bg-surface border-b border-token">
         <div className="container-responsive mx-auto px-5 sm:px-8 py-8">
           <div className="flex items-center gap-3">
-            <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.5px' }}>
+            <h3 className="text-h3 text-heading" style={{ letterSpacing: '-0.5px' }}>
               Find Candidates
-            </h1>
+            </h3>
             <a href="/recruiter/talent-pool" className="text-xs font-semibold text-primary hover:underline">
               Talent Pool →
             </a>

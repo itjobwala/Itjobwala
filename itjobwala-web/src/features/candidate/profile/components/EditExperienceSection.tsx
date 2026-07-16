@@ -127,7 +127,7 @@ function TextField({
         placeholder={placeholder}
         maxLength={maxLength}
         aria-invalid={!!error}
-        className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium outline-none transition-colors placeholder:text-subtle ${
+        className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium outline-none transition-colors placeholder:text-muted ${
           disabled
             ? 'border-token bg-surface-alt text-subtle cursor-not-allowed'
             : error
@@ -181,7 +181,7 @@ function SkillInput({ skills, onChange }: { skills: string[], onChange: (skills:
           }
         }}
         placeholder="Add skill and press Enter"
-        className="w-full rounded-xl border border-token bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors focus:border-primary/50 placeholder:text-subtle"
+        className="w-full rounded-xl border border-token bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors focus:border-primary/50 placeholder:text-muted"
       />
     </div>
   );
@@ -305,7 +305,7 @@ export default function EditExperienceSection({ experiences, onChange, onDelete 
                 maxLength={MAX.description}
                 rows={4}
                 aria-invalid={!!getErr(exp.id, 'description')}
-                className={`w-full resize-none rounded-xl border bg-surface px-3.5 py-2.5 text-sm leading-[1.7] text-body outline-none transition-colors focus:border-primary/50 placeholder:text-subtle ${getErr(exp.id, 'description') ? 'border-danger' : 'border-token'}`}
+                className={`w-full resize-none rounded-xl border bg-surface px-3.5 py-2.5 text-sm leading-[1.7] text-body outline-none transition-colors focus:border-primary/50 placeholder:text-muted ${getErr(exp.id, 'description') ? 'border-danger' : 'border-token'}`}
               />
               {getErr(exp.id, 'description') && <p className="mt-1 text-micro font-semibold text-danger">{getErr(exp.id, 'description')}</p>}
             </label>

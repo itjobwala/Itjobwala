@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { RecruiterShell } from '@/layout/shell';
 import ErrorBoundary from '@/src/components/ui/ErrorBoundary';
+import { buttonVariants } from '@/src/components/ui/Button';
 import DashboardStats from './DashboardStats';
 import RecentApplicants from './RecentApplicants';
 import TopCandidatesCard from './TopCandidatesCard';
@@ -24,12 +25,12 @@ export default function RecruiterDashboardPage() {
         {/* ── Welcome Header ── */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
-            <h1
-              className="text-h1 text-heading leading-tight"
+            <h3
+              className="text-h3 text-heading leading-tight"
               style={{ letterSpacing: '-0.6px' }}
             >
               Welcome, {firstName} 👋
-            </h1>
+            </h3>
             <p className="text-body-text text-muted mt-1">
               {companyName} &middot; Here&apos;s what&apos;s happening today.
             </p>
@@ -37,7 +38,7 @@ export default function RecruiterDashboardPage() {
           <div className="flex items-center gap-2.5 shrink-0">
             <Link
               href="/recruiter/applicants"
-              className="text-[13px] font-bold text-primary border border-primary/25 bg-primary/5 px-4 py-2 rounded-xl hover:bg-primary/10 transition-colors"
+              className={buttonVariants({ variant: 'primary', size: 'sm', className: 'px-4' })}
             >
               View Applicants
             </Link>

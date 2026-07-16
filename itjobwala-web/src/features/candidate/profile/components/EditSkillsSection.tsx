@@ -71,7 +71,7 @@ export default function EditSkillsSection({ skills, onChange }: Props) {
           if (e.key === 'Enter') { e.preventDefault(); addSkill(input); }
         }}
         placeholder="Type to search skills (e.g. React, Python, Docker)"
-        className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-subtle ${skillError ? 'border-danger' : 'border-token focus:border-primary/50'}`}
+        className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-muted ${skillError ? 'border-danger' : 'border-token focus:border-primary/50'}`}
       />
 
       {skillError && (

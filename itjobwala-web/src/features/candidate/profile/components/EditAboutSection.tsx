@@ -24,7 +24,7 @@ export default function EditAboutSection({ value, onChange }: Props) {
         rows={7}
         maxLength={MAX_LENGTH + 80}
         placeholder="Write a concise professional summary..."
-        className={`w-full resize-none rounded-xl border px-4 py-3 text-base leading-[1.75] text-body outline-none transition-colors placeholder:text-subtle ${
+        className={`w-full resize-none rounded-xl border px-4 py-3 text-base leading-[1.75] text-body outline-none transition-colors placeholder:text-muted ${
           remaining < 0 ? 'border-danger focus:border-danger' : 'border-token focus:border-primary/50'
         }`}
       />

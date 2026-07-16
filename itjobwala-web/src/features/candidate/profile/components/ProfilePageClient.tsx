@@ -136,7 +136,7 @@ export default function ProfilePageClient() {
           <div className="bg-surface border-b border-token">
             <div className="container-responsive mx-auto px-5 sm:px-8 py-5 flex items-center justify-between">
               <div>
-                <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.3px' }}>My Profile</h1>
+                <h3 className="text-h3 text-heading" style={{ letterSpacing: '-0.3px' }}>My Profile</h3>
                 <p className="text-small-text text-subtle mt-0.5">Manage your profile and track job activity</p>
               </div>
             </div>

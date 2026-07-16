@@ -25,7 +25,7 @@ export default function AppliedJobsCard({ jobs }: Props) {
           <p className="text-sm text-subtle mb-3">You haven't applied to any jobs yet.</p>
           <Link
             href="/candidate/jobs"
-            className="inline-block text-sm font-bold text-white bg-primary rounded-lg px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
+            className="inline-block text-sm font-bold text-white bg-primary rounded-sm px-4 py-2.5 hover:opacity-90 active:opacity-80 transition-opacity"
             style={{ color: '#fff' }}
           >
             Find Jobs to Apply

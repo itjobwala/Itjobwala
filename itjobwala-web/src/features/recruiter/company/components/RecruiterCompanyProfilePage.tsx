@@ -181,9 +181,9 @@ export default function RecruiterCompanyProfilePage() {
         {/* Page header */}
         <div className="bg-surface border-b border-token">
           <div className="container-responsive mx-auto px-5 sm:px-8 py-8">
-            <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.5px' }}>
+            <h3 className="text-h3 text-heading" style={{ letterSpacing: '-0.5px' }}>
               Company Profile
-            </h1>
+            </h3>
             <p className="text-small-text text-subtle mt-1">
               Manage your company information
             </p>
@@ -280,8 +280,8 @@ export default function RecruiterCompanyProfilePage() {
                   <div className="flex items-center gap-3 shrink-0">
                     <Button
                       variant="primary"
-                      size="lg"
-                      className="px-6 w-full sm:w-auto"
+                      size="sm"
+                      className="px-4"
                       onClick={() => setEditing(true)}
                     >
                       Edit Profile

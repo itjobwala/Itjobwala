@@ -202,7 +202,7 @@ export default function AdminJobQueuePage() {
                   onChange={e => setReason(e.target.value)}
                   placeholder="Explain why this job needs changes or is being removed…"
                   rows={3}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 outline-none focus:border-indigo-500 resize-none"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 placeholder:text-gray-400 outline-none focus:border-indigo-500 resize-none"
                 />
               </div>
             )}

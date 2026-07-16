@@ -91,9 +91,9 @@ export default function JobDetailsHeader({ job, applied, saved, loading = false,
             {job.isHot && <span className="text-micro font-bold rounded-full py-[2px] px-2.5 bg-danger-bg text-danger">Hot</span>}
           </div>
 
-          <h1 className="text-h1 text-heading mb-1" style={{ letterSpacing: '-0.5px' }}>
+          <h4 className="text-h4 text-heading mb-1" style={{ letterSpacing: '-0.5px' }}>
             {job.title}
-          </h1>
+          </h4>
 
           <p className="text-sm font-semibold text-[#474d6a] mb-4 flex items-center gap-2 flex-wrap">
             <span>{job.company}</span>

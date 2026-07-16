@@ -30,7 +30,7 @@ export function FormField({
   const baseInputClasses = `
     w-full rounded-xl border text-sm font-medium text-heading
     px-3.5 py-2.5 outline-none transition-colors
-    placeholder:text-subtle disabled:bg-surface-alt disabled:text-muted
+    placeholder:text-muted disabled:bg-surface-alt disabled:text-muted
     ${error ? 'border-danger focus:border-danger focus:ring-2 focus:ring-danger/10' : 'border-token focus:border-primary/50'}
     ${inputClassName}
   `;

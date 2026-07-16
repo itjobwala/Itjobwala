@@ -30,7 +30,7 @@ export default function NavbarSearch() {
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         placeholder="Search jobs, companies, skills"
-        className={`pl-9 pr-3 py-[7px] text-sm bg-surface-alt border rounded-xl outline-none transition-all duration-200 text-heading placeholder:text-subtle ${
+        className={`pl-9 pr-3 py-[7px] text-sm bg-surface-alt border rounded-xl outline-none transition-all duration-200 text-heading placeholder:text-muted ${
           focused
             ? 'w-64 border-primary/40 bg-surface shadow-sm'
             : 'w-52 border-token-mid hover:border-token-mid'

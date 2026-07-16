@@ -54,7 +54,7 @@ export default function JobSearchBar({ search, onChange, onSearch }: Props) {
             value={search.jobTitle}
             onChange={e => onChange({ ...search, jobTitle: e.target.value })}
             onKeyDown={handleKey}
-            className="flex-1 bg-transparent text-lg text-heading placeholder:text-subtle outline-none"
+            className="flex-1 bg-transparent text-lg text-heading placeholder:text-muted outline-none"
           />
           {search.jobTitle && (
             <button onClick={() => onChange({ ...search, jobTitle: '' })} className="text-subtle hover:text-muted transition-colors shrink-0">
@@ -74,7 +74,7 @@ export default function JobSearchBar({ search, onChange, onSearch }: Props) {
             value={search.company}
             onChange={e => onChange({ ...search, company: e.target.value })}
             onKeyDown={handleKey}
-            className="flex-1 bg-transparent text-lg text-heading placeholder:text-subtle outline-none"
+            className="flex-1 bg-transparent text-lg text-heading placeholder:text-muted outline-none"
           />
           {search.company && (
             <button onClick={() => onChange({ ...search, company: '' })} className="text-subtle hover:text-muted transition-colors shrink-0">
@@ -94,7 +94,7 @@ export default function JobSearchBar({ search, onChange, onSearch }: Props) {
             value={search.city}
             onChange={e => onChange({ ...search, city: e.target.value })}
             onKeyDown={handleKey}
-            className="flex-1 bg-transparent text-lg text-heading placeholder:text-subtle outline-none"
+            className="flex-1 bg-transparent text-lg text-heading placeholder:text-muted outline-none"
           />
           {search.city && (
             <button onClick={() => onChange({ ...search, city: '' })} className="text-subtle hover:text-muted transition-colors shrink-0">
@@ -125,7 +125,7 @@ export default function JobSearchBar({ search, onChange, onSearch }: Props) {
             value={search.jobTitle}
             onChange={e => onChange({ ...search, jobTitle: e.target.value })}
             onKeyDown={handleKey}
-            className="flex-1 bg-transparent text-sm text-heading placeholder:text-subtle outline-none min-w-0"
+            className="flex-1 bg-transparent text-sm text-heading placeholder:text-muted outline-none min-w-0"
           />
           {search.jobTitle && (
             <button onClick={() => onChange({ ...search, jobTitle: '' })} className="text-subtle hover:text-muted transition-colors shrink-0">
@@ -147,7 +147,7 @@ export default function JobSearchBar({ search, onChange, onSearch }: Props) {
             value={search.company}
             onChange={e => onChange({ ...search, company: e.target.value })}
             onKeyDown={handleKey}
-            className="flex-1 bg-transparent text-sm text-heading placeholder:text-subtle outline-none min-w-0"
+            className="flex-1 bg-transparent text-sm text-heading placeholder:text-muted outline-none min-w-0"
           />
           {search.company && (
             <button onClick={() => onChange({ ...search, company: '' })} className="text-subtle hover:text-muted transition-colors shrink-0">
@@ -169,7 +169,7 @@ export default function JobSearchBar({ search, onChange, onSearch }: Props) {
             value={search.city}
             onChange={e => onChange({ ...search, city: e.target.value })}
             onKeyDown={handleKey}
-            className="flex-1 bg-transparent text-sm text-heading placeholder:text-subtle outline-none min-w-0"
+            className="flex-1 bg-transparent text-sm text-heading placeholder:text-muted outline-none min-w-0"
           />
           {search.city && (
             <button onClick={() => onChange({ ...search, city: '' })} className="text-subtle hover:text-muted transition-colors shrink-0">

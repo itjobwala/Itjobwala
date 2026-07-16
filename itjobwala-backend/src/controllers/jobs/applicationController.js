@@ -224,7 +224,7 @@ export const getApplicationStatus = async (request, reply) => {
       data: {
         id: `app_${application.id}`,
         job: {
-          id: `job_${application.job?.id}`,
+          id: application.job?.public_id ?? null,
           title: application.job?.title,
           company: application.job?.recruiter?.company_name
         },

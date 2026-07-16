@@ -21,8 +21,8 @@ const ACTIONS = [
     href: '/recruiter/applicants',
     label: 'Search Candidates',
     desc: 'Browse matching profiles',
-    bg: 'bg-purple-50 hover:bg-purple-100',
-    icon: 'text-purple-600',
+    bg: 'bg-blue-50 hover:bg-blue-100',
+    icon: 'text-primary',
     iconEl: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
         <circle cx="11" cy="11" r="8" />
@@ -34,8 +34,8 @@ const ACTIONS = [
     href: '/recruiter/applicants',
     label: 'View Applicants',
     desc: 'Review all applications',
-    bg: 'bg-amber-50 hover:bg-amber-100',
-    icon: 'text-amber-600',
+    bg: 'bg-blue-50 hover:bg-blue-100',
+    icon: 'text-primary',
     iconEl: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -48,8 +48,8 @@ const ACTIONS = [
     href: '/recruiter/company-profile',
     label: 'Company Profile',
     desc: 'Update your company info',
-    bg: 'bg-green-50 hover:bg-green-100',
-    icon: 'text-green-600',
+    bg: 'bg-blue-50 hover:bg-blue-100',
+    icon: 'text-primary',
     iconEl: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
         <rect x="2" y="3" width="20" height="14" rx="2" />

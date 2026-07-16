@@ -68,7 +68,7 @@ export default function EducationSection({ education, onEdit, onAdd }: Props & {
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-12">
                 <ReadOnlyField label="Institution" value={ed.institution} />
                 <ReadOnlyField label="Degree" value={ed.degree} />
                 <ReadOnlyField label="Field of study" value={ed.field_of_study || ed.field || ''} />

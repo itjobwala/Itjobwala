@@ -86,9 +86,8 @@ export default function ProfileHeader({ profile, onEdit, onUploadPhoto, onUpload
           </div>
 
           <Button
-            variant="primary"
-            size="md"
-            rounded="full"
+            variant="ghost"
+            size="sm"
             leftIcon={
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -97,15 +96,15 @@ export default function ProfileHeader({ profile, onEdit, onUploadPhoto, onUpload
             }
             onClick={onEdit}
           >
-            Edit Profile
+            Edit
           </Button>
         </div>
 
         {/* Name + role */}
         <div className="mb-4">
-          <h1 className="text-3xl font-extrabold text-heading leading-tight mb-0.5" style={{ letterSpacing: '-0.5px' }}>
+          <h3 className="text-h3 text-heading leading-tight mb-0.5" style={{ letterSpacing: '-0.5px' }}>
             {displayName}
-          </h1>
+          </h3>
           <p className="text-sm font-semibold text-muted">{profile.title ?? ''}</p>
         </div>
 

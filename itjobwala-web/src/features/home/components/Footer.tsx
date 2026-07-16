@@ -131,7 +131,7 @@ export default function Footer() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@email.com"
               disabled
-              className="w-full bg-surface-alt border border-token rounded-[10px] py-3 px-3.5 text-sm text-heading outline-none mb-2.5 opacity-50 cursor-not-allowed"
+              className="w-full bg-surface-alt border border-token rounded-[10px] py-3 px-3.5 text-sm text-heading placeholder:text-muted outline-none mb-2.5 opacity-50 cursor-not-allowed"
             />
             <button
               disabled

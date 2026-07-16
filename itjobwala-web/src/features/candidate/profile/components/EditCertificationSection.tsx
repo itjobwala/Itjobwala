@@ -75,7 +75,7 @@ function TextField({ label, value, onChange, onBlur, type = 'text', placeholder 
         maxLength={maxLength}
         max={max}
         aria-invalid={!!error}
-        className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors focus:border-primary/50 placeholder:text-subtle ${error ? 'border-danger focus:border-danger' : 'border-token'}`}
+        className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors focus:border-primary/50 placeholder:text-muted ${error ? 'border-danger focus:border-danger' : 'border-token'}`}
       />
       {error && <p className="mt-1 text-micro font-semibold text-danger">{error}</p>}
     </label>

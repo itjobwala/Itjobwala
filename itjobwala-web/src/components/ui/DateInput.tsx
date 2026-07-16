@@ -22,7 +22,7 @@ export default function DateInput({ label, value, onChange, disabled = false }: 
           onChange={e => onChange(e.target.value)}
           placeholder="YYYY-MM-DD"
           disabled={disabled}
-          className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 pr-10 text-sm font-medium outline-none transition-colors placeholder:text-subtle ${
+          className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 pr-10 text-sm font-medium outline-none transition-colors placeholder:text-muted ${
             disabled
               ? 'border-token bg-surface-alt text-subtle cursor-not-allowed'
               : 'border-token-mid text-heading focus:border-primary/50'
