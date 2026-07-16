@@ -1,9 +1,23 @@
 @import "tailwindcss";
 
+/* ── Spacing system (8px grid) ────────────────────────────────────────────────
+   No custom tokens needed — Tailwind's default spacing scale (4px per unit)
+   already matches this exactly. Use the built-in p-, m-, and gap- utilities:
+     XS   4px  -> p-1 / gap-1 / m-1
+     SM   8px  -> p-2 / gap-2 / m-2
+     MD  16px  -> p-4 / gap-4 / m-4
+     LG  24px  -> p-6 / gap-6 / m-6
+     XL  32px  -> p-8 / gap-8 / m-8
+     2XL 48px  -> p-12 / gap-12 / m-12
+     3XL 64px  -> p-16 / gap-16 / m-16
+     4XL 80px  -> p-20 / gap-20 / m-20
+   Prefer these over arbitrary values (e.g. p-[18px]) so spacing stays on-grid.
+──────────────────────────────────────────────────────────────────────────── */
+
 @theme {
   /* ── Brand ── */
   --color-primary: #1557FF;
-  --font-sans: var(--font-sora);
+  --font-sans: var(--font-inter);
 
   /* ── Semantic colors ── */
   --color-heading:        #0f172a;
@@ -56,7 +70,11 @@
   --z-modal:    9999;
   --z-overlay:  9999;
 
-  /* ── Border radius ── */
+  /* ── Border radius ──
+     Already covers the design-spec component radii — no new tokens needed:
+       Button  8px -> rounded-sm    Modal  16px -> rounded-lg
+       Input   8px -> rounded-sm    Avatar 50%  -> rounded-full
+       Card   12px -> rounded-md    Badge 999px -> rounded-full          */
   --radius-xs:  6px;
   --radius-sm:  8px;
   --radius-md:  12px;
@@ -103,11 +121,121 @@
 .z-modal    { z-index: var(--z-modal);    }
 .z-overlay  { z-index: var(--z-overlay);  }
 
+/* ── Icon scale ───────────────────────────────────────────────────────────────
+   No central Icon component exists — icons are hand-written inline
+   `<svg width=".." height="..">` scattered across ~140 files with no
+   consistent sizing. Not retrofitted everywhere (too large/risky to verify
+   without visual QA); use these sizes for any *new* icon usage, and prefer
+   them when touching a component that already has an icon nearby:
+     Small   16px   Medium  24px   Hero  48px
+     Normal  20px   Large   32px
+   Icons nested tightly inside a small circular badge (e.g. a checkmark in a
+   20px circle) are a reasonable exception — don't force them to 16px if it
+   would leave no padding inside the badge.
+──────────────────────────────────────────────────────────────────────────── */
+
 /* ── Font-size utilities ──────────────────────────────────────────────────── */
 .text-nano    { font-size: var(--font-size-nano);    }
 .text-tiny    { font-size: var(--font-size-tiny);    }
 .text-micro   { font-size: var(--font-size-micro);   }
 .text-caption { font-size: var(--font-size-caption); }
+/* "md" isn't one of Tailwind's preset font-size scale keys, so overriding
+   --font-size-md in @theme does NOT auto-generate a text-md utility the way
+   --font-size-sm/lg/xl/2xl.. do. Define it explicitly so the token works. */
+.text-md      { font-size: var(--font-size-md);      }
+
+/* ── Font weight guide ────────────────────────────────────────────────────────
+   No custom weights needed — all values are standard Tailwind font-* classes:
+     Hero Heading     700 -> font-bold        Labels      500 -> font-medium
+     Section Heading  600 -> font-semibold    Button      600 -> font-semibold
+     Card Title        600 -> font-semibold    Navigation  500 -> font-medium
+     Body/Description  400 -> font-normal      Small Text  400 -> font-normal
+   (text-h1/text-h2 below already bake in font-bold; text-h3-h6 bake in
+   font-semibold — no need to also add a font-* class alongside them.)
+──────────────────────────────────────────────────────────────────────────── */
+
+/* ── Typography scale ────────────────────────────────────────────────────────
+   Mobile-first: base rules are the Mobile spec, overridden at Tablet (≥640px)
+   and Desktop (≥1024px) — matching the Breakpoints spec (Mobile 0-639,
+   Tablet 640-1023, Laptop/Desktop/Large Desktop 1024px+ collapse into the
+   Typography doc's single "Desktop" tier). These also happen to be
+   Tailwind's own default `sm` and `lg` breakpoints, so no theme override
+   was needed. Line-height is unitless and derived from the ratio given in
+   the Desktop spec (e.g. H1 56/48 ≈ 1.17), since the Tablet/Mobile spec only
+   defines size + weight — this keeps line-height scaling proportionally
+   with font-size at every breakpoint instead of guessing unlisted px values.
+   Font-weight is constant across breakpoints per the spec (only size changes).
+──────────────────────────────────────────────────────────────────────────── */
+.text-h1 { font-size: 32px; font-weight: 700; line-height: 1.17; }
+.text-h2 { font-size: 28px; font-weight: 700; line-height: 1.2;  }
+.text-h3 { font-size: 24px; font-weight: 600; line-height: 1.25; }
+.text-h4 { font-size: 20px; font-weight: 600; line-height: 1.29; }
+.text-h5 { font-size: 18px; font-weight: 600; line-height: 1.33; }
+.text-h6 { font-size: 16px; font-weight: 600; line-height: 1.4;  }
+
+.text-large-body { font-size: 16px; font-weight: 400; line-height: 1.67; }
+.text-body-text   { font-size: 16px; font-weight: 400; line-height: 1.5;  }
+.text-small-text  { font-size: 14px; font-weight: 400; line-height: 1.57; }
+.text-caption-text{ font-size: 12px; font-weight: 400; line-height: 1.5;  }
+
+@media (min-width: 640px) {
+  .text-h1 { font-size: 40px; }
+  .text-h2 { font-size: 34px; }
+  .text-h3 { font-size: 30px; }
+  .text-h4 { font-size: 24px; }
+  .text-h5 { font-size: 20px; }
+  .text-h6 { font-size: 18px; }
+}
+
+@media (min-width: 1024px) {
+  .text-h1 { font-size: 48px; line-height: 56px; }
+  .text-h2 { font-size: 40px; line-height: 48px; }
+  .text-h3 { font-size: 32px; line-height: 40px; }
+  .text-h4 { font-size: 28px; line-height: 36px; }
+  .text-h5 { font-size: 24px; line-height: 32px; }
+  .text-h6 { font-size: 20px; line-height: 28px; }
+  .text-large-body  { line-height: 30px; }
+  .text-body-text   { line-height: 24px; }
+  .text-small-text  { line-height: 22px; }
+  .text-caption-text{ line-height: 18px; }
+}
+
+/* ── Section spacing ──────────────────────────────────────────────────────────
+   Not part of the original design spec (it only covers component-level
+   spacing, not page-section rhythm) — added after finding real
+   inconsistency on the Home page (py-10/14/20/[88px] used interchangeably
+   for what was meant to be the same vertical rhythm). Vertical padding for
+   a full-width page <section>, by content weight:
+     Small section     (stats strip, logo marquee)                  py-12  48px
+     Standard section  (Featured Jobs, Categories, How It Works,
+                         Testimonials, FAQ, Recruiter CTA, Footer-top) py-16  64px
+     Prominent section (Hero only — reserve this tier for the
+                         single most attention-grabbing section)  py-20 / py-24  80-96px
+   No dedicated utility class — these are plain Tailwind spacing utilities,
+   just documented here as the standard so new sections stay consistent.
+──────────────────────────────────────────────────────────────────────────── */
+
+/* ── Responsive container ────────────────────────────────────────────────────
+   New utility, not yet rolled out to existing pages — most pages currently
+   use a single static max-w-[Npx] (e.g. the Home page's max-w-[1440px],
+   which already matches the spec's Large Desktop cap and works well after
+   this session's tuning). Retrofitting every page to the full 5-tier scale
+   below is a separate, larger pass; use this class for new page-level
+   containers going forward.
+     Mobile  0-639px    100%
+     Tablet  640-1023   720px
+     Laptop  1024-1279  1024px
+     Desktop 1280-1535  1280px
+     Large Desktop 1536+ 1440px
+──────────────────────────────────────────────────────────────────────────── */
+.container-responsive {
+  width: 100%;
+  margin-inline: auto;
+}
+@media (min-width: 640px)  { .container-responsive { max-width: 720px;  } }
+@media (min-width: 1024px) { .container-responsive { max-width: 1024px; } }
+@media (min-width: 1280px) { .container-responsive { max-width: 1280px; } }
+@media (min-width: 1536px) { .container-responsive { max-width: 1440px; } }
 
 /* ── Scroll reveal ── */
 .reveal {

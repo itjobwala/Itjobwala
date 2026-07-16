@@ -10,7 +10,7 @@ const TYPE_CONFIG: Record<string, { dotColor: string; icon: React.ReactNode }> =
   application: {
     dotColor: 'bg-blue-500',
     icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
         <circle cx="9" cy="7" r="4" />
         <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
@@ -20,7 +20,7 @@ const TYPE_CONFIG: Record<string, { dotColor: string; icon: React.ReactNode }> =
   interview: {
     dotColor: 'bg-amber-500',
     icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
         <rect x="3" y="4" width="20" height="20" rx="2" />
         <path d="M16 2v4M8 2v4M3 10h18" />
       </svg>
@@ -29,7 +29,7 @@ const TYPE_CONFIG: Record<string, { dotColor: string; icon: React.ReactNode }> =
   shortlist: {
     dotColor: 'bg-violet-500',
     icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
         <polyline points="20 6 9 17 4 12" />
       </svg>
     ),
@@ -37,7 +37,7 @@ const TYPE_CONFIG: Record<string, { dotColor: string; icon: React.ReactNode }> =
   message: {
     dotColor: 'bg-green-500',
     icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
       </svg>
     ),
@@ -45,7 +45,7 @@ const TYPE_CONFIG: Record<string, { dotColor: string; icon: React.ReactNode }> =
   job_update: {
     dotColor: 'bg-gray-400',
     icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
         <rect x="2" y="7" width="20" height="14" rx="2" />
         <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
       </svg>
@@ -54,7 +54,7 @@ const TYPE_CONFIG: Record<string, { dotColor: string; icon: React.ReactNode }> =
   default: {
     dotColor: 'bg-blue-400',
     icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
         <polyline points="14 2 14 8 20 8" />
       </svg>
@@ -81,7 +81,7 @@ export default function ActivityFeed() {
   return (
     <Card className="shadow-sm" overflow>
       <div className="mb-5">
-        <h2 className="text-base font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
+        <h2 className="text-h6 text-heading" style={{ letterSpacing: '-0.3px' }}>
           Activity Feed
         </h2>
         <p className="text-caption text-subtle mt-0.5">Your recent recruiting activity</p>

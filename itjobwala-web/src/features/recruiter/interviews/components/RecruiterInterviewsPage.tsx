@@ -110,17 +110,17 @@ export default function RecruiterInterviewsPage() {
     <RecruiterShell>
       {/* Page header */}
       <div className="bg-surface border-b border-token">
-        <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-6">
-          <h1 className="text-3xl font-extrabold text-heading" style={{ letterSpacing: '-0.5px' }}>
+        <div className="container-responsive mx-auto px-5 sm:px-8 py-6">
+          <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.5px' }}>
             Interviews
           </h1>
-          <p className="text-sm text-subtle mt-0.5">
+          <p className="text-small-text text-subtle mt-0.5">
             {counts.scheduled} upcoming · {counts.not_scheduled} to schedule
           </p>
         </div>
       </div>
 
-      <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-6 space-y-5">
+      <div className="container-responsive mx-auto px-5 sm:px-8 py-6 space-y-5">
 
         {/* Stats strip — intentional semantic colors */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -204,13 +204,13 @@ export default function RecruiterInterviewsPage() {
             <table className="w-full table-fixed">
               <thead className="bg-surface-alt/60">
                 <tr>
-                  <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3 w-[330px]">Candidate</th>
-                  <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-3 py-3 w-[190px]">Job</th>
-                  <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[110px]">Status</th>
-                  <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-3 py-3 w-[155px]">Scheduled</th>
-                  <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[90px]">Mode</th>
-                  <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[100px]">Location</th>
-                  <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3 w-[150px]">Actions</th>
+                  <th className="text-left text-lg font-semibold text-subtle px-4 py-3 w-[330px]">Candidate</th>
+                  <th className="text-left text-lg font-semibold text-subtle px-3 py-3 w-[190px]">Job</th>
+                  <th className="text-center text-lg font-semibold text-subtle px-2 py-3 w-[110px]">Status</th>
+                  <th className="text-left text-lg font-semibold text-subtle px-3 py-3 w-[155px]">Scheduled</th>
+                  <th className="text-center text-lg font-semibold text-subtle px-2 py-3 w-[90px]">Mode</th>
+                  <th className="text-center text-lg font-semibold text-subtle px-2 py-3 w-[100px]">Location</th>
+                  <th className="text-center text-lg font-semibold text-subtle px-4 py-3 w-[150px]">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -233,7 +233,7 @@ export default function RecruiterInterviewsPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-3 py-3.5 text-sm text-body-secondary truncate w-[190px]">{interview.jobTitle}</td>
+                      <td className="px-3 py-3.5 text-small-text text-body-secondary truncate w-[190px]">{interview.jobTitle}</td>
                       <td className="px-2 py-3.5 text-center w-[110px]">
                         <StatusBadge status={interview.status} showDot />
                       </td>
@@ -259,7 +259,7 @@ export default function RecruiterInterviewsPage() {
                           <span className="text-subtle">—</span>
                         )}
                       </td>
-                      <td className="px-2 py-3.5 text-sm text-body-secondary text-center truncate w-[100px]">{interview.location || '—'}</td>
+                      <td className="px-2 py-3.5 text-small-text text-body-secondary text-center truncate w-[100px]">{interview.location || '—'}</td>
                       <td className="px-4 py-3.5 w-[150px]">
                         <div className="flex items-center justify-center gap-1.5 flex-wrap">
                           {!isPast && (

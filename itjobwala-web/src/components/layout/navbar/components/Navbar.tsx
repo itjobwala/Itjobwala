@@ -28,13 +28,13 @@ export default function Navbar() {
         backdropFilter: 'blur(14px)',
       }}
     >
-      <div suppressHydrationWarning className="max-w-[1440px] mx-auto px-5 lg:px-10 flex items-center h-[68px] gap-9">
+      <div suppressHydrationWarning className="max-w-[1440px] mx-auto px-5 lg:px-10 flex items-center h-16 lg:h-[72px] gap-9">
         {/* Logo */}
         <Link
           href="/"
           className="flex items-center gap-1 shrink-0 hover:opacity-80 transition-opacity"
         >
-          <Image src="/logo.png" alt="itJobwala" width={32} height={32} />
+          <Image src="/logo.png" alt="itJobwala" width={36} height={36} className="w-8 h-8 lg:w-9 lg:h-9" />
           <span className="font-extrabold text-xl text-heading" style={{ letterSpacing: '-0.5px' }}>
             it<span className="text-primary">Jobwala</span>
           </span>
@@ -46,7 +46,7 @@ export default function Navbar() {
             <Link
               key={l.label}
               href={l.href}
-              className="text-sm font-medium text-body focus:outline-none focus-visible:text-primary focus-visible:ring-2 focus-visible:ring-primary/20 rounded-md px-2 py-1 transition-colors"
+              className="text-md lg:text-lg font-medium text-body focus:outline-none focus-visible:text-primary focus-visible:ring-2 focus-visible:ring-primary/20 rounded-md px-2 py-1 transition-colors"
               onMouseEnter={e => { e.currentTarget.style.color = 'var(--color-primary)'; }}
               onMouseLeave={e => { e.currentTarget.style.color = 'var(--color-body)'; }}
             >
@@ -103,7 +103,7 @@ export default function Navbar() {
               key={l.label}
               href={l.href}
               onClick={() => setMenuOpen(false)}
-              className="py-3 text-sm font-semibold text-body border-b border-token last:border-0"
+              className="py-3 text-md font-medium text-body border-b border-token last:border-0"
             >
               {l.label}
             </Link>

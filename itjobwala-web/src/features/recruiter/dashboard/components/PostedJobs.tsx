@@ -22,7 +22,7 @@ export default function PostedJobs() {
     <Card padding="none" className="shadow-sm">
       <div className="px-5 py-4 border-b border-token flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h2 className="text-base font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
+          <h2 className="text-h6 text-heading" style={{ letterSpacing: '-0.3px' }}>
             Posted Jobs
           </h2>
           <p className="text-caption text-subtle mt-0.5">Manage your active and paused listings</p>
@@ -32,7 +32,7 @@ export default function PostedJobs() {
           className="flex items-center gap-1.5 text-caption font-bold text-white bg-primary px-3.5 py-1.5 rounded-xl hover:bg-primary/90 transition-colors"
           style={{ color: '#fff' }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
             <line x1="12" y1="5" x2="12" y2="19" />
             <line x1="5"  y1="12" x2="19" y2="12" />
           </svg>
@@ -48,14 +48,14 @@ export default function PostedJobs() {
         <div className="px-5 py-8 text-center text-sm text-subtle">No active jobs posted yet.</div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full table-fixed min-w-[760px]">
+          <table className="w-full table-fixed min-w-[700px]">
             <thead className="bg-surface-alt/60">
               <tr>
-                <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3 w-[30%]">Job</th>
-                <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3 w-[16%]">Location</th>
-                <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3 w-[15%]">Posted</th>
-                <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3 w-[15%]">Applicants</th>
-                <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3 w-[24%]">Actions</th>
+                <th className="text-left text-caption font-semibold text-subtle px-4 py-3">Job</th>
+                <th className="text-left text-caption font-semibold text-subtle px-4 py-3 w-[130px]">Location</th>
+                <th className="text-left text-caption font-semibold text-subtle px-4 py-3 w-[110px]">Posted</th>
+                <th className="text-center text-caption font-semibold text-subtle px-4 py-3 w-[110px]">Applicants</th>
+                <th className="text-center text-caption font-semibold text-subtle px-3 py-3 w-[172px]">Actions</th>
               </tr>
             </thead>
             <tbody>

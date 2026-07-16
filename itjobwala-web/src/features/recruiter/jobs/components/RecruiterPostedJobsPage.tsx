@@ -84,18 +84,18 @@ export default function RecruiterPostedJobsPage() {
     <RecruiterShell>
       {/* Page header */}
       <div className="bg-surface border-b border-token">
-        <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
-          <h1 className="text-4xl font-extrabold text-heading" style={{ letterSpacing: '-0.5px' }}>
+        <div className="container-responsive mx-auto px-5 sm:px-8 py-8">
+          <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.5px' }}>
             Posted Jobs
           </h1>
-          <p className="text-sm text-subtle mt-1">
+          <p className="text-small-text text-subtle mt-1">
             Manage your active job listings
           </p>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
+      <div className="container-responsive mx-auto px-5 sm:px-8 py-8">
 
         {/* Filters + Search row */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
@@ -105,7 +105,7 @@ export default function RecruiterPostedJobsPage() {
               <button
                 key={value}
                 onClick={() => handleStatusFilter(value)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium text-center transition-colors ${
+                className={`px-4 py-2 rounded-sm text-sm font-medium text-center transition-colors ${
                   statusFilter === value
                     ? 'bg-primary text-white'
                     : 'bg-surface text-body-secondary border border-token hover:border-primary'
@@ -185,12 +185,12 @@ export default function RecruiterPostedJobsPage() {
                 <table className="w-full min-w-[760px]">
                   <thead className="bg-surface-alt border-b border-token">
                     <tr>
-                      <th className="px-6 py-4 text-left text-caption font-semibold text-body-secondary min-w-[220px]">Job Title</th>
-                      <th className="px-6 py-4 text-left text-caption font-semibold text-body-secondary">Location</th>
-                      <th className="px-6 py-4 text-center text-caption font-semibold text-body-secondary">Applications</th>
-                      <th className="px-6 py-4 text-left text-caption font-semibold text-body-secondary">Status</th>
-                      <th className="px-6 py-4 text-left text-caption font-semibold text-body-secondary">Posted</th>
-                      <th className="px-6 py-4 text-left text-caption font-semibold text-body-secondary">Actions</th>
+                      <th className="px-6 py-4 text-left text-lg font-semibold text-body-secondary min-w-[220px]">Job Title</th>
+                      <th className="px-6 py-4 text-left text-lg font-semibold text-body-secondary">Location</th>
+                      <th className="px-6 py-4 text-center text-lg font-semibold text-body-secondary">Applications</th>
+                      <th className="px-6 py-4 text-left text-lg font-semibold text-body-secondary">Status</th>
+                      <th className="px-6 py-4 text-left text-lg font-semibold text-body-secondary">Posted</th>
+                      <th className="px-6 py-4 text-left text-lg font-semibold text-body-secondary">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -203,12 +203,12 @@ export default function RecruiterPostedJobsPage() {
                             <p className="text-micro text-amber-600 mt-1 font-medium">⚠ {job.moderationReason}</p>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-sm text-body-secondary">{job.location}</td>
-                        <td className="px-6 py-4 text-sm text-body-secondary text-center">{job.applicationCount ?? 0}</td>
+                        <td className="px-6 py-4 text-small-text text-body-secondary">{job.location}</td>
+                        <td className="px-6 py-4 text-small-text text-body-secondary text-center">{job.applicationCount ?? 0}</td>
                         <td className="px-6 py-4">
                           <StatusBadge status={job.status} size="md" />
                         </td>
-                        <td className="px-6 py-4 text-sm text-body-secondary">{formatDate(job.postedDate ?? job.createdAt)}</td>
+                        <td className="px-6 py-4 text-small-text text-body-secondary">{formatDate(job.postedDate ?? job.createdAt)}</td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3 flex-wrap">
                             {(job.status === 'draft' || job.status === 'needs_changes') && (

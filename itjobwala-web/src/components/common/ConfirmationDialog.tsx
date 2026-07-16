@@ -29,17 +29,17 @@ export default function ConfirmationDialog({
   return (
     <Modal isOpen={isOpen} onClose={onCancel} size="sm" titleId="confirm-dialog-title">
       {/* Header */}
-      <div className="px-6 py-5 border-b border-token">
+      <div className="px-5 lg:px-8 py-5 border-b border-token">
         <h2 id="confirm-dialog-title" className="text-lg font-bold text-heading">{title}</h2>
       </div>
 
       {/* Body */}
-      <div className="px-6 py-4">
+      <div className="px-5 lg:px-8 py-4">
         <p className="text-base text-body-secondary leading-relaxed">{message}</p>
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-4 bg-surface-alt flex items-center justify-end gap-3 border-t border-token">
+      <div className="px-5 lg:px-8 py-4 bg-surface-alt flex items-center justify-end gap-3 border-t border-token">
         <Button
           variant="secondary"
           size="md"

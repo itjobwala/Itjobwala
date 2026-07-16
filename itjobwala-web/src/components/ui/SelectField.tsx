@@ -24,12 +24,12 @@ export default function SelectField({ label, id, value, onChange, options, error
       </label>
       <div
         className={[
-          'relative rounded-xl bg-surface transition-all duration-[180ms]',
+          'relative h-11 lg:h-12 rounded-sm bg-surface transition-all duration-[180ms]',
           error
-            ? 'border-[1.5px] border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.09)]'
+            ? 'border border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.09)]'
             : focused
-            ? 'border-[1.5px] border-[#1557FF] shadow-[0_0_0_3px_rgba(21,87,255,0.09)]'
-            : 'border-[1.5px] border-token-mid',
+            ? 'border border-[#1557FF] shadow-[0_0_0_3px_rgba(21,87,255,0.09)]'
+            : 'border border-token-mid',
         ].join(' ')}
       >
         <select
@@ -38,7 +38,7 @@ export default function SelectField({ label, id, value, onChange, options, error
           onChange={e => onChange(e.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          className={`w-full appearance-none border-none outline-none text-md bg-transparent cursor-pointer py-3.5 pl-4 pr-11 ${value ? 'text-heading' : 'text-subtle'}`}
+          className={`w-full h-full appearance-none border-none outline-none text-lg bg-transparent cursor-pointer pl-3.5 lg:pl-4 pr-11 ${value ? 'text-heading' : 'text-subtle'}`}
         >
           {options.map(o => (
             <option key={o.value} value={o.value} disabled={o.value === ''} className="text-heading">

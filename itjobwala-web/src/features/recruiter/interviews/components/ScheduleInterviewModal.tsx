@@ -125,14 +125,18 @@ export default function ScheduleInterviewModal({
     }
   }
 
+  // Design-spec Input Field: 44px mobile -> 48px desktop, 16px font, 8px radius
   const inputCls = (err?: string) =>
-    `w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none bg-surface transition-colors focus:border-primary focus:shadow-[0_0_0_3px_rgba(21,87,255,0.09)] ${err ? 'border-danger' : 'border-token'}`;
+    `w-full h-11 lg:h-12 rounded-sm border px-3.5 lg:px-4 text-lg font-medium text-heading outline-none bg-surface transition-colors focus:border-primary focus:shadow-[0_0_0_3px_rgba(21,87,255,0.09)] ${err ? 'border-danger' : 'border-token'}`;
+
+  const textareaCls = () =>
+    `w-full rounded-sm border px-3.5 py-3 text-lg font-medium text-heading outline-none bg-surface transition-colors focus:border-primary focus:shadow-[0_0_0_3px_rgba(21,87,255,0.09)] border-token`;
 
   return (
     <div className="fixed inset-0 z-[400] flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={onClose} />
 
-      <div className="relative bg-surface w-full sm:max-w-[480px] rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="relative bg-surface w-full sm:max-w-[600px] rounded-t-3xl sm:rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Header */}
         <div className="flex items-start justify-between px-6 pt-6 pb-4 border-b border-token shrink-0">
           <div>
@@ -264,7 +268,7 @@ export default function ScheduleInterviewModal({
                 onChange={e => set('note', e.target.value)}
                 rows={2}
                 placeholder="e.g. Focus on system design, bring portfolio…"
-                className={`${inputCls()} resize-none`}
+                className={`${textareaCls()} resize-none`}
               />
             </div>
           </form>

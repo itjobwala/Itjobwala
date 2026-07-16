@@ -74,7 +74,7 @@ function SkillsEditor({ skills, onChange }: { skills: string[]; onChange: (v: st
   return (
     <div className="flex flex-wrap gap-1.5 p-2.5 border border-token rounded-xl min-h-[44px] bg-surface cursor-text">
       {skills.map((s, i) => (
-        <span key={i} className="flex items-center gap-1 bg-blue-50 text-blue-700 text-micro font-medium px-2 py-0.5 rounded-full">
+        <span key={i} className="flex items-center gap-1 bg-blue-50 text-blue-700 text-[14px] font-medium px-3 py-2 rounded-full">
           {s}
           <button type="button" onClick={() => onChange(skills.filter((_, j) => j !== i))} className="text-blue-400 hover:text-blue-700 leading-none">×</button>
         </span>

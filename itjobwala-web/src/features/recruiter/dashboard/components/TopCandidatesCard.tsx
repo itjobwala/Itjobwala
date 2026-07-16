@@ -22,7 +22,7 @@ export default function TopCandidatesCard() {
     <Card padding="none" className="shadow-sm h-[350px] flex flex-col overflow-hidden">
       <div className="px-5 py-4 border-b border-token flex items-center justify-between">
         <div>
-          <h2 className="text-base font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
+          <h2 className="text-h6 text-heading" style={{ letterSpacing: '-0.3px' }}>
             Top Candidates
           </h2>
           <p className="text-caption text-subtle mt-0.5">Highest ATS-scored active applicants</p>

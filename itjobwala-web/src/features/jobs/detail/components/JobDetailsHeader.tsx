@@ -91,7 +91,7 @@ export default function JobDetailsHeader({ job, applied, saved, loading = false,
             {job.isHot && <span className="text-micro font-bold rounded-full py-[2px] px-2.5 bg-danger-bg text-danger">Hot</span>}
           </div>
 
-          <h1 className="text-xl sm:text-2xl font-extrabold text-heading leading-snug mb-1" style={{ letterSpacing: '-0.5px' }}>
+          <h1 className="text-h1 text-heading mb-1" style={{ letterSpacing: '-0.5px' }}>
             {job.title}
           </h1>
 
@@ -131,7 +131,7 @@ export default function JobDetailsHeader({ job, applied, saved, loading = false,
           {/* Secondary meta */}
           <div className="flex flex-wrap items-center gap-4 text-caption text-[#474d6a] mb-6">
             <span className="flex items-center gap-1.5">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
               </svg>
               Posted {postedLabel(job.postedDaysAgo)}
@@ -140,7 +140,7 @@ export default function JobDetailsHeader({ job, applied, saved, loading = false,
               const dl = deadlineInfo(job.closesAt);
               return (
                 <span className={`flex items-center gap-1.5 font-semibold ${dl.className}`}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                     <rect x="3" y="4" width="20" height="20" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
                   </svg>
                   {dl.label}
@@ -148,14 +148,14 @@ export default function JobDetailsHeader({ job, applied, saved, loading = false,
               );
             })()}
             <span className="flex items-center gap-1.5">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
               </svg>
               {job.metrics?.applicants ?? job.applicants} applicants
             </span>
             {job.vacancies && (
               <span className="flex items-center gap-1.5">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                   <rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
                 </svg>
                 {job.vacancies} vacancies

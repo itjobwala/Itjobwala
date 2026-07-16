@@ -118,10 +118,10 @@ export default function RecruiterJobForm() {
             </svg>
             Back
           </button>
-          <h1 className="font-extrabold text-heading text-2xl sm:text-3xl mb-1" style={{ letterSpacing: -0.8 }}>
+          <h1 className="text-h1 text-heading mb-1" style={{ letterSpacing: -0.8 }}>
             Post a new job
           </h1>
-          <p className="text-sm text-muted">Fill in the details below. You can edit the job after posting.</p>
+          <p className="text-small-text text-muted">Fill in the details below. You can edit the job after posting.</p>
         </div>
 
         {/* Body */}

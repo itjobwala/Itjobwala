@@ -35,7 +35,7 @@ export default function ReportModal({ isOpen, onClose, targetType, targetId, tar
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} titleId="report-modal-title">
-      <div className="p-6 space-y-4">
+      <div className="p-5 lg:p-8 space-y-4">
         {done ? (
           <div className="text-center py-4 space-y-3">
             <div className="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center mx-auto">

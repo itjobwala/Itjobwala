@@ -18,7 +18,7 @@ function ReferralsContent() {
   }, [searchParams]);
 
   return (
-    <div className="pt-[68px]">
+    <div className="pt-16 lg:pt-[72px]">
       <div className="bg-white border-b border-gray-100">
         <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-5">
           <div className="flex items-center justify-between flex-wrap gap-4">

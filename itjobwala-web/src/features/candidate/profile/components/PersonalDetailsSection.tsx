@@ -110,8 +110,8 @@ export default function PersonalDetailsSection({ personalDetails, onEdit, onAdd 
             <div>
               <h3 className="text-sm font-bold text-heading mb-3">Languages</h3>
               <div className="rounded-xl border border-token overflow-hidden">
-                <table className="w-full text-left text-caption">
-                  <thead className="bg-surface-alt border-b border-token text-muted font-semibold">
+                <table className="w-full text-left">
+                  <thead className="bg-surface-alt border-b border-token text-muted font-semibold text-caption">
                     <tr>
                       <th className="px-4 py-2.5">Language</th>
                       <th className="px-4 py-2.5">Proficiency</th>
@@ -120,7 +120,7 @@ export default function PersonalDetailsSection({ personalDetails, onEdit, onAdd 
                       <th className="px-4 py-2.5 text-center">Speak</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-gray-100 text-small-text">
                     {personalDetails.languages.filter(l => l.name?.trim?.() !== '').map(lang => (
                       <tr key={lang.id} className="bg-surface">
                         <td className="px-4 py-3 font-medium text-heading capitalize">{lang.name}</td>

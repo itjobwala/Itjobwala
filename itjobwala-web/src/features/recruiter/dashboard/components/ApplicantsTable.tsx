@@ -24,22 +24,22 @@ export default function ApplicantsTable({ applicants }: Props) {
       <table className="w-full">
         <thead>
           <tr className="bg-surface-alt/60">
-            <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-5 py-3">
+            <th className="text-left text-caption font-semibold text-subtle px-5 py-3">
               Candidate
             </th>
-            <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3 hidden sm:table-cell min-w-[220px]">
+            <th className="text-left text-caption font-semibold text-subtle px-4 py-3 hidden sm:table-cell min-w-[220px]">
               Role Applied
             </th>
-            <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3 hidden md:table-cell">
+            <th className="text-left text-caption font-semibold text-subtle px-4 py-3 hidden md:table-cell">
               Experience
             </th>
-            <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3 hidden lg:table-cell">
+            <th className="text-left text-caption font-semibold text-subtle px-4 py-3 hidden lg:table-cell">
               Applied
             </th>
-            <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3">
+            <th className="text-left text-caption font-semibold text-subtle px-4 py-3">
               Status
             </th>
-            <th className="text-right text-micro font-bold text-subtle uppercase tracking-wide px-4 py-3">
+            <th className="text-right text-caption font-semibold text-subtle px-4 py-3">
               Action
             </th>
           </tr>

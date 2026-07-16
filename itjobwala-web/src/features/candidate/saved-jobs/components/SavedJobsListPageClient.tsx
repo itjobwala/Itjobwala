@@ -94,16 +94,16 @@ export default function SavedJobsListPageClient() {
       <div className="min-h-screen bg-surface-alt">
         <SmartNavbar />
 
-        <div className="pt-[68px]">
+        <div className="pt-16 lg:pt-[72px]">
           {/* Header bar */}
           <div className="bg-surface border-b border-token">
-            <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-5">
+            <div className="container-responsive mx-auto px-5 sm:px-8 py-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-3xl font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>
+                  <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.3px' }}>
                     Saved Jobs
                   </h1>
-                  <p className="text-sm text-subtle mt-0.5">
+                  <p className="text-small-text text-subtle mt-0.5">
                     Browse and manage your saved job listings
                   </p>
                 </div>
@@ -118,7 +118,7 @@ export default function SavedJobsListPageClient() {
             </div>
           </div>
 
-          <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
+          <div className="container-responsive mx-auto px-5 sm:px-8 py-8">
             {/* Sort Filter */}
             <Card padding="lg" className="mb-6" overflow>
               <div className="w-full sm:w-64">
@@ -135,7 +135,7 @@ export default function SavedJobsListPageClient() {
                     <option value="newest">Recently Saved</option>
                     <option value="oldest">Oldest First</option>
                   </select>
-                  <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-subtle" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <svg className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-subtle" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
                 </div>

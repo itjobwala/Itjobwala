@@ -180,18 +180,18 @@ export default function RecruiterCompanyProfilePage() {
     <RecruiterShell>
         {/* Page header */}
         <div className="bg-surface border-b border-token">
-          <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-heading" style={{ letterSpacing: '-0.5px' }}>
+          <div className="container-responsive mx-auto px-5 sm:px-8 py-8">
+            <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.5px' }}>
               Company Profile
             </h1>
-            <p className="text-sm text-subtle mt-1">
+            <p className="text-small-text text-subtle mt-1">
               Manage your company information
             </p>
           </div>
         </div>
 
         {/* Content */}
-        <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
+        <div className="container-responsive mx-auto px-5 sm:px-8 py-8">
           {isLoading ? (
             <div className="text-center py-12">
               <div className="inline-block">

@@ -160,8 +160,8 @@ function DashboardContent() {
   return (
     <div className="min-h-screen" style={{ background: 'radial-gradient(ellipse at 60% 0%, #e0e7ff 0%, #f1f5f9 40%, #f8fafc 100%)' }}>
         <SmartNavbar />
-        <div className="pt-[68px]">
-          <div className="max-w-[1160px] mx-auto px-5 sm:px-8 py-8 space-y-5">
+        <div className="pt-16 lg:pt-[72px]">
+          <div className="container-responsive mx-auto px-5 sm:px-8 py-8 space-y-5">
 
             {isLoading && <DashboardSkeleton />}
 
@@ -193,7 +193,7 @@ function DashboardContent() {
                         openToWork={data.user.openToWork}
                       />
                       <div>
-                        <h1 className="text-2xl sm:text-[28px] font-bold text-white tracking-tight leading-tight">
+                        <h1 className="text-h1 text-white tracking-tight">
                           {data.user.fullName ? `Hi, ${data.user.fullName}` : 'Your Career Dashboard'}
                         </h1>
                         {/* Work status · Experience · Location */}
@@ -226,7 +226,7 @@ function DashboardContent() {
                         {candidateRole && (
                           <div className="mt-3">
                             <span
-                              className="px-3 py-1 rounded-full text-caption font-semibold"
+                              className="px-3 py-2 rounded-full text-[14px] font-semibold"
                               style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.75)', border: '1px solid rgba(255,255,255,0.15)' }}
                             >
                               {candidateRole}
@@ -282,7 +282,7 @@ function DashboardContent() {
                     <div className="bg-surface rounded-2xl border border-token-mid shadow-[0_2px_12px_rgba(0,0,0,0.04)] overflow-hidden">
                       <div className="flex items-center justify-between px-6 py-5 border-b border-token">
                         <div>
-                          <h2 className="text-base font-bold text-heading">Recent Applications</h2>
+                          <h2 className="text-h6 text-heading">Recent Applications</h2>
                           <p className="text-caption text-subtle mt-0.5">{data.stats.totalApplications} total · sorted by latest</p>
                         </div>
                         <Link href="/candidate/applications" className="group inline-flex items-center gap-1 text-sm font-semibold text-primary hover:text-primary/80 transition-colors">

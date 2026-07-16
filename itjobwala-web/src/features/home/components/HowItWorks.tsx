@@ -10,7 +10,7 @@ export default function HowItWorks() {
   return (
     <section
       ref={ref}
-      className="bg-white py-20 px-5 sm:px-8 lg:px-10"
+      className="bg-white py-16 px-5 sm:px-8 lg:px-10"
     >
       <div className="max-w-[1440px] mx-auto">
         {/* Header */}
@@ -22,7 +22,7 @@ export default function HowItWorks() {
             Built for QA careers
           </div>
           <h2
-            className="reveal stagger-1 text-[36px] md:text-[42px] font-extrabold text-[#0f172a]"
+            className="reveal stagger-1 text-h2 text-[#0f172a]"
             style={{ letterSpacing: '-1.5px' }}
           >
             How it works
@@ -62,8 +62,8 @@ export default function HowItWorks() {
                   {s.n}
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-[#0f172a] mb-3">{s.title}</h3>
-              <p className="text-sm text-[#474d6a] leading-[1.3]">{s.desc}</p>
+              <h3 className="text-h3 text-[#0f172a] mb-3">{s.title}</h3>
+              <p className="text-small-text text-[#474d6a]">{s.desc}</p>
             </div>
           ))}
         </div>

@@ -68,7 +68,7 @@ export default function AdminJobQueuePage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-white font-bold text-2xl">Job Moderation Queue</h1>
+        <h1 className="text-h1 text-white">Job Moderation Queue</h1>
         <p className="text-slate-400 text-sm mt-1">Review pending and flagged job listings before they go live</p>
       </div>
 
@@ -187,8 +187,8 @@ export default function AdminJobQueuePage() {
 
       {confirm && (
         <Modal isOpen onClose={() => setConfirm(null)} titleId="moderate-job-title">
-          <div className="p-6 space-y-4">
-            <h2 id="moderate-job-title" className="text-base font-bold text-heading">
+          <div className="p-5 lg:p-8 space-y-4">
+            <h2 id="moderate-job-title" className="text-h6 text-heading">
               {decisionLabel(confirm.decision)}: "{confirm.job.title}"
             </h2>
 

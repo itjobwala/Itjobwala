@@ -47,7 +47,7 @@ function NavBar() {
       className="sticky top-0 z-50 border-b border-black/[0.06] shrink-0"
       style={{ background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(14px)' }}
     >
-      <div className="max-w-[1440px] mx-auto px-5 lg:px-10 flex items-center h-[68px] gap-9">
+      <div className="max-w-[1440px] mx-auto px-5 lg:px-10 flex items-center h-16 lg:h-[72px] gap-9">
         <Link href="/" className="flex items-center gap-1 shrink-0 hover:opacity-80 transition-opacity">
           <Image src="/logo.png" alt="itJobwala" width={30} height={30} />
           <span className="font-extrabold text-xl text-heading" style={{ letterSpacing: '-0.5px' }}>
@@ -100,10 +100,10 @@ function LeftPanel({ role }: { role: Role }) {
             <span className="inline-block rounded-full" style={{ width: 7, height: 7, background: '#4ade80', boxShadow: '0 0 0 4px rgba(74,222,128,0.2)' }} />
             <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>Recruiter portal</span>
           </div>
-          <h2 className="font-extrabold text-white mb-4" style={{ fontSize: 40, lineHeight: 1.1, letterSpacing: -1.6 }}>
+          <h2 className="text-h2 text-white mb-4" style={{ letterSpacing: -1.6 }}>
             Welcome back.<br />Let&apos;s get hiring.
           </h2>
-          <p className="text-sm mb-9" style={{ color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, maxWidth: 360 }}>
+          <p className="text-large-body mb-9" style={{ color: 'rgba(255,255,255,0.7)', maxWidth: 360 }}>
             Sign in to manage active jobs, review applications, and message candidates directly.
           </p>
           <div className="mb-8">
@@ -148,10 +148,10 @@ function LeftPanel({ role }: { role: Role }) {
           <span className="inline-block rounded-full" style={{ width: 7, height: 7, background: '#4ade80', boxShadow: '0 0 0 4px rgba(74,222,128,0.2)' }} />
           <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>4,000+ active IT jobs</span>
         </div>
-        <h2 className="font-extrabold text-white mb-4" style={{ fontSize: 40, lineHeight: 1.1, letterSpacing: -1.6 }}>
+        <h2 className="text-h2 text-white mb-4" style={{ letterSpacing: -1.6 }}>
           Welcome back.<br />Your next role awaits.
         </h2>
-        <p className="text-sm mb-9" style={{ color: 'rgba(255,255,255,0.7)', lineHeight: 1.7, maxWidth: 360 }}>
+        <p className="text-large-body mb-9" style={{ color: 'rgba(255,255,255,0.7)', maxWidth: 360 }}>
           Sign in to track applications, get matched roles, and chat directly with recruiters — no middlemen.
         </p>
         <div className="mb-8">
@@ -423,7 +423,7 @@ export default function LoginPage() {
   }
 
   if (screen === 'forgot') return (
-    <div className="min-h-screen flex flex-col" style={{ fontFamily: 'var(--font-plus-jakarta)', background: 'linear-gradient(135deg, #f0f5ff 0%, #eef3ff 50%, #f5f0ff 100%)' }}>
+    <div className="min-h-screen flex flex-col" style={{ fontFamily: 'var(--font-sans)', background: 'linear-gradient(135deg, #f0f5ff 0%, #eef3ff 50%, #f5f0ff 100%)' }}>
       <NavBar />
       <div className="flex-1 flex">
         <LeftPanel role="candidate" />
@@ -439,7 +439,7 @@ export default function LoginPage() {
               <div className="flex items-center justify-center rounded-2xl mb-5" style={{ width: 56, height: 56, background: '#eef3ff', border: '1.5px solid #c7d7fe' }}>
                 <LockIcon />
               </div>
-              <h1 className="font-extrabold text-heading mb-2" style={{ fontSize: 28, letterSpacing: -0.8 }}>Forgot password?</h1>
+              <h1 className="text-h1 text-heading mb-2" style={{ letterSpacing: -0.8 }}>Forgot password?</h1>
               <p className="text-sm text-muted" style={{ lineHeight: 1.6 }}>No worries! Enter your email and we&apos;ll send you a reset link.</p>
             </div>
             <form onSubmit={handleForgot} noValidate>
@@ -471,7 +471,7 @@ export default function LoginPage() {
   );
 
   if (screen === 'forgot-sent') return (
-    <div className="min-h-screen flex items-center justify-center p-5 sm:p-6" style={{ fontFamily: 'var(--font-plus-jakarta)', background: 'linear-gradient(135deg, #f0f5ff 0%, #eef3ff 50%, #f5f0ff 100%)' }}>
+    <div className="min-h-screen flex items-center justify-center p-5 sm:p-6" style={{ fontFamily: 'var(--font-sans)', background: 'linear-gradient(135deg, #f0f5ff 0%, #eef3ff 50%, #f5f0ff 100%)' }}>
       <div className="fade-up text-center rounded-3xl w-full px-6 py-10 sm:px-12 sm:py-14" style={{ background: '#fff', maxWidth: 420, boxShadow: '0 24px 64px rgba(21,87,255,0.08)' }}>
         <div className="flex items-center justify-center rounded-full mx-auto mb-6" style={{ width: 72, height: 72, background: '#eef3ff', border: '2px solid #c7d7fe' }}>
           <svg width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-primary">
@@ -479,7 +479,7 @@ export default function LoginPage() {
             <polyline points="22,6 12,13 2,6" />
           </svg>
         </div>
-        <h2 className="font-extrabold text-heading mb-2.5" style={{ fontSize: 26 }}>Check your inbox</h2>
+        <h2 className="text-h1 text-heading mb-2.5">Check your inbox</h2>
         <p className="text-sm text-muted mb-2" style={{ lineHeight: 1.6 }}>
           If an account with <strong className="text-heading">{forgotEmail}</strong> exists, we&apos;ve sent a password reset code.
         </p>
@@ -503,7 +503,7 @@ export default function LoginPage() {
   );
 
   if (screen === 'reset') return (
-    <div className="min-h-screen flex flex-col" style={{ fontFamily: 'var(--font-plus-jakarta)', background: 'linear-gradient(135deg, #f0f5ff 0%, #eef3ff 50%, #f5f0ff 100%)' }}>
+    <div className="min-h-screen flex flex-col" style={{ fontFamily: 'var(--font-sans)', background: 'linear-gradient(135deg, #f0f5ff 0%, #eef3ff 50%, #f5f0ff 100%)' }}>
       <NavBar />
       <div className="flex-1 flex">
         <LeftPanel role="candidate" />
@@ -516,7 +516,7 @@ export default function LoginPage() {
               <BackIcon /> Back
             </button>
             <div className="fade-up mb-8">
-              <h1 className="font-extrabold text-heading mb-2" style={{ fontSize: 28, letterSpacing: -0.8 }}>Set new password</h1>
+              <h1 className="text-h1 text-heading mb-2" style={{ letterSpacing: -0.8 }}>Set new password</h1>
               <p className="text-sm text-muted" style={{ lineHeight: 1.6 }}>
                 Enter the 6-digit code sent to <strong>{forgotEmail}</strong> and choose a new password.
               </p>
@@ -564,7 +564,7 @@ export default function LoginPage() {
   );
 
   if (screen === 'reset-success') return (
-    <div className="min-h-screen flex items-center justify-center p-5 sm:p-6" style={{ fontFamily: 'var(--font-plus-jakarta)', background: 'linear-gradient(135deg, #f0f5ff 0%, #eef3ff 50%, #f5f0ff 100%)' }}>
+    <div className="min-h-screen flex items-center justify-center p-5 sm:p-6" style={{ fontFamily: 'var(--font-sans)', background: 'linear-gradient(135deg, #f0f5ff 0%, #eef3ff 50%, #f5f0ff 100%)' }}>
       <div className="fade-up text-center rounded-3xl w-full px-6 py-10 sm:px-12 sm:py-14" style={{ background: '#fff', maxWidth: 420, boxShadow: '0 24px 64px rgba(21,87,255,0.08)' }}>
         <div className="flex items-center justify-center rounded-full mx-auto mb-6" style={{ width: 72, height: 72, background: '#dcfce7', border: '2px solid #86efac' }}>
           <svg width="32" height="32" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className="text-success">
@@ -572,7 +572,7 @@ export default function LoginPage() {
             <polyline points="22 4 12 14.01 9 11.01" />
           </svg>
         </div>
-        <h2 className="font-extrabold text-heading mb-2.5" style={{ fontSize: 26 }}>Password reset!</h2>
+        <h2 className="text-h1 text-heading mb-2.5">Password reset!</h2>
         <p className="text-sm text-muted mb-8" style={{ lineHeight: 1.6 }}>
           Your password has been updated. All existing sessions have been signed out. Sign in with your new password.
         </p>
@@ -588,7 +588,7 @@ export default function LoginPage() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ fontFamily: 'var(--font-plus-jakarta)', background: 'linear-gradient(135deg, #f0f5ff 0%, #eef3ff 50%, #f5f0ff 100%)' }}>
+    <div className="min-h-screen flex flex-col" style={{ fontFamily: 'var(--font-sans)', background: 'linear-gradient(135deg, #f0f5ff 0%, #eef3ff 50%, #f5f0ff 100%)' }}>
       <NavBar />
 
       <div className="flex-1 flex">
@@ -614,7 +614,7 @@ export default function LoginPage() {
             {screen === 'email' && (
               <>
                 <div className="fade-up mb-7">
-                  <h1 className="font-extrabold text-heading mb-2 text-2xl sm:text-[30px]" style={{ letterSpacing: -1 }}>
+                  <h1 className="text-h1 text-heading mb-2" style={{ letterSpacing: -1 }}>
                     Sign in to itJobwala
                   </h1>
                   <p className="text-base text-muted" style={{ lineHeight: 1.6 }}>
@@ -740,7 +740,7 @@ export default function LoginPage() {
             {screen === 'send-otp' && (
               <>
                 <div className="fade-up mb-7">
-                  <h1 className="font-extrabold text-heading mb-2 text-2xl sm:text-[30px]" style={{ letterSpacing: -1 }}>
+                  <h1 className="text-h1 text-heading mb-2" style={{ letterSpacing: -1 }}>
                     Sign in with OTP
                   </h1>
                   <p className="text-base text-muted" style={{ lineHeight: 1.6 }}>
@@ -851,7 +851,7 @@ export default function LoginPage() {
                   <div className="flex items-center justify-center rounded-2xl mb-5" style={{ width: 56, height: 56, background: '#eef3ff', border: '1.5px solid #c7d7fe' }}>
                     <EmailIcon />
                   </div>
-                  <h1 className="font-extrabold text-heading mb-2" style={{ fontSize: 28, letterSpacing: -0.8 }}>
+                  <h1 className="text-h1 text-heading mb-2" style={{ letterSpacing: -0.8 }}>
                     Check your email
                   </h1>
                   <p className="text-sm text-muted" style={{ lineHeight: 1.6 }}>

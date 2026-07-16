@@ -27,7 +27,7 @@ const NAV_SECTIONS: NavSection[] = [
         href: '/recruiter/dashboard',
         label: 'Dashboard',
         icon: (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
             <rect x="3" y="3" width="7" height="7" rx="1.5" />
             <rect x="14" y="3" width="7" height="7" rx="1.5" />
             <rect x="3" y="14" width="7" height="7" rx="1.5" />
@@ -39,7 +39,7 @@ const NAV_SECTIONS: NavSection[] = [
         href: '/recruiter/posted-jobs',
         label: 'Posted Jobs',
         icon: (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
             <rect x="2" y="7" width="20" height="14" rx="2" />
             <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
           </svg>
@@ -49,7 +49,7 @@ const NAV_SECTIONS: NavSection[] = [
         href: '/recruiter/applicants',
         label: 'Applicants',
         icon: (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
             <circle cx="9" cy="7" r="4" />
             <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
@@ -61,7 +61,7 @@ const NAV_SECTIONS: NavSection[] = [
         href: '/recruiter/candidates',
         label: 'Find Candidates',
         icon: (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.35-4.35" />
           </svg>
@@ -71,7 +71,7 @@ const NAV_SECTIONS: NavSection[] = [
         href: '/recruiter/interviews',
         label: 'Interviews',
         icon: (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
             <rect x="3" y="4" width="18" height="18" rx="2" />
             <path d="M16 2v4M8 2v4M3 10h18" />
           </svg>
@@ -86,7 +86,7 @@ const NAV_SECTIONS: NavSection[] = [
         href: '/recruiter/chat',
         label: 'Messages',
         icon: (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
         ),
@@ -95,7 +95,7 @@ const NAV_SECTIONS: NavSection[] = [
         href: '/recruiter/company-profile',
         label: 'Company Profile',
         icon: (
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
             <rect x="2" y="7" width="20" height="14" rx="2" />
             <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
           </svg>
@@ -136,7 +136,7 @@ export default function RecruiterSidebar({ isOpen, onClose }: RecruiterSidebarPr
       )}
 
       <aside
-        className={`fixed top-0 left-0 bottom-0 w-[240px] bg-surface border-r border-token z-[160] flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed top-0 left-0 bottom-0 w-[280px] bg-surface border-r border-token z-[160] flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
       >
         {/* Logo */}
@@ -195,7 +195,7 @@ export default function RecruiterSidebar({ isOpen, onClose }: RecruiterSidebarPr
                       <Link
                         href={item.href}
                         onClick={handleLinkClick}
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 group ${active
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-md font-semibold transition-all duration-150 group ${active
                           ? 'bg-primary/10 text-primary'
                           : 'text-body hover:bg-surface-alt hover:text-heading'
                           }`}

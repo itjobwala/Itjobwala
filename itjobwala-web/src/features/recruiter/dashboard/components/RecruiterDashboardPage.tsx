@@ -19,18 +19,18 @@ export default function RecruiterDashboardPage() {
   return (
     <ErrorBoundary>
     <RecruiterShell>
-      <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8 space-y-6">
+      <div className="container-responsive mx-auto px-5 sm:px-8 py-8 space-y-6">
 
         {/* ── Welcome Header ── */}
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
             <h1
-              className="text-3xl sm:text-4xl font-extrabold text-heading leading-tight"
+              className="text-h1 text-heading leading-tight"
               style={{ letterSpacing: '-0.6px' }}
             >
               Welcome, {firstName} 👋
             </h1>
-            <p className="text-base text-muted mt-1">
+            <p className="text-body-text text-muted mt-1">
               {companyName} &middot; Here&apos;s what&apos;s happening today.
             </p>
           </div>

@@ -144,8 +144,8 @@ interface ConfirmModalProps {
 function ConfirmModal({ count, isPending, onConfirm, onCancel }: ConfirmModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-surface rounded-2xl border border-token shadow-2xl p-6 w-full max-w-sm mx-4">
-        <h2 className="text-base font-extrabold text-heading mb-1">Reject {count} applicant{count !== 1 ? 's' : ''}?</h2>
+      <div className="bg-surface rounded-lg border border-token shadow-2xl p-8 w-full max-w-sm mx-4">
+        <h2 className="text-h6 text-heading mb-1">Reject {count} applicant{count !== 1 ? 's' : ''}?</h2>
         <p className="text-sm text-subtle mb-5">
           Each candidate will receive a rejection notification. Applicants already in a terminal state (hired, rejected, withdrawn) will be skipped automatically.
         </p>
@@ -180,8 +180,8 @@ interface ScoreRejectModalProps {
 function ScoreRejectModal({ threshold, isPending, onConfirm, onCancel }: ScoreRejectModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="bg-surface rounded-2xl border border-token shadow-2xl p-6 w-full max-w-sm mx-4">
-        <h2 className="text-base font-extrabold text-heading mb-1">Bulk reject below {threshold}?</h2>
+      <div className="bg-surface rounded-lg border border-token shadow-2xl p-8 w-full max-w-sm mx-4">
+        <h2 className="text-h6 text-heading mb-1">Bulk reject below {threshold}?</h2>
         <p className="text-sm text-subtle mb-5">
           All active applicants with a QA match score below {threshold} will be rejected. Applicants in a terminal state (hired, rejected, withdrawn) will be skipped automatically.
         </p>
@@ -358,18 +358,18 @@ export default function RecruiterApplicantsPage() {
     <RecruiterShell>
       {/* Page header */}
       <div className="bg-surface border-b border-token">
-        <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
-          <h1 className="text-4xl font-extrabold text-heading" style={{ letterSpacing: '-0.5px' }}>
+        <div className="container-responsive mx-auto px-5 sm:px-8 py-8">
+          <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.5px' }}>
             Applicants
           </h1>
-          <p className="text-sm text-subtle mt-1">
+          <p className="text-small-text text-subtle mt-1">
             Review and manage applications for your job postings
           </p>
         </div>
       </div>
 
       {/* Content */}
-      <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
+      <div className="container-responsive mx-auto px-5 sm:px-8 py-8">
 
         {/* ── Filter + Sort bar ──────────────────────────────────────────── */}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -382,7 +382,7 @@ export default function RecruiterApplicantsPage() {
               <button
                 key={value}
                 onClick={() => { setFilterStatus(value); clearSelection(); }}
-                className={`px-4 py-2 rounded-lg font-medium text-sm text-center transition-colors ${
+                className={`px-4 py-2 rounded-sm font-medium text-sm text-center transition-colors ${
                   filterStatus === value
                     ? 'bg-primary text-white'
                     : 'bg-surface text-body-secondary border border-token hover:border-primary'
@@ -430,11 +430,11 @@ export default function RecruiterApplicantsPage() {
               className="w-8 h-8 flex items-center justify-center rounded-lg border border-token text-muted hover:bg-surface-alt hover:text-heading transition-colors"
             >
               {sortOrder === 'desc' ? (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M12 20V4M5 13l7 7 7-7" />
                 </svg>
               ) : (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M12 4v16M5 11l7-7 7 7" />
                 </svg>
               )}
@@ -499,13 +499,13 @@ export default function RecruiterApplicantsPage() {
                       />
                     )}
                   </th>
-                  <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-3 py-3 w-[270px]">Candidate</th>
-                  <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-3 py-3 w-[160px]">Applied For</th>
-                  <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[70px]">Exp.</th>
-                  <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[100px]">Score</th>
-                  <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[120px]">Status</th>
-                  <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[100px]">Applied</th>
-                  <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-3 py-3 w-[250px]">
+                  <th className="text-left text-lg font-semibold text-subtle px-3 py-3 w-[270px]">Candidate</th>
+                  <th className="text-left text-lg font-semibold text-subtle px-3 py-3 w-[160px]">Applied For</th>
+                  <th className="text-center text-lg font-semibold text-subtle px-2 py-3 w-[70px]">Exp.</th>
+                  <th className="text-center text-lg font-semibold text-subtle px-2 py-3 w-[100px]">Score</th>
+                  <th className="text-center text-lg font-semibold text-subtle px-2 py-3 w-[120px]">Status</th>
+                  <th className="text-left text-lg font-semibold text-subtle px-2 py-3 w-[100px]">Applied</th>
+                  <th className="text-center text-lg font-semibold text-subtle px-3 py-3 w-[250px]">
                     {someSelected ? `${selected.size} selected` : 'Actions'}
                   </th>
                 </tr>
@@ -544,10 +544,10 @@ export default function RecruiterApplicantsPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-3 py-3.5 text-sm text-body-secondary truncate w-[160px]">
+                      <td className="px-3 py-3.5 text-small-text text-body-secondary truncate w-[160px]">
                         {applicant.jobTitle || 'Unknown Position'}
                       </td>
-                      <td className="px-2 py-3.5 text-sm text-body-secondary text-center whitespace-nowrap w-[70px]">
+                      <td className="px-2 py-3.5 text-small-text text-body-secondary text-center whitespace-nowrap w-[70px]">
                         {applicant.experience !== undefined && applicant.experience > 0
                           ? `${applicant.experience} yr${applicant.experience !== 1 ? 's' : ''}`
                           : '—'}
@@ -558,7 +558,7 @@ export default function RecruiterApplicantsPage() {
                       <td className="px-2 py-3.5 text-center w-[120px]">
                         <StatusBadge status={applicant.status} />
                       </td>
-                      <td className="px-2 py-3.5 text-sm text-body-secondary whitespace-nowrap w-[100px]">
+                      <td className="px-2 py-3.5 text-small-text text-body-secondary whitespace-nowrap w-[100px]">
                         {formatDate(applicant.appliedDate)}
                       </td>
                       <td className="px-3 py-3.5 w-[250px]">
@@ -591,7 +591,7 @@ export default function RecruiterApplicantsPage() {
               onClick={() => setShowConfirm(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 transition-colors"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <polyline points="3 6 5 6 21 6" />
                 <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
                 <path d="M10 11v6M14 11v6" />
@@ -603,7 +603,7 @@ export default function RecruiterApplicantsPage() {
               className="text-caption text-muted hover:text-heading transition-colors"
               aria-label="Clear selection"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>

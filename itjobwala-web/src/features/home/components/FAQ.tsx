@@ -15,7 +15,7 @@ export default function FAQ() {
   }
 
   return (
-    <section ref={ref} className="bg-[#f9fafb] py-[88px] px-5 lg:px-10">
+    <section ref={ref} className="bg-[#f9fafb] py-16 px-5 lg:px-10">
       <div className="max-w-[880px] mx-auto">
 
         {/* Header */}
@@ -27,7 +27,7 @@ export default function FAQ() {
             Got questions?
           </div>
           <h2
-            className="reveal stagger-1 text-[36px] md:text-[42px] font-extrabold text-[#0f172a] leading-[1.1]"
+            className="reveal stagger-1 text-h2 text-[#0f172a]"
             style={{ letterSpacing: '-1.5px' }}
           >
             Answers, upfront
@@ -54,7 +54,7 @@ export default function FAQ() {
                     transform: openIndex === i ? 'rotate(45deg)' : 'rotate(0deg)',
                   }}
                 >
-                  <svg width="14" height="14" fill="none" stroke={openIndex === i ? '#fff' : '#6b7280'} strokeWidth="2.5" viewBox="0 0 24 24">
+                  <svg width="16" height="16" fill="none" stroke={openIndex === i ? '#fff' : '#6b7280'} strokeWidth="2.5" viewBox="0 0 24 24">
                     <line x1="12" y1="5" x2="12" y2="19" />
                     <line x1="5" y1="12" x2="19" y2="12" />
                   </svg>

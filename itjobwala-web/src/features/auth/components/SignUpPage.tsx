@@ -60,7 +60,7 @@ function validateCandidate(form: CandidateForm): CandidateErrors {
 
 const pageStyle: CSSProperties = {
   background: 'linear-gradient(135deg, #f0f5ff 0%, #eef3ff 50%, #f5f0ff 100%)',
-  fontFamily: 'var(--font-plus-jakarta)',
+  fontFamily: 'var(--font-sans)',
 };
 
 function GoogleBtn({ onHover }: { onHover?: string }) {
@@ -134,10 +134,10 @@ function CandidateLeftPanel() {
           <span className="inline-block rounded-full" style={{ width: 7, height: 7, background: '#4ade80' }} />
           <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>4,000+ IT jobs available</span>
         </div>
-        <h2 className="font-extrabold text-white mb-4" style={{ fontSize: 36, lineHeight: 1.15, letterSpacing: -1.5 }}>
+        <h2 className="text-h2 text-white mb-4" style={{ letterSpacing: -1.5 }}>
           Your next IT<br />role is waiting.
         </h2>
-        <p className="text-sm mb-10" style={{ color: 'rgba(255,255,255,0.65)', lineHeight: 1.8 }}>
+        <p className="text-large-body mb-10" style={{ color: 'rgba(255,255,255,0.65)' }}>
           Join thousands of IT professionals who find their dream job without the noise.
         </p>
         <div>
@@ -187,10 +187,10 @@ function RecruiterLeftPanel() {
           <span className="inline-block rounded-full" style={{ width: 7, height: 7, background: '#4ade80' }} />
           <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.9)' }}>Free to post — no credit card needed</span>
         </div>
-        <h2 className="font-extrabold text-white mb-4" style={{ fontSize: 36, lineHeight: 1.15, letterSpacing: -1.5 }}>
+        <h2 className="text-h2 text-white mb-4" style={{ letterSpacing: -1.5 }}>
           Hire IT talent<br />the smart way.
         </h2>
-        <p className="text-sm mb-10" style={{ color: 'rgba(255,255,255,0.65)', lineHeight: 1.8 }}>
+        <p className="text-large-body mb-10" style={{ color: 'rgba(255,255,255,0.65)' }}>
           Post jobs and connect directly with skilled IT professionals — no middlemen, no noise.
         </p>
         <div>
@@ -311,7 +311,7 @@ export default function SignUpPage() {
       {/* Nav */}
       <nav className="border-b border-black/[0.06] sticky top-0 z-50 shrink-0"
         style={{ background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(14px)' }}>
-        <div className="max-w-[1440px] mx-auto px-5 lg:px-10 h-[68px] flex items-center justify-between">
+        <div className="max-w-[1440px] mx-auto px-5 lg:px-10 h-16 lg:h-[72px] flex items-center justify-between">
           <Link href="/" className="flex items-center gap-1 hover:opacity-80 transition-opacity no-underline">
             <Image src="/logo.png" alt="itJobwala" width={30} height={30} />
             <span className="font-extrabold text-xl text-heading" style={{ letterSpacing: '-0.5px' }}>
@@ -343,10 +343,10 @@ export default function SignUpPage() {
           <div className="w-full max-w-[440px]">
 
             <div className="fade-up mb-7">
-              <h1 className="text-2xl sm:text-[28px] font-extrabold text-heading mb-2" style={{ letterSpacing: '-0.8px' }}>
+              <h1 className="text-h1 text-heading mb-2" style={{ letterSpacing: '-0.8px' }}>
                 Create your account
               </h1>
-              <p className="text-sm text-muted leading-[1.6]">
+              <p className="text-small-text text-muted leading-[1.6]">
                 {role === 'candidate'
                   ? 'Find IT jobs that actually match your skills.'
                   : 'Post jobs and reach thousands of IT professionals.'}
@@ -395,7 +395,7 @@ export default function SignUpPage() {
                       <input type="checkbox" checked={cForm.terms} onChange={e => setC('terms', e.target.checked)} className="sr-only" />
                       <div className="w-5 h-5 rounded-[6px] border-2 flex items-center justify-center transition-all duration-[180ms]"
                         style={{ borderColor: cForm.terms ? 'var(--color-primary)' : cErrors.terms ? '#ef4444' : '#d1d5db', background: cForm.terms ? 'var(--color-primary)' : '#fff' }}>
-                        {cForm.terms && <svg width="14" height="14" fill="none" stroke="#fff" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>}
+                        {cForm.terms && <svg width="16" height="16" fill="none" stroke="#fff" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>}
                       </div>
                     </div>
                     <span className="text-sm text-body leading-[1.6]">
@@ -463,7 +463,7 @@ export default function SignUpPage() {
                       <input type="checkbox" checked={rForm.terms} onChange={e => setR('terms', e.target.checked)} className="sr-only" />
                       <div className="flex items-center justify-center rounded-[6px] border-2 transition-all duration-[180ms]"
                         style={{ width: 20, height: 20, borderColor: rForm.terms ? 'var(--color-primary)' : rErrors.terms ? '#ef4444' : '#d1d5db', background: rForm.terms ? 'var(--color-primary)' : '#fff' }}>
-                        {rForm.terms && <svg width="10" height="10" fill="none" stroke="#fff" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>}
+                        {rForm.terms && <svg width="16" height="16" fill="none" stroke="#fff" strokeWidth="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>}
                       </div>
                     </div>
                     <span className="text-sm text-body-secondary leading-[1.6]">

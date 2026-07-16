@@ -88,7 +88,7 @@ export default function AdminLoginPage() {
               <ShieldIcon />
             </div>
             <div>
-              <h1 className="text-white font-bold text-lg leading-tight">Admin Panel</h1>
+              <h1 className="text-h6 text-white leading-tight">Admin Panel</h1>
               <p className="text-slate-400 text-xs mt-0.5">Restricted access — authorised personnel only</p>
             </div>
           </div>

@@ -106,9 +106,9 @@ function CreateAlertModal({ onClose, onCreate }: {
       <div className="bg-surface rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-token">
-          <h2 className="text-base font-extrabold text-heading">Create job alert</h2>
+          <h2 className="text-h6 text-heading">Create job alert</h2>
           <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-surface-hover flex items-center justify-center text-muted transition-colors">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M18 6L6 18M6 6l12 12" />
             </svg>
           </button>
@@ -286,7 +286,7 @@ function AlertCard({ alert, onToggle, onDelete }: {
             title="Delete alert"
             className="w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:bg-danger-bg hover:text-danger transition-colors"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <polyline points="3 6 5 6 21 6" />
               <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
               <path d="M10 11v6M14 11v6" />
@@ -314,7 +314,7 @@ export default function JobAlertsPageClient() {
       <div className="min-h-screen bg-surface-alt">
         <SmartNavbar />
 
-        <div className="pt-[68px]">
+        <div className="pt-16 lg:pt-[72px]">
           <div className="max-w-[780px] mx-auto px-5 sm:px-8 py-8">
 
             {/* Header */}
@@ -325,15 +325,15 @@ export default function JobAlertsPageClient() {
                     ← Dashboard
                   </Link>
                 </div>
-                <h1 className="text-2xl font-extrabold text-heading" style={{ letterSpacing: '-0.5px' }}>
+                <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.5px' }}>
                   Job Alerts
                 </h1>
-                <p className="text-sm text-muted mt-1">
+                <p className="text-small-text text-muted mt-1">
                   Get notified when new jobs match your criteria.
                 </p>
               </div>
               <Button variant="primary" size="md" onClick={() => setShowModal(true)}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M12 5v14M5 12h14" />
                 </svg>
                 New alert

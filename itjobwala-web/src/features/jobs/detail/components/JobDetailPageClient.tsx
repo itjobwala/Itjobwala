@@ -117,8 +117,8 @@ export default function JobDetailPageClient({ job }: Props) {
     <div className="min-h-screen bg-surface-alt">
       <SmartNavbar />
 
-      <div className="pt-[68px]">
-<div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
+      <div className="pt-16 lg:pt-[72px]">
+<div className="container-responsive mx-auto px-5 sm:px-8 py-8">
           {loading ? (
             <JobDetailSkeleton />
           ) : (
@@ -143,7 +143,7 @@ export default function JobDetailPageClient({ job }: Props) {
                     onClick={handleReportClick}
                     className="flex items-center gap-1.5 text-caption text-[#474d6a] hover:text-danger transition-colors"
                   >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
                       <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
                     </svg>

@@ -22,7 +22,7 @@ function NavBar() {
       className="sticky top-0 z-50 border-b border-black/[0.06] shrink-0"
       style={{ background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(14px)' }}
     >
-      <div className="max-w-[1440px] mx-auto px-5 lg:px-10 flex items-center h-[68px] gap-9">
+      <div className="max-w-[1440px] mx-auto px-5 lg:px-10 flex items-center h-16 lg:h-[72px] gap-9">
         <Link href="/" className="flex items-center gap-1 shrink-0 hover:opacity-80 transition-opacity">
           <Image src="/logo.png" alt="itJobwala" width={30} height={30} />
           <span className="font-extrabold text-xl text-heading" style={{ letterSpacing: '-0.5px' }}>
@@ -106,7 +106,7 @@ export default function VerifyOtpPage() {
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ fontFamily: 'var(--font-plus-jakarta)', background: 'linear-gradient(135deg, #f0f5ff 0%, #eef3ff 50%, #f5f0ff 100%)' }}
+      style={{ fontFamily: 'var(--font-sans)', background: 'linear-gradient(135deg, #f0f5ff 0%, #eef3ff 50%, #f5f0ff 100%)' }}
     >
       <NavBar />
 
@@ -131,12 +131,12 @@ export default function VerifyOtpPage() {
 
             {/* Heading */}
             <h1
-              className="font-extrabold text-heading text-center mb-2"
-              style={{ fontSize: 26, letterSpacing: -0.8 }}
+              className="text-h1 text-heading text-center mb-2"
+              style={{ letterSpacing: -0.8 }}
             >
               Verify your email
             </h1>
-            <p className="text-base text-muted text-center mb-7" style={{ lineHeight: 1.6 }}>
+            <p className="text-body-text text-muted text-center mb-7" style={{ lineHeight: 1.6 }}>
               Enter the 6-digit code sent to{' '}
               <strong className="font-semibold text-heading break-all">{email}</strong>
             </p>

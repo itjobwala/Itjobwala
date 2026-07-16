@@ -53,7 +53,7 @@ export default function Footer() {
   const [email, setEmail] = useState('');
 
   return (
-    <footer className="bg-[#f8faff] text-[#0f172a] pt-[72px] pb-9 border-t border-token">
+    <footer className="bg-[#f8faff] text-[#0f172a] pt-16 pb-9 border-t border-token">
       <div className="max-w-[1440px] mx-auto px-5 lg:px-10">
 
         {/* Top grid */}

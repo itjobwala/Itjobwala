@@ -114,7 +114,7 @@ function BulkMessageModal({
       <div className="bg-surface rounded-2xl shadow-xl w-full max-w-lg p-6 space-y-4">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-base font-extrabold text-heading">Message candidates</h2>
+            <h2 className="text-h6 text-heading">Message candidates</h2>
             <p className="text-sm text-subtle mt-0.5">{selectedIds.length} recipient{selectedIds.length !== 1 ? 's' : ''} selected</p>
           </div>
           <button onClick={onClose} className="text-subtle hover:text-muted" aria-label="Close">
@@ -228,16 +228,16 @@ export default function RecruiterCandidateSearchPage() {
 
       {/* Page header */}
       <div className="bg-surface border-b border-token">
-        <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
+        <div className="container-responsive mx-auto px-5 sm:px-8 py-8">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-heading" style={{ letterSpacing: '-0.5px' }}>
+            <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.5px' }}>
               Find Candidates
             </h1>
             <a href="/recruiter/talent-pool" className="text-xs font-semibold text-primary hover:underline">
               Talent Pool →
             </a>
           </div>
-          <p className="text-sm text-subtle mt-1">
+          <p className="text-small-text text-subtle mt-1">
             {pagination
               ? `${pagination.total.toLocaleString()} candidate${pagination.total !== 1 ? 's' : ''} found`
               : 'Search and message candidates for your open roles'}
@@ -245,7 +245,7 @@ export default function RecruiterCandidateSearchPage() {
         </div>
       </div>
 
-      <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-7">
+      <div className="container-responsive mx-auto px-5 sm:px-8 py-7">
 
         {/* Mobile filter toggle */}
         <button
@@ -263,7 +263,7 @@ export default function RecruiterCandidateSearchPage() {
               </span>
             )}
           </span>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={`transition-transform ${showFilters ? 'rotate-180' : ''}`}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className={`transition-transform ${showFilters ? 'rotate-180' : ''}`}>
             <path d="M6 9l6 6 6-6" />
           </svg>
         </button>
@@ -427,11 +427,11 @@ export default function RecruiterCandidateSearchPage() {
                 <thead className="bg-surface-alt/60">
                   <tr>
                     <th className="px-2 py-3 w-[5%]" />
-                    <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-3 py-3 w-[30%]">Candidate</th>
-                    <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[10%]">Level</th>
-                    <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[16%]">Skill</th>
-                    <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[11%]">Location</th>
-                    <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-3 py-3 w-[28%]">Actions</th>
+                    <th className="text-left text-lg font-semibold text-subtle px-3 py-3 w-[30%]">Candidate</th>
+                    <th className="text-left text-lg font-semibold text-subtle px-2 py-3 w-[10%]">Level</th>
+                    <th className="text-center text-lg font-semibold text-subtle px-2 py-3 w-[16%]">Skill</th>
+                    <th className="text-center text-lg font-semibold text-subtle px-2 py-3 w-[11%]">Location</th>
+                    <th className="text-center text-lg font-semibold text-subtle px-3 py-3 w-[28%]">Actions</th>
                   </tr>
                 </thead>
                 <tbody>

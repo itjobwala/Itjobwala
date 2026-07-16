@@ -20,9 +20,10 @@ const VARIANT_STYLES: Record<BadgeVariant, string> = {
   yellow:   'bg-yellow-50 text-yellow-700',
 };
 
+// md = design-spec Badge: 28px height, 12px horizontal padding, 12px font
 const SIZE_STYLES: Record<BadgeSize, string> = {
   sm: 'px-2 py-0.5 text-micro',
-  md: 'px-2.5 py-1 text-caption',
+  md: 'h-7 px-3 text-caption',
   lg: 'px-3 py-1.5 text-caption',
 };
 
@@ -48,7 +49,7 @@ export default function Badge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 font-semibold whitespace-nowrap',
+        'inline-flex items-center gap-1 font-medium whitespace-nowrap',
         VARIANT_STYLES[variant],
         SIZE_STYLES[size],
         rounded === 'full' ? 'rounded-full' : 'rounded-lg',

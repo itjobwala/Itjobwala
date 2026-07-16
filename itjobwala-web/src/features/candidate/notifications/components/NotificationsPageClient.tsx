@@ -46,17 +46,17 @@ export default function NotificationsPageClient() {
   return (
     <ProtectedRoute>
       <SmartNavbar />
-      <main className="min-h-screen bg-app pt-[68px]">
+      <main className="min-h-screen bg-app pt-16 lg:pt-[72px]">
         <div className="max-w-2xl mx-auto px-4 py-8">
 
           {/* ── Header ──────────────────────────────────────────────────── */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-extrabold text-heading" style={{ letterSpacing: '-0.5px' }}>
+              <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.5px' }}>
                 Notifications
               </h1>
               {pagination && (
-                <p className="text-sm text-subtle mt-0.5">{pagination.total} total</p>
+                <p className="text-small-text text-subtle mt-0.5">{pagination.total} total</p>
               )}
             </div>
             <button
@@ -156,7 +156,7 @@ export default function NotificationsPageClient() {
                 disabled={!pagination.has_prev}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-token text-sm font-semibold text-heading hover:bg-surface-alt transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M15 18l-6-6 6-6" />
                 </svg>
                 Previous
@@ -170,7 +170,7 @@ export default function NotificationsPageClient() {
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-token text-sm font-semibold text-heading hover:bg-surface-alt transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Next
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M9 18l6-6-6-6" />
                 </svg>
               </button>

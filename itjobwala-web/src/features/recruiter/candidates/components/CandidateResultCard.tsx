@@ -120,7 +120,7 @@ export default function CandidateResultCard({ candidate, onView, selected, onSel
           </div>
         </div>
       </td>
-      <td className="px-2 py-3.5 text-sm text-body-secondary whitespace-nowrap w-[10%]">
+      <td className="px-2 py-3.5 text-small-text text-body-secondary whitespace-nowrap w-[10%]">
         {candidate.experience_years === 0 ? 'Fresher' : `${candidate.experience_years} yrs`}
       </td>
       <td className="px-2 py-3.5 text-center w-[16%]">
@@ -141,7 +141,7 @@ export default function CandidateResultCard({ candidate, onView, selected, onSel
           <span className="text-subtle">—</span>
         )}
       </td>
-      <td className="px-2 py-3.5 text-sm text-body-secondary text-center truncate w-[11%]">{candidate.location || '—'}</td>
+      <td className="px-2 py-3.5 text-small-text text-body-secondary text-center truncate w-[11%]">{candidate.location || '—'}</td>
       <td className="px-3 py-3.5 w-[28%] relative">
         <div className="flex items-center justify-center gap-1.5">
           <Button variant="ghost" size="sm" onClick={() => onView(candidate.id)} className="shrink-0 whitespace-nowrap cursor-pointer bg-primary/10 hover:bg-primary/15">

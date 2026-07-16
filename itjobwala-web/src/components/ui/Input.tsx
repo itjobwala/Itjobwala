@@ -3,9 +3,10 @@ import { cn } from '@/src/lib/utils/cn';
 
 export type InputSize = 'sm' | 'md';
 
+// md = design-spec Input Field: 44px mobile -> 48px desktop, 16px font, 14px -> 16px padding
 const SIZE_CLASSES: Record<InputSize, string> = {
-  sm: 'px-3 py-2',
-  md: 'px-3.5 py-2.5',
+  sm: 'h-9 px-3 text-[14px]',
+  md: 'h-11 lg:h-12 px-3.5 lg:px-4 text-lg',
 };
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -34,9 +35,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           disabled={disabled || loading}
           aria-invalid={error ? 'true' : 'false'}
           className={cn(
-            'w-full rounded-xl border bg-surface',
+            'w-full rounded-sm border bg-surface',
             SIZE_CLASSES[inputSize],
-            'text-sm font-medium text-heading',
+            'font-medium text-heading',
             'outline-none transition-colors',
             'placeholder:text-subtle',
             'disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed',

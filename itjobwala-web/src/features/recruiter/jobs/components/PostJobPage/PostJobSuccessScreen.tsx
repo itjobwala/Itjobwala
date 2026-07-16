@@ -4,7 +4,7 @@ import { PRIMARY } from '@/src/lib/constants';
 export default function PostJobSuccessScreen({ jobId }: { jobId: string }) {
   return (
     <div className="min-h-screen flex items-center justify-center p-5 sm:p-6"
-      style={{ fontFamily: 'var(--font-plus-jakarta)', background: '#f8faff' }}>
+      style={{ fontFamily: 'var(--font-sans)', background: '#f8faff' }}>
       <div className="text-center rounded-3xl w-full px-6 py-10 sm:px-12 sm:py-14"
         style={{ background: '#fff', maxWidth: 460, boxShadow: `0 24px 64px ${PRIMARY}12` }}>
         <div className="flex items-center justify-center rounded-full mx-auto mb-6"

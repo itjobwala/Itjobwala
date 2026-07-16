@@ -194,10 +194,10 @@ export default function JobsPageClient() {
     <div className="min-h-screen bg-surface-alt">
       <SmartNavbar />
 
-      <div className="pt-[68px]">
+      <div className="pt-16 lg:pt-[72px]">
         {/* Hero bar */}
         <div className="bg-surface border-b border-token">
-          <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-6">
+          <div className="container-responsive mx-auto px-5 sm:px-8 py-6">
             <div className="max-w-[900px] mx-auto">
               <JobSearchBar
                 search={search}
@@ -209,7 +209,7 @@ export default function JobsPageClient() {
         </div>
 
         {/* Main content */}
-        <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
+        <div className="container-responsive mx-auto px-5 sm:px-8 py-8">
           {/* Top bar */}
           <div className="flex items-center justify-between mb-5 gap-2 sm:gap-3 flex-nowrap">
             <p className="text-xs sm:text-sm text-muted font-medium truncate min-w-0">{isLoading || isError ? '–' : total} QA roles found</p>
@@ -219,7 +219,7 @@ export default function JobsPageClient() {
                 onClick={() => setShowFilters(v => !v)}
                 className="lg:hidden flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm font-semibold text-heading bg-surface border border-token rounded-xl px-2.5 sm:px-4 py-2 sm:py-2.5 hover:border-primary/40 transition-colors shrink-0"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
                   <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
                 </svg>
                 Filters

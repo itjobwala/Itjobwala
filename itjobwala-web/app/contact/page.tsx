@@ -69,7 +69,7 @@ export default function ContactPage() {
       <SmartNavbar />
 
       {/* Hero */}
-      <section className="pt-[68px]">
+      <section className="pt-16 lg:pt-[72px]">
         <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-16 text-center">
           <span className="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary text-xs font-bold px-4 py-1.5 mb-6 uppercase tracking-widest">
             Get in touch

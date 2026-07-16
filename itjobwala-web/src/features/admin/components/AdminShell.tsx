@@ -81,7 +81,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const sidebar = (
     <aside
       className="flex flex-col h-full"
-      style={{ background: ADMIN_BG, borderRight: `1px solid rgba(255,255,255,0.07)`, width: 220 }}
+      style={{ background: ADMIN_BG, borderRight: `1px solid rgba(255,255,255,0.07)`, width: 280 }}
     >
       {/* Logo */}
       <div className="flex items-center gap-2 px-5 py-5 shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
@@ -106,7 +106,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
               key={item.href}
               href={item.href}
               onClick={() => setSideOpen(false)}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-sm font-semibold transition-all"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl mb-1 text-md font-semibold transition-all"
               style={active
                 ? { background: ADMIN_ACCENT + '22', color: ADMIN_ACCENT }
                 : { color: 'rgba(255,255,255,0.55)' }
@@ -152,7 +152,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       {/* Mobile overlay */}
       {sideOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
-          <div className="flex flex-col h-full" style={{ width: 220 }}>{sidebar}</div>
+          <div className="flex flex-col h-full" style={{ width: 280 }}>{sidebar}</div>
           <div className="flex-1 bg-black/60" onClick={() => setSideOpen(false)} />
         </div>
       )}

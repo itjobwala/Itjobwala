@@ -59,7 +59,7 @@ export default function AdminJobsPage() {
     <div>
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-white font-bold text-2xl">Jobs</h1>
+          <h1 className="text-h1 text-white">Jobs</h1>
           <p className="text-slate-400 text-sm mt-1">Moderate job listings — take down or restore</p>
         </div>
         <button
@@ -104,7 +104,7 @@ export default function AdminJobsPage() {
             <thead>
               <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                 {['Title', 'Company', 'Poster', 'Type', 'Status', 'Posted', ''].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest"
+                  <th key={h} className="text-left px-4 py-3 text-lg font-semibold"
                     style={{ color: 'rgba(255,255,255,0.35)' }}>{h}</th>
                 ))}
               </tr>
@@ -188,8 +188,8 @@ export default function AdminJobsPage() {
       {/* Confirmation modal */}
       {confirm && (
         <Modal isOpen onClose={() => setConfirm(null)} titleId="admin-job-confirm-title">
-          <div className="p-6 space-y-4">
-            <h2 id="admin-job-confirm-title" className="text-base font-bold text-heading">
+          <div className="p-5 lg:p-8 space-y-4">
+            <h2 id="admin-job-confirm-title" className="text-h6 text-heading">
               {confirm.newStatus === 'removed' ? 'Take down job' : 'Restore job'}
             </h2>
             <p className="text-sm text-gray-600">

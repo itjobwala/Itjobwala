@@ -13,8 +13,12 @@ interface Props {
   disabled?: boolean;
 }
 
+// Design-spec Input Field: 44px mobile -> 48px desktop, 16px font, 8px radius
 const inputCls = (hasError: boolean) =>
-  `w-full rounded-xl border px-3.5 py-2.5 text-sm font-medium text-heading outline-none transition-colors placeholder:text-muted disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed ${hasError ? 'border-danger' : 'border-token'}`;
+  `w-full h-11 lg:h-12 rounded-sm border px-3.5 lg:px-4 text-lg font-medium text-heading outline-none transition-colors placeholder:text-muted disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed ${hasError ? 'border-danger' : 'border-token'}`;
+
+const textareaCls = (hasError: boolean) =>
+  `w-full rounded-sm border px-3.5 py-3 text-lg font-medium text-heading outline-none transition-colors placeholder:text-muted disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed ${hasError ? 'border-danger' : 'border-token'}`;
 
 export default function JobFieldsBasic({ form, errors, setField, disabled = false }: Props) {
   return (
@@ -39,7 +43,7 @@ export default function JobFieldsBasic({ form, errors, setField, disabled = fals
         <label className="block text-sm font-bold text-body-secondary mb-1.5">Job description <span style={{ color: PRIMARY }}>*</span></label>
         <textarea value={form.description} onChange={e => setField('description', e.target.value)} disabled={disabled} rows={5}
           placeholder="Describe the role, responsibilities, and requirements (min. 50 characters)..."
-          className={`${inputCls(!!errors.description)} resize-none`} />
+          className={`${textareaCls(!!errors.description)} resize-none`} />
         <div className="flex items-center justify-between mt-1">
           {errors.description ? <p className="text-xs text-danger">{errors.description}</p> : <span />}
           <span className="text-micro text-subtle">{form.description.length} chars</span>
@@ -51,7 +55,7 @@ export default function JobFieldsBasic({ form, errors, setField, disabled = fals
           <label className="block text-sm font-bold text-body-secondary mb-1.5">Job type</label>
           <div className="relative">
             <select value={form.jobType} onChange={e => setField('jobType', e.target.value)} disabled={disabled}
-              className="w-full appearance-none rounded-xl border border-token pl-3.5 pr-9 py-2.5 text-sm font-medium text-heading outline-none bg-surface disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed">
+              className="w-full h-11 lg:h-12 appearance-none rounded-sm border border-token pl-3.5 lg:pl-4 pr-9 text-lg font-medium text-heading outline-none bg-surface disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed">
               {JOB_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"
@@ -64,7 +68,7 @@ export default function JobFieldsBasic({ form, errors, setField, disabled = fals
           <label className="block text-sm font-bold text-body-secondary mb-1.5">Work mode</label>
           <div className="relative">
             <select value={form.workMode} onChange={e => setField('workMode', e.target.value)} disabled={disabled}
-              className="w-full appearance-none rounded-xl border border-token pl-3.5 pr-9 py-2.5 text-sm font-medium text-heading outline-none bg-surface disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed">
+              className="w-full h-11 lg:h-12 appearance-none rounded-sm border border-token pl-3.5 lg:pl-4 pr-9 text-lg font-medium text-heading outline-none bg-surface disabled:bg-surface-alt disabled:text-subtle disabled:cursor-not-allowed">
               {WORK_MODES.map(m => <option key={m} value={m}>{m}</option>)}
             </select>
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"

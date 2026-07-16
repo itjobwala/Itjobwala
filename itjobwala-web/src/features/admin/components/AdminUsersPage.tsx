@@ -76,7 +76,7 @@ export default function AdminUsersPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-white font-bold text-2xl">Users</h1>
+          <h1 className="text-h1 text-white">Users</h1>
           <p className="text-slate-400 text-sm mt-1">Manage candidates and recruiters</p>
         </div>
         <button
@@ -133,16 +133,16 @@ export default function AdminUsersPage() {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>Name</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>Email</th>
+                <th className="text-left px-4 py-3 text-lg font-semibold" style={{ color: 'rgba(255,255,255,0.35)' }}>Name</th>
+                <th className="text-left px-4 py-3 text-lg font-semibold" style={{ color: 'rgba(255,255,255,0.35)' }}>Email</th>
                 {role === 'recruiter' && (
-                  <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>Company</th>
+                  <th className="text-left px-4 py-3 text-lg font-semibold" style={{ color: 'rgba(255,255,255,0.35)' }}>Company</th>
                 )}
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>Status</th>
+                <th className="text-left px-4 py-3 text-lg font-semibold" style={{ color: 'rgba(255,255,255,0.35)' }}>Status</th>
                 {role === 'recruiter' && (
-                  <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>Verified</th>
+                  <th className="text-left px-4 py-3 text-lg font-semibold" style={{ color: 'rgba(255,255,255,0.35)' }}>Verified</th>
                 )}
-                <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-widest" style={{ color: 'rgba(255,255,255,0.35)' }}>Joined</th>
+                <th className="text-left px-4 py-3 text-lg font-semibold" style={{ color: 'rgba(255,255,255,0.35)' }}>Joined</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -255,8 +255,8 @@ export default function AdminUsersPage() {
       {/* Confirmation modal */}
       {confirmAction && (
         <Modal isOpen onClose={() => setConfirmAction(null)} titleId="admin-confirm-title">
-          <div className="p-6 space-y-4">
-            <h2 id="admin-confirm-title" className="text-base font-bold text-heading">
+          <div className="p-5 lg:p-8 space-y-4">
+            <h2 id="admin-confirm-title" className="text-h6 text-heading">
               {confirmAction.type === 'suspend'    ? 'Suspend account' :
                confirmAction.type === 'reactivate' ? 'Reactivate account' :
                confirmAction.type === 'verify'     ? 'Verify recruiter' : 'Remove verification'}

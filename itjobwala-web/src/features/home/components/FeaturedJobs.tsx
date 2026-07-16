@@ -37,7 +37,7 @@ export default function FeaturedJobs() {
   return (
     <section
       ref={ref}
-      className="bg-surface-alt py-20 px-5 sm:px-8 lg:px-10"
+      className="bg-surface-alt py-16 px-5 sm:px-8 lg:px-10"
     >
       <div className="max-w-[1440px] mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 lg:gap-12 items-start">
@@ -52,13 +52,13 @@ export default function FeaturedJobs() {
             </div>
 
             <h2
-              className="text-[36px] md:text-[42px] font-extrabold text-[#0f172a] leading-[1.1] mb-5"
+              className="text-h2 text-[#0f172a] mb-5"
               style={{ letterSpacing: '-1.5px' }}
             >
               Featured jobs
             </h2>
 
-            <p className="text-sm text-[#474d6a] leading-[1.7] mb-8">
+            <p className="text-small-text text-[#474d6a] mb-8">
               Hand-picked roles from the best companies in India&apos;s tech ecosystem.
             </p>
 

@@ -44,7 +44,7 @@ export default function StatsStrip() {
   return (
     <section
       ref={ref}
-      className="bg-white py-14 px-5 sm:px-8 lg:px-10"
+      className="bg-white py-12 px-5 sm:px-8 lg:px-10"
     >
       <div className="max-w-[1440px] mx-auto grid grid-cols-2 md:grid-cols-4">
         {stats.map((s, i) => {
@@ -56,14 +56,14 @@ export default function StatsStrip() {
           <div
             key={i}
             className={[
-              `reveal stagger-${i + 1} text-center px-6 py-4 border-token`,
+              `reveal stagger-${i + 1} text-center p-4 border-token`,
               i % 2 === 0 ? 'border-r' : 'md:border-r',
               i < 2 ? 'border-b md:border-b-0' : '',
               i === 3 ? 'md:border-r-0' : '',
             ].join(' ')}
           >
             <div
-              className="text-[40px] md:text-[44px] font-extrabold leading-none mb-2.5"
+              className="min-h-[80px] md:min-h-[88px] flex items-center justify-center text-[40px] md:text-[44px] font-extrabold leading-none mb-2.5"
               style={{ color: PRIMARY, letterSpacing: '-2px' }}
             >
               {mainValue}

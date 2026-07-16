@@ -22,7 +22,7 @@ export default function HeroSection() {
 
   return (
     <section
-      className="relative pt-[84px] md:pt-[100px] pb-[48px] md:pb-[64px] overflow-hidden"
+      className="relative pt-20 lg:pt-24 pb-20 md:pb-24 overflow-hidden"
       style={{ background: 'linear-gradient(135deg, #f0f5ff 0%, #eef3ff 50%, #f5f0ff 100%)' }}
     >
       {/* Glow orbs */}
@@ -56,14 +56,14 @@ export default function HeroSection() {
 
         {/* Headline */}
         <h1
-          className="text-[48px] md:text-[64px] lg:text-[72px] font-extrabold text-heading mb-4 leading-[1.05]"
+          className="text-h1 text-heading mb-4"
           style={{ letterSpacing: '-3px' }}
         >
           QA jobs that actually<br />
           <span style={{ color: PRIMARY }}> match your skills.</span>
         </h1>
 
-        <p className="text-lg text-[#474d6a] leading-[1.7] max-w-[620px] mx-auto mb-8">
+        <p className="text-large-body text-[#474d6a] max-w-[620px] mx-auto mb-8">
           Manual, automation, SDET — find the right QA role in India.<br />No consultants. No spam. Just real opportunities.
         </p>
 
@@ -80,7 +80,7 @@ export default function HeroSection() {
         <div className="flex justify-center gap-6 mb-6 flex-wrap">
           {['Free for candidates', 'QA roles only', '2-min setup'].map((t) => (
             <div key={t} className="flex items-center gap-1.5 text-sm text-[#474d6a] font-medium">
-              <svg width="14" height="14" fill="none" stroke="#16a34a" strokeWidth="3" viewBox="0 0 24 24">
+              <svg width="16" height="16" fill="none" stroke="#16a34a" strokeWidth="3" viewBox="0 0 24 24">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
               {t}

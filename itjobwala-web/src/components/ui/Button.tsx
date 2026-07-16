@@ -6,19 +6,30 @@ import { cn } from '@/src/lib/utils/cn';
 export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
 export type ButtonSize    = 'sm' | 'md' | 'lg';
 
+// "Secondary Button" per the design spec is weight 500 — SIZE_CLASSES defaults
+// to font-semibold(600) for md/lg, so secondary/outline override it with an
+// !important weight (same-layer Tailwind utilities don't reliably win by
+// class order alone).
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   primary:   'bg-primary text-white hover:opacity-90 active:opacity-80 transition-opacity',
-  secondary: 'bg-surface border border-token-mid text-body hover:bg-surface-alt transition-colors',
-  outline:   'border border-token-mid text-body-secondary hover:border-primary/60 hover:text-primary transition-colors',
+  secondary: 'bg-surface border border-token-mid text-body hover:bg-surface-alt transition-colors !font-medium',
+  outline:   'border border-token-mid text-body-secondary hover:border-primary/60 hover:text-primary transition-colors !font-medium',
   ghost:     'bg-primary/5 border border-primary/10 text-primary hover:bg-primary/10 transition-colors',
   danger:    'bg-red-600 text-white hover:bg-red-700 active:bg-red-800 transition-colors',
   success:   'bg-success text-white hover:opacity-90 active:opacity-80 transition-opacity',
 };
 
+// Design-spec button sizes:
+//   sm = "Small Button"   (36px, 14px/medium)
+//   md = "Primary Button" (44px tablet/mobile -> 48px desktop, 15px -> 16px/semibold)
+//   lg = "Large CTA"      (56px, 18px/semibold)
+// ("Secondary Button" in the spec is a color/border style, not a distinct
+// size — it uses the same md height as Primary, just via variant="secondary"
+// or variant="outline".)
 const SIZE_CLASSES: Record<ButtonSize, string> = {
-  sm: 'px-3 py-1.5 text-caption font-semibold',
-  md: 'px-4 py-2 text-sm font-semibold',
-  lg: 'px-5 py-2.5 text-sm font-semibold',
+  sm: 'h-9 px-4 text-[14px] font-medium',
+  md: 'h-11 lg:h-12 px-5 lg:px-6 text-[15px] lg:text-[16px] font-semibold',
+  lg: 'h-14 px-8 text-[18px] font-semibold',
 };
 
 const ICON_SIZE_CLASSES: Record<ButtonSize, string> = {
@@ -28,6 +39,7 @@ const ICON_SIZE_CLASSES: Record<ButtonSize, string> = {
 };
 
 const ROUNDED_CLASSES = {
+  sm:   'rounded-sm', // 8px — design-spec default for all buttons
   lg:   'rounded-lg',
   xl:   'rounded-xl',
   full: 'rounded-full',
@@ -66,7 +78,7 @@ export function buttonVariants(options: {
     variant   = 'primary',
     size      = 'md',
     fullWidth = false,
-    rounded   = 'full',
+    rounded   = 'sm',
     className,
   } = options;
 
@@ -91,7 +103,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       rightIcon,
       iconOnly  = false,
       fullWidth = false,
-      rounded   = 'full',
+      rounded   = 'sm',
       disabled,
       className,
       children,

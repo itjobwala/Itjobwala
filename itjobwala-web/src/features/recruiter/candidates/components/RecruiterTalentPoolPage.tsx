@@ -38,7 +38,7 @@ function BulkMessageModal({
       <div className="bg-surface rounded-2xl shadow-xl w-full max-w-lg p-6 space-y-4">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-base font-extrabold text-heading">Message candidates</h2>
+            <h2 className="text-h6 text-heading">Message candidates</h2>
             <p className="text-sm text-subtle mt-0.5">{selectedIds.length} recipient{selectedIds.length !== 1 ? 's' : ''} selected</p>
           </div>
           <button onClick={onClose} className="text-subtle hover:text-muted transition-colors" aria-label="Close">
@@ -159,7 +159,7 @@ function PoolRow({
           </div>
         </div>
       </td>
-      <td className="px-2 py-3.5 text-sm text-body-secondary whitespace-nowrap w-[8%]">
+      <td className="px-2 py-3.5 text-small-text text-body-secondary whitespace-nowrap w-[8%]">
         {c.experience_years === 0 ? 'Fresher' : `${c.experience_years} yrs`}
       </td>
       <td className="px-2 py-3.5 text-center w-[26%]">
@@ -180,7 +180,7 @@ function PoolRow({
           <span className="text-subtle">—</span>
         )}
       </td>
-      <td className="px-2 py-3.5 text-sm text-body-secondary text-center truncate w-[14%]">{c.location || '—'}</td>
+      <td className="px-2 py-3.5 text-small-text text-body-secondary text-center truncate w-[14%]">{c.location || '—'}</td>
       <td className="px-3 py-3.5 w-[18%]">
         <div className="flex items-center justify-center gap-1.5 flex-wrap">
           <button
@@ -268,7 +268,7 @@ export default function RecruiterTalentPoolPage() {
   return (
     <RecruiterShell>
       <div className="min-h-screen bg-surface-alt">
-        <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-7">
+        <div className="container-responsive mx-auto px-5 sm:px-8 py-7">
 
           {/* Back */}
           <Link
@@ -284,9 +284,9 @@ export default function RecruiterTalentPoolPage() {
           {/* Header */}
           <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
             <div>
-              <h1 className="text-2xl font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>Talent Pool</h1>
+              <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.3px' }}>Talent Pool</h1>
               {pagination && (
-                <p className="text-sm text-subtle mt-0.5">{pagination.total} saved candidate{pagination.total !== 1 ? 's' : ''}</p>
+                <p className="text-small-text text-subtle mt-0.5">{pagination.total} saved candidate{pagination.total !== 1 ? 's' : ''}</p>
               )}
             </div>
             {selectedArr.length > 0 && (
@@ -294,7 +294,7 @@ export default function RecruiterTalentPoolPage() {
                 onClick={() => setShowBulkModal(true)}
                 className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-primary text-white hover:brightness-110 transition-all"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 </svg>
                 Message {selectedArr.length} selected
@@ -378,11 +378,11 @@ export default function RecruiterTalentPoolPage() {
                         aria-label="Select all"
                       />
                     </th>
-                    <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-3 py-3 w-[30%]">Candidate</th>
-                    <th className="text-left text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[8%]">Level</th>
-                    <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[26%]">Skill</th>
-                    <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-2 py-3 w-[14%]">Location</th>
-                    <th className="text-center text-micro font-bold text-subtle uppercase tracking-wide px-3 py-3 w-[18%]">
+                    <th className="text-left text-lg font-semibold text-subtle px-3 py-3 w-[30%]">Candidate</th>
+                    <th className="text-left text-lg font-semibold text-subtle px-2 py-3 w-[8%]">Level</th>
+                    <th className="text-center text-lg font-semibold text-subtle px-2 py-3 w-[26%]">Skill</th>
+                    <th className="text-center text-lg font-semibold text-subtle px-2 py-3 w-[14%]">Location</th>
+                    <th className="text-center text-lg font-semibold text-subtle px-3 py-3 w-[18%]">
                       {selectedArr.length > 0 ? `${selectedArr.length} selected` : 'Actions'}
                     </th>
                   </tr>

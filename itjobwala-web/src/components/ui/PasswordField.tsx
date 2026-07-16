@@ -51,12 +51,12 @@ export default function PasswordField({ label, id, placeholder, value, onChange,
       </label>
       <div
         className={[
-          'flex items-center bg-surface rounded-xl overflow-hidden transition-all duration-[180ms]',
+          'flex items-center h-11 lg:h-12 bg-surface rounded-sm overflow-hidden transition-all duration-[180ms]',
           error
-            ? 'border-[1.5px] border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.09)]'
+            ? 'border border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.09)]'
             : focused
-            ? 'border-[1.5px] border-[#1557FF] shadow-[0_0_0_3px_rgba(21,87,255,0.09)]'
-            : 'border-[1.5px] border-token-mid',
+            ? 'border border-[#1557FF] shadow-[0_0_0_3px_rgba(21,87,255,0.09)]'
+            : 'border border-token-mid',
         ].join(' ')}
       >
         <div className={`px-3.5 shrink-0 transition-colors duration-200 ${focused ? 'text-[#1557FF]' : 'text-subtle'}`}>
@@ -73,7 +73,7 @@ export default function PasswordField({ label, id, placeholder, value, onChange,
           onChange={e => onChange(e.target.value)}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
-          className="flex-1 border-none outline-none text-md text-heading bg-transparent py-3.5"
+          className="flex-1 h-full border-none outline-none text-lg text-heading bg-transparent"
         />
         <button
           type="button"

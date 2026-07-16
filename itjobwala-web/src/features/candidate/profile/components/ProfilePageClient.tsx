@@ -132,17 +132,17 @@ export default function ProfilePageClient() {
       <div className="min-h-screen bg-surface-alt">
         <SmartNavbar />
 
-        <div className="pt-[68px]">
+        <div className="pt-16 lg:pt-[72px]">
           <div className="bg-surface border-b border-token">
-            <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-5 flex items-center justify-between">
+            <div className="container-responsive mx-auto px-5 sm:px-8 py-5 flex items-center justify-between">
               <div>
-                <h1 className="text-xl font-extrabold text-heading" style={{ letterSpacing: '-0.3px' }}>My Profile</h1>
-                <p className="text-sm text-subtle mt-0.5">Manage your profile and track job activity</p>
+                <h1 className="text-h1 text-heading" style={{ letterSpacing: '-0.3px' }}>My Profile</h1>
+                <p className="text-small-text text-subtle mt-0.5">Manage your profile and track job activity</p>
               </div>
             </div>
           </div>
 
-          <div className="max-w-[1200px] mx-auto px-5 sm:px-8 py-8">
+          <div className="container-responsive mx-auto px-5 sm:px-8 py-8">
             {profileError ? (
               <QueryErrorState
                 message="We couldn't load your profile. Please check your connection and try again."
@@ -170,7 +170,7 @@ export default function ProfilePageClient() {
                     />
                   ) : (
                     <Card padding="none" className="p-6 sm:p-8" overflow>
-                      <h2 className="text-lg font-extrabold text-heading mb-4" style={{ letterSpacing: '-0.3px' }}>Resume</h2>
+                      <h2 className="text-h6 text-heading mb-4" style={{ letterSpacing: '-0.3px' }}>Resume</h2>
                       <button
                         onClick={() => openEditModal('resume-upload')}
                         className="w-full flex flex-col items-center justify-center py-8 border-2 border-dashed border-token rounded-xl text-subtle hover:border-primary/40 hover:text-primary transition-colors"
@@ -239,7 +239,7 @@ export default function ProfilePageClient() {
                         <p className="text-micro text-violet-300 mt-0.5">ATS score · trajectory · risk analysis</p>
                       </div>
                     </div>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" strokeWidth="2.5">
                       <polyline points="9 18 15 12 9 6"/>
                     </svg>
                   </Link>

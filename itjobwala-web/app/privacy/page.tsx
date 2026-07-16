@@ -135,7 +135,7 @@ export default function PrivacyPage() {
     <main className="min-h-screen bg-surface">
       <SmartNavbar />
 
-      <div className="pt-[68px]">
+      <div className="pt-16 lg:pt-[72px]">
         {/* Hero */}
         <div className="bg-surface-alt border-b border-token">
           <div className="max-w-[860px] mx-auto px-5 sm:px-8 py-14">

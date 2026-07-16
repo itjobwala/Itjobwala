@@ -16,7 +16,7 @@ export default function RecruiterCTA() {
   return (
     <section
       ref={ref}
-      className="bg-[#f9fafb] py-[88px] px-5 sm:px-8 lg:px-10"
+      className="bg-[#f9fafb] py-16 px-5 sm:px-8 lg:px-10"
     >
       <div className="max-w-[1000px] mx-auto">
         <div
@@ -39,12 +39,12 @@ export default function RecruiterCTA() {
               For companies
             </div>
             <h2
-              className="text-[36px] md:text-[40px] font-extrabold text-white leading-[1.1] mb-4"
+              className="text-h2 text-white mb-4"
               style={{ letterSpacing: '-1.5px' }}
             >
               Hiring tech talent?
             </h2>
-            <p className="text-lg text-white/75 leading-[1.7] max-w-[440px] mb-7">
+            <p className="text-large-body text-white/75 max-w-[440px] mb-7">
               Post your job and connect with skilled IT professionals instantly.
               No spam, only quality candidates.
             </p>

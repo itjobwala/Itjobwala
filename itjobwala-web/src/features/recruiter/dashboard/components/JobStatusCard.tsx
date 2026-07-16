@@ -20,7 +20,7 @@ interface Props {
 export default function JobStatusCard({ job }: Props) {
   return (
     <tr className="border-b border-token last:border-0 hover:bg-surface-alt transition-colors group">
-      <td className="px-4 py-3.5 w-[30%]">
+      <td className="px-4 py-3.5">
         <div className="min-w-0">
           <Link
             href={`/recruiter/posted-jobs/${job.id}`}
@@ -36,12 +36,12 @@ export default function JobStatusCard({ job }: Props) {
           </div>
         </div>
       </td>
-      <td className="px-4 py-3.5 text-sm text-body-secondary truncate overflow-hidden w-[16%]">{job.location}</td>
-      <td className="px-4 py-3.5 text-sm text-body-secondary whitespace-nowrap truncate overflow-hidden w-[15%]">{job.posted}</td>
-      <td className="px-4 py-3.5 text-sm text-body-secondary text-center whitespace-nowrap truncate overflow-hidden w-[15%]">
+      <td className="px-4 py-3.5 text-small-text text-body-secondary truncate overflow-hidden w-[130px]">{job.location}</td>
+      <td className="px-4 py-3.5 text-small-text text-body-secondary whitespace-nowrap truncate overflow-hidden w-[110px]">{job.posted}</td>
+      <td className="px-4 py-3.5 text-small-text text-body-secondary text-center whitespace-nowrap truncate overflow-hidden w-[110px]">
         {job.applications} applicants
       </td>
-      <td className="px-4 py-3.5 w-[24%]">
+      <td className="px-3 py-3.5 w-[172px]">
         <div className="flex items-center justify-start gap-1.5">
           <Link
             href={`/recruiter/applicants?jobId=${job.id}`}

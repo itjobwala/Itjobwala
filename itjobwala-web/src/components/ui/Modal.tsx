@@ -3,9 +3,11 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { cn } from '@/src/lib/utils/cn';
 
+// md = design-spec Modal width (600px desktop; mobile handled by w-full + the
+// outer p-4 sm:p-6 wrapper, which already keeps panels near the spec's 95%).
 const MAX_WIDTH = {
   sm:   'max-w-[400px]',
-  md:   'max-w-[480px]',
+  md:   'max-w-[600px]',
   lg:   'max-w-[800px]',
   full: 'max-w-full',
 } as const;
@@ -74,7 +76,7 @@ export default function Modal({
         ref={panelRef}
         tabIndex={-1}
         className={cn(
-          'relative bg-surface rounded-2xl shadow-overlay w-full outline-none',
+          'relative bg-surface rounded-lg shadow-overlay w-full outline-none',
           MAX_WIDTH[size],
           scrollable && 'max-h-[90vh] flex flex-col overflow-hidden',
           className,

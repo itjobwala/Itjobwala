@@ -69,7 +69,7 @@ export default function CategorySection() {
   return (
     <section
       ref={ref}
-      className="bg-surface pt-14 pb-20 px-5 sm:px-8 lg:px-10"
+      className="bg-surface py-16 px-5 sm:px-8 lg:px-10"
     >
       <div className="max-w-[1440px] mx-auto">
         {/* Header */}
@@ -82,7 +82,7 @@ export default function CategorySection() {
               Browse by specialization
             </div>
             <h2
-              className="text-[36px] md:text-[42px] font-extrabold text-[#0f172a] leading-[1.1]"
+              className="text-h2 text-[#0f172a]"
               style={{ letterSpacing: '-1.5px' }}
             >
               Find QA roles<br />by type
@@ -208,7 +208,7 @@ export default function CategorySection() {
                       style={{ background: highlighted ? theme.accent : '#fff', border: `1.5px solid ${theme.border}` }}
                     >
                       <svg
-                        width="14" height="14" fill="none"
+                        width="16" height="16" fill="none"
                         stroke={highlighted ? '#fff' : theme.accent}
                         strokeWidth="2.5" viewBox="0 0 24 24"
                       >

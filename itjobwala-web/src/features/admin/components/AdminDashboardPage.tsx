@@ -167,7 +167,7 @@ export default function AdminDashboardPage() {
   if (isLoading) {
     return (
       <div>
-        <h1 className="text-white font-bold text-2xl mb-6">Dashboard</h1>
+        <h1 className="text-h1 text-white mb-6">Dashboard</h1>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="rounded-2xl h-24 animate-pulse" style={{ background: 'rgba(255,255,255,0.04)' }} />
@@ -180,7 +180,7 @@ export default function AdminDashboardPage() {
   if (isError || !data) {
     return (
       <div>
-        <h1 className="text-white font-bold text-2xl mb-6">Dashboard</h1>
+        <h1 className="text-h1 text-white mb-6">Dashboard</h1>
         <p className="text-red-400 text-sm">Failed to load stats. Check your connection.</p>
       </div>
     );
@@ -189,7 +189,7 @@ export default function AdminDashboardPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-white font-bold text-2xl">Dashboard</h1>
+        <h1 className="text-h1 text-white">Dashboard</h1>
         <p className="text-slate-400 text-sm mt-1">Platform overview — live data</p>
       </div>
 
@@ -218,7 +218,7 @@ export default function AdminDashboardPage() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-white font-bold text-lg">Analytics</h2>
+            <h2 className="text-h6 text-white">Analytics</h2>
             <p className="text-slate-400 text-xs mt-0.5">Daily activity trends</p>
           </div>
           <div className="flex gap-1.5">

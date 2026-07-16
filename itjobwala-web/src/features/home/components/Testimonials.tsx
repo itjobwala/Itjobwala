@@ -18,7 +18,7 @@ export default function Testimonials() {
   const ref = useReveal();
 
   return (
-    <section ref={ref} className="bg-surface py-[88px] px-5 sm:px-8 lg:px-10">
+    <section ref={ref} className="bg-surface py-16 px-5 sm:px-8 lg:px-10">
       <div className="max-w-[1440px] mx-auto">
 
         {/* Header */}
@@ -30,12 +30,12 @@ export default function Testimonials() {
             From the community
           </div>
           <h2
-            className="reveal stagger-1 text-[36px] md:text-[42px] font-extrabold text-[#0f172a] leading-[1.1] mb-3.5"
+            className="reveal stagger-1 text-h2 text-[#0f172a] mb-3.5"
             style={{ letterSpacing: '-1.5px' }}
           >
             Hired through itJobwala
           </h2>
-          <p className="reveal stagger-2 text-[16px] text-gray-500 max-w-[540px] mx-auto leading-[1.6]">
+          <p className="reveal stagger-2 text-body-text text-gray-500 max-w-[540px] mx-auto">
             Real candidates. Real placements. No paid endorsements.
           </p>
         </div>

@@ -29,7 +29,7 @@ export default function RecruiterPostJobPage() {
   const { heading, sub } = STEP_TITLES[wizard.step];
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ fontFamily: 'var(--font-plus-jakarta)', background: '#f8faff' }}>
+    <div className="min-h-screen flex flex-col" style={{ fontFamily: 'var(--font-sans)', background: '#f8faff' }}>
       <PostJobNavbar />
 
       <div className="flex-1 flex">
@@ -38,10 +38,10 @@ export default function RecruiterPostJobPage() {
         <div className="flex-1 flex items-start justify-center overflow-y-auto px-5 py-10 sm:px-10 sm:py-12 lg:px-14 lg:py-14">
           <div className="w-full max-w-[520px]">
             <div className="mb-2">
-              <h1 className="font-extrabold text-heading mb-1 text-2xl sm:text-4xl" style={{ letterSpacing: -0.8 }}>
+              <h1 className="text-h1 text-heading mb-1" style={{ letterSpacing: -0.8 }}>
                 {heading}
               </h1>
-              <p className="text-sm text-[#474d6a]">{sub}</p>
+              <p className="text-small-text text-[#474d6a]">{sub}</p>
             </div>
 
             <div className="my-6">

@@ -27,7 +27,7 @@ export default function ChatSidebar({ activeId, onSelect, isMobileOpen, onMobile
       >
         {/* Sidebar header */}
         <div className="px-5 py-4 border-b border-token shrink-0">
-          <h2 className="text-lg font-extrabold text-heading">Messages</h2>
+          <h2 className="text-h6 text-heading">Messages</h2>
           <p className="text-micro text-subtle mt-0.5">Your conversations</p>
         </div>
 

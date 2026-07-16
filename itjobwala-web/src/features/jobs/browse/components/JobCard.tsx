@@ -18,7 +18,7 @@ interface Props {
 
 function MapPinIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
       <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" />
       <circle cx="12" cy="9" r="2.5" />
     </svg>
@@ -27,7 +27,7 @@ function MapPinIcon() {
 
 function BriefcaseIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
       <rect x="2" y="7" width="20" height="14" rx="2" />
       <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
     </svg>
@@ -36,7 +36,7 @@ function BriefcaseIcon() {
 
 function ClockIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
       <circle cx="12" cy="12" r="10" />
       <path d="M12 6v6l4 2" />
     </svg>
@@ -45,7 +45,7 @@ function ClockIcon() {
 
 function IndianRupeeIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
       <path d="M6 3h12M6 8h12M15 21 9 8" />
       <path d="M6 13h3a4 4 0 0 0 0-5H6" />
     </svg>
@@ -116,9 +116,9 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false, m
   };
 
   return (
-    <div onClick={() => router.push(`/candidate/jobs/${job.id}`)} className="group relative overflow-hidden bg-white rounded-2xl border border-token hover:border-primary/40 hover:shadow-lg transition-all duration-200 cursor-pointer p-5 sm:p-6 pb-3 sm:pb-3">
+    <div onClick={() => router.push(`/candidate/jobs/${job.id}`)} className="group relative overflow-hidden bg-white rounded-md border border-token hover:border-primary/40 hover:shadow-lg transition-all duration-200 cursor-pointer p-4 lg:p-6 pb-3">
       {job.hasApplied && <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-success" />}
-      <div className="flex items-start gap-4">
+      <div className="flex items-start gap-3 lg:gap-4">
         {/* Main content */}
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-3">
@@ -216,7 +216,7 @@ export default function JobCard({ job, onSave, onUnsave, initialSaved = false, m
             const exp = expiresInfo(job.closesAt);
             return exp ? (
               <span className={`text-caption font-semibold flex items-center gap-1 ${exp.className}`}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="shrink-0">
                   <rect x="3" y="4" width="20" height="20" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" />
                 </svg>
                 {exp.label}

@@ -24,7 +24,7 @@ function CompanyCard({ company }: { company: { name: string; color: string; jobs
 
 export default function CompanyMarquee() {
   return (
-    <section className="bg-surface py-10 border-y border-token">
+    <section className="bg-surface py-12">
       <div className="max-w-[860px] mx-auto px-5 text-center">
         <p className="text-caption font-bold text-subtle uppercase tracking-[1.5px] mb-3">
           QA teams hiring on itJobwala

@@ -62,7 +62,7 @@ const ACTIONS = [
 export default function QuickActions() {
   return (
     <Card className="shadow-sm" overflow>
-      <h2 className="text-base font-extrabold text-heading mb-4" style={{ letterSpacing: '-0.3px' }}>
+      <h2 className="text-h6 text-heading mb-4" style={{ letterSpacing: '-0.3px' }}>
         Quick Actions
       </h2>
       <div className="grid grid-cols-2 gap-2.5">

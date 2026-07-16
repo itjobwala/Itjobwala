@@ -38,7 +38,7 @@ export default function WhyUs() {
   return (
     <section
       ref={ref}
-      className="bg-[#0f172a] py-[88px] px-5 sm:px-8 lg:px-10"
+      className="bg-[#0f172a] py-16 px-5 sm:px-8 lg:px-10"
     >
       <div className="max-w-[1440px] mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-12 lg:gap-20 items-center">
@@ -48,12 +48,12 @@ export default function WhyUs() {
               Our difference
             </div>
             <h2
-              className="text-[36px] md:text-[42px] font-extrabold text-white leading-[1.1] mb-5"
+              className="text-h2 text-white mb-5"
               style={{ letterSpacing: '-1.5px' }}
             >
               Why QA professionals choose itJobwala
             </h2>
-            <p className="text-[15px] text-slate-500 leading-[1.7]">
+            <p className="text-small-text text-slate-500">
               Built for QA engineers tired of generic job boards that don&apos;t understand testing roles.
             </p>
           </div>
@@ -72,8 +72,8 @@ export default function WhyUs() {
                 <div className="w-11 h-11 rounded-full flex items-center justify-center mb-4 text-[#93c5fd]" style={{ background: 'rgba(147,197,253,0.10)' }}>
                   {WHY_ICONS[item.icon]}
                 </div>
-                <h4 className="font-bold text-[16px] text-slate-100 mb-2">{item.title}</h4>
-                <p className="text-[14px] text-slate-500 leading-[1.7]">{item.desc}</p>
+                <h4 className="text-h4 text-slate-100 mb-2">{item.title}</h4>
+                <p className="text-small-text text-slate-500">{item.desc}</p>
               </div>
             ))}
           </div>
